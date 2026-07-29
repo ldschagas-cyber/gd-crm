@@ -1,0 +1,13 @@
+.section-card { margin-bottom: 18px; }
+.section-body { padding: 16px 20px; }
+.section-foot { display: flex; justify-content: flex-end; padding: 14px 20px; border-top: 1px solid var(--border); }
+.f-input.mono { font-family: var(--font-mono); }
+
+.job-status-pill {
+  display: inline-block; font-size: 11.5px; font-weight: 650; padding: 3px 10px; border-radius: 100px; white-space: nowrap;
+}
+.job-status-concluido { background: rgba(12, 163, 12, 0.12); color: var(--good); }
+.job-status-processando { background: rgba(0, 119, 168, 0.12); color: var(--azul); }
+.job-status-pendente { background: rgba(139, 142, 166, 0.14); color: var(--ink-dim); }
+.job-status-erro { background: rgba(208, 59, 59, 0.12); color: var(--critical); }
+.job-errors { color: var(--critical); font-weight: 600; cursor: help; }

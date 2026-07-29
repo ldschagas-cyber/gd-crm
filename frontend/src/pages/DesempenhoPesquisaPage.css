@@ -1,0 +1,33 @@
+.stat-strip { margin: 16px 0; }
+
+.grid-main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 16px; align-items: start; margin-bottom: 16px; }
+.card-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; }
+
+.rank-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.rank-row:last-child { border-bottom: none; }
+.rank-medal { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex: none; font-family: var(--font-mono); }
+.rank-medal.p1 { background: rgba(201, 168, 76, 0.22); color: var(--amber); }
+.rank-medal.p2 { background: rgba(139, 142, 166, 0.18); color: var(--ink-dim); }
+.rank-medal.p3 { background: rgba(178, 123, 58, 0.18); color: #b27b3a; }
+.rank-body { flex: 1; min-width: 0; }
+.rank-name { font-size: 13.3px; font-weight: 650; color: var(--ink); }
+.rank-meta { font-size: 11.5px; color: var(--ink-faint); margin-top: 1px; }
+.rank-value { text-align: right; flex: none; }
+.rank-value .v { font-family: var(--font-mono); font-size: 15px; font-weight: 700; color: var(--ink); }
+.rank-value .t { font-size: 10px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .03em; }
+
+.bar-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+.bar-name { width: 130px; flex: none; font-size: 12.5px; color: var(--ink-dim); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-track { flex: 1; height: 20px; background: var(--paper); border-radius: 5px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 5px; }
+.bar-value { width: 34px; flex: none; text-align: right; font-family: var(--font-mono); font-size: 12.5px; font-weight: 650; }
+
+.cell-num { font-family: var(--font-mono); text-align: right; }
+.row-resp-name { font-weight: 600; color: var(--ink); font-size: 13px; }
+.qual-pill { font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 100px; font-family: var(--font-mono); }
+.qual-pill.high { background: rgba(12, 163, 12, 0.12); color: var(--good); }
+.qual-pill.mid { background: rgba(250, 178, 25, 0.16); color: var(--warning); }
+.qual-pill.low { background: rgba(208, 59, 59, 0.1); color: var(--critical); }
+.bonus-cell { font-family: var(--font-mono); font-weight: 700; color: var(--amber); text-align: right; }
+
+@media (max-width: 1080px) { .grid-main { grid-template-columns: 1fr; } }

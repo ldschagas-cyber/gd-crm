@@ -1,0 +1,94 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: gd_crm_db_dev
+    environment:
+      POSTGRES_USER: crm
+      POSTGRES_PASSWORD: crm
+      POSTGRES_DB: crm
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U crm"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: gd_crm_redis_dev
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+
+  api:
+    build: .
+    container_name: gd_crm_api_dev
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    ports:
+      - "8001:8000"
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    volumes:
+      - .:/app
+
+  frontend:
+    image: node:20-alpine
+    container_name: gd_crm_frontend_dev
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5174:5173"
+    environment:
+      VITE_API_URL: http://localhost:8001/api/v1
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    depends_on:
+      - api
+
+  worker:
+    build: .
+    container_name: gd_crm_worker_dev
+    env_file: .env
+    depends_on:
+      - db
+      - redis
+    command: ["celery", "-A", "app.core.celery_app.celery_app", "worker", "-Q", "default", "--loglevel=info"]
+    volumes:
+      - .:/app
+
+  beat:
+    build: .
+    container_name: gd_crm_beat_dev
+    env_file: .env
+    depends_on:
+      - db
+      - redis
+    command: ["celery", "-A", "app.core.celery_app.celery_app", "beat", "--loglevel=info"]
+    volumes:
+      - .:/app
+
+  nginx:
+    image: nginx:alpine
+    container_name: gd_crm_nginx_dev
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+
+volumes:
+  pgdata:
+  redisdata:

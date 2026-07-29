@@ -1,0 +1,654 @@
+<title>Pipeline — GD Conecta CRM</title>
+<style>
+  /* Font note: real product should self-host IBM Plex Sans/Mono; CDN fonts are blocked
+     in this artifact sandbox, so a close system-grotesque stack stands in here. */
+  :root {
+    --font-display: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Cascadia Code", "SFMono-Regular", "Consolas", ui-monospace, monospace;
+
+    --indigo: #2D3561;
+    --indigo-600: #3B4478;
+    --amber: #C9A84C;
+    --azul: #0077A8;
+    --marfim: #F5F1EB;
+
+    --paper: var(--marfim);
+    --panel: var(--indigo);
+    --panel-fg: #F1EEE6;
+    --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12);
+    --panel-active-bg: rgba(201, 168, 76, 0.14);
+
+    --ink: #22243A;
+    --ink-dim: #5B5E78;
+    --ink-faint: #8B8EA6;
+    --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF;
+    --accent: var(--amber);
+    --link: var(--azul);
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+
+    --good: #0ca30c;
+    --warning: #fab219;
+    --serious: #ec835a;
+    --critical: #d03b3b;
+
+    --seq-1: #86b6ef;
+    --seq-2: #5598e7;
+    --seq-3: #2a78d6;
+    --seq-4: #1c5cab;
+    --seq-5: #104281;
+    --seq-6: #0a2d5c;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+      --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+      --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+      --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+      --seq-1: #9ec5f4; --seq-2: #6da7ec; --seq-3: #3987e5; --seq-4: #256abf; --seq-5: #184f95; --seq-6: #123a70;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+    --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+    --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+    --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+    --seq-1: #9ec5f4; --seq-2: #6da7ec; --seq-3: #3987e5; --seq-4: #256abf; --seq-5: #184f95; --seq-6: #123a70;
+  }
+  :root[data-theme="light"] {
+    --paper: #F5F1EB; --panel: #2D3561; --panel-fg: #F1EEE6; --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12); --panel-active-bg: rgba(201, 168, 76, 0.14);
+    --ink: #22243A; --ink-dim: #5B5E78; --ink-faint: #8B8EA6; --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF; --amber: #C9A84C; --azul: #0077A8; --link: #0077A8;
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+    --seq-1: #86b6ef; --seq-2: #5598e7; --seq-3: #2a78d6; --seq-4: #1c5cab; --seq-5: #104281; --seq-6: #0a2d5c;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; font-family: var(--font-display); color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; }
+  button, input, select, textarea { font-family: inherit; }
+  a { color: inherit; }
+  ::selection { background: rgba(201,168,76,.3); }
+  :focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; border-radius: 4px; }
+
+  .shell { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+
+  /* ---------------- Sidebar (matches Empresas/Dashboard/Negócios) ---------------- */
+  .sidebar { background: var(--panel); color: var(--panel-fg); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+  .sb-brand { display: flex; align-items: center; gap: 10px; padding: 20px 18px 16px; }
+  .monogram { width: 34px; height: 34px; border-radius: 9px; flex: none; background: var(--amber); color: var(--indigo); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+  .sb-brand strong { display: block; font-size: 14.5px; font-weight: 650; line-height: 1.2; }
+  .sb-brand span { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--panel-fg-dim); margin-top: 2px; }
+  .sb-nav { flex: 1; overflow-y: auto; padding: 10px 12px; }
+  .sb-group + .sb-group { margin-top: 18px; }
+  .sb-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--panel-fg-dim); padding: 0 10px; margin-bottom: 6px; }
+  .sb-item { display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: 8px; margin-bottom: 2px; font-size: 13.6px; font-weight: 500; color: var(--panel-fg-dim); text-decoration: none; cursor: pointer; border: 1px solid transparent; position: relative; }
+  .sb-item svg { width: 17px; height: 17px; flex: none; opacity: 0.9; }
+  .sb-item:hover { background: rgba(241, 238, 230, 0.06); color: var(--panel-fg); }
+  .sb-item.active { background: var(--panel-active-bg); color: var(--panel-fg); font-weight: 650; }
+  .sb-item.active::before { content: ""; position: absolute; left: -12px; top: 6px; bottom: 6px; width: 3px; background: var(--amber); border-radius: 2px; }
+  .sb-item .chip { margin-left: auto; font-family: var(--font-mono); font-size: 10px; background: rgba(241,238,230,0.12); color: var(--panel-fg-dim); padding: 1px 6px; border-radius: 100px; }
+  .sb-user { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-top: 1px solid var(--panel-border); }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; flex: none; background: rgba(201,168,76,0.18); color: var(--amber); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; border: 1px solid rgba(201,168,76,0.3); }
+  .sb-user-meta { min-width: 0; flex: 1; }
+  .sb-user-meta strong { display: block; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-user-meta span { display: block; font-size: 11px; color: var(--panel-fg-dim); }
+
+  /* ---------------- Main column ---------------- */
+  .main-col { display: flex; flex-direction: column; min-width: 0; }
+  .content { padding: 22px 28px 48px; display: flex; flex-direction: column; gap: 16px; max-width: 880px; }
+
+  .page-head { display: flex; align-items: flex-start; gap: 16px; }
+  .page-head h1 { margin: 0; font-size: 20px; font-weight: 650; letter-spacing: -0.01em; }
+  .page-head p { margin: 3px 0 0; font-size: 12.5px; color: var(--ink-dim); }
+  .page-actions { margin-left: auto; display: flex; gap: 8px; flex: none; }
+
+  .btn-primary { display: flex; align-items: center; gap: 7px; background: var(--indigo); color: var(--panel-fg); border: 1px solid var(--indigo); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-primary:hover { background: var(--indigo-600); }
+  .btn-primary svg { width: 14px; height: 14px; }
+  .btn-ghost { display: flex; align-items: center; gap: 7px; background: var(--card-bg); color: var(--ink); border: 1px solid var(--border); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-ghost:hover { border-color: var(--ink-faint); }
+  .btn-ghost svg { width: 14px; height: 14px; }
+  .btn-ghost.sm { padding: 6px 11px; font-size: 12.5px; }
+  .btn-danger { display: flex; align-items: center; gap: 7px; background: var(--critical); color: #fff; border: 1px solid var(--critical); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-danger:hover { filter: brightness(0.94); }
+
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+
+  /* ---------------- Pipeline header card ---------------- */
+  .pipeline-head { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+  .pipeline-name-wrap { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .pipeline-name { font-size: 15.5px; font-weight: 700; border: 1px solid transparent; border-radius: 7px; padding: 4px 8px; margin: -4px -8px; background: none; color: var(--ink); min-width: 60px; }
+  .pipeline-name:hover { border-color: var(--border); }
+  .pipeline-name:focus { border-color: var(--azul); outline: none; box-shadow: 0 0 0 3px rgba(0,119,168,.14); }
+  .badge-default { font-size: 10.5px; font-weight: 700; color: var(--indigo); background: var(--panel-active-bg); padding: 3px 9px; border-radius: 100px; white-space: nowrap; flex: none; }
+  .pipeline-toggle-wrap { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-dim); margin-left: 6px; flex: none; }
+  .switch { position: relative; width: 34px; height: 19px; flex: none; }
+  .switch input { opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+  .switch .track { position: absolute; inset: 0; background: var(--border); border-radius: 100px; transition: background 150ms ease; pointer-events: none; }
+  .switch .knob { position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.25); transition: transform 150ms ease; pointer-events: none; }
+  .switch input:checked + .track { background: var(--good); }
+  .switch input:checked ~ .knob { transform: translateX(15px); }
+  .pipeline-head-actions { margin-left: auto; flex: none; }
+
+  /* ---------------- Stage list ---------------- */
+  .stage-list { display: flex; flex-direction: column; }
+  .stage-row {
+    display: grid; grid-template-columns: 22px minmax(0,1.6fr) 100px 108px 118px 90px 68px;
+    align-items: center; gap: 14px; padding: 12px 20px; border-bottom: 1px solid var(--border);
+    transition: background-color 100ms ease;
+  }
+  .stage-row:last-child { border-bottom: none; }
+  .stage-row.dragging { opacity: .4; }
+  .stage-row.drag-target { box-shadow: inset 0 2px 0 var(--azul); }
+  .stage-row.terminal { background: color-mix(in srgb, var(--paper) 55%, transparent); }
+  .stage-list-cols {
+    display: grid; grid-template-columns: 22px minmax(0,1.6fr) 100px 108px 118px 90px 68px;
+    gap: 14px; padding: 9px 20px; border-bottom: 1px solid var(--border);
+    font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-faint); font-weight: 650;
+  }
+  .drag-handle { color: var(--ink-faint); cursor: grab; display: flex; align-items: center; justify-content: center; }
+  .drag-handle svg { width: 14px; height: 14px; }
+  .drag-handle.locked { color: var(--ink-faint); opacity: .45; cursor: default; }
+  .stage-name-cell { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .stage-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+  .stage-name-input { border: 1px solid transparent; border-radius: 6px; padding: 5px 7px; margin: -5px -7px; background: none; font-size: 13.3px; font-weight: 600; color: var(--ink); width: 100%; min-width: 0; }
+  .stage-name-input:hover { border-color: var(--border); }
+  .stage-name-input:focus { border-color: var(--azul); outline: none; box-shadow: 0 0 0 3px rgba(0,119,168,.14); background: var(--card-bg); }
+  .type-pill { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 100px; white-space: nowrap; text-align: center; }
+  .type-pill.aberta { background: rgba(0,119,168,0.12); color: var(--azul); }
+  .type-pill.ganho { background: rgba(12,163,12,0.12); color: var(--good); }
+  .type-pill.perdido { background: rgba(208,59,59,0.12); color: var(--critical); }
+  .num-field { display: flex; align-items: baseline; gap: 4px; }
+  .num-field input {
+    width: 46px; border: 1px solid var(--border); border-radius: 6px; padding: 5px 6px;
+    font-family: var(--font-mono); font-size: 12.5px; text-align: right; color: var(--ink); background: var(--paper);
+  }
+  .num-field input:focus { border-color: var(--azul); outline: none; background: var(--card-bg); }
+  .num-field input:disabled { opacity: .5; background: transparent; cursor: not-allowed; }
+  .num-field .suffix { font-size: 11px; color: var(--ink-faint); }
+  .num-field.fixed { font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-faint); }
+  .stage-count { font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-dim); text-align: right; }
+  .stage-count.zero { color: var(--ink-faint); }
+  .stage-actions-cell { display: flex; justify-content: flex-end; gap: 2px; }
+  .icon-btn { width: 26px; height: 26px; border-radius: 7px; border: none; background: transparent; color: var(--ink-faint); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .icon-btn:hover { background: var(--paper); color: var(--ink); }
+  .icon-btn.danger:hover { background: rgba(208,59,59,0.1); color: var(--critical); }
+  .icon-btn:disabled { opacity: .3; cursor: not-allowed; }
+  .icon-btn:disabled:hover { background: transparent; color: var(--ink-faint); }
+  .icon-btn svg { width: 14px; height: 14px; }
+
+  .terminal-divider { padding: 9px 20px; font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-faint); font-weight: 650; background: color-mix(in srgb, var(--paper) 55%, transparent); border-bottom: 1px solid var(--border); }
+
+  .help-card { display: flex; gap: 11px; padding: 14px 16px; background: color-mix(in srgb, var(--azul) 6%, var(--card-bg)); border: 1px solid var(--border); border-radius: 12px; }
+  .help-card svg { width: 17px; height: 17px; color: var(--azul); flex: none; margin-top: 1px; }
+  .help-card p { margin: 0; font-size: 12.5px; color: var(--ink-dim); line-height: 1.5; }
+  .help-card p strong { color: var(--ink); }
+
+  /* ---------------- Drawer (new stage) ---------------- */
+  .scrim { position: fixed; inset: 0; background: rgba(20,23,43,.4); opacity: 0; pointer-events: none; transition: opacity .18s ease; z-index: 40; }
+  .scrim.show { opacity: 1; pointer-events: auto; }
+  .drawer { position: fixed; top: 0; right: 0; height: 100%; width: min(420px, 100vw); background: var(--card-bg); box-shadow: -8px 0 40px rgba(20,23,43,.25); z-index: 41; display: flex; flex-direction: column; transform: translateX(100%); transition: transform .22s cubic-bezier(.4,0,.2,1); }
+  .drawer.show { transform: translateX(0); }
+  .drawer-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 22px 16px; border-bottom: 1px solid var(--border); }
+  .drawer-head h2 { margin: 0 0 3px; font-size: 16.5px; font-weight: 700; }
+  .drawer-head p { margin: 0; font-size: 12.5px; color: var(--ink-dim); }
+  .drawer-close { width: 30px; height: 30px; border-radius: 8px; border: none; background: transparent; color: var(--ink-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; flex: none; }
+  .drawer-close:hover { background: var(--paper); color: var(--ink); }
+  .drawer-close svg { width: 16px; height: 16px; }
+  .drawer-body { flex: 1; overflow-y: auto; padding: 18px 22px 22px; display: flex; flex-direction: column; gap: 14px; }
+  .drawer-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 22px; border-top: 1px solid var(--border); }
+
+  .f-group { display: flex; flex-direction: column; gap: 6px; }
+  .f-row { display: flex; gap: 12px; }
+  .f-row .f-group { flex: 1; min-width: 0; }
+  .f-label { font-size: 12.5px; font-weight: 600; color: var(--ink-dim); display: flex; justify-content: space-between; }
+  .f-label .req { color: var(--critical); }
+  .f-label .opt { font-weight: 400; color: var(--ink-faint); }
+  .f-input, .f-select { border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; background: var(--card-bg); color: var(--ink); width: 100%; outline: none; transition: border-color .12s ease, box-shadow .12s ease; }
+  .f-input:focus, .f-select:focus { border-color: var(--azul); box-shadow: 0 0 0 3px rgba(0,119,168,.14); }
+  .f-input.err { border-color: var(--critical); }
+  .f-err { font-size: 11.5px; color: var(--critical); display: none; }
+  .f-err.show { display: block; }
+  .f-hint { font-size: 11.5px; color: var(--ink-faint); }
+  .f-static-pill { display: inline-flex; width: fit-content; }
+
+  /* ---------------- Modals ---------------- */
+  .modal-scrim { position: fixed; inset: 0; background: rgba(20,23,43,.46); opacity: 0; pointer-events: none; transition: opacity .16s ease; z-index: 50; }
+  .modal-scrim.show { opacity: 1; pointer-events: auto; }
+  .modal-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-46%); width: 400px; max-width: calc(100vw - 32px); background: var(--card-bg); border-radius: 14px; box-shadow: var(--shadow); z-index: 51; padding: 22px; opacity: 0; pointer-events: none; transition: opacity .16s ease, transform .16s ease; }
+  .modal-box.show { opacity: 1; pointer-events: auto; transform: translate(-50%,-50%); }
+  .modal-box h3 { margin: 0 0 8px; font-size: 15.5px; display: flex; align-items: center; gap: 8px; }
+  .modal-box h3 svg { width: 17px; height: 17px; color: var(--serious); flex: none; }
+  .modal-box .sub { margin: 0 0 16px; font-size: 12.5px; color: var(--ink-dim); line-height: 1.5; }
+  .modal-box .sub strong { color: var(--ink); }
+  .modal-box .row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
+
+  .toast { position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 12px); background: var(--ink); color: var(--paper); font-size: 13.5px; padding: 10px 16px; border-radius: 8px; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: opacity 180ms ease, transform 180ms ease; z-index: 60; max-width: 88vw; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar { position: relative; height: auto; }
+    .sb-nav, .sb-user { display: none; }
+    .page-head { flex-wrap: wrap; }
+    .stage-row, .stage-list-cols { grid-template-columns: 18px minmax(0,1fr) 80px; }
+    .stage-row > :nth-child(4), .stage-row > :nth-child(5), .stage-row > :nth-child(6),
+    .stage-list-cols > :nth-child(4), .stage-list-cols > :nth-child(5), .stage-list-cols > :nth-child(6) { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .toast, .drawer, .scrim, .modal-box, .modal-scrim, .stage-row { transition: none; }
+  }
+</style>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="monogram">GD</div>
+      <div><strong>Conecta CRM</strong><span>Gestão comercial</span></div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-group">
+        <a class="sb-item" href="#" data-page="Dashboard">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="2.5" width="6.2" height="6.2" rx="1.3"/><rect x="11.3" y="2.5" width="6.2" height="4.4" rx="1.3"/><rect x="11.3" y="9.4" width="6.2" height="8.1" rx="1.3"/><rect x="2.5" y="11.2" width="6.2" height="6.3" rx="1.3"/></svg>
+          Dashboard
+        </a>
+        <a class="sb-item" href="#" data-page="Empresas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17.5V3.8a.8.8 0 01.8-.8h6.4a.8.8 0 01.8.8v13.7"/><path d="M13 17.5V8.3a.8.8 0 01.8-.8h3.4a.8.8 0 01.8.8v9.2"/><path d="M5.4 6h1.6M5.4 9h1.6M5.4 12h1.6M15 10.6h1M15 13.4h1"/></svg>
+          Empresas
+          <span class="chip">3.402</span>
+        </a>
+        <a class="sb-item" href="#" data-page="Contatos">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="6.6" r="3.1"/><path d="M3.6 17c.7-3.4 3.2-5.2 6.4-5.2s5.7 1.8 6.4 5.2"/></svg>
+          Contatos
+        </a>
+        <a class="sb-item" href="#" data-page="Negócios">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 10.3l3-4.6a1 1 0 01.85-.47h7.3a1 1 0 01.85.47l3 4.6"/><path d="M2.5 10.3v5.2a1 1 0 001 1h13a1 1 0 001-1v-5.2"/><path d="M7.3 10.3a2.7 2.7 0 005.4 0"/></svg>
+          Negócios
+          <span class="chip">184</span>
+        </a>
+        <div class="sb-item active">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="3" width="4.2" height="14" rx="1"/><rect x="7.9" y="3" width="4.2" height="9.5" rx="1"/><rect x="13.3" y="3" width="4.2" height="6" rx="1"/></svg>
+          Pipeline
+        </div>
+        <a class="sb-item" href="#" data-page="Tarefas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2.2"/><path d="M6.6 10.2l2 2 4.6-4.9"/></svg>
+          Tarefas
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Marketing</div>
+        <a class="sb-item" href="#" data-page="Formulários">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="2.5" width="14" height="15" rx="1.8"/><path d="M6.3 6.6h7.4M6.3 9.6h7.4M6.3 12.6h4.4"/></svg>
+          Formulários
+        </a>
+        <a class="sb-item" href="#" data-page="Rastreio do site">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7.3"/><path d="M10 5.6v4.4l3 1.8"/></svg>
+          Rastreio do site
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Administração</div>
+        <a class="sb-item" href="#" data-page="Usuários">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="6.4" r="2.8"/><path d="M2.6 16.4c.6-3 2.7-4.6 5.4-4.6s4.8 1.6 5.4 4.6"/><path d="M13.6 4.6c1.3.3 2.2 1.4 2.2 2.9 0 1.3-.7 2.3-1.8 2.8M15.6 11.9c1.4.6 2.3 1.9 2.7 3.9"/></svg>
+          Usuários
+        </a>
+        <a class="sb-item" href="#" data-page="Configurações">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="2.6"/><path d="M10 2.8v2M10 15.2v2M17.2 10h-2M4.8 10h-2M15.1 4.9l-1.4 1.4M6.3 13.7l-1.4 1.4M15.1 15.1l-1.4-1.4M6.3 6.3L4.9 4.9"/></svg>
+          Configurações
+        </a>
+      </div>
+    </nav>
+
+    <div class="sb-user">
+      <div class="avatar">AD</div>
+      <div class="sb-user-meta"><strong>Administrador</strong><span>Admin · GD Conecta</span></div>
+    </div>
+  </aside>
+
+  <div class="main-col">
+    <div class="content">
+      <div class="page-head">
+        <div>
+          <h1>Pipeline</h1>
+          <p>Configure as etapas do funil de vendas usadas no board de Negócios</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn-ghost" id="viewBoardBtn">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2.5" y="3" width="4.4" height="14" rx="1"/><rect x="7.8" y="3" width="4.4" height="9.5" rx="1"/><rect x="13.1" y="3" width="4.4" height="6" rx="1"/></svg>
+            Ver board de Negócios
+          </button>
+          <button class="btn-primary" id="newStageBtn">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 4v12M4 10h12"/></svg>
+            Nova etapa
+          </button>
+        </div>
+      </div>
+
+      <div class="help-card">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="7.3"/><path d="M10 9v4.2M10 6.6h.01"/></svg>
+        <p><strong>SLA por etapa</strong> define quanto tempo um negócio pode ficar parado antes de gerar um alerta de atenção. Arraste as etapas abertas para reordenar o funil — as etapas terminais (Ganho/Perdido) ficam sempre no fim.</p>
+      </div>
+
+      <div class="card">
+        <div class="pipeline-head">
+          <div class="pipeline-name-wrap">
+            <input class="pipeline-name" id="pipelineName" value="Vendas B2B" />
+            <span class="badge-default">Padrão</span>
+          </div>
+          <div class="pipeline-toggle-wrap">
+            <label class="switch">
+              <input type="checkbox" id="pipelineAtivo" checked />
+              <span class="track"></span>
+              <span class="knob"></span>
+            </label>
+            Ativo
+          </div>
+          <div class="pipeline-head-actions">
+            <button class="btn-ghost sm" id="newPipelineBtn">+ Novo pipeline</button>
+          </div>
+        </div>
+
+        <div class="stage-list-cols">
+          <span></span>
+          <span>Etapa</span>
+          <span>Tipo</span>
+          <span>SLA</span>
+          <span>Probabilidade</span>
+          <span>Abertos</span>
+          <span></span>
+        </div>
+        <div class="stage-list" id="stageList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div>
+      <h2>Nova etapa</h2>
+      <p>Adiciona uma etapa aberta ao funil "Vendas B2B"</p>
+    </div>
+    <button class="drawer-close" id="drawerClose"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5L5 15M5 5l10 10"/></svg></button>
+  </div>
+  <div class="drawer-body">
+    <div class="f-group">
+      <label class="f-label">Nome da etapa <span class="req">*</span></label>
+      <input class="f-input" id="newStageNome" placeholder="Ex.: Follow-up pós-proposta" />
+      <span class="f-err" id="errStageNome">Informe o nome da etapa.</span>
+    </div>
+    <div class="f-group">
+      <label class="f-label">Tipo</label>
+      <span class="f-static-pill"><span class="type-pill aberta">Aberta</span></span>
+      <span class="f-hint">Etapas novas entram sempre como "aberta" — Ganho e Perdido são etapas fixas do pipeline.</span>
+    </div>
+    <div class="f-row">
+      <div class="f-group">
+        <label class="f-label">SLA (horas) <span class="opt">opcional</span></label>
+        <input class="f-input" id="newStageSla" type="number" min="0" placeholder="Ex.: 72" />
+      </div>
+      <div class="f-group">
+        <label class="f-label">Probabilidade padrão <span class="opt">opcional</span></label>
+        <input class="f-input" id="newStageProb" type="number" min="0" max="100" placeholder="Ex.: 30" />
+      </div>
+    </div>
+    <p class="f-hint">A etapa entra logo antes de "Negociação". Depois é só arrastar para reordenar.</p>
+  </div>
+  <div class="drawer-foot">
+    <button class="btn-ghost" id="drawerCancel">Cancelar</button>
+    <button class="btn-primary" id="drawerSave">Criar etapa</button>
+  </div>
+</div>
+
+<div class="modal-scrim" id="blockScrim"></div>
+<div class="modal-box" id="blockModal">
+  <h3><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M10 8v4M10 14.6h.01"/></svg>Não é possível excluir</h3>
+  <p class="sub" id="blockText"></p>
+  <div class="row"><button class="btn-ghost" id="blockOk">Entendi</button></div>
+</div>
+
+<div class="modal-scrim" id="delScrim"></div>
+<div class="modal-box" id="delModal">
+  <h3>Excluir etapa</h3>
+  <p class="sub">Tem certeza que deseja excluir <strong id="delStageName">esta etapa</strong>? Essa ação não pode ser desfeita.</p>
+  <div class="row">
+    <button class="btn-ghost" id="delCancel">Cancelar</button>
+    <button class="btn-danger" id="delConfirm">Excluir</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var toastEl = document.getElementById('toast');
+  var toastTimer;
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 3400);
+  }
+  document.querySelectorAll('[data-page]').forEach(function (el) {
+    el.addEventListener('click', function (e) { e.preventDefault(); showToast('Tela "' + el.getAttribute('data-page') + '" ainda não foi prototipada.'); });
+  });
+  document.getElementById('viewBoardBtn').addEventListener('click', function () {
+    window.open('https://claude.ai/code/artifact/82e81dd1-e721-406e-83b3-7b1c72d450c9', '_blank', 'noopener');
+  });
+  document.getElementById('newPipelineBtn').addEventListener('click', function () {
+    showToast('Múltiplos pipelines ainda não fazem parte deste protótipo — hoje só existe o pipeline padrão.');
+  });
+  document.getElementById('pipelineAtivo').addEventListener('change', function (e) {
+    showToast(e.target.checked ? 'Pipeline "Vendas B2B" ativado.' : 'Pipeline "Vendas B2B" desativado — deixa de aparecer no board de Negócios.');
+  });
+  document.getElementById('pipelineName').addEventListener('change', function (e) {
+    showToast('Nome do pipeline atualizado para "' + e.target.value + '".');
+  });
+
+  var seq = 20;
+  var STAGES = [
+    { id: 'lead',       nome: 'Lead captado',            tipo: 'aberta', tint: 'var(--seq-1)', sla: 72,   prob: 10,  count: 62, pinned: false },
+    { id: 'contato',    nome: 'Primeiro contato',         tipo: 'aberta', tint: 'var(--seq-2)', sla: 96,   prob: 25,  count: 46, pinned: false },
+    { id: 'diag',       nome: 'Diagnóstico',              tipo: 'aberta', tint: 'var(--seq-3)', sla: 120,  prob: 45,  count: 38, pinned: false },
+    { id: 'proposta',   nome: 'Proposta',                 tipo: 'aberta', tint: 'var(--seq-4)', sla: 96,   prob: 60,  count: 24, pinned: false },
+    { id: 'followup',   nome: 'Follow-up pós-proposta',   tipo: 'aberta', tint: 'var(--seq-5)', sla: 48,   prob: 55,  count: 0,  pinned: false },
+    { id: 'negociacao', nome: 'Negociação',               tipo: 'aberta', tint: 'var(--seq-6)', sla: 72,   prob: 75,  count: 14, pinned: false },
+    { id: 'ganho',      nome: 'Fechado - Ganho',          tipo: 'ganho',   tint: 'var(--good)',  sla: null, prob: 100, count: null, pinned: true },
+    { id: 'perdido',    nome: 'Fechado - Perdido',        tipo: 'perdido', tint: 'var(--critical)', sla: null, prob: 0, count: null, pinned: true }
+  ];
+
+  function typeLabel(t) { return t === 'aberta' ? 'Aberta' : t === 'ganho' ? 'Ganho' : 'Perdido'; }
+  function escapeHtml(s) { return (s || '').replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+
+  function render() {
+    var list = document.getElementById('stageList');
+    var open = STAGES.filter(function (s) { return !s.pinned; });
+    var terminal = STAGES.filter(function (s) { return s.pinned; });
+
+    var openHtml = open.map(rowHtml).join('');
+    var terminalHtml = '<div class="terminal-divider">Etapas terminais</div>' + terminal.map(rowHtml).join('');
+    list.innerHTML = openHtml + terminalHtml;
+
+    list.querySelectorAll('.stage-row[data-draggable="true"]').forEach(wireDrag);
+
+    list.querySelectorAll('[data-nome-id]').forEach(function (input) {
+      input.addEventListener('change', function () {
+        var s = STAGES.filter(function (x) { return x.id === input.getAttribute('data-nome-id'); })[0];
+        if (s) { s.nome = input.value.trim() || s.nome; input.value = s.nome; showToast('Etapa renomeada para "' + s.nome + '".'); }
+      });
+    });
+    list.querySelectorAll('[data-sla-id]').forEach(function (input) {
+      input.addEventListener('change', function () {
+        var s = STAGES.filter(function (x) { return x.id === input.getAttribute('data-sla-id'); })[0];
+        var v = parseInt(input.value, 10);
+        if (s && !isNaN(v) && v >= 0) { s.sla = v; showToast('SLA de "' + s.nome + '" atualizado para ' + v + 'h.'); }
+        else if (s) { input.value = s.sla; }
+      });
+    });
+    list.querySelectorAll('[data-prob-id]').forEach(function (input) {
+      input.addEventListener('change', function () {
+        var s = STAGES.filter(function (x) { return x.id === input.getAttribute('data-prob-id'); })[0];
+        var v = parseInt(input.value, 10);
+        if (s && !isNaN(v) && v >= 0 && v <= 100) { s.prob = v; showToast('Probabilidade padrão de "' + s.nome + '" atualizada para ' + v + '%.'); }
+        else if (s) { input.value = s.prob; }
+      });
+    });
+    list.querySelectorAll('[data-del-id]').forEach(function (btn) {
+      btn.addEventListener('click', function () { attemptDelete(btn.getAttribute('data-del-id')); });
+    });
+  }
+
+  function rowHtml(s) {
+    var slaCell = s.sla === null
+      ? '<div class="num-field fixed">—</div>'
+      : '<div class="num-field"><input type="number" min="0" value="' + s.sla + '" data-sla-id="' + s.id + '" /><span class="suffix">h</span></div>';
+    var probCell = s.pinned
+      ? '<div class="num-field fixed">' + s.prob + '%</div>'
+      : '<div class="num-field"><input type="number" min="0" max="100" value="' + s.prob + '" data-prob-id="' + s.id + '" /><span class="suffix">%</span></div>';
+    var countCell = s.count === null
+      ? '<span class="stage-count zero">—</span>'
+      : '<span class="stage-count' + (s.count === 0 ? ' zero' : '') + '">' + s.count + '</span>';
+    var delBtn = s.pinned ? '' : '<button class="icon-btn danger" data-del-id="' + s.id + '" title="Excluir etapa"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h12"/><path d="M7.5 6V4.6a1 1 0 011-1h3a1 1 0 011 1V6"/><path d="M6 6l.7 9.4a1 1 0 001 .9h4.6a1 1 0 001-.9L14 6"/></svg></button>';
+    var handle = s.pinned
+      ? '<span class="drag-handle locked" title="Etapa fixa"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="8.5" width="10" height="8" rx="1.4"/><path d="M7.3 8.5V6a2.7 2.7 0 015.4 0v2.5"/></svg></span>'
+      : '<span class="drag-handle"><svg viewBox="0 0 20 20" fill="currentColor"><circle cx="7" cy="6" r="1.3"/><circle cx="13" cy="6" r="1.3"/><circle cx="7" cy="10" r="1.3"/><circle cx="13" cy="10" r="1.3"/><circle cx="7" cy="14" r="1.3"/><circle cx="13" cy="14" r="1.3"/></svg></span>';
+
+    return '' +
+      '<div class="stage-row' + (s.pinned ? ' terminal' : '') + '" data-id="' + s.id + '" data-draggable="' + (!s.pinned) + '">' +
+        handle +
+        '<div class="stage-name-cell"><span class="stage-dot" style="background:' + s.tint + ';"></span>' +
+          '<input class="stage-name-input" value="' + escapeHtml(s.nome) + '" data-nome-id="' + s.id + '" /></div>' +
+        '<span class="type-pill ' + s.tipo + '">' + typeLabel(s.tipo) + '</span>' +
+        slaCell +
+        probCell +
+        countCell +
+        '<div class="stage-actions-cell">' + delBtn + '</div>' +
+      '</div>';
+  }
+
+  var draggingId = null;
+  function wireDrag(row) {
+    row.setAttribute('draggable', 'true');
+    row.addEventListener('dragstart', function (e) {
+      draggingId = row.getAttribute('data-id');
+      row.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', draggingId);
+    });
+    row.addEventListener('dragend', function () { row.classList.remove('dragging'); draggingId = null; document.querySelectorAll('.drag-target').forEach(function(r){r.classList.remove('drag-target');}); });
+    row.addEventListener('dragover', function (e) {
+      if (row.getAttribute('data-draggable') !== 'true') return;
+      e.preventDefault();
+      row.classList.add('drag-target');
+    });
+    row.addEventListener('dragleave', function () { row.classList.remove('drag-target'); });
+    row.addEventListener('drop', function (e) {
+      e.preventDefault();
+      row.classList.remove('drag-target');
+      var targetId = row.getAttribute('data-id');
+      if (!draggingId || draggingId === targetId) return;
+      reorder(draggingId, targetId);
+    });
+  }
+  function reorder(fromId, toId) {
+    var fromIdx = STAGES.findIndex(function (s) { return s.id === fromId; });
+    var toIdx = STAGES.findIndex(function (s) { return s.id === toId; });
+    if (fromIdx === -1 || toIdx === -1) return;
+    var moved = STAGES.splice(fromIdx, 1)[0];
+    var target = STAGES[toIdx > fromIdx ? toIdx - 1 : toIdx];
+    STAGES.splice(toIdx, 0, moved);
+    render();
+    showToast('Ordem do funil atualizada: "' + moved.nome + '" reposicionada perto de "' + target.nome + '".');
+  }
+
+  function attemptDelete(id) {
+    var s = STAGES.filter(function (x) { return x.id === id; })[0];
+    if (!s) return;
+    if (s.count > 0) {
+      document.getElementById('blockText').innerHTML = 'A etapa <strong>' + escapeHtml(s.nome) + '</strong> tem <strong>' + s.count + ' negócios abertos</strong>. Mova-os para outra etapa antes de excluir.';
+      document.getElementById('blockScrim').classList.add('show');
+      document.getElementById('blockModal').classList.add('show');
+      return;
+    }
+    document.getElementById('delStageName').textContent = s.nome;
+    document.getElementById('delModal').setAttribute('data-target', id);
+    document.getElementById('delScrim').classList.add('show');
+    document.getElementById('delModal').classList.add('show');
+  }
+  document.getElementById('blockOk').addEventListener('click', function () {
+    document.getElementById('blockScrim').classList.remove('show');
+    document.getElementById('blockModal').classList.remove('show');
+  });
+  document.getElementById('blockScrim').addEventListener('click', function () {
+    document.getElementById('blockScrim').classList.remove('show');
+    document.getElementById('blockModal').classList.remove('show');
+  });
+  function closeDelModal() {
+    document.getElementById('delScrim').classList.remove('show');
+    document.getElementById('delModal').classList.remove('show');
+  }
+  document.getElementById('delCancel').addEventListener('click', closeDelModal);
+  document.getElementById('delScrim').addEventListener('click', closeDelModal);
+  document.getElementById('delConfirm').addEventListener('click', function () {
+    var id = document.getElementById('delModal').getAttribute('data-target');
+    var s = STAGES.filter(function (x) { return x.id === id; })[0];
+    STAGES = STAGES.filter(function (x) { return x.id !== id; });
+    closeDelModal();
+    render();
+    if (s) showToast('Etapa "' + s.nome + '" excluída.');
+  });
+
+  /* ---------------- New stage drawer ---------------- */
+  var drawer = document.getElementById('drawer'), scrim = document.getElementById('scrim');
+  function openDrawer() {
+    document.getElementById('newStageNome').value = '';
+    document.getElementById('newStageSla').value = '';
+    document.getElementById('newStageProb').value = '';
+    document.getElementById('errStageNome').classList.remove('show');
+    document.getElementById('newStageNome').classList.remove('err');
+    drawer.classList.add('show'); scrim.classList.add('show');
+    setTimeout(function () { document.getElementById('newStageNome').focus(); }, 220);
+  }
+  function closeDrawer() { drawer.classList.remove('show'); scrim.classList.remove('show'); }
+  document.getElementById('newStageBtn').addEventListener('click', openDrawer);
+  document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+  document.getElementById('drawerCancel').addEventListener('click', closeDrawer);
+  scrim.addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { closeDrawer(); closeDelModal(); document.getElementById('blockOk').click(); }
+  });
+
+  document.getElementById('drawerSave').addEventListener('click', function () {
+    var nome = document.getElementById('newStageNome').value.trim();
+    if (!nome) {
+      document.getElementById('errStageNome').classList.add('show');
+      document.getElementById('newStageNome').classList.add('err');
+      return;
+    }
+    var sla = parseInt(document.getElementById('newStageSla').value, 10);
+    var prob = parseInt(document.getElementById('newStageProb').value, 10);
+    seq++;
+    var newStage = {
+      id: 's' + seq, nome: nome, tipo: 'aberta', tint: 'var(--seq-6)',
+      sla: isNaN(sla) ? null : sla, prob: isNaN(prob) ? 0 : prob, count: 0, pinned: false
+    };
+    var negIdx = STAGES.findIndex(function (s) { return s.id === 'negociacao'; });
+    STAGES.splice(negIdx > -1 ? negIdx : STAGES.length - 2, 0, newStage);
+    closeDrawer();
+    render();
+    showToast('Etapa "' + nome + '" criada.');
+  });
+
+  render();
+})();
+</script>

@@ -1,0 +1,2563 @@
+<title>Especificação Técnica — CRM GD Conecta v1.0</title>
+<style>
+  :root {
+    --font-display: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Cascadia Code", "SFMono-Regular", "Consolas", ui-monospace, monospace;
+
+    --indigo: #2D3561;
+    --indigo-600: #3B4478;
+    --amber: #C9A84C;
+    --azul: #0077A8;
+    --marfim: #F5F1EB;
+
+    --paper: var(--marfim);
+    --panel: var(--indigo);
+    --panel-fg: #F1EEE6;
+    --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12);
+    --panel-active-bg: rgba(201, 168, 76, 0.14);
+
+    --ink: #22243A;
+    --ink-dim: #5B5E78;
+    --ink-faint: #8B8EA6;
+    --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF;
+    --link: var(--azul);
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+
+    --good: #0ca30c;
+    --warning: #fab219;
+    --critical: #d03b3b;
+
+    --code-bg: #F0EEE6;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+      --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+      --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+      --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+      --code-bg: #10121F;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+    --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+    --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+    --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+    --code-bg: #10121F;
+  }
+  :root[data-theme="light"] {
+    --paper: #F5F1EB; --panel: #2D3561; --panel-fg: #F1EEE6; --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12); --panel-active-bg: rgba(201, 168, 76, 0.14);
+    --ink: #22243A; --ink-dim: #5B5E78; --ink-faint: #8B8EA6; --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF; --amber: #C9A84C; --azul: #0077A8; --link: #0077A8;
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+    --code-bg: #F0EEE6;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; font-family: var(--font-display); color: var(--ink); background: var(--paper);
+    -webkit-font-smoothing: antialiased; font-size: 15px; line-height: 1.65;
+  }
+  a { color: var(--link); }
+
+  .doc-shell { display: grid; grid-template-columns: 288px minmax(0, 1fr); min-height: 100vh; }
+
+  .doc-sidebar {
+    background: var(--panel); color: var(--panel-fg);
+    position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    padding: 22px 18px 32px;
+  }
+  .doc-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; padding: 0 6px; }
+  .doc-brand .monogram {
+    width: 34px; height: 34px; border-radius: 9px; flex: none;
+    background: var(--amber); color: var(--indigo);
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;
+  }
+  .doc-brand strong { display: block; font-size: 14px; font-weight: 650; line-height: 1.2; }
+  .doc-brand span {
+    display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--panel-fg-dim); margin-top: 2px;
+  }
+  .doc-meta {
+    font-family: var(--font-mono); font-size: 10.5px; color: var(--panel-fg-dim);
+    padding: 10px 6px 16px; margin-bottom: 10px; border-bottom: 1px solid var(--panel-border);
+  }
+
+  .doc-sidebar nav.toc ul { list-style: none; margin: 0; padding: 0; }
+  .doc-sidebar nav.toc > ul { padding: 0 4px; }
+  .doc-sidebar nav.toc ul ul { padding-left: 14px; border-left: 1px solid var(--panel-border); margin-left: 6px; }
+  .doc-sidebar nav.toc li { margin: 1px 0; }
+  .doc-sidebar nav.toc a {
+    display: block; padding: 5px 8px; border-radius: 6px; font-size: 12.6px;
+    color: var(--panel-fg-dim); text-decoration: none; line-height: 1.4;
+  }
+  .doc-sidebar nav.toc > ul > li > a { font-weight: 650; color: var(--panel-fg); font-size: 13px; margin-top: 6px; }
+  .doc-sidebar nav.toc a:hover { background: rgba(241, 238, 230, 0.08); color: var(--panel-fg); }
+  .doc-sidebar nav.toc a.active { background: var(--panel-active-bg); color: var(--panel-fg); font-weight: 600; }
+
+  .doc-main { padding: 40px clamp(24px, 5vw, 72px) 96px; min-width: 0; }
+  .doc-content { max-width: 880px; margin: 0 auto; }
+
+  .doc-content h1 {
+    font-size: 30px; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 8px; color: var(--ink);
+  }
+  .doc-content > p:first-of-type {
+    font-size: 13.5px; color: var(--ink-dim); border-bottom: 1px solid var(--border);
+    padding-bottom: 20px; margin-bottom: 24px;
+  }
+  .doc-content h2 {
+    font-size: 22px; font-weight: 650; letter-spacing: -0.01em; color: var(--ink);
+    margin: 46px 0 16px; padding-top: 8px; border-top: 1px solid var(--border);
+    scroll-margin-top: 20px;
+  }
+  .doc-content > h2:first-of-type { border-top: none; margin-top: 0; }
+  .doc-content h3 { font-size: 17.5px; font-weight: 650; color: var(--ink); margin: 30px 0 12px; scroll-margin-top: 20px; }
+  .doc-content h4 {
+    font-size: 14px; font-weight: 700; color: var(--indigo); margin: 22px 0 10px;
+    font-family: var(--font-mono); scroll-margin-top: 20px;
+  }
+  :root[data-theme="dark"] .doc-content h4 { color: var(--amber); }
+  @media (prefers-color-scheme: dark) { .doc-content h4 { color: var(--amber); } }
+
+  .doc-content p { margin: 0 0 14px; color: var(--ink); }
+  .doc-content ul, .doc-content ol { margin: 0 0 14px; padding-left: 22px; }
+  .doc-content li { margin-bottom: 5px; }
+  .doc-content li > p { margin: 0; }
+  .doc-content hr { border: none; border-top: 1px solid var(--border); margin: 36px 0; }
+
+  .doc-content strong { font-weight: 650; color: var(--ink); }
+  .doc-content code {
+    font-family: var(--font-mono); font-size: 0.85em; background: var(--code-bg);
+    padding: 1.5px 5px; border-radius: 4px; color: var(--indigo);
+  }
+  :root[data-theme="dark"] .doc-content code { color: var(--amber); }
+  @media (prefers-color-scheme: dark) { .doc-content code { color: var(--amber); } }
+
+  .doc-content pre {
+    background: var(--code-bg); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px 18px; overflow-x: auto; margin: 0 0 18px;
+  }
+  .doc-content pre code { background: none; padding: 0; color: var(--ink); font-size: 12.5px; line-height: 1.55; }
+
+  .doc-content blockquote {
+    margin: 0 0 18px; padding: 12px 16px; border-left: 3px solid var(--amber);
+    background: color-mix(in srgb, var(--paper) 55%, transparent);
+    border-radius: 0 8px 8px 0; color: var(--ink-dim); font-size: 14px;
+  }
+  .doc-content blockquote p { margin: 0 0 8px; }
+  .doc-content blockquote p:last-child { margin-bottom: 0; }
+
+  .table-wrap { overflow-x: auto; margin: 0 0 22px; border: 1px solid var(--border); border-radius: 10px; }
+  .doc-content table {
+    width: 100%; border-collapse: collapse; font-size: 13px; background: var(--card-bg);
+  }
+  .doc-content th {
+    text-align: left; font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 650; padding: 9px 14px; background: color-mix(in srgb, var(--paper) 70%, transparent);
+    border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  .doc-content td { padding: 9px 14px; border-bottom: 1px solid var(--border); vertical-align: top; color: var(--ink); }
+  .doc-content tbody tr:last-child td { border-bottom: none; }
+  .doc-content tbody tr:hover { background: color-mix(in srgb, var(--paper) 45%, transparent); }
+  .doc-content td code, .doc-content th code { white-space: nowrap; }
+
+  .doc-content a { text-decoration: none; }
+  .doc-content a:hover { text-decoration: underline; }
+
+  .back-to-top {
+    position: fixed; right: 28px; bottom: 28px; width: 40px; height: 40px; border-radius: 50%;
+    background: var(--indigo); color: var(--panel-fg); border: 1px solid var(--indigo);
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: opacity 160ms ease, transform 160ms ease;
+    transform: translateY(8px);
+  }
+  .back-to-top.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
+  .back-to-top:hover { background: var(--indigo-600); }
+  .back-to-top svg { width: 18px; height: 18px; }
+
+  @media (max-width: 980px) {
+    .doc-shell { grid-template-columns: 1fr; }
+    .doc-sidebar { position: relative; height: auto; }
+  }
+
+  @media print {
+    .doc-sidebar, .back-to-top { display: none; }
+    .doc-shell { display: block; }
+    .doc-main { padding: 0; }
+  }
+</style>
+
+<div class="doc-shell">
+  <aside class="doc-sidebar">
+    <div class="doc-brand">
+      <div class="monogram">GD</div>
+      <div>
+        <strong>Conecta CRM</strong>
+        <span>Especificação técnica</span>
+      </div>
+    </div>
+    <div class="doc-meta">
+      v1.0 &middot; atualizado 2026-07-27
+    </div>
+    <nav class="toc" aria-label="Sumário">
+      <ul>
+<li><a href="#especificacao-tecnica-crm-gd-conecta">Especificação Técnica — CRM GD Conecta</a><ul>
+<li><a href="#0-sumario-executivo-analise-de-viabilidade">0. Sumário Executivo — Análise de Viabilidade</a><ul>
+<li><a href="#01-estado-atual-as-is">0.1 Estado atual (as-is)</a></li>
+<li><a href="#02-gaps-identificados-para-priorizacao">0.2 Gaps identificados (para priorização)</a></li>
+<li><a href="#03-recomendacao-de-sequenciamento">0.3 Recomendação de sequenciamento</a></li>
+</ul>
+</li>
+<li><a href="#1-arquitetura-do-sistema">1. Arquitetura do Sistema</a><ul>
+<li><a href="#11-visao-geral">1.1 Visão geral</a></li>
+<li><a href="#12-backend-ja-implementado">1.2 Backend — já implementado</a></li>
+<li><a href="#13-frontend-a-construir-integralmente">1.3 Frontend — a construir integralmente</a></li>
+<li><a href="#14-banco-de-dados">1.4 Banco de dados</a></li>
+<li><a href="#15-infraestrutura">1.5 Infraestrutura</a></li>
+</ul>
+</li>
+<li><a href="#2-modelo-de-dados">2. Modelo de Dados</a><ul>
+<li><a href="#21-tabelas-ja-implementadas-migracao-0001_initial">2.1 Tabelas já implementadas (migração 0001_initial)</a><ul>
+<li><a href="#tenants">tenants</a></li>
+<li><a href="#users">users</a></li>
+<li><a href="#companies">companies</a></li>
+<li><a href="#contacts">contacts</a></li>
+<li><a href="#pipelines">pipelines</a></li>
+<li><a href="#pipeline_stages">pipeline_stages</a></li>
+<li><a href="#deals">deals</a></li>
+<li><a href="#tasks">tasks</a></li>
+<li><a href="#timeline_events">timeline_events</a></li>
+<li><a href="#import_jobs">import_jobs</a></li>
+<li><a href="#audit_logs">audit_logs</a></li>
+</ul>
+</li>
+<li><a href="#22-tabelas-novas-fase-2-sequencias-cadencias-workflows">2.2 Tabelas novas — Fase 2 (Sequências, Cadências, Workflows)</a><ul>
+<li><a href="#sequences-rf010-sequencias-de-tarefas">sequences (RF010 — Sequências de Tarefas)</a></li>
+<li><a href="#sequence_steps">sequence_steps</a></li>
+<li><a href="#sequence_enrollments">sequence_enrollments</a></li>
+<li><a href="#cadences-cadence_steps-cadence_enrollments-rf011-cadencia-de-e-mails">cadences + cadence_steps + cadence_enrollments (RF011 — Cadência de E-mails)</a></li>
+<li><a href="#email_templates">email_templates</a></li>
+<li><a href="#workflows-rf018">workflows (RF018)</a></li>
+<li><a href="#workflow_actions">workflow_actions</a></li>
+<li><a href="#workflow_execution_logs">workflow_execution_logs</a></li>
+</ul>
+</li>
+<li><a href="#23-tabelas-novas-fase-3-ia-e-enriquecimento">2.3 Tabelas novas — Fase 3 (IA e Enriquecimento)</a><ul>
+<li><a href="#enrichment_batches-extensao-de-import_jobs">enrichment_batches / extensão de import_jobs</a></li>
+<li><a href="#company_enrichments-11-ou-1n-com-companies">company_enrichments (1:1 ou 1:N com companies)</a></li>
+<li><a href="#ai_interactions-logauditoria-de-uso-de-ia-rf017">ai_interactions (log/auditoria de uso de IA — RF017)</a></li>
+</ul>
+</li>
+<li><a href="#24-indices-resumo-do-que-ja-existe-e-do-que-se-recomenda-adicionar">2.4 Índices — resumo do que já existe e do que se recomenda adicionar</a></li>
+</ul>
+</li>
+<li><a href="#3-estrategia-multi-tenant">3. Estratégia Multi-Tenant</a><ul>
+<li><a href="#31-isolamento-por-empresa-ja-implementado-em-3-camadas">3.1 Isolamento por empresa — já implementado, em 3 camadas</a></li>
+<li><a href="#32-controle-de-permissoes">3.2 Controle de permissões</a></li>
+</ul>
+</li>
+<li><a href="#4-apis-rest">4. APIs REST</a><ul>
+<li><a href="#41-ja-implementadas-fonte-de-verdade-viva-em-docs">4.1 Já implementadas (fonte de verdade viva em /docs)</a></li>
+<li><a href="#42-a-completar-no-mvp-backend-ja-tem-a-base-falta-so-a-rota">4.2 A completar no MVP (backend já tem a base, falta só a rota)</a></li>
+<li><a href="#43-fase-2-sequencias-cadencias-workflows">4.3 Fase 2 — Sequências, Cadências, Workflows</a></li>
+<li><a href="#44-fase-3-ia-e-enriquecimento">4.4 Fase 3 — IA e Enriquecimento</a></li>
+</ul>
+</li>
+<li><a href="#5-estrutura-frontend-a-construir">5. Estrutura Frontend (a construir)</a><ul>
+<li><a href="#51-arvore-de-pastas-proposta">5.1 Árvore de pastas proposta</a></li>
+<li><a href="#52-rotas">5.2 Rotas</a></li>
+<li><a href="#53-componentes-reutilizaveis-principais">5.3 Componentes reutilizáveis principais</a></li>
+<li><a href="#54-layout">5.4 Layout</a></li>
+</ul>
+</li>
+<li><a href="#6-estrutura-backend">6. Estrutura Backend</a><ul>
+<li><a href="#61-modulos-convencao-ja-estabelecida-a-repetir-em-modulos-novos">6.1 Módulos (convenção já estabelecida, a repetir em módulos novos)</a></li>
+<li><a href="#62-responsabilidades-por-camada-contrato-ja-em-vigor">6.2 Responsabilidades por camada (contrato já em vigor)</a></li>
+<li><a href="#63-workers-celery-ja-existentes-e-a-adicionar">6.3 Workers (Celery) — já existentes e a adicionar</a></li>
+</ul>
+</li>
+<li><a href="#7-fluxos-de-negocio">7. Fluxos de Negócio</a><ul>
+<li><a href="#71-empresas-rf004rf005-implementado">7.1 Empresas (RF004–RF005) — implementado</a></li>
+<li><a href="#72-contatos-rf006-implementado">7.2 Contatos (RF006) — implementado</a></li>
+<li><a href="#73-negocios-e-pipeline-rf007rf008-implementado">7.3 Negócios e Pipeline (RF007–RF008) — implementado</a></li>
+<li><a href="#74-tarefas-rf009-implementado">7.4 Tarefas (RF009) — implementado</a></li>
+<li><a href="#75-sequencias-de-tarefas-rf010-a-construir">7.5 Sequências de Tarefas (RF010) — a construir</a></li>
+<li><a href="#76-cadencia-de-e-mails-rf011-a-construir">7.6 Cadência de E-mails (RF011) — a construir</a></li>
+<li><a href="#77-ia-rf015rf017-a-construir">7.7 IA (RF015–RF017) — a construir</a></li>
+<li><a href="#78-enriquecimento-rf016-a-construir">7.8 Enriquecimento (RF016) — a construir</a></li>
+<li><a href="#79-workflows-rf018-a-construir">7.9 Workflows (RF018) — a construir</a></li>
+</ul>
+</li>
+<li><a href="#8-roadmap-tecnico">8. Roadmap Técnico</a><ul>
+<li><a href="#observacao-final-sobre-viabilidade">Observação final sobre viabilidade</a></li>
+</ul>
+</li>
+<li><a href="#9-modulos-e-decisoes-adicionados-apos-a-especificacao-inicial-2026-07-27">9. Módulos e Decisões Adicionados Após a Especificação Inicial (2026-07-27)</a><ul>
+<li><a href="#90-decisao-fundamental-uso-interno-nao-saas-comercializavel">9.0 Decisão fundamental: uso interno, não SaaS comercializável</a></li>
+<li><a href="#91-pesquisa-de-leads-novo-dominio-pre-crm">9.1 Pesquisa de Leads (novo domínio, pré-CRM)</a><ul>
+<li><a href="#tabela-lead_prospects">Tabela lead_prospects</a></li>
+<li><a href="#tenantsconfigicp_scoring_rules-jsonb-por-tenant">tenants.config.icp_scoring_rules (JSONB, por tenant)</a></li>
+<li><a href="#fluxo-de-promocao">Fluxo de promoção</a></li>
+<li><a href="#rotas-propostas">Rotas propostas</a></li>
+<li><a href="#hubspot">HubSpot</a></li>
+</ul>
+</li>
+<li><a href="#92-preferencias-pessoais-e-integracoes-microsoft-365">9.2 Preferências pessoais e integrações (Microsoft 365)</a><ul>
+<li><a href="#tabela-user_integrations-nova">Tabela user_integrations (nova)</a></li>
+<li><a href="#chamadas-decisao-de-escopo">Chamadas — decisão de escopo</a></li>
+<li><a href="#rotas-propostas_1">Rotas propostas</a></li>
+</ul>
+</li>
+<li><a href="#93-importarexportar-sem-tela-dedicada">9.3 Importar/Exportar — sem tela dedicada</a></li>
+<li><a href="#94-negocio-detalhe-prototipo-aprovado">9.4 Negócio (detalhe) — protótipo aprovado</a></li>
+<li><a href="#95-automacao-fase-2-ui-prototipada-backend-pendente">9.5 Automação (Fase 2) — UI prototipada, backend pendente</a></li>
+<li><a href="#96-snippets-novo-dominio">9.6 Snippets (novo domínio)</a><ul>
+<li><a href="#tabela-snippets">Tabela snippets</a></li>
+</ul>
+</li>
+<li><a href="#97-relatorio-de-desempenho-de-pesquisa">9.7 Relatório de Desempenho de Pesquisa</a></li>
+<li><a href="#98-formularios-rastreio-do-site-correcao-de-registro">9.8 Formulários &amp; Rastreio do site — correção de registro</a></li>
+<li><a href="#99-descartado-grupo-de-usuarios">9.9 Descartado: "Grupo de Usuários"</a></li>
+<li><a href="#910-indice-de-prototipos-produzidos">9.10 Índice de protótipos produzidos</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+    </nav>
+  </aside>
+
+  <main class="doc-main">
+    <div class="doc-content">
+<h1 id="especificacao-tecnica-crm-gd-conecta">Especificação Técnica — CRM GD Conecta</h1>
+<p><strong>Versão:</strong> 1.0 · <strong>Base:</strong> Documento de Requisitos "CRM GD Conecta — Versão 1.0" · <strong>Autor:</strong> Arquitetura (assistida por IA) · <strong>Escopo:</strong> análise de viabilidade + especificação técnica para desenvolvimento. Nenhum requisito de negócio foi alterado; onde a especificação técnica precisa de uma decisão que o documento funcional não define, isso é sinalizado explicitamente como <strong>"a validar com o PO"</strong>.</p>
+<blockquote>
+<p><strong>Nota metodológica:</strong> o repositório <code>C:\gdconecta\crm</code> já contém um backend funcional (não é greenfield). Esta especificação documenta o que <strong>já existe</strong> (para não ser redesenhado sem motivo) e projeta o que <strong>falta construir</strong> para atender integralmente ao documento de requisitos. Diretório ainda não é um repositório Git — recomenda-se <code>git init</code> antes de iniciar qualquer nova frente de trabalho.</p>
+<p><strong>Atualização de 2026-07-27:</strong> uma rodada de prototipagem de frontend (13 telas em artifacts interativos) revelou decisões de produto e módulos novos não previstos no documento de requisitos original. Todos estão consolidados na <strong>seção 9</strong> — leia-a antes de iniciar a Fase 1/2, pois ela altera premissas de seções anteriores (ex.: o CRM é de <strong>uso interno</strong>, não SaaS comercializável; a integração de e-mail alvo é <strong>Microsoft 365/Graph</strong>, não Gmail/Outlook genérico).</p>
+</blockquote>
+<hr />
+<h2 id="0-sumario-executivo-analise-de-viabilidade">0. Sumário Executivo — Análise de Viabilidade</h2>
+<h3 id="01-estado-atual-as-is">0.1 Estado atual (as-is)</h3>
+<table>
+<thead>
+<tr>
+<th>Camada</th>
+<th>Situação</th>
+<th>Cobertura vs. requisitos</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Backend</strong> (FastAPI)</td>
+<td>Implementado, rodando, com arquitetura em camadas limpa</td>
+<td>RF001–RF009, RF012–RF014 ~90% prontos. RF019/RF020 parcialmente (worker existe, endpoint de upload não). RF021 ausente. RF024 parcial (CRUD sim, IA/Sequências/Workflows não).</td>
+</tr>
+<tr>
+<td><strong>Banco de dados</strong></td>
+<td>PostgreSQL 16 + Alembic, 1 migração inicial, RLS habilitado</td>
+<td>Cobre 100% das entidades do MVP (seção 10 do doc de requisitos)</td>
+</tr>
+<tr>
+<td><strong>Multi-tenant</strong></td>
+<td>Implementado em 3 camadas (JWT → contexto → RLS)</td>
+<td>RF002 e RNF001 atendidos na base do MVP</td>
+</tr>
+<tr>
+<td><strong>Frontend</strong></td>
+<td><strong>Não existe nenhum código</strong> (sem diretório <code>frontend/</code>)</td>
+<td>RF001–RF024 sem interface — 0%</td>
+</tr>
+<tr>
+<td><strong>Automações (Fase 2)</strong></td>
+<td>Backend 0%. <strong>Frontend: UI prototipada e aprovada</strong> (Sequências, Cadências, Workflows, Modelos de e-mail — ver §9.5)</td>
+<td>RF010, RF011, RF018 — 0% no backend</td>
+</tr>
+<tr>
+<td><strong>IA / Enriquecimento (Fase 3)</strong></td>
+<td>Não iniciado (sem chaves de API, sem módulo)</td>
+<td>RF015, RF016, RF017 — 0%</td>
+</tr>
+<tr>
+<td><strong>Testes automatizados</strong></td>
+<td>Inexistentes (sem <code>pytest</code> no <code>requirements.txt</code>, sem pasta <code>tests/</code>)</td>
+<td>RNF (qualidade) não atendido</td>
+</tr>
+<tr>
+<td><strong>CI/CD, observabilidade, backups</strong></td>
+<td>Inexistentes</td>
+<td>RNF002, RNF007 parcialmente em risco</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Veredito de viabilidade: alta.</strong> A base arquitetural é sólida e segue boas práticas (isolamento por tenant em profundidade, JWT sem confiar em payload do cliente, camadas bem separadas, RLS como defesa adicional). O maior volume de trabalho restante não é "risco técnico", é <strong>volume de escopo ainda não iniciado</strong> — principalmente o frontend inteiro e as Fases 2–3. Recomenda-se seguir construindo sobre o que já existe, sem reescrever o backend do MVP.</p>
+<h3 id="02-gaps-identificados-para-priorizacao">0.2 Gaps identificados (para priorização)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Gap</th>
+<th>Severidade</th>
+<th>Observação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>G1</td>
+<td>Frontend inexistente</td>
+<td>Alta</td>
+<td>Maior item de esforço restante; nenhuma tela pode ser demonstrada hoje</td>
+</tr>
+<tr>
+<td>G2</td>
+<td>Upload de importação (RF019/RF020) sem endpoint</td>
+<td>Média</td>
+<td><code>import_companies_task</code>/<code>import_contacts_task</code> (Celery) existem e funcionam, mas nenhuma rota HTTP dispara ou consulta o job</td>
+</tr>
+<tr>
+<td>G3</td>
+<td>Exportação (RF021) não implementada</td>
+<td>Média</td>
+<td>Nenhum endpoint de export em Excel/CSV/PDF</td>
+</tr>
+<tr>
+<td>G4</td>
+<td>Recuperação de senha incompleta</td>
+<td>Média</td>
+<td><code>forgot-password</code> gera token de reset mas <strong>não envia e-mail</strong> (não há integração SMTP/provedor) — o fluxo é inutilizável fim-a-fim hoje</td>
+</tr>
+<tr>
+<td>G5</td>
+<td>RBAC por perfil aplicado de forma parcial</td>
+<td>Média</td>
+<td><code>Visualizador</code> tem, hoje, as mesmas permissões de escrita que <code>Vendedor</code> na maioria dos endpoints (Empresas, Contatos, Negócios, Tarefas só exigem usuário autenticado, não checam perfil)</td>
+</tr>
+<tr>
+<td>G6</td>
+<td>Sem escopo de visibilidade por vendedor</td>
+<td>Baixa/Média</td>
+<td>Todo usuário autenticado lista todas as empresas/negócios do tenant; não há filtro automático "vendedor só vê o que é seu" — <strong>a validar com o PO</strong> se é o comportamento desejado</td>
+</tr>
+<tr>
+<td>G7</td>
+<td>Sem testes automatizados nem CI</td>
+<td>Alta (risco de regressão)</td>
+<td>Nenhum <code>tests/</code>, nenhum workflow de CI encontrado</td>
+</tr>
+<tr>
+<td>G8</td>
+<td>Sem observabilidade/logging estruturado</td>
+<td>Média</td>
+<td>RNF002 pede log de todas as operações; hoje só há <code>audit_logs</code> para CRUD, sem logging de aplicação/APM</td>
+</tr>
+<tr>
+<td>G9</td>
+<td><code>SECRET_KEY</code> placeholder em <code>.env</code></td>
+<td>Alta (segurança)</td>
+<td>Precisa ser rotacionado antes de qualquer ambiente não-local</td>
+</tr>
+<tr>
+<td>G10</td>
+<td>Sem armazenamento de objetos (arquivos)</td>
+<td>Média</td>
+<td><code>ImportJob.arquivo</code> é <code>String</code>, mas não há bucket/S3/MinIO definido para guardar o arquivo enviado</td>
+</tr>
+<tr>
+<td>G11</td>
+<td>Sem integração de IA configurada</td>
+<td>Baixa (é Fase 3)</td>
+<td>Sem chaves OpenAI/Claude em <code>config.py</code>; esperado, pois é fora do MVP</td>
+</tr>
+<tr>
+<td>G12</td>
+<td>Sem scheduler (Celery Beat)</td>
+<td>Média</td>
+<td>Necessário para Sequências (RF010) e Cadências (RF011), que dependem de disparos por dia decorrido</td>
+</tr>
+</tbody>
+</table>
+<h3 id="03-recomendacao-de-sequenciamento">0.3 Recomendação de sequenciamento</h3>
+<ol>
+<li>Fechar o MVP (RF001–RF014, RF019–RF021) no backend (G2, G3, G4, G5) — esforço pequeno, reaproveita tudo que já existe.</li>
+<li>Construir o frontend do MVP (G1) — maior esforço, mas sem dependências externas.</li>
+<li>Testes + CI mínimos (G7) antes de abrir Fase 2, para não acumular dívida técnica.</li>
+<li>Fase 2 (Sequências, Cadências, Workflows) — depende de integração de e-mail (<strong>Microsoft 365/Graph</strong>, não Gmail/Outlook genérico — ver §9.2) para o requisito "pausar sequência quando houver resposta" (RF010). UI já prototipada e aprovada (§9.5).</li>
+<li>Fase 3 (IA, Enriquecimento) — o item "SaaS self-service" desta fase fica <strong>deprioritizado</strong>: o CRM é de uso interno da GD Conecta, não será comercializado a princípio (§9.0).</li>
+</ol>
+<hr />
+<h2 id="1-arquitetura-do-sistema">1. Arquitetura do Sistema</h2>
+<h3 id="11-visao-geral">1.1 Visão geral</h3>
+<pre><code>┌─────────────┐      HTTPS       ┌──────────────┐      ┌────────────────────┐
+│  Frontend    │ ───────────────▶│    Nginx     │─────▶│   FastAPI (api)    │
+│  React SPA   │◀─────────────── │ (reverse     │      │  router→service→   │
+│  (a construir)│                 │  proxy +     │      │  repository→model  │
+└─────────────┘                  │  estáticos)  │      └─────────┬──────────┘
+                                  └──────────────┘                │
+                                                                  ▼
+                                              ┌───────────────────────────────┐
+                                              │  PostgreSQL 16 (RLS por tenant)│
+                                              └───────────────────────────────┘
+                                                                  ▲
+                                              ┌───────────────────┴───────────┐
+                                              │   Redis (broker + result)     │
+                                              └───────────────────┬───────────┘
+                                                                  ▼
+                                              ┌───────────────────────────────┐
+                                              │  Celery worker (+ Beat, a criar)│
+                                              │  import, cadências, IA, etc.   │
+                                              └───────────────────────────────┘
+</code></pre>
+<h3 id="12-backend-ja-implementado">1.2 Backend — já implementado</h3>
+<ul>
+<li><strong>Python 3.12</strong>, <strong>FastAPI 0.115</strong>, <strong>SQLAlchemy 2.0</strong> (mapeamento declarativo tipado com <code>Mapped</code>), <strong>Alembic 1.14</strong>, <strong>Pydantic v2</strong>, <strong>PyJWT</strong>, <strong>passlib/bcrypt</strong>, <strong>Celery 5.4</strong> + <strong>Redis</strong>, <strong>pandas/openpyxl</strong> (import Excel/CSV).</li>
+<li>Arquitetura em camadas estrita: <code>api/</code> (HTTP, sem regra de negócio) → <code>schemas/</code> (DTOs Pydantic) → <code>services/</code> (regra de negócio/transação) → <code>repositories/</code> (acesso a dados, tenant automático) → <code>models/</code> (ORM + mixins).</li>
+<li>Documentação automática via Swagger (<code>/docs</code>) e OpenAPI (<code>/api/v1/openapi.json</code>) — atende RF024/RNF005.</li>
+</ul>
+<p><strong>A adicionar no backend (fora de módulos novos de domínio):</strong>
+- Camada de envio de e-mail (SMTP genérico ou provedor tipo SES/SendGrid) — necessária tanto para reset de senha quanto para Cadências (RF011).
+- Camada de abstração de provedor de IA (<code>app/services/ai/</code>) com adaptadores para OpenAI e Claude, selecionável por configuração — necessária para RF015–RF017.
+- Celery Beat (agendador) para disparos baseados em tempo (Sequências, Cadências, SLA de pipeline).
+- Camada de storage de arquivos (local em dev, S3/MinIO compatível em produção) para anexos de importação e, futuramente, anexos de negócios/e-mails.
+- Suite de testes (<code>pytest</code> + <code>pytest-asyncio</code>/<code>httpx</code> para testes de API, fixtures de tenant/RLS).</p>
+<h3 id="13-frontend-a-construir-integralmente">1.3 Frontend — a construir integralmente</h3>
+<p>Stack definida no documento de requisitos: <strong>React 18 + TypeScript + Material UI (MUI) + React Query + React Router</strong>. Nenhum código existe ainda. Ver seção 5 para estrutura detalhada.</p>
+<p>Recomendação de tema: aplicar a identidade visual oficial já definida para a marca GD Conecta (Índigo <code>#2D3561</code>, Âmbar <code>#C9A84C</code>, Azul <code>#0077A8</code>, Marfim <code>#F5F1EB</code>, tipografia IBM Plex Sans/Mono) no tema do MUI (<code>createTheme</code>), já que este CRM é um produto da própria GD Conecta — evita retrabalho de rebranding depois.</p>
+<h3 id="14-banco-de-dados">1.4 Banco de dados</h3>
+<ul>
+<li><strong>PostgreSQL 16</strong> (via <code>postgres:16-alpine</code> no <code>docker-compose.yml</code>).</li>
+<li>Migrações gerenciadas por Alembic, com o metadata dos models como fonte única de verdade (<code>Base.metadata.create_all</code> dentro da migração — abordagem incomum mas documentada e intencional: evita divergência model↔schema no início do projeto). <strong>Atenção:</strong> a partir da 2ª migração, o padrão deve mudar para <code>alembic revision --autogenerate</code>, senão a "fonte única" quebra a rastreabilidade histórica do schema.</li>
+<li>Row-Level Security (RLS) habilitada e <strong>forçada</strong> (<code>FORCE ROW LEVEL SECURITY</code>) nas tabelas multi-tenant.</li>
+</ul>
+<h3 id="15-infraestrutura">1.5 Infraestrutura</h3>
+<p><strong>Já existe</strong> (<code>docker-compose.yml</code>): <code>db</code> (Postgres), <code>redis</code>, <code>api</code> (Uvicorn + reload), <code>worker</code> (Celery), <code>nginx</code> (proxy reverso, hoje só expõe <code>/api/</code>, <code>/docs</code>, <code>/openapi.json</code>, <code>/health</code>).</p>
+<p><strong>Falta para produção/SaaS:</strong>
+- Serviço <code>frontend</code> no compose (build estático servido pelo Nginx, ou container Node/Vite dedicado).
+- Celery Beat como serviço próprio (<code>worker-beat</code>).
+- Object storage (MinIO em dev / S3 em produção).
+- Gestão de segredos fora do <code>.env</code> versionável (Docker secrets, Vault, ou variáveis de ambiente do orquestrador em produção).
+- Pipeline de CI/CD (lint, testes, build de imagem, migração automática em deploy).
+- Observabilidade: logging estruturado (JSON) + agregador (ex.: Loki/ELK) e métricas (Prometheus) — hoje só há <code>echo=settings.DEBUG</code> do SQLAlchemy.
+- Backup automatizado do Postgres (pg_dump agendado ou WAL archiving) — crítico dado RNF008 (100k+ empresas por tenant).
+- Ambientes segregados (dev/staging/produção) com <code>.env</code> por ambiente e banco de dados isolado.</p>
+<hr />
+<h2 id="2-modelo-de-dados">2. Modelo de Dados</h2>
+<h3 id="21-tabelas-ja-implementadas-migracao-0001_initial">2.1 Tabelas já implementadas (migração <code>0001_initial</code>)</h3>
+<p>Todas as tabelas abaixo (exceto <code>tenants</code>) têm <code>tenant_id UUID NOT NULL</code> (mixin <code>TenantMixin</code>), <code>created_at</code>/<code>updated_at</code> (mixin <code>TimestampMixin</code>) e RLS habilitada. PK padrão é <code>id UUID</code> (default <code>uuid4()</code>).</p>
+<h4 id="tenants"><code>tenants</code></h4>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>UUID (PK)</td>
+<td></td>
+</tr>
+<tr>
+<td>razao_social</td>
+<td>String(255) NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td>nome_fantasia</td>
+<td>String(255)</td>
+<td></td>
+</tr>
+<tr>
+<td>cnpj</td>
+<td>String(14) UNIQUE NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td>plano</td>
+<td>String(40) NOT NULL default <code>starter</code></td>
+<td></td>
+</tr>
+<tr>
+<td>status</td>
+<td>String(20) NOT NULL default <code>ativo</code></td>
+<td>enum: ativo/suspenso/cancelado</td>
+</tr>
+<tr>
+<td>config</td>
+<td>JSONB</td>
+<td>configurações independentes por empresa (RF002)</td>
+</tr>
+</tbody>
+</table>
+<h4 id="users"><code>users</code></h4>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>UUID (PK)</td>
+<td></td>
+</tr>
+<tr>
+<td>tenant_id</td>
+<td>UUID (FK tenants)</td>
+<td></td>
+</tr>
+<tr>
+<td>nome</td>
+<td>String(255) NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td>email</td>
+<td>String(255) NOT NULL, index</td>
+<td>único <strong>por tenant</strong> (<code>uq_user_tenant_email</code>)</td>
+</tr>
+<tr>
+<td>senha_hash</td>
+<td>String(255) NOT NULL</td>
+<td>bcrypt</td>
+</tr>
+<tr>
+<td>telefone</td>
+<td>String(20)</td>
+<td></td>
+</tr>
+<tr>
+<td>cargo</td>
+<td>String(120)</td>
+<td></td>
+</tr>
+<tr>
+<td>perfil</td>
+<td>String(30) NOT NULL default <code>vendedor</code></td>
+<td>enum: admin/gestor/vendedor/visualizador</td>
+</tr>
+<tr>
+<td>status</td>
+<td>String(20) NOT NULL default <code>ativo</code></td>
+<td>enum: ativo/inativo</td>
+</tr>
+<tr>
+<td>ultimo_acesso</td>
+<td>DateTime(tz)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="companies"><code>companies</code></h4>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>UUID (PK)</td>
+<td></td>
+</tr>
+<tr>
+<td>tenant_id</td>
+<td>UUID (FK)</td>
+<td>índice composto <code>(tenant_id, status)</code></td>
+</tr>
+<tr>
+<td>razao_social</td>
+<td>String(255) NOT NULL, index</td>
+<td></td>
+</tr>
+<tr>
+<td>nome_fantasia</td>
+<td>String(255)</td>
+<td></td>
+</tr>
+<tr>
+<td>cnpj</td>
+<td>String(14)</td>
+<td>único <strong>por tenant</strong> (<code>uq_company_tenant_cnpj</code>)</td>
+</tr>
+<tr>
+<td>site, telefone, email</td>
+<td>String</td>
+<td></td>
+</tr>
+<tr>
+<td>endereco, cidade</td>
+<td>String(255)/(120)</td>
+<td></td>
+</tr>
+<tr>
+<td>uf</td>
+<td>String(2)</td>
+<td></td>
+</tr>
+<tr>
+<td>segmento, porte</td>
+<td>String</td>
+<td></td>
+</tr>
+<tr>
+<td>num_funcionarios</td>
+<td>Integer</td>
+<td></td>
+</tr>
+<tr>
+<td>faturamento_estimado</td>
+<td>Numeric(15,2)</td>
+<td></td>
+</tr>
+<tr>
+<td>status</td>
+<td>String(20) NOT NULL default <code>lead</code>, index</td>
+<td>enum: lead/qualificado/cliente/perdido/inativo</td>
+</tr>
+<tr>
+<td>origem</td>
+<td>String(80)</td>
+<td>origem do lead</td>
+</tr>
+<tr>
+<td>responsavel_id</td>
+<td>UUID (FK users)</td>
+<td></td>
+</tr>
+<tr>
+<td>created_by</td>
+<td>UUID (FK users)</td>
+<td></td>
+</tr>
+<tr>
+<td>deleted_at</td>
+<td>DateTime(tz) nullable</td>
+<td>soft delete</td>
+</tr>
+</tbody>
+</table>
+<h4 id="contacts"><code>contacts</code></h4>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>UUID (PK)</td>
+<td></td>
+</tr>
+<tr>
+<td>tenant_id</td>
+<td>UUID (FK)</td>
+<td></td>
+</tr>
+<tr>
+<td>company_id</td>
+<td>UUID (FK companies) NOT NULL, index</td>
+<td>multi-contato por empresa (RF006)</td>
+</tr>
+<tr>
+<td>nome</td>
+<td>String(255) NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td>cargo, email, telefone, whatsapp, linkedin</td>
+<td>String</td>
+<td></td>
+</tr>
+<tr>
+<td>data_nascimento</td>
+<td>Date</td>
+<td></td>
+</tr>
+<tr>
+<td>observacoes</td>
+<td>Text</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="pipelines"><code>pipelines</code></h4>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>UUID (PK)</td>
+<td></td>
+</tr>
+<tr>
+<td>tenant_id</td>
+<td>UUID (FK)</td>
+<td></td>
+</tr>
+<tr>
+<td>nome</td>
+<td>String(120) NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td>is_default</td>
+<td>Boolean default false</td>
+<td></td>
+</tr>
+<tr>
+<td>ativo</td>
+<td>Boolean default true</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="pipeline_stages"><code>pipeline_stages</code></h4>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>UUID (PK)</td>
+<td></td>
+</tr>
+<tr>
+<td>tenant_id</td>
+<td>UUID (FK)</td>
+<td></td>
+</tr>
+<tr>
+<td>pipeline_id</td>
+<td>UUID (FK pipelines) NOT NULL, index</td>
+<td><code>cascade="all, delete-orphan"</code> a partir do pipeline</td>
+</tr>
+<tr>
+<td>nome</td>
+<td>String(120) NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td>ordem</td>
+<td>Integer default 0</td>
+<td>ordena etapas no board</td>
+</tr>
+<tr>
+<td>tipo</td>
+<td>String(20) default <code>aberta</code></td>
+<td>enum: aberta/ganho/perdido</td>
+</tr>
+<tr>
+<td>sla_horas</td>
+<td>Integer nullable</td>
+<td>RF008 — controle de SLA por etapa</td>
+</tr>
+<tr>
+<td>probabilidade</td>
+<td>Integer nullable</td>
+<td>usado como default ao mover negócio p/ etapa</td>
+</tr>
+</tbody>
+</table>
+<h4 id="deals"><code>deals</code></h4>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>UUID (PK)</td>
+<td></td>
+</tr>
+<tr>
+<td>tenant_id</td>
+<td>UUID (FK)</td>
+<td>índices <code>(tenant_id, stage_id)</code> e <code>(tenant_id, responsavel_id)</code></td>
+</tr>
+<tr>
+<td>nome</td>
+<td>String(255) NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td>company_id</td>
+<td>UUID (FK companies) NOT NULL, index</td>
+<td></td>
+</tr>
+<tr>
+<td>contact_id</td>
+<td>UUID (FK contacts) nullable</td>
+<td>contato principal</td>
+</tr>
+<tr>
+<td>responsavel_id</td>
+<td>UUID (FK users) NOT NULL, index</td>
+<td></td>
+</tr>
+<tr>
+<td>pipeline_id</td>
+<td>UUID (FK pipelines) NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td>stage_id</td>
+<td>UUID (FK pipeline_stages) NOT NULL, index</td>
+<td></td>
+</tr>
+<tr>
+<td>valor_previsto</td>
+<td>Numeric(15,2)</td>
+<td></td>
+</tr>
+<tr>
+<td>probabilidade</td>
+<td>Integer</td>
+<td></td>
+</tr>
+<tr>
+<td>data_prev_fechamento</td>
+<td>Date</td>
+<td></td>
+</tr>
+<tr>
+<td>origem</td>
+<td>String(80)</td>
+<td></td>
+</tr>
+<tr>
+<td>status</td>
+<td>String(20) default <code>aberto</code>, index</td>
+<td>enum: aberto/ganho/perdido</td>
+</tr>
+<tr>
+<td>motivo_perda</td>
+<td>String(255)</td>
+<td></td>
+</tr>
+<tr>
+<td>data_fechamento</td>
+<td>DateTime(tz)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="tasks"><code>tasks</code></h4>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>UUID (PK)</td>
+<td></td>
+</tr>
+<tr>
+<td>tenant_id</td>
+<td>UUID (FK)</td>
+<td>índice <code>(tenant_id, responsavel_id, status)</code></td>
+</tr>
+<tr>
+<td>titulo</td>
+<td>String(255) NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td>tipo</td>
+<td>String(20) NOT NULL</td>
+<td>enum: ligacao/email/whatsapp/reuniao/followup</td>
+</tr>
+<tr>
+<td>responsavel_id</td>
+<td>UUID (FK users) NOT NULL, index</td>
+<td></td>
+</tr>
+<tr>
+<td>company_id, contact_id, deal_id</td>
+<td>UUID (FK) nullable</td>
+<td>vínculo opcional</td>
+</tr>
+<tr>
+<td>data</td>
+<td>Date NOT NULL, index</td>
+<td></td>
+</tr>
+<tr>
+<td>hora</td>
+<td>Time nullable</td>
+<td></td>
+</tr>
+<tr>
+<td>prioridade</td>
+<td>String(20) default <code>media</code></td>
+<td>enum: baixa/media/alta</td>
+</tr>
+<tr>
+<td>status</td>
+<td>String(20) default <code>pendente</code>, index</td>
+<td>enum: pendente/concluida/cancelada</td>
+</tr>
+<tr>
+<td>concluida_em</td>
+<td>DateTime(tz)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="timeline_events"><code>timeline_events</code></h4>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>UUID (PK)</td>
+<td></td>
+</tr>
+<tr>
+<td>tenant_id</td>
+<td>UUID (FK)</td>
+<td>índice <code>(tenant_id, company_id, created_at)</code></td>
+</tr>
+<tr>
+<td>company_id</td>
+<td>UUID (FK companies) NOT NULL, index</td>
+<td></td>
+</tr>
+<tr>
+<td>deal_id, contact_id</td>
+<td>UUID (FK) nullable</td>
+<td></td>
+</tr>
+<tr>
+<td>tipo</td>
+<td>String(30) NOT NULL</td>
+<td>enum: ligacao/email/reuniao/tarefa/cadastro/pipeline/nota</td>
+</tr>
+<tr>
+<td>titulo</td>
+<td>String(255) NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td>descricao</td>
+<td>Text</td>
+<td></td>
+</tr>
+<tr>
+<td>evento_meta (col. <code>metadata</code>)</td>
+<td>JSONB</td>
+<td>payload livre do evento</td>
+</tr>
+<tr>
+<td>user_id</td>
+<td>UUID (FK users) nullable</td>
+<td>autor do evento</td>
+</tr>
+</tbody>
+</table>
+<h4 id="import_jobs"><code>import_jobs</code></h4>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>UUID (PK)</td>
+<td></td>
+</tr>
+<tr>
+<td>tenant_id</td>
+<td>UUID (FK)</td>
+<td></td>
+</tr>
+<tr>
+<td>tipo</td>
+<td>String(20) NOT NULL</td>
+<td>enum: empresas/contatos</td>
+</tr>
+<tr>
+<td>arquivo</td>
+<td>String(255) NOT NULL</td>
+<td>hoje é apenas nome; <strong>precisa apontar para storage real (G10)</strong></td>
+</tr>
+<tr>
+<td>status</td>
+<td>String(20) default <code>pendente</code></td>
+<td>enum: pendente/processando/concluido/erro</td>
+</tr>
+<tr>
+<td>total_linhas, importadas</td>
+<td>Integer</td>
+<td></td>
+</tr>
+<tr>
+<td>erros</td>
+<td>JSONB</td>
+<td>lista de <code>{linha, motivo}</code></td>
+</tr>
+<tr>
+<td>created_by</td>
+<td>UUID (FK users)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="audit_logs"><code>audit_logs</code></h4>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>UUID (PK)</td>
+<td></td>
+</tr>
+<tr>
+<td>tenant_id</td>
+<td>UUID (FK)</td>
+<td></td>
+</tr>
+<tr>
+<td>user_id</td>
+<td>UUID (FK users) nullable</td>
+<td></td>
+</tr>
+<tr>
+<td>entidade</td>
+<td>String(40) NOT NULL</td>
+<td>nome da entidade afetada</td>
+</tr>
+<tr>
+<td>entidade_id</td>
+<td>UUID nullable</td>
+<td></td>
+</tr>
+<tr>
+<td>acao</td>
+<td>String(20) NOT NULL</td>
+<td>enum: create/update/delete/login</td>
+</tr>
+<tr>
+<td>diff</td>
+<td>JSONB</td>
+<td></td>
+</tr>
+<tr>
+<td>ip</td>
+<td>String(45)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-tabelas-novas-fase-2-sequencias-cadencias-workflows">2.2 Tabelas novas — Fase 2 (Sequências, Cadências, Workflows)</h3>
+<blockquote>
+<p>Desenho proposto; nomes/campos a validar com o PO antes da implementação, conforme feedback já registrado do usuário sobre protótipos antes de mudanças de schema.</p>
+</blockquote>
+<h4 id="sequences-rf010-sequencias-de-tarefas"><code>sequences</code> (RF010 — Sequências de Tarefas)</h4>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>UUID (PK)</td>
+<td></td>
+</tr>
+<tr>
+<td>tenant_id</td>
+<td>UUID (FK)</td>
+<td></td>
+</tr>
+<tr>
+<td>nome</td>
+<td>String(120) NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td>ativo</td>
+<td>Boolean default true</td>
+<td></td>
+</tr>
+<tr>
+<td>pausar_em_resposta</td>
+<td>Boolean default true</td>
+<td>regra "pausar quando houver resposta"</td>
+</tr>
+<tr>
+<td>created_by</td>
+<td>UUID (FK users)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="sequence_steps"><code>sequence_steps</code></h4>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>UUID (PK)</td>
+<td></td>
+</tr>
+<tr>
+<td>sequence_id</td>
+<td>UUID (FK sequences), index</td>
+<td></td>
+</tr>
+<tr>
+<td>ordem</td>
+<td>Integer NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td>dia_offset</td>
+<td>Integer NOT NULL</td>
+<td>dias a partir do início (0, 3, 7, 14…)</td>
+</tr>
+<tr>
+<td>tipo</td>
+<td>String(20) NOT NULL</td>
+<td>ligacao/email/whatsapp/followup</td>
+</tr>
+<tr>
+<td>template_id</td>
+<td>UUID (FK email_templates) nullable</td>
+<td>quando tipo = email</td>
+</tr>
+<tr>
+<td>instrucoes</td>
+<td>Text nullable</td>
+<td>roteiro para ligação/whatsapp</td>
+</tr>
+</tbody>
+</table>
+<h4 id="sequence_enrollments"><code>sequence_enrollments</code></h4>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>UUID (PK)</td>
+<td></td>
+</tr>
+<tr>
+<td>sequence_id</td>
+<td>UUID (FK sequences), index</td>
+<td></td>
+</tr>
+<tr>
+<td>company_id / contact_id / deal_id</td>
+<td>UUID (FK) nullable</td>
+<td>alvo da sequência</td>
+</tr>
+<tr>
+<td>status</td>
+<td>String(20) default <code>ativa</code></td>
+<td>ativa/pausada/concluida/cancelada</td>
+</tr>
+<tr>
+<td>step_atual</td>
+<td>Integer default 0</td>
+<td></td>
+</tr>
+<tr>
+<td>pausado_motivo</td>
+<td>String(60) nullable</td>
+<td>ex.: <code>resposta_recebida</code></td>
+</tr>
+<tr>
+<td>iniciado_em, atualizado_em</td>
+<td>DateTime(tz)</td>
+<td></td>
+</tr>
+<tr>
+<td>índice</td>
+<td><code>(tenant_id, status, step_atual)</code></td>
+<td>usado pelo Celery Beat para varrer pendências</td>
+</tr>
+</tbody>
+</table>
+<h4 id="cadences-cadence_steps-cadence_enrollments-rf011-cadencia-de-e-mails"><code>cadences</code> + <code>cadence_steps</code> + <code>cadence_enrollments</code> (RF011 — Cadência de E-mails)</h4>
+<p>Estrutura análoga a <code>sequences</code>, mas restrita a e-mail, com <code>email_templates</code> (assunto, corpo, variáveis <code>{{nome}}</code>, <code>{{empresa}}</code>, <code>{{cargo}}</code>, <code>{{responsavel}}</code>) e <code>dias_espera</code> entre envios.</p>
+<blockquote>
+<p><strong>Recomendação de arquitetura:</strong> <code>sequences</code> e <code>cadences</code> compartilham o mesmo padrão de máquina de estados (enrollment → step atual → pausar/retomar/clonar). Considerar modelar como <strong>um único motor de sequenciamento genérico</strong> (<code>sequence_type = tarefas | email</code>) em vez de duas implementações paralelas, para não duplicar o scheduler do Celery Beat e a lógica de pausa por resposta. Divergir do documento de requisitos aqui é só de implementação interna — a experiência de usuário (duas telas distintas) pode ser mantida.</p>
+</blockquote>
+<h4 id="email_templates"><code>email_templates</code></h4>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>UUID (PK)</td>
+<td></td>
+</tr>
+<tr>
+<td>tenant_id</td>
+<td>UUID (FK)</td>
+<td></td>
+</tr>
+<tr>
+<td>nome, assunto</td>
+<td>String</td>
+<td></td>
+</tr>
+<tr>
+<td>corpo</td>
+<td>Text</td>
+<td>suporta variáveis dinâmicas</td>
+</tr>
+<tr>
+<td>variaveis_disponiveis</td>
+<td>JSONB</td>
+<td>lista de placeholders válidos</td>
+</tr>
+</tbody>
+</table>
+<h4 id="workflows-rf018"><code>workflows</code> (RF018)</h4>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>UUID (PK)</td>
+<td></td>
+</tr>
+<tr>
+<td>tenant_id</td>
+<td>UUID (FK)</td>
+<td></td>
+</tr>
+<tr>
+<td>nome</td>
+<td>String(120)</td>
+<td></td>
+</tr>
+<tr>
+<td>gatilho</td>
+<td>String(40) NOT NULL</td>
+<td>empresa_criada/contato_criado/negocio_criado/mudanca_etapa/resposta_recebida</td>
+</tr>
+<tr>
+<td>condicoes</td>
+<td>JSONB nullable</td>
+<td>filtros opcionais (ex.: só se <code>pipeline_id = X</code>)</td>
+</tr>
+<tr>
+<td>ativo</td>
+<td>Boolean default true</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="workflow_actions"><code>workflow_actions</code></h4>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>UUID (PK)</td>
+<td></td>
+</tr>
+<tr>
+<td>workflow_id</td>
+<td>UUID (FK workflows), index</td>
+<td></td>
+</tr>
+<tr>
+<td>ordem</td>
+<td>Integer</td>
+<td></td>
+</tr>
+<tr>
+<td>tipo_acao</td>
+<td>String(40) NOT NULL</td>
+<td>criar_tarefa/enviar_email/alterar_pipeline/notificar_usuario/executar_enriquecimento</td>
+</tr>
+<tr>
+<td>parametros</td>
+<td>JSONB</td>
+<td>payload específico da ação</td>
+</tr>
+</tbody>
+</table>
+<h4 id="workflow_execution_logs"><code>workflow_execution_logs</code></h4>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>UUID (PK)</td>
+<td></td>
+</tr>
+<tr>
+<td>workflow_id</td>
+<td>UUID (FK), index</td>
+<td></td>
+</tr>
+<tr>
+<td>entidade_ref</td>
+<td>UUID</td>
+<td>registro que disparou o workflow</td>
+</tr>
+<tr>
+<td>resultado</td>
+<td>String(20)</td>
+<td>sucesso/erro</td>
+</tr>
+<tr>
+<td>detalhes</td>
+<td>JSONB</td>
+<td></td>
+</tr>
+<tr>
+<td>executado_em</td>
+<td>DateTime(tz)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="23-tabelas-novas-fase-3-ia-e-enriquecimento">2.3 Tabelas novas — Fase 3 (IA e Enriquecimento)</h3>
+<h4 id="enrichment_batches-extensao-de-import_jobs"><code>enrichment_batches</code> / extensão de <code>import_jobs</code></h4>
+<p>Reaproveitar o padrão de <code>ImportJob</code> para lotes de enriquecimento, com etapas próprias (RF016): <code>importado → aguardando_enriquecimento → em_processamento → revisao → aprovado → rejeitado</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>UUID (PK)</td>
+<td></td>
+</tr>
+<tr>
+<td>tenant_id</td>
+<td>UUID (FK)</td>
+<td></td>
+</tr>
+<tr>
+<td>status</td>
+<td>String(30) NOT NULL</td>
+<td>etapas acima</td>
+</tr>
+<tr>
+<td>provider</td>
+<td>String(20)</td>
+<td>openai/claude</td>
+</tr>
+<tr>
+<td>criado_por</td>
+<td>UUID (FK users)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="company_enrichments-11-ou-1n-com-companies"><code>company_enrichments</code> (1:1 ou 1:N com <code>companies</code>)</h4>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>UUID (PK)</td>
+<td></td>
+</tr>
+<tr>
+<td>company_id</td>
+<td>UUID (FK companies), index</td>
+<td></td>
+</tr>
+<tr>
+<td>batch_id</td>
+<td>UUID (FK enrichment_batches)</td>
+<td></td>
+</tr>
+<tr>
+<td>status</td>
+<td>String(20)</td>
+<td>aguardando/processando/revisao/aprovado/rejeitado</td>
+</tr>
+<tr>
+<td>dados_sugeridos</td>
+<td>JSONB</td>
+<td>segmento, porte, produtos, serviços, nº funcionários, tecnologias, redes sociais, presença digital, perfil comercial</td>
+</tr>
+<tr>
+<td>resumo_executivo</td>
+<td>Text</td>
+<td>saída da IA</td>
+</tr>
+<tr>
+<td>revisado_por</td>
+<td>UUID (FK users) nullable</td>
+<td></td>
+</tr>
+<tr>
+<td>revisado_em</td>
+<td>DateTime(tz) nullable</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="ai_interactions-logauditoria-de-uso-de-ia-rf017"><code>ai_interactions</code> (log/auditoria de uso de IA — RF017)</h4>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>UUID (PK)</td>
+<td></td>
+</tr>
+<tr>
+<td>tenant_id</td>
+<td>UUID (FK)</td>
+<td></td>
+</tr>
+<tr>
+<td>user_id</td>
+<td>UUID (FK users)</td>
+<td></td>
+</tr>
+<tr>
+<td>tipo</td>
+<td>String(30)</td>
+<td>gerar_email/gerar_script/resumir_empresa/sugerir_proxima_acao/plano_abordagem</td>
+</tr>
+<tr>
+<td>entidade_ref</td>
+<td>UUID nullable</td>
+<td>empresa/contato/negócio relacionado</td>
+</tr>
+<tr>
+<td>provider, modelo</td>
+<td>String</td>
+<td>openai/claude + nome do modelo</td>
+</tr>
+<tr>
+<td>prompt, resposta</td>
+<td>Text</td>
+<td></td>
+</tr>
+<tr>
+<td>tokens_entrada, tokens_saida</td>
+<td>Integer nullable</td>
+<td>custo/observabilidade</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>DateTime(tz)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="24-indices-resumo-do-que-ja-existe-e-do-que-se-recomenda-adicionar">2.4 Índices — resumo do que já existe e do que se recomenda adicionar</h3>
+<p>Já criados na migração inicial: <code>ix_companies_tenant_status</code>, <code>ix_deals_tenant_stage</code>, <code>ix_deals_tenant_resp</code>, <code>ix_tasks_tenant_resp_status</code>, <code>ix_timeline_tenant_company</code>.</p>
+<p>Recomendados para as fases novas: <code>(tenant_id, status, step_atual)</code> em enrollments (varredura do Beat), <code>(tenant_id, gatilho)</code> em <code>workflows</code>, <code>(company_id, status)</code> em <code>company_enrichments</code>.</p>
+<hr />
+<h2 id="3-estrategia-multi-tenant">3. Estratégia Multi-Tenant</h2>
+<h3 id="31-isolamento-por-empresa-ja-implementado-em-3-camadas">3.1 Isolamento por empresa — já implementado, em 3 camadas</h3>
+<ol>
+<li><strong>JWT como única fonte do <code>tenant_id</code>.</strong> O token de acesso carrega <code>sub</code> (user), <code>tenant_id</code> e <code>perfil</code>. Nenhum endpoint aceita <code>tenant_id</code> vindo do corpo da requisição.</li>
+<li><strong>Contexto de requisição (<code>ContextVar</code>).</strong> <code>get_current_user</code> (dependency) decodifica o JWT e chama <code>set_current_tenant</code>/<code>set_current_user</code> <strong>antes</strong> de qualquer consulta — o tenant fica disponível para toda a stack via <code>app/core/context.py</code>.</li>
+<li><strong><code>BaseRepository</code> genérico.</strong> Toda leitura (<code>get</code>, <code>list</code>) já parte de <code>select(model).where(model.tenant_id == tenant_atual)</code>; toda escrita (<code>add</code>) sobrescreve <code>obj.tenant_id</code> com o valor do contexto, ignorando qualquer valor externo.</li>
+<li><strong>RLS no Postgres (defesa em profundidade).</strong> Um listener SQLAlchemy (<code>after_begin</code>) executa <code>SET LOCAL app.current_tenant = &lt;uuid&gt;</code> a cada transação; as policies <code>USING (tenant_id = current_setting('app.current_tenant', true)::uuid)</code> bloqueiam qualquer query que, por bug, escape do filtro em código. <code>FORCE ROW LEVEL SECURITY</code> garante que isso vale mesmo para o dono da tabela.</li>
+</ol>
+<p>Esse desenho já é adequado para SaaS multiempresa em schema compartilhado (RNF007) na escala esperada (RNF008 — 100k+ empresas por tenant): <code>SET LOCAL</code> é compatível com pooling de conexões em modo transação (ex.: PgBouncer), pois o valor vale só durante a transação corrente — importante manter essa restrição ao evoluir a infraestrutura.</p>
+<p><strong>Gap:</strong> não há hoje um fluxo de <strong>provisionamento de novo tenant</strong> (self-service signup). <code>app/seed.py</code> cria manualmente o primeiro tenant/admin. Para RNF007 (SaaS) será necessário um endpoint/rotina de onboarding (criação de tenant + admin inicial + e-mail de boas-vindas).</p>
+<h3 id="32-controle-de-permissoes">3.2 Controle de permissões</h3>
+<ul>
+<li><strong>RBAC por perfil</strong>, via dependency <code>require_roles(*perfis)</code> (<code>app/core/deps.py</code>), usado hoje em: gestão de usuários (admin), atualização de tenant (admin), CRUD de pipeline/stage (admin+gestor), dashboard comercial (admin+gestor).</li>
+<li><strong>Gap (G5):</strong> os endpoints de Empresas, Contatos, Negócios e Tarefas usam apenas <code>get_current_user</code> (qualquer perfil ativo), sem checagem de perfil. Ou seja, hoje um <code>Visualizador</code> pode criar/editar/excluir — o que contradiz a intenção usual de um perfil "somente leitura". <strong>Ação recomendada:</strong> aplicar <code>require_roles</code> (ou uma variante <code>require_write</code>) nas rotas de mutação desses módulos, permitindo todos os perfis em <code>GET</code> mas restringindo <code>POST/PUT/PATCH/DELETE</code> a admin/gestor/vendedor.</li>
+<li><strong>Gap (G6 — a validar com o PO):</strong> não há filtro de visibilidade por vendedor (um vendedor hoje enxerga todas as empresas/negócios do tenant, não só os seus). Se o requisito de negócio for "vendedor só vê a própria carteira, gestor vê tudo", isso precisa de um filtro adicional no <code>BaseRepository</code> ou nos services, condicionado ao perfil do usuário autenticado — hoje o repositório só conhece o tenant, não o usuário.</li>
+</ul>
+<hr />
+<h2 id="4-apis-rest">4. APIs REST</h2>
+<h3 id="41-ja-implementadas-fonte-de-verdade-viva-em-docs">4.1 Já implementadas (fonte de verdade viva em <code>/docs</code>)</h3>
+<p>Para evitar duplicidade e desatualização, os payloads completos (todos os campos de <code>Create</code>/<code>Update</code>/<code>Read</code>) devem ser consultados no Swagger (<code>http://localhost:8000/docs</code>) — já gerado automaticamente pelo FastAPI a partir dos schemas Pydantic. Abaixo, o inventário de rotas por módulo:</p>
+<table>
+<thead>
+<tr>
+<th>Módulo</th>
+<th>Rotas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Auth</strong> (<code>/api/v1/auth</code>)</td>
+<td><code>POST /login</code>, <code>POST /refresh</code>, <code>POST /logout</code>, <code>POST /forgot-password</code>, <code>POST /reset-password</code>, <code>GET /me</code></td>
+</tr>
+<tr>
+<td><strong>Tenant</strong> (<code>/api/v1/tenant</code>)</td>
+<td><code>GET ""</code>, <code>PUT ""</code> (admin)</td>
+</tr>
+<tr>
+<td><strong>Usuários</strong> (<code>/api/v1/users</code>)</td>
+<td><code>GET ""</code>, <code>POST ""</code>, <code>GET /{id}</code>, <code>PUT /{id}</code>, <code>PATCH /{id}/status</code> — todas admin-only</td>
+</tr>
+<tr>
+<td><strong>Empresas</strong> (<code>/api/v1/companies</code>)</td>
+<td><code>GET ""</code> (filtros: status, uf, busca), <code>POST ""</code>, <code>GET /{id}</code>, <code>PUT /{id}</code>, <code>PATCH /{id}/status</code>, <code>DELETE /{id}</code> (soft delete), <code>GET /{id}/timeline</code>, <code>POST /{id}/timeline</code></td>
+</tr>
+<tr>
+<td><strong>Contatos</strong> (<code>/api/v1/contacts</code>)</td>
+<td><code>GET ""</code> (filtro company_id), <code>POST ""</code>, <code>GET /{id}</code>, <code>PUT /{id}</code>, <code>DELETE /{id}</code></td>
+</tr>
+<tr>
+<td><strong>Pipelines</strong> (<code>/api/v1/pipelines</code>)</td>
+<td><code>GET ""</code>, <code>POST ""</code> (gestor+), <code>GET /{id}</code>, <code>PUT /{id}</code> (gestor+), <code>POST /{id}/stages</code> (gestor+), <code>PUT /{id}/stages/{stage_id}</code> (gestor+), <code>GET /{id}/board</code> (kanban)</td>
+</tr>
+<tr>
+<td><strong>Negócios</strong> (<code>/api/v1/deals</code>)</td>
+<td><code>GET ""</code> (filtros: pipeline_id, stage_id, status, responsavel_id), <code>POST ""</code>, <code>GET /{id}</code>, <code>PUT /{id}</code>, <code>PATCH /{id}/stage</code> (mover no board), <code>PATCH /{id}/close</code></td>
+</tr>
+<tr>
+<td><strong>Tarefas</strong> (<code>/api/v1/tasks</code>)</td>
+<td><code>GET ""</code> (filtros: responsavel_id, status, tipo), <code>POST ""</code>, <code>GET /{id}</code>, <code>PUT /{id}</code>, <code>PATCH /{id}/complete</code>, <code>DELETE /{id}</code></td>
+</tr>
+<tr>
+<td><strong>Dashboards</strong> (<code>/api/v1/dashboards</code>)</td>
+<td><code>GET /commercial</code> (admin+gestor), <code>GET /seller</code> (usuário logado)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Convenções já estabelecidas</strong> (manter nas rotas novas):
+- Listagens retornam envelope <code>Page[T]</code> (<code>items</code>, <code>total</code>, <code>page</code>, <code>size</code>).
+- Erros retornam envelope <code>{ "error": { "code", "message", "details" } }</code> (ver <code>app/core/exceptions.py</code>).
+- Todas as rotas exigem <code>Authorization: Bearer &lt;access_token&gt;</code>, exceto <code>login</code>, <code>refresh</code>, <code>forgot-password</code>, <code>reset-password</code>.</p>
+<h3 id="42-a-completar-no-mvp-backend-ja-tem-a-base-falta-so-a-rota">4.2 A completar no MVP (backend já tem a base, falta só a rota)</h3>
+<table>
+<thead>
+<tr>
+<th>Rota proposta</th>
+<th>Método</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/api/v1/companies/import</code></td>
+<td><code>POST</code> (multipart)</td>
+<td>recebe arquivo, cria <code>ImportJob</code>, dispara <code>import_companies_task</code></td>
+</tr>
+<tr>
+<td><code>/api/v1/contacts/import</code></td>
+<td><code>POST</code> (multipart)</td>
+<td>idem, dispara <code>import_contacts_task</code></td>
+</tr>
+<tr>
+<td><code>/api/v1/import-jobs/{id}</code></td>
+<td><code>GET</code></td>
+<td>consulta status/erros do job</td>
+</tr>
+<tr>
+<td><code>/api/v1/companies/export</code></td>
+<td><code>GET</code> (<code>?format=xlsx|csv</code>)</td>
+<td>RF021</td>
+</tr>
+<tr>
+<td><code>/api/v1/contacts/export</code></td>
+<td><code>GET</code></td>
+<td>RF021</td>
+</tr>
+<tr>
+<td><code>/api/v1/deals/export</code></td>
+<td><code>GET</code></td>
+<td>RF021</td>
+</tr>
+<tr>
+<td><code>/api/v1/tasks/export</code></td>
+<td><code>GET</code></td>
+<td>RF021</td>
+</tr>
+<tr>
+<td><code>/api/v1/reports/commercial</code></td>
+<td><code>GET</code> (<code>?format=xlsx|pdf</code>)</td>
+<td>RF022</td>
+</tr>
+<tr>
+<td><code>/api/v1/reports/activities</code></td>
+<td><code>GET</code> (<code>?format=xlsx|pdf</code>)</td>
+<td>RF023</td>
+</tr>
+</tbody>
+</table>
+<h3 id="43-fase-2-sequencias-cadencias-workflows">4.3 Fase 2 — Sequências, Cadências, Workflows</h3>
+<table>
+<thead>
+<tr>
+<th>Módulo</th>
+<th>Rotas propostas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sequências</td>
+<td><code>GET/POST /sequences</code>, <code>GET/PUT /sequences/{id}</code>, <code>POST /sequences/{id}/steps</code>, <code>POST /sequences/{id}/enroll</code>, <code>POST /sequences/{id}/clone</code>, <code>PATCH /enrollments/{id}/pause</code>, <code>PATCH /enrollments/{id}/resume</code></td>
+</tr>
+<tr>
+<td>Cadências</td>
+<td><code>GET/POST /cadences</code>, <code>GET/PUT /cadences/{id}</code>, <code>POST /cadences/{id}/steps</code>, <code>POST /cadences/{id}/enroll</code></td>
+</tr>
+<tr>
+<td>Templates de e-mail</td>
+<td><code>GET/POST /email-templates</code>, <code>GET/PUT/DELETE /email-templates/{id}</code></td>
+</tr>
+<tr>
+<td>Workflows</td>
+<td><code>GET/POST /workflows</code>, <code>GET/PUT /workflows/{id}</code>, <code>POST /workflows/{id}/actions</code>, <code>GET /workflows/{id}/logs</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="44-fase-3-ia-e-enriquecimento">4.4 Fase 3 — IA e Enriquecimento</h3>
+<table>
+<thead>
+<tr>
+<th>Módulo</th>
+<th>Rotas propostas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Enriquecimento</td>
+<td><code>POST /companies/{id}/enrich</code>, <code>POST /enrichment/batches</code> (lote), <code>GET /enrichment/batches/{id}</code>, <code>PATCH /enrichment/items/{id}/approve</code>, <code>PATCH /enrichment/items/{id}/reject</code></td>
+</tr>
+<tr>
+<td>Assistente IA</td>
+<td><code>POST /ai/generate-email</code>, <code>POST /ai/generate-call-script</code>, <code>POST /ai/summarize-company/{id}</code>, <code>POST /ai/next-action/{deal_id}</code>, <code>POST /ai/approach-plan/{company_id}</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-estrutura-frontend-a-construir">5. Estrutura Frontend (a construir)</h2>
+<h3 id="51-arvore-de-pastas-proposta">5.1 Árvore de pastas proposta</h3>
+<pre><code>frontend/
+  src/
+    app/                # bootstrap, providers (QueryClient, ThemeProvider, Router)
+    theme/               # tema MUI com paleta GD Conecta
+    api/                 # client axios + funções por recurso (companies.ts, deals.ts, ...)
+    hooks/               # hooks React Query por recurso (useCompanies, useDeals, ...)
+    routes/              # definição de rotas + guarda de autenticação/perfil
+    layout/              # AppShell (sidebar + topbar), AuthLayout
+    features/
+      auth/
+      dashboard/
+      companies/         # lista, detalhe (com timeline), formulário
+      contacts/
+      deals/             # board kanban + lista
+      pipelines/          # configuração de pipeline/etapas (admin/gestor)
+      tasks/
+      users/              # admin
+      settings/           # dados do tenant
+      sequences/          # fase 2
+      cadences/           # fase 2
+      workflows/          # fase 2
+      ai/                  # fase 3
+    components/           # DataTable, KanbanBoard, TimelineFeed, StatusBadge, FormDialog, RoleGuard
+</code></pre>
+<h3 id="52-rotas">5.2 Rotas</h3>
+<table>
+<thead>
+<tr>
+<th>Rota</th>
+<th>Tela</th>
+<th>Acesso</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/login</code>, <code>/esqueci-senha</code>, <code>/redefinir-senha</code></td>
+<td>Autenticação</td>
+<td>público</td>
+</tr>
+<tr>
+<td><code>/</code></td>
+<td>Dashboard (comercial ou vendedor, conforme perfil)</td>
+<td>autenticado</td>
+</tr>
+<tr>
+<td><code>/pesquisa-leads</code></td>
+<td>Pesquisa de Leads — pré-CRM, ICP score/fit, gamificação (§9.1)</td>
+<td>autenticado</td>
+</tr>
+<tr>
+<td><code>/pesquisa-leads/desempenho</code></td>
+<td>Relatório de Desempenho de Pesquisa (§9.7)</td>
+<td>admin/gestor</td>
+</tr>
+<tr>
+<td><code>/empresas</code></td>
+<td>Lista de empresas (filtros: status, UF, busca)</td>
+<td>autenticado</td>
+</tr>
+<tr>
+<td><code>/empresas/:id</code></td>
+<td>Detalhe (dados cadastrais + timeline + negócios + contatos)</td>
+<td>autenticado</td>
+</tr>
+<tr>
+<td><code>/contatos</code></td>
+<td>Lista de contatos</td>
+<td>autenticado</td>
+</tr>
+<tr>
+<td><code>/negocios</code></td>
+<td>Board kanban (drag-and-drop) + alternância para lista</td>
+<td>autenticado</td>
+</tr>
+<tr>
+<td><code>/negocios/:id</code></td>
+<td>Detalhe do negócio — protótipo aprovado (§9.4)</td>
+<td>autenticado</td>
+</tr>
+<tr>
+<td><code>/pipelines</code></td>
+<td>Configuração de pipelines/etapas</td>
+<td>admin/gestor</td>
+</tr>
+<tr>
+<td><code>/tarefas</code></td>
+<td>Lista/agenda de tarefas</td>
+<td>autenticado</td>
+</tr>
+<tr>
+<td><code>/formularios</code></td>
+<td>Gestão de formulários de captura + rastreio de visitantes do site (§9.8)</td>
+<td>admin/gestor</td>
+</tr>
+<tr>
+<td><code>/sequencias</code>, <code>/cadencias</code>, <code>/workflows</code></td>
+<td>Fase 2 — UI prototipada (§9.5)</td>
+<td>admin/gestor</td>
+</tr>
+<tr>
+<td><code>/modelos-email</code>, <code>/snippets</code></td>
+<td>Conteúdo reutilizável — modelos de e-mail (Fase 2) e snippets (§9.6)</td>
+<td>autenticado</td>
+</tr>
+<tr>
+<td><code>/usuarios</code></td>
+<td>Gestão de usuários</td>
+<td>admin</td>
+</tr>
+<tr>
+<td><code>/configuracoes</code></td>
+<td>Dados do tenant + histórico de importações (§9.3)</td>
+<td>admin</td>
+</tr>
+<tr>
+<td><code>/preferencias</code></td>
+<td>Preferências pessoais — perfil, e-mail/calendário (Microsoft 365), chamadas, segurança (§9.2)</td>
+<td>autenticado</td>
+</tr>
+<tr>
+<td><code>/ia</code>, <code>/enriquecimento</code></td>
+<td>Fase 3</td>
+<td>admin/gestor</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Import/Export <strong>não tem rota própria</strong> — os botões ficam embutidos em <code>/empresas</code>, <code>/contatos</code>, <code>/negocios</code> e <code>/tarefas</code>; o histórico cross-entidade fica em <code>/configuracoes</code> (§9.3).</p>
+</blockquote>
+<h3 id="53-componentes-reutilizaveis-principais">5.3 Componentes reutilizáveis principais</h3>
+<ul>
+<li><strong>DataTable paginada</strong> (server-side, integrada ao envelope <code>Page[T]</code>).</li>
+<li><strong>KanbanBoard</strong> (dnd-kit ou similar) para o board de pipeline, com <code>PATCH /deals/{id}/stage</code> no drop.</li>
+<li><strong>TimelineFeed</strong> para o histórico de interações da empresa.</li>
+<li><strong>RoleGuard</strong> (wrapper de rota) que esconde/bloqueia por <code>perfil</code>, refletindo o RBAC do backend — reforço de UX, nunca a única barreira de segurança.</li>
+<li><strong>FormDialog</strong> genérico para criar/editar entidades em modal.</li>
+<li><strong>StatusBadge</strong> para os enums de status (lead/qualificado/cliente…, aberto/ganho/perdido…).</li>
+</ul>
+<h3 id="54-layout">5.4 Layout</h3>
+<p>Shell padrão: sidebar de navegação (itens condicionados ao perfil), topbar com busca global, notificações (quando workflows existirem) e avatar/logout. Tema MUI usando a paleta oficial da marca (ver §1.3) e tipografia IBM Plex Sans/Mono.</p>
+<hr />
+<h2 id="6-estrutura-backend">6. Estrutura Backend</h2>
+<h3 id="61-modulos-convencao-ja-estabelecida-a-repetir-em-modulos-novos">6.1 Módulos (convenção já estabelecida, a repetir em módulos novos)</h3>
+<pre><code>app/
+  api/v1/&lt;recurso&gt;.py       # router HTTP — validação e autorização, sem regra de negócio
+  schemas/&lt;recurso&gt;.py      # Create / Update / Read / filtros de listagem
+  services/&lt;recurso&gt;.py     # regra de negócio, transação, timeline, auditoria
+  repositories/&lt;recurso&gt;.py # acesso a dados, herda BaseRepository
+  models/&lt;recurso&gt;.py       # ORM + mixins (Tenant, Timestamp, SoftDelete)
+  workers/tasks.py          # tarefas Celery
+  core/                     # config, database, security, context, deps, celery_app, exceptions
+</code></pre>
+<p>Ao criar um módulo novo (ex.: <code>sequences</code>), seguir exatamente essa ordem: model → repository → schema → service → router → registrar em <code>app/api/router.py</code>. Isso é o padrão já validado no MVP e evita inconsistência arquitetural.</p>
+<h3 id="62-responsabilidades-por-camada-contrato-ja-em-vigor">6.2 Responsabilidades por camada (contrato já em vigor)</h3>
+<table>
+<thead>
+<tr>
+<th>Camada</th>
+<th>Responsabilidade</th>
+<th>Não deve conter</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>api/</code></td>
+<td>Parsing de request, dependências de auth/autorização, chamar o service, mapear resposta</td>
+<td>Regra de negócio, acesso a dados</td>
+</tr>
+<tr>
+<td><code>schemas/</code></td>
+<td>Validação de formato/tipo (Pydantic)</td>
+<td>Regra de negócio</td>
+</tr>
+<tr>
+<td><code>services/</code></td>
+<td>Regras de negócio, orquestração entre repositórios, registro de timeline/auditoria, transações</td>
+<td>Acesso direto ao ORM fora do repository</td>
+</tr>
+<tr>
+<td><code>repositories/</code></td>
+<td>Query building, filtro de tenant automático (via <code>BaseRepository</code>)</td>
+<td>Regra de negócio</td>
+</tr>
+<tr>
+<td><code>models/</code></td>
+<td>Mapeamento de tabela, mixins, enums de domínio</td>
+<td>Lógica de aplicação</td>
+</tr>
+</tbody>
+</table>
+<h3 id="63-workers-celery-ja-existentes-e-a-adicionar">6.3 Workers (Celery) — já existentes e a adicionar</h3>
+<p><strong>Já existe:</strong> <code>import_companies_task</code>, <code>import_contacts_task</code> (fila <code>default</code>), com propagação manual de tenant/usuário para o contexto (mesmo padrão de isolamento do request HTTP).</p>
+<p><strong>A adicionar:</strong>
+- <code>celery beat</code> (novo serviço no compose) com schedule para: varrer <code>sequence_enrollments</code>/<code>cadence_enrollments</code> com step vencido e disparar a ação (criar tarefa, enviar e-mail); varrer SLA de etapas de pipeline (<code>pipeline_stages.sla_horas</code>) para alertas.
+- Tarefa de envio de e-mail (SMTP/provedor) reaproveitável por: reset de senha, cadências, notificações de workflow.
+- Tarefa de chamada aos provedores de IA (enriquecimento e assistente), com fila dedicada (para não competir com import) e retry/backoff (chamadas externas).
+- Tarefa de execução de <code>workflow_actions</code> (fila dedicada, disparada de forma assíncrona a partir dos gatilhos).</p>
+<hr />
+<h2 id="7-fluxos-de-negocio">7. Fluxos de Negócio</h2>
+<h3 id="71-empresas-rf004rf005-implementado">7.1 Empresas (RF004–RF005) — implementado</h3>
+<p><code>Lead → Qualificado → Cliente</code> (ou <code>Perdido</code>/<code>Inativo</code>), com histórico completo em <code>timeline_events</code>. Toda mutação relevante (cadastro, mudança de status, negócios associados) já é registrada na timeline pelo <code>TimelineService</code>. Import em massa (Excel/CSV) já processa de forma assíncrona (Celery), validando campos obrigatórios (<code>razao_social</code>, <code>cnpj</code>, <code>cidade</code>, <code>uf</code>) e duplicidade de CNPJ por tenant — falta apenas a rota HTTP de disparo (§4.2).</p>
+<h3 id="72-contatos-rf006-implementado">7.2 Contatos (RF006) — implementado</h3>
+<p>Múltiplos contatos por empresa via <code>company_id</code>. Sem regra de negócio adicional além do CRUD.</p>
+<h3 id="73-negocios-e-pipeline-rf007rf008-implementado">7.3 Negócios e Pipeline (RF007–RF008) — implementado</h3>
+<p>Negócio pertence a uma <code>company</code>, opcionalmente a um <code>contact</code>, sempre a um <code>responsavel</code> (vendedor), e vive em um <code>pipeline</code>/<code>stage</code>. Mover de etapa (<code>PATCH /deals/{id}/stage</code>) e fechar (<code>PATCH /deals/{id}/close</code>, com <code>motivo_perda</code> quando perdido) já são endpoints dedicados — coerente com o board kanban de arrastar-e-soltar do requisito. SLA por etapa (<code>sla_horas</code>) já existe no modelo; falta o disparo automático de alerta (depende do Celery Beat, §6.3).</p>
+<h3 id="74-tarefas-rf009-implementado">7.4 Tarefas (RF009) — implementado</h3>
+<p>CRUD completo + <code>complete</code>. Vínculo opcional a empresa/contato/negócio.</p>
+<h3 id="75-sequencias-de-tarefas-rf010-a-construir">7.5 Sequências de Tarefas (RF010) — a construir</h3>
+<p>Fluxo: enroll de uma empresa/contato/negócio em uma <code>sequence</code> → Celery Beat varre <code>sequence_enrollments</code> diariamente → para cada step vencido (<code>dia_offset</code>), cria uma <code>Task</code> (ligação/e-mail/whatsapp/follow-up) atribuída ao responsável → avança <code>step_atual</code>. Regra "pausar quando houver resposta" <strong>depende de um sinal de resposta recebida</strong>, que só existe se houver integração de caixa de entrada (<strong>Microsoft 365/Graph</strong> — a GD Conecta usa essa suíte corporativamente, ver §9.2 — não Gmail/Outlook genérico) — ou seja, a integração de e-mail é pré-requisito técnico dessa regra, não pode ser implementada isoladamente. Clonar sequência e reiniciar são operações de service simples sobre <code>sequences</code>/<code>sequence_steps</code>.</p>
+<h3 id="76-cadencia-de-e-mails-rf011-a-construir">7.6 Cadência de E-mails (RF011) — a construir</h3>
+<p>Mesmo motor de enrollment de §7.5, restrito a <code>tipo = email</code>, com <code>email_templates</code> e variáveis dinâmicas resolvidas no momento do envio (substituição de <code>{{nome}}</code>, <code>{{empresa}}</code>, <code>{{cargo}}</code>, <code>{{responsavel}}</code>). Ao final do fluxo (ex.: e-mail 3), criação automática de tarefa de follow-up — reaproveita o mesmo mecanismo de criação de <code>Task</code> de §7.5.</p>
+<h3 id="77-ia-rf015rf017-a-construir">7.7 IA (RF015–RF017) — a construir</h3>
+<p>Três casos de uso distintos, todos passando por uma camada de abstração de provedor (<code>app/services/ai/</code>) com adaptadores OpenAI/Claude:
+1. <strong>Enriquecimento de empresa</strong> (§7.8) — entrada estruturada (CNPJ, razão social, site) → saída estruturada + resumo executivo.
+2. <strong>Assistente comercial</strong> — geração de e-mail/script/resumo/próxima ação/plano de abordagem, a partir do contexto de uma empresa/negócio já cadastrado. Cada chamada é logada em <code>ai_interactions</code> (auditoria de custo e conteúdo gerado).
+3. Ambos os casos devem ser <strong>assíncronos quando envolvem lote</strong> (enriquecimento em massa) e <strong>síncronos</strong> quando é uma ação pontual do usuário (gerar um e-mail agora), mas sempre com timeout e fallback de erro tratado (chamada a provedor externo pode falhar).</p>
+<h3 id="78-enriquecimento-rf016-a-construir">7.8 Enriquecimento (RF016) — a construir</h3>
+<p>Máquina de estados por empresa: <code>importado → aguardando_enriquecimento → em_processamento → revisao → aprovado/rejeitado</code>. Processamento em lote via Celery; aprovação é sempre manual (humano no loop) antes de os dados sugeridos sobrescreverem o cadastro da empresa — reaproveita o padrão de revisão já usado no <code>import_jobs</code> (aprovar erros linha a linha).</p>
+<h3 id="79-workflows-rf018-a-construir">7.9 Workflows (RF018) — a construir</h3>
+<p>Motor evento→condição→ação: os gatilhos (<code>empresa_criada</code>, <code>contato_criado</code>, <code>negocio_criado</code>, <code>mudanca_etapa</code>, <code>resposta_recebida</code>) devem ser publicados pelos services existentes (ex.: <code>CompanyService.create</code> publica <code>empresa_criada</code>) para um dispatcher que localiza <code>workflows</code> ativos com aquele gatilho e enfileira as <code>workflow_actions</code> correspondentes via Celery. Ação <code>executar_enriquecimento</code> conecta workflows diretamente ao módulo de IA (§7.8).</p>
+<hr />
+<h2 id="8-roadmap-tecnico">8. Roadmap Técnico</h2>
+<table>
+<thead>
+<tr>
+<th>Fase</th>
+<th>Escopo</th>
+<th>Status</th>
+<th>Principais dependências</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Fase 0</strong></td>
+<td>Backend MVP (Auth, Multiempresa, Usuários, Empresas+Timeline, Contatos, Negócios, Pipeline, Tarefas, Dashboards Comercial/Vendedor)</td>
+<td>✅ Concluída</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Fase 0.5 — Pesquisa de Leads</strong></td>
+<td>Novo domínio pré-CRM (§9.1): entidade <code>lead_prospects</code>, Score ICP/ICP Fit configurável por tenant, gamificação/bônus, promoção para <code>companies</code>. Frontend prototipado e aprovado; backend 0%</td>
+<td>🔲 A fazer</td>
+<td>Nenhuma externa</td>
+</tr>
+<tr>
+<td><strong>Fase 1 — Fechamento do MVP</strong></td>
+<td>Endpoints de import/export (§4.2, embutidos nas telas por entidade — §9.3), envio de e-mail (reset de senha), hardening de RBAC (G5/G6), frontend completo (§5), testes automatizados + CI mínimo, observabilidade básica, rotação de <code>SECRET_KEY</code>, storage de arquivos, Preferências pessoais + integração Microsoft 365/Graph (§9.2), Snippets (§9.6)</td>
+<td>🔲 A fazer</td>
+<td>Nenhuma externa — é só volume de trabalho sobre o que já existe</td>
+</tr>
+<tr>
+<td><strong>Fase 2</strong></td>
+<td>Sequências de Tarefas, Cadência de E-mails, Workflows, Modelos de e-mail, integração <strong>Microsoft 365/Graph</strong> (necessária para "pausar por resposta") e WhatsApp. Frontend prototipado e aprovado (§9.5); backend 0%</td>
+<td>🔲 A fazer</td>
+<td>Conta Microsoft 365 conectada (já decidido usar Graph API); API do WhatsApp Business</td>
+</tr>
+<tr>
+<td><strong>Fase 3</strong></td>
+<td>IA Comercial (assistente), Enriquecimento Inteligente, Score de Leads, recomendações automáticas</td>
+<td>🔲 A fazer</td>
+<td>Chaves OpenAI/Claude; orçamento de custo por chamada de IA</td>
+</tr>
+<tr>
+<td>~~SaaS self-service~~</td>
+<td><strong>Deprioritizado</strong> — o CRM é de uso interno da GD Conecta, não será comercializado a princípio (§9.0). A arquitetura multi-tenant/RLS continua válida e não muda; só o onboarding self-service de novos tenants perde prioridade.</td>
+<td>⏸️ Fora de escopo por ora</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Fase 4</strong></td>
+<td>Marketplace de integrações, BI avançado, forecast com IA, motor de prospecção inteligente</td>
+<td>🔲 A fazer</td>
+<td>Fases 2–3 concluídas e validadas com uso real</td>
+</tr>
+</tbody>
+</table>
+<h3 id="observacao-final-sobre-viabilidade">Observação final sobre viabilidade</h3>
+<p>Não há nenhum item, nas fases 1–4, que exija reescrever a base já construída. O risco maior não é técnico — é de <strong>sequenciamento</strong>: iniciar Fase 2/3 antes de fechar os gaps de Fase 1 (especialmente testes automatizados e frontend) tende a multiplicar retrabalho, porque cada fase nova depende de telas e de confiança de regressão que ainda não existem.</p>
+<hr />
+<h2 id="9-modulos-e-decisoes-adicionados-apos-a-especificacao-inicial-2026-07-27">9. Módulos e Decisões Adicionados Após a Especificação Inicial (2026-07-27)</h2>
+<p>Uma rodada de prototipagem de frontend (13 protótipos interativos, todos aprovados pelo usuário) revelou requisitos e decisões de produto que <strong>não estavam</strong> no documento funcional original nem nas seções 1–8 acima. Esta seção é a fonte de verdade para esses itens; onde ela contradiz uma seção anterior (ex.: Gmail/Outlook → Microsoft 365), <strong>esta seção prevalece</strong>.</p>
+<h3 id="90-decisao-fundamental-uso-interno-nao-saas-comercializavel">9.0 Decisão fundamental: uso interno, não SaaS comercializável</h3>
+<p>O GD CRM é para <strong>uso interno da própria GD Conecta</strong> — não será comercializado/revendido a princípio. Isso não muda a arquitetura (multi-tenant + RLS continuam corretos e não devem ser removidos, é o padrão certo independentemente de revenda), mas muda a priorização:</p>
+<ul>
+<li>O item "SaaS multiempresa self-service" da Fase 3 (onboarding automático de novos tenants) fica <strong>fora de escopo por ora</strong> — GD Conecta é, na prática, o único tenant relevante no curto/médio prazo.</li>
+<li>Não implementar cobrança/revenda de minutos de chamada, planos pagos para outros tenants, ou onboarding self-service <strong>sem pedido explícito</strong> do usuário.</li>
+<li><code>tenants.config</code> (JSONB) segue sendo o mecanismo correto para configurações por tenant (ex.: pesos de ICP score — §9.1), já que "GD Conecta ser o único tenant hoje" não significa que o próximo tenant (se algum dia existir) devesse herdar regras hardcoded.</li>
+</ul>
+<h3 id="91-pesquisa-de-leads-novo-dominio-pre-crm">9.1 Pesquisa de Leads (novo domínio, pré-CRM)</h3>
+<p>Processo que hoje roda numa planilha Notion — um funcionário pesquisa/enriquece empresas (com apoio do Claude Chat) antes de elas virarem oficialmente <code>companies</code>. Motivo de existir fora de <code>companies</code>: nem toda pesquisa vira lead (descartes e "não avaliados" não devem poluir o cadastro oficial); só quando o registro atinge status <code>promovido</code> é que ele gera uma linha em <code>companies</code>.</p>
+<h4 id="tabela-lead_prospects">Tabela <code>lead_prospects</code></h4>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>UUID (PK)</td>
+<td></td>
+</tr>
+<tr>
+<td>tenant_id</td>
+<td>UUID (FK)</td>
+<td></td>
+</tr>
+<tr>
+<td>empresa</td>
+<td>String(255) NOT NULL</td>
+<td>nome da empresa pesquisada (ainda não é <code>companies.razao_social</code> oficial)</td>
+</tr>
+<tr>
+<td>setor</td>
+<td>String(80) nullable</td>
+<td>categoria macro — <strong>define pontos do Score ICP</strong></td>
+</tr>
+<tr>
+<td>segmento</td>
+<td>String(120) nullable</td>
+<td>subcategoria informativa dentro do setor, não pontua</td>
+</tr>
+<tr>
+<td>uf</td>
+<td>String(2) nullable</td>
+<td>região (Sudeste/Sul/Nordeste/Norte/Centro-Oeste) é <strong>derivada</strong> de <code>uf</code>, não armazenada</td>
+</tr>
+<tr>
+<td>faixa_funcionarios</td>
+<td>String(20) nullable</td>
+<td>enum de faixas (<code>1-50</code> … <code>+ de 10.001</code>) — dado primário, já que fontes como LinkedIn só dão faixa, não número exato</td>
+</tr>
+<tr>
+<td>faturamento</td>
+<td>Numeric(15,2) nullable</td>
+<td></td>
+</tr>
+<tr>
+<td>site, telefone, linkedin</td>
+<td>String</td>
+<td></td>
+</tr>
+<tr>
+<td>dor_sugerida</td>
+<td>Text nullable</td>
+<td>hipótese de dor levantada na pesquisa; hoje preenchida manualmente via Claude Chat — na Fase 3 pode ser automatizada por <code>company_enrichments</code></td>
+</tr>
+<tr>
+<td>contato_sugerido</td>
+<td>String(255) nullable</td>
+<td>texto livre (nome/cargo) — vira <code>contacts</code> de verdade só após a promoção</td>
+</tr>
+<tr>
+<td>status</td>
+<td>String(20) NOT NULL default <code>pesquisando</code></td>
+<td>enum: pesquisando/enriquecido/pronto_para_cadencia/promovido/descartado</td>
+</tr>
+<tr>
+<td>pesquisado_por</td>
+<td>UUID (FK users) NOT NULL</td>
+<td>essencial para o relatório de desempenho (§9.7)</td>
+</tr>
+<tr>
+<td>promoted_company_id</td>
+<td>UUID (FK companies) nullable</td>
+<td>preenchido quando promovido — mantém rastreabilidade/auditoria</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>DateTime(tz)</td>
+<td>substitui a coluna "Mês" da planilha — agrupar por mês a partir daqui</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Campos calculados em service (não persistidos como colunas — recalculados a cada leitura, custo desprezível mesmo em escala):</strong></p>
+<ul>
+<li><code>score_icp</code> = <code>min(100, pontos_setor + pontos_regiao + pontos_faixa)</code>, onde os três pesos vêm de <code>tenants.config.icp_scoring_rules</code> (ver abaixo) — <strong>nunca hardcoded no código</strong>, porque isso trava o produto num critério só da GD Conecta.</li>
+<li><code>icp_fit</code>: <code>"Não avaliado"</code> se score=0 e setor/uf/faixa todos vazios; senão <code>A</code> (≥ corte_a), <code>B</code> (≥ corte_b), <code>C</code> (≥ corte_c), <code>Sem Perfil</code> (abaixo).</li>
+<li><code>gamificacao</code> = 0 se <code>icp_fit</code> ∈ {C, Sem Perfil, Não avaliado} ou status=descartado; senão soma pontos fixos por campo preenchido (telefone 40, setor 20, uf 20, faixa 10, site 10 — total 100).</li>
+<li><code>recebe_bonus</code> = <code>status == "promovido" AND gamificacao &gt; 70</code>. <strong>Importante:</strong> gamificação alta sozinha não paga bônus — só conta quando a pesquisa virou empresa de verdade. Antes disso o bônus é "pendente", não "válido".</li>
+<li><code>bonus_valor</code> = <code>recebe_bonus ? tenants.config.icp_scoring_rules.bonus_valor : 0</code>.</li>
+</ul>
+<h4 id="tenantsconfigicp_scoring_rules-jsonb-por-tenant"><code>tenants.config.icp_scoring_rules</code> (JSONB, por tenant)</h4>
+<pre><code class="language-json">{
+  &quot;setor&quot;: { &quot;Farma&quot;: 40, &quot;Alimentos&quot;: 40, &quot;Autopeças&quot;: 40, &quot;Etiquetas&quot;: 40,
+             &quot;Plástico&quot;: 30, &quot;Máquinas e Equipamentos&quot;: 30, &quot;Química&quot;: 30, &quot;Cosmético&quot;: 30 },
+  &quot;setor_fallback&quot;: 10,
+  &quot;regiao&quot;: { &quot;Sudeste&quot;: 30, &quot;Sul&quot;: 30, &quot;Nordeste&quot;: 30, &quot;Norte&quot;: 0, &quot;Centro-Oeste&quot;: 0 },
+  &quot;faixa_funcionarios&quot;: { &quot;1-50&quot;: 0, &quot;51-200&quot;: 30, &quot;201-500&quot;: 30, &quot;501-1.000&quot;: 30,
+                          &quot;1.001-5.000&quot;: 40, &quot;5.001-10.000&quot;: 50, &quot;+ de 10.001&quot;: 0 },
+  &quot;corte_a&quot;: 80, &quot;corte_b&quot;: 70, &quot;corte_c&quot;: 40,
+  &quot;bonus_valor&quot;: 1.00
+}
+</code></pre>
+<p>Setores fora do mapa pontuam <code>setor_fallback</code>. Região nunca é um campo de UI/armazenamento — é sempre <code>uf → regiao</code> via mapeamento fixo de estados brasileiros.</p>
+<h4 id="fluxo-de-promocao">Fluxo de promoção</h4>
+<p>Ação <code>POST /lead-prospects/{id}/promote</code>: cria um registro em <code>companies</code> (status inicial <code>lead</code>, campos copiados de <code>lead_prospects</code>), grava <code>promoted_company_id</code> de volta no <code>lead_prospects</code> (nunca apaga o registro de pesquisa — ele vira histórico permanente, necessário para a apuração de bônus), e muda <code>status</code> para <code>promovido</code>.</p>
+<h4 id="rotas-propostas">Rotas propostas</h4>
+<table>
+<thead>
+<tr>
+<th>Rota</th>
+<th>Método</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/api/v1/lead-prospects</code></td>
+<td><code>GET</code> (filtros: status, icp_fit, pesquisado_por), <code>POST</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>/api/v1/lead-prospects/{id}</code></td>
+<td><code>GET</code>, <code>PUT</code>, <code>DELETE</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>/api/v1/lead-prospects/{id}/promote</code></td>
+<td><code>POST</code></td>
+<td>cria <code>companies</code>, atualiza status</td>
+</tr>
+<tr>
+<td><code>/api/v1/tenant/icp-scoring-rules</code></td>
+<td><code>GET</code>, <code>PUT</code> (admin)</td>
+<td>edita <code>tenants.config.icp_scoring_rules</code></td>
+</tr>
+<tr>
+<td><code>/api/v1/lead-prospects/performance-report</code></td>
+<td><code>GET</code> (<code>?mes=2026-07</code>)</td>
+<td>agregação por <code>pesquisado_por</code> — alimenta §9.7</td>
+</tr>
+</tbody>
+</table>
+<h4 id="hubspot">HubSpot</h4>
+<p>O fluxo antigo ("ao enriquecer, integra com o HubSpot") <strong>não existe mais</strong> — confirmado pelo usuário em 2026-07-27 ("não teremos a HubSpot mais"). O CRM GD Conecta (Negócios/Pipeline, e futuramente Cadências) é o único destino depois de "pronto para cadência". Não adicionar campos <code>hubspot_url</code>/<code>hubspot_company_id</code>.</p>
+<h3 id="92-preferencias-pessoais-e-integracoes-microsoft-365">9.2 Preferências pessoais e integrações (Microsoft 365)</h3>
+<p>Diferente de <code>/configuracoes</code> (dados do tenant, admin-only), <strong>Preferências</strong> é por usuário — qualquer perfil configura a própria conta. A GD Conecta usa <strong>Microsoft 365/Outlook</strong> corporativamente — por isso a integração de e-mail/calendário é <strong>Microsoft Graph API</strong> (OAuth por usuário), não IMAP/SMTP genérico nem Gmail.</p>
+<h4 id="tabela-user_integrations-nova">Tabela <code>user_integrations</code> (nova)</h4>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>UUID (PK)</td>
+<td></td>
+</tr>
+<tr>
+<td>tenant_id, user_id</td>
+<td>UUID (FK)</td>
+<td></td>
+</tr>
+<tr>
+<td>provider</td>
+<td>String(20) NOT NULL default <code>microsoft365</code></td>
+<td></td>
+</tr>
+<tr>
+<td>tipo</td>
+<td>String(20) NOT NULL</td>
+<td>enum: email/calendario</td>
+</tr>
+<tr>
+<td>access_token_enc, refresh_token_enc</td>
+<td>Text</td>
+<td><strong>sempre criptografados em repouso</strong> — nunca token em texto plano no banco</td>
+</tr>
+<tr>
+<td>conectado_em</td>
+<td>DateTime(tz)</td>
+<td></td>
+</tr>
+<tr>
+<td>ativo</td>
+<td>Boolean default true</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="chamadas-decisao-de-escopo">Chamadas — decisão de escopo</h4>
+<p>Como é uso interno de equipe pequena, a solução recomendada <strong>não é</strong> um discador embutido (WebRTC/Twilio) desde já — é o caminho barato: links <code>tel:</code>/<code>wa.me</code> (já usados nas telas de Contatos/Empresas/Negócio-detalhe) + registro manual via <code>Task</code>/<code>timeline_events</code> (<code>tipo=ligacao</code>, já suportado no schema atual, nenhuma tabela nova necessária). Um discador de verdade (Twilio Voice, por melhor suporte a numeração brasileira) só vale a pena se o volume de ligações justificar — nesse caso, "minutos" seria só um painel de consumo/custo interno da GD Conecta, nunca uma cobrança a terceiros (não há terceiros).</p>
+<h4 id="rotas-propostas_1">Rotas propostas</h4>
+<table>
+<thead>
+<tr>
+<th>Rota</th>
+<th>Método</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/api/v1/me/integrations/email</code></td>
+<td><code>GET</code>, <code>POST</code> (inicia OAuth), <code>DELETE</code> (desconecta)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>/api/v1/me/integrations/calendar</code></td>
+<td><code>GET</code>, <code>POST</code>, <code>DELETE</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>/api/v1/me/password</code></td>
+<td><code>PUT</code></td>
+<td>trocar a própria senha</td>
+</tr>
+<tr>
+<td><code>/api/v1/me/sessions</code></td>
+<td><code>GET</code>, <code>DELETE /{id}</code></td>
+<td>sessões ativas</td>
+</tr>
+</tbody>
+</table>
+<h3 id="93-importarexportar-sem-tela-dedicada">9.3 Importar/Exportar — sem tela dedicada</h3>
+<p>O documento original previa <code>/importar-exportar</code> como rota própria (§5.2 antiga). <strong>Decisão do usuário:</strong> melhor UX é embutir Importar/Exportar direto em cada tela de entidade (Empresas, Contatos, Negócios, Tarefas) — export respeita os filtros aplicados no momento; import abre um fluxo de upload com validação linha a linha (reaproveitando as mesmas regras de <code>import_companies_task</code>/<code>import_contacts_task</code>). O único ponto centralizado é o <strong>histórico de jobs</strong> (<code>import_jobs</code>, que já é uma tabela única com campo <code>tipo</code> — cross-entidade por natureza), exibido dentro de <code>/configuracoes</code>.</p>
+<p>As rotas propostas em §4.2 continuam válidas tecnicamente (o backend não muda) — só a camada de apresentação deixa de ter uma tela própria.</p>
+<h3 id="94-negocio-detalhe-prototipo-aprovado">9.4 Negócio (detalhe) — protótipo aprovado</h3>
+<p><code>/negocios/:id</code> usa só rotas já existentes: <code>GET /deals/{id}</code>, <code>PATCH /deals/{id}/stage</code>, <code>PATCH /deals/{id}/close</code> (com <code>motivo_perda</code>), e a timeline da empresa filtrada por <code>deal_id</code>. Tela inclui: linha do tempo cronológica, compositor de atividade (nota/ligação/e-mail/reunião — grava em <code>timeline_events</code>), painel de detalhes editável (etapa/valor/probabilidade/previsão/origem), cards de empresa e contato principal vinculados, e tarefas vinculadas com conclusão inline.</p>
+<h3 id="95-automacao-fase-2-ui-prototipada-backend-pendente">9.5 Automação (Fase 2) — UI prototipada, backend pendente</h3>
+<p>Sequências, Cadências e Workflows (schema e rotas já propostos em §2.2/§4.3) tiveram a UI prototipada e aprovada. Confirmações do protótipo que valem registrar:</p>
+<ul>
+<li><strong>Clonar sequência/cadência</strong> gera cópia <strong>inativa e sem inscritos</strong> — nunca copia <code>enrollments</code>.</li>
+<li>Cadência sempre tem um botão "Criar tarefa de follow-up ao final" (boolean + título) — reaproveita <code>Task</code>, não é uma tabela nova.</li>
+<li>Workflows: o diagrama gatilho→condição→ação da tela usa exatamente os 5 gatilhos já definidos em <code>workflows.gatilho</code>. A ação <code>executar_enriquecimento</code> aparece <strong>desabilitada</strong> na UI com nota explícita de dependência da Fase 3 — não bloquear o salvamento do workflow, só a execução dessa ação específica até a IA existir.</li>
+<li>Modelos de e-mail (<code>email_templates</code>): editor com inserção de variável por botão (não só digitação livre) e <strong>guarda de exclusão</strong> — um modelo referenciado por alguma <code>sequence_step</code>/<code>cadence_step</code> não pode ser excluído; a UI deve listar onde está em uso.</li>
+</ul>
+<h3 id="96-snippets-novo-dominio">9.6 Snippets (novo domínio)</h3>
+<p>Conceito confirmado com o usuário (estilo "Snippets" do HubSpot): blocos de texto curtos reutilizáveis via atalho, <strong>independentes</strong> de Sequências/Cadências/Modelos de e-mail — servem para inserção rápida em notas, tarefas ou qualquer campo de texto do CRM, não só e-mail.</p>
+<h4 id="tabela-snippets">Tabela <code>snippets</code></h4>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>UUID (PK)</td>
+<td></td>
+</tr>
+<tr>
+<td>tenant_id</td>
+<td>UUID (FK)</td>
+<td></td>
+</tr>
+<tr>
+<td>nome</td>
+<td>String(120) NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td>atalho</td>
+<td>String(40) NOT NULL</td>
+<td>único <strong>por tenant</strong>; só <code>[a-z0-9]</code>, sem <code>#</code> armazenado (prefixo é só de exibição/digitação)</td>
+</tr>
+<tr>
+<td>conteudo</td>
+<td>Text NOT NULL</td>
+<td>suporta as mesmas variáveis dinâmicas de <code>email_templates</code> (<code>{{nome}}</code>, <code>{{empresa}}</code>, <code>{{cargo}}</code>, <code>{{responsavel}}</code>)</td>
+</tr>
+<tr>
+<td>created_by</td>
+<td>UUID (FK users)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Expansão (<code>#atalho</code> + espaço → texto) é comportamento <strong>client-side</strong> (frontend detecta o padrão em qualquer <code>&lt;textarea&gt;</code>/campo de texto habilitado) — não precisa de endpoint dedicado além do CRUD padrão (<code>GET/POST /snippets</code>, <code>GET/PUT/DELETE /snippets/{id}</code>).</p>
+<h3 id="97-relatorio-de-desempenho-de-pesquisa">9.7 Relatório de Desempenho de Pesquisa</h3>
+<p>Não é uma entidade nova — é uma agregação sobre <code>lead_prospects</code>, agrupada por <code>pesquisado_por</code> e por mês (<code>created_at</code>). Tela somente-consulta (sem CRUD): ranking por taxa de qualificação (<code>icp_fit</code> A+B / total), volume de pesquisas por pessoa, e bônus válido total do mês (soma de <code>bonus_valor</code> onde <code>recebe_bonus = true</code>). <strong>Não é um módulo de folha de pagamento</strong> — só cálculo e consulta, com exportação CSV.</p>
+<h3 id="98-formularios-rastreio-do-site-correcao-de-registro">9.8 Formulários &amp; Rastreio do site — correção de registro</h3>
+<p>Este módulo <strong>já estava prototipado</strong> (artifact único com duas abas) antes desta rodada de revisão — não é um gap. A aba Formulários cobre: KPIs de conversão, lista de formulários (status ativo/pausado/rascunho, código de incorporação, editar), últimos envios (marcando lead novo vs. empresa já existente), e um builder de campos por arrastar-e-soltar. A aba Rastreio do site cobre identificação de empresas visitantes por IP corporativo, tráfego por dia e páginas mais visitadas.</p>
+<p>Esse módulo <strong>não tem modelo de dados formalizado</strong> nesta especificação ainda — ao implementar de verdade, será necessário desenhar <code>forms</code>, <code>form_fields</code> e <code>form_submissions</code> (hoje só existem como protótipo de frontend, sem schema correspondente em <code>2.1</code>/<code>2.2</code>).</p>
+<h3 id="99-descartado-grupo-de-usuarios">9.9 Descartado: "Grupo de Usuários"</h3>
+<p>O usuário cogitou pedir uma tela de "Grupo de Usuários", mas ao esclarecer o que ela representaria (times/território? permissões customizadas além dos 4 perfis?) decidiu que <strong>não precisa ser desenvolvida</strong>. Não propor essa tela novamente sem pedido explícito.</p>
+<h3 id="910-indice-de-prototipos-produzidos">9.10 Índice de protótipos produzidos</h3>
+<p>Todos os protótipos abaixo são artifacts interativos (HTML/CSS/JS autocontidos, dados mockados), aprovados pelo usuário, usados como referência de UX/fluxo para a implementação real em React — <strong>não são código de produção</strong> e os links são privados/efêmeros (considerar capturar screenshots ou re-exportar antes de trocar de conta ou depender deles a longo prazo).</p>
+<table>
+<thead>
+<tr>
+<th>Tela</th>
+<th>Rota proposta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Login</td>
+<td><code>/login</code></td>
+</tr>
+<tr>
+<td>Dashboard</td>
+<td><code>/</code></td>
+</tr>
+<tr>
+<td>Pesquisa de Leads</td>
+<td><code>/pesquisa-leads</code></td>
+</tr>
+<tr>
+<td>Desempenho de Pesquisa</td>
+<td><code>/pesquisa-leads/desempenho</code></td>
+</tr>
+<tr>
+<td>Empresas (lista + kanban)</td>
+<td><code>/empresas</code></td>
+</tr>
+<tr>
+<td>Empresa (detalhe)</td>
+<td><code>/empresas/:id</code></td>
+</tr>
+<tr>
+<td>Contatos</td>
+<td><code>/contatos</code></td>
+</tr>
+<tr>
+<td>Negócios (board)</td>
+<td><code>/negocios</code></td>
+</tr>
+<tr>
+<td>Negócio (detalhe)</td>
+<td><code>/negocios/:id</code></td>
+</tr>
+<tr>
+<td>Pipeline (configuração)</td>
+<td><code>/pipelines</code></td>
+</tr>
+<tr>
+<td>Tarefas</td>
+<td><code>/tarefas</code></td>
+</tr>
+<tr>
+<td>Sequências</td>
+<td><code>/sequencias</code></td>
+</tr>
+<tr>
+<td>Cadências</td>
+<td><code>/cadencias</code></td>
+</tr>
+<tr>
+<td>Workflows</td>
+<td><code>/workflows</code></td>
+</tr>
+<tr>
+<td>Modelos de e-mail</td>
+<td><code>/modelos-email</code></td>
+</tr>
+<tr>
+<td>Snippets</td>
+<td><code>/snippets</code></td>
+</tr>
+<tr>
+<td>Formulários &amp; Rastreio do site</td>
+<td><code>/formularios</code></td>
+</tr>
+<tr>
+<td>Usuários</td>
+<td><code>/usuarios</code></td>
+</tr>
+<tr>
+<td>Configurações</td>
+<td><code>/configuracoes</code></td>
+</tr>
+<tr>
+<td>Preferências pessoais</td>
+<td><code>/preferencias</code></td>
+</tr>
+</tbody>
+</table>
+<p>Detalhes de cada decisão de produto, links dos artifacts e o histórico completo da conversa que originou esta seção estão registrados na memória do projeto (fora deste repositório).</p>
+    </div>
+  </main>
+</div>
+
+<button class="back-to-top" id="backToTop" aria-label="Voltar ao topo">
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5-5 5 5"/></svg>
+</button>
+
+<script>
+  (function () {
+    var backBtn = document.getElementById('backToTop');
+    window.addEventListener('scroll', function () {
+      backBtn.classList.toggle('show', window.scrollY > 400);
+    });
+    backBtn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    document.querySelectorAll('.doc-content table').forEach(function (t) {
+      var wrap = document.createElement('div');
+      wrap.className = 'table-wrap';
+      t.parentNode.insertBefore(wrap, t);
+      wrap.appendChild(t);
+    });
+
+    var tocLinks = Array.prototype.slice.call(document.querySelectorAll('.doc-sidebar nav.toc a'));
+    var targets = tocLinks.map(function (a) {
+      var id = a.getAttribute('href').slice(1);
+      return document.getElementById(id);
+    });
+    function onScroll() {
+      var pos = window.scrollY + 90;
+      var activeIdx = -1;
+      for (var i = 0; i < targets.length; i++) {
+        if (targets[i] && targets[i].offsetTop <= pos) activeIdx = i;
+      }
+      tocLinks.forEach(function (a, i) {
+        a.classList.toggle('active', i === activeIdx);
+      });
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>

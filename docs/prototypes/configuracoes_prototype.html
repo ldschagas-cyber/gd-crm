@@ -1,0 +1,488 @@
+<title>Configurações — GD Conecta CRM</title>
+<style>
+  /* Font note: real product should self-host IBM Plex Sans/Mono; CDN fonts are blocked
+     in this artifact sandbox, so a close system-grotesque stack stands in here. */
+  :root {
+    --font-display: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Cascadia Code", "SFMono-Regular", "Consolas", ui-monospace, monospace;
+
+    --indigo: #2D3561;
+    --indigo-600: #3B4478;
+    --amber: #C9A84C;
+    --azul: #0077A8;
+    --marfim: #F5F1EB;
+
+    --paper: var(--marfim);
+    --panel: var(--indigo);
+    --panel-fg: #F1EEE6;
+    --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12);
+    --panel-active-bg: rgba(201, 168, 76, 0.14);
+
+    --ink: #22243A;
+    --ink-dim: #5B5E78;
+    --ink-faint: #8B8EA6;
+    --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF;
+    --accent: var(--amber);
+    --link: var(--azul);
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+
+    --good: #0ca30c;
+    --warning: #fab219;
+    --serious: #ec835a;
+    --critical: #d03b3b;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+      --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+      --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+      --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+    --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+    --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+    --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+  }
+  :root[data-theme="light"] {
+    --paper: #F5F1EB; --panel: #2D3561; --panel-fg: #F1EEE6; --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12); --panel-active-bg: rgba(201, 168, 76, 0.14);
+    --ink: #22243A; --ink-dim: #5B5E78; --ink-faint: #8B8EA6; --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF; --amber: #C9A84C; --azul: #0077A8; --link: #0077A8;
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; font-family: var(--font-display); color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; }
+  button, input, select, textarea { font-family: inherit; }
+  a { color: inherit; }
+  ::selection { background: rgba(201,168,76,.3); }
+  :focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; border-radius: 4px; }
+
+  .shell { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+
+  /* ---------------- Sidebar ---------------- */
+  .sidebar { background: var(--panel); color: var(--panel-fg); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+  .sb-brand { display: flex; align-items: center; gap: 10px; padding: 20px 18px 16px; }
+  .monogram { width: 34px; height: 34px; border-radius: 9px; flex: none; background: var(--amber); color: var(--indigo); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+  .sb-brand strong { display: block; font-size: 14.5px; font-weight: 650; line-height: 1.2; }
+  .sb-brand span { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--panel-fg-dim); margin-top: 2px; }
+  .sb-nav { flex: 1; overflow-y: auto; padding: 10px 12px; }
+  .sb-group + .sb-group { margin-top: 18px; }
+  .sb-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--panel-fg-dim); padding: 0 10px; margin-bottom: 6px; }
+  .sb-item { display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: 8px; margin-bottom: 2px; font-size: 13.6px; font-weight: 500; color: var(--panel-fg-dim); text-decoration: none; cursor: pointer; border: 1px solid transparent; position: relative; }
+  .sb-item svg { width: 17px; height: 17px; flex: none; opacity: 0.9; }
+  .sb-item:hover { background: rgba(241, 238, 230, 0.06); color: var(--panel-fg); }
+  .sb-item.active { background: var(--panel-active-bg); color: var(--panel-fg); font-weight: 650; }
+  .sb-item.active::before { content: ""; position: absolute; left: -12px; top: 6px; bottom: 6px; width: 3px; background: var(--amber); border-radius: 2px; }
+  .sb-item .chip { margin-left: auto; font-family: var(--font-mono); font-size: 10px; background: rgba(241,238,230,0.12); color: var(--panel-fg-dim); padding: 1px 6px; border-radius: 100px; }
+  .sb-user { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-top: 1px solid var(--panel-border); }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; flex: none; background: rgba(201,168,76,0.18); color: var(--amber); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; border: 1px solid rgba(201,168,76,0.3); }
+  .sb-user-meta { min-width: 0; flex: 1; }
+  .sb-user-meta strong { display: block; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-user-meta span { display: block; font-size: 11px; color: var(--panel-fg-dim); }
+
+  /* ---------------- Main column ---------------- */
+  .main-col { display: flex; flex-direction: column; min-width: 0; }
+  .content { padding: 22px 28px 48px; display: flex; flex-direction: column; gap: 16px; max-width: 720px; }
+
+  .page-head { display: flex; align-items: flex-start; gap: 16px; position: sticky; top: 0; background: var(--paper); z-index: 3; padding-bottom: 4px; }
+  .page-head h1 { margin: 0; font-size: 20px; font-weight: 650; letter-spacing: -0.01em; }
+  .page-head p { margin: 3px 0 0; font-size: 12.5px; color: var(--ink-dim); }
+  .page-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; flex: none; }
+  .dirty-flag { font-size: 12px; color: var(--serious); font-weight: 600; display: none; align-items: center; gap: 5px; }
+  .dirty-flag.show { display: flex; }
+  .dirty-flag .d { width: 6px; height: 6px; border-radius: 50%; background: var(--serious); }
+
+  .btn-primary { display: flex; align-items: center; gap: 7px; background: var(--indigo); color: var(--panel-fg); border: 1px solid var(--indigo); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-primary:hover { background: var(--indigo-600); }
+  .btn-primary:disabled { opacity: .45; cursor: not-allowed; background: var(--indigo); }
+  .btn-primary svg { width: 14px; height: 14px; }
+  .btn-ghost { display: flex; align-items: center; gap: 7px; background: var(--card-bg); color: var(--ink); border: 1px solid var(--border); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-ghost:hover { border-color: var(--ink-faint); }
+  .btn-ghost.sm { padding: 6px 11px; font-size: 12.5px; }
+
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+  .card-head { padding: 16px 20px 12px; border-bottom: 1px solid var(--border); }
+  .card-head h2 { margin: 0; font-size: 14.5px; font-weight: 700; }
+  .card-head p { margin: 3px 0 0; font-size: 12px; color: var(--ink-dim); }
+  .card-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
+
+  .f-group { display: flex; flex-direction: column; gap: 6px; }
+  .f-row { display: flex; gap: 12px; }
+  .f-row .f-group { flex: 1; min-width: 0; }
+  .f-label { font-size: 12.5px; font-weight: 600; color: var(--ink-dim); display: flex; justify-content: space-between; }
+  .f-label .req { color: var(--critical); }
+  .f-label .opt { font-weight: 400; color: var(--ink-faint); }
+  .f-input, .f-select { border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; background: var(--card-bg); color: var(--ink); width: 100%; outline: none; transition: border-color .12s ease, box-shadow .12s ease; }
+  .f-input:focus, .f-select:focus { border-color: var(--azul); box-shadow: 0 0 0 3px rgba(0,119,168,.14); }
+  .f-input.err { border-color: var(--critical); }
+  .f-err { font-size: 11.5px; color: var(--critical); display: none; }
+  .f-err.show { display: block; }
+  .f-input:disabled { background: var(--paper); color: var(--ink-faint); cursor: not-allowed; }
+  .f-hint { font-size: 11.5px; color: var(--ink-faint); }
+  .f-check { display: flex; align-items: center; gap: 9px; font-size: 13px; color: var(--ink); cursor: pointer; }
+  .f-check input { width: 16px; height: 16px; accent-color: var(--indigo); cursor: pointer; }
+
+  .plano-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .plano-pill { font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 100px; background: rgba(201,168,76,0.18); color: var(--amber); text-transform: capitalize; }
+  .status-pill { font-size: 11.5px; font-weight: 650; padding: 3px 10px; border-radius: 100px; display: inline-flex; align-items: center; gap: 6px; }
+  .status-pill .d { width: 6px; height: 6px; border-radius: 50%; }
+  .status-pill.ativo { background: rgba(12,163,12,0.12); color: var(--good); }
+  .status-pill.ativo .d { background: var(--good); }
+
+  .link-card { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 1px dashed var(--border); border-radius: 10px; text-decoration: none; color: inherit; cursor: pointer; }
+  .link-card:hover { border-color: var(--ink-faint); background: var(--paper); }
+  .link-card .lc-icon { width: 34px; height: 34px; border-radius: 9px; background: var(--panel-active-bg); color: var(--amber); display: flex; align-items: center; justify-content: center; flex: none; }
+  .link-card .lc-icon svg { width: 17px; height: 17px; }
+  .link-card .lc-body { flex: 1; min-width: 0; }
+  .link-card .lc-title { font-size: 13.3px; font-weight: 650; }
+  .link-card .lc-sub { font-size: 11.5px; color: var(--ink-faint); margin-top: 1px; }
+  .link-card .lc-arrow { color: var(--ink-faint); flex: none; }
+  .link-card .lc-arrow svg { width: 15px; height: 15px; }
+
+  .history-table { width: 100%; border-collapse: collapse; font-size: 12.8px; }
+  .history-table th { text-align: left; font-size: 10.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-faint); font-weight: 650; padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .history-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; white-space: nowrap; }
+  .history-table tbody tr:last-child td { border-bottom: none; }
+  .history-entity-pill { font-size: 11px; font-weight: 650; padding: 2px 9px; border-radius: 100px; background: var(--paper); color: var(--ink-dim); }
+  .history-file { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-dim); }
+  .history-count { font-family: var(--font-mono); }
+  .history-count .ok { color: var(--good); }
+  .history-count .erro { color: var(--critical); }
+  .history-note { font-size: 11.5px; color: var(--ink-faint); padding: 12px 20px 16px; border-top: 1px solid var(--border); }
+
+  .toast { position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 12px); background: var(--ink); color: var(--paper); font-size: 13.5px; padding: 10px 16px; border-radius: 8px; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: opacity 180ms ease, transform 180ms ease; z-index: 60; max-width: 88vw; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar { position: relative; height: auto; }
+    .sb-nav, .sb-user { display: none; }
+    .page-head { flex-wrap: wrap; position: static; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .toast { transition: none; }
+  }
+</style>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="monogram">GD</div>
+      <div><strong>Conecta CRM</strong><span>Gestão comercial</span></div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-group">
+        <a class="sb-item" href="#" data-page="Dashboard">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="2.5" width="6.2" height="6.2" rx="1.3"/><rect x="11.3" y="2.5" width="6.2" height="4.4" rx="1.3"/><rect x="11.3" y="9.4" width="6.2" height="8.1" rx="1.3"/><rect x="2.5" y="11.2" width="6.2" height="6.3" rx="1.3"/></svg>
+          Dashboard
+        </a>
+        <a class="sb-item" href="#" data-page="Pesquisa de Leads">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7"/><circle cx="10" cy="10" r="3.2"/><path d="M10 3v2.4M10 14.6V17M17 10h-2.4M5.4 10H3"/></svg>
+          Pesquisa de Leads
+        </a>
+        <a class="sb-item" href="#" data-page="Empresas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17.5V3.8a.8.8 0 01.8-.8h6.4a.8.8 0 01.8.8v13.7"/><path d="M13 17.5V8.3a.8.8 0 01.8-.8h3.4a.8.8 0 01.8.8v9.2"/><path d="M5.4 6h1.6M5.4 9h1.6M5.4 12h1.6M15 10.6h1M15 13.4h1"/></svg>
+          Empresas
+          <span class="chip">3.402</span>
+        </a>
+        <a class="sb-item" href="#" data-page="Contatos">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="6.6" r="3.1"/><path d="M3.6 17c.7-3.4 3.2-5.2 6.4-5.2s5.7 1.8 6.4 5.2"/></svg>
+          Contatos
+        </a>
+        <a class="sb-item" href="#" data-page="Negócios">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 10.3l3-4.6a1 1 0 01.85-.47h7.3a1 1 0 01.85.47l3 4.6"/><path d="M2.5 10.3v5.2a1 1 0 001 1h13a1 1 0 001-1v-5.2"/><path d="M7.3 10.3a2.7 2.7 0 005.4 0"/></svg>
+          Negócios
+          <span class="chip">184</span>
+        </a>
+        <a class="sb-item" href="#" data-page="Pipeline">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="3" width="4.2" height="14" rx="1"/><rect x="7.9" y="3" width="4.2" height="9.5" rx="1"/><rect x="13.3" y="3" width="4.2" height="6" rx="1"/></svg>
+          Pipeline
+        </a>
+        <a class="sb-item" href="#" data-page="Tarefas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2.2"/><path d="M6.6 10.2l2 2 4.6-4.9"/></svg>
+          Tarefas
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Marketing</div>
+        <a class="sb-item" href="#" data-page="Formulários">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="2.5" width="14" height="15" rx="1.8"/><path d="M6.3 6.6h7.4M6.3 9.6h7.4M6.3 12.6h4.4"/></svg>
+          Formulários
+        </a>
+        <a class="sb-item" href="#" data-page="Rastreio do site">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7.3"/><path d="M10 5.6v4.4l3 1.8"/></svg>
+          Rastreio do site
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Administração</div>
+        <a class="sb-item" href="#" data-page="Usuários">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="6.4" r="2.8"/><path d="M2.6 16.4c.6-3 2.7-4.6 5.4-4.6s4.8 1.6 5.4 4.6"/><path d="M13.6 4.6c1.3.3 2.2 1.4 2.2 2.9 0 1.3-.7 2.3-1.8 2.8M15.6 11.9c1.4.6 2.3 1.9 2.7 3.9"/></svg>
+          Usuários
+        </a>
+        <div class="sb-item active">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="2.6"/><path d="M10 2.8v2M10 15.2v2M17.2 10h-2M4.8 10h-2M15.1 4.9l-1.4 1.4M6.3 13.7l-1.4 1.4M15.1 15.1l-1.4-1.4M6.3 6.3L4.9 4.9"/></svg>
+          Configurações
+        </div>
+      </div>
+    </nav>
+
+    <div class="sb-user">
+      <div class="avatar">AD</div>
+      <div class="sb-user-meta"><strong>Administrador</strong><span>Admin · GD Conecta</span></div>
+    </div>
+  </aside>
+
+  <div class="main-col">
+    <div class="content">
+      <div class="page-head">
+        <div>
+          <h1>Configurações</h1>
+          <p>Dados do tenant, preferências e critérios usados nos módulos comerciais</p>
+        </div>
+        <div class="page-actions">
+          <span class="dirty-flag" id="dirtyFlag"><span class="d"></span>Alterações não salvas</span>
+          <button class="btn-primary" id="saveBtn" disabled>
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 10l3.5 3.5L15.5 6"/></svg>
+            Salvar alterações
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Dados da empresa</h2>
+          <p>Identidade do tenant no CRM</p>
+        </div>
+        <div class="card-body">
+          <div class="f-group">
+            <label class="f-label">Razão social <span class="req">*</span></label>
+            <input class="f-input" id="fldRazaoSocial" data-field="razaoSocial" value="GD Conecta Soluções em Logística Ltda" />
+            <span class="f-err" id="errRazaoSocial">Informe a razão social.</span>
+          </div>
+          <div class="f-group">
+            <label class="f-label">Nome fantasia <span class="opt">opcional</span></label>
+            <input class="f-input" id="fldNomeFantasia" data-field="nomeFantasia" value="GD Conecta" />
+          </div>
+          <div class="f-row">
+            <div class="f-group">
+              <label class="f-label">CNPJ</label>
+              <input class="f-input mono" value="12.345.678/0001-90" disabled />
+              <span class="f-hint">CNPJ não pode ser alterado por aqui — contate o suporte.</span>
+            </div>
+          </div>
+          <div class="f-group">
+            <label class="f-label">Plano e status</label>
+            <div class="plano-row">
+              <span class="plano-pill" id="planoPill">Starter</span>
+              <span class="status-pill ativo"><span class="d"></span>Ativo</span>
+              <button class="btn-ghost sm" id="upgradeBtn" type="button">Falar sobre upgrade</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Preferências regionais</h2>
+          <p>Como datas, moeda e semana são exibidas no CRM</p>
+        </div>
+        <div class="card-body">
+          <div class="f-row">
+            <div class="f-group">
+              <label class="f-label">Fuso horário</label>
+              <select class="f-select" id="fldFuso" data-field="fuso">
+                <option value="America/Sao_Paulo" selected>Horário de Brasília (America/São Paulo)</option>
+                <option value="America/Manaus">Amazonas (America/Manaus)</option>
+                <option value="America/Rio_Branco">Acre (America/Rio Branco)</option>
+              </select>
+            </div>
+            <div class="f-group">
+              <label class="f-label">Semana começa em</label>
+              <select class="f-select" id="fldSemana" data-field="semana">
+                <option value="domingo" selected>Domingo</option>
+                <option value="segunda">Segunda-feira</option>
+              </select>
+            </div>
+          </div>
+          <div class="f-row">
+            <div class="f-group">
+              <label class="f-label">Moeda</label>
+              <input class="f-input" value="Real brasileiro (R$)" disabled />
+            </div>
+            <div class="f-group">
+              <label class="f-label">Formato de data</label>
+              <input class="f-input" value="dd/mm/aaaa" disabled />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Segurança</h2>
+          <p>Política de senha exigida ao criar ou redefinir acesso de usuários</p>
+        </div>
+        <div class="card-body">
+          <div class="f-row">
+            <div class="f-group">
+              <label class="f-label">Tamanho mínimo da senha</label>
+              <select class="f-select" id="fldSenhaMin" data-field="senhaMin">
+                <option value="6">6 caracteres</option>
+                <option value="8" selected>8 caracteres</option>
+                <option value="10">10 caracteres</option>
+                <option value="12">12 caracteres</option>
+              </select>
+            </div>
+          </div>
+          <label class="f-check"><input type="checkbox" id="fldSenhaNumero" data-field="senhaNumero" checked /> Exigir pelo menos um número</label>
+          <label class="f-check"><input type="checkbox" id="fldSenhaSimbolo" data-field="senhaSimbolo" /> Exigir pelo menos um símbolo</label>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Critérios da Pesquisa de Leads</h2>
+          <p>Pesos do Score ICP, cortes de ICP Fit e valor do bônus</p>
+        </div>
+        <div class="card-body">
+          <a class="link-card" id="criteriaLink">
+            <span class="lc-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="7"/><circle cx="10" cy="10" r="3.2"/><path d="M10 3v2.4M10 14.6V17M17 10h-2.4M5.4 10H3"/></svg></span>
+            <span class="lc-body">
+              <span class="lc-title">Editar critérios de pontuação</span>
+              <span class="lc-sub">Configurados dentro de Pesquisa de Leads — abre em uma nova aba</span>
+            </span>
+            <span class="lc-arrow"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 5l5 5-5 5"/></svg></span>
+          </a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Histórico de importações</h2>
+          <p>Todos os uploads de planilha, de qualquer módulo — Empresas, Contatos, Negócios e Tarefas têm cada um seu próprio botão de Importar, mas o histórico é único</p>
+        </div>
+        <div class="table-scroll" style="overflow-x:auto;">
+          <table class="history-table">
+            <thead>
+              <tr><th>Data</th><th>Módulo</th><th>Arquivo</th><th>Executado por</th><th>Resultado</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>20/07/2026 14:12</td>
+                <td><span class="history-entity-pill">Empresas</span></td>
+                <td class="history-file">empresas_julho.csv</td>
+                <td>Administrador</td>
+                <td class="history-count"><span class="ok">84 ok</span> · <span class="erro">3 erro</span></td>
+              </tr>
+              <tr>
+                <td>15/07/2026 09:47</td>
+                <td><span class="history-entity-pill">Contatos</span></td>
+                <td class="history-file">contatos_leads.csv</td>
+                <td>Felipe Nogueira</td>
+                <td class="history-count"><span class="ok">22 ok</span> · <span class="erro">0 erro</span></td>
+              </tr>
+              <tr>
+                <td>10/07/2026 16:30</td>
+                <td><span class="history-entity-pill">Negócios</span></td>
+                <td class="history-file">negocios_pipeline_sul.csv</td>
+                <td>Marina Duarte</td>
+                <td class="history-count"><span class="ok">12 ok</span> · <span class="erro">1 erro</span></td>
+              </tr>
+              <tr>
+                <td>28/06/2026 11:05</td>
+                <td><span class="history-entity-pill">Empresas</span></td>
+                <td class="history-file">empresas_maio.csv</td>
+                <td>Administrador</td>
+                <td class="history-count"><span class="ok">156 ok</span> · <span class="erro">8 erro</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="history-note">Ilustrativo neste protótipo — no backend real vem da tabela <code>import_jobs</code> (já existe no schema), via <code>GET /import-jobs/{id}</code>.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var toastEl = document.getElementById('toast');
+  var toastTimer;
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 3400);
+  }
+  document.querySelectorAll('[data-page]').forEach(function (el) {
+    el.addEventListener('click', function (e) { e.preventDefault(); showToast('Tela "' + el.getAttribute('data-page') + '" ainda não foi prototipada.'); });
+  });
+  document.getElementById('upgradeBtn').addEventListener('click', function () {
+    showToast('Fluxo de upgrade de plano ainda não foi prototipado — hoje é um contato manual com o time comercial.');
+  });
+  document.getElementById('criteriaLink').addEventListener('click', function () {
+    window.open('https://claude.ai/code/artifact/a7e184a1-26ef-4e8c-9922-e0f608a69a71', '_blank', 'noopener');
+  });
+
+  var fields = document.querySelectorAll('[data-field]');
+  var initial = {};
+  fields.forEach(function (el) {
+    initial[el.getAttribute('data-field')] = el.type === 'checkbox' ? el.checked : el.value;
+  });
+
+  var saveBtn = document.getElementById('saveBtn');
+  var dirtyFlag = document.getElementById('dirtyFlag');
+
+  function isDirty() {
+    var dirty = false;
+    fields.forEach(function (el) {
+      var cur = el.type === 'checkbox' ? el.checked : el.value;
+      if (cur !== initial[el.getAttribute('data-field')]) dirty = true;
+    });
+    return dirty;
+  }
+  function refreshDirty() {
+    var d = isDirty();
+    saveBtn.disabled = !d;
+    dirtyFlag.classList.toggle('show', d);
+  }
+  fields.forEach(function (el) {
+    el.addEventListener('input', refreshDirty);
+    el.addEventListener('change', refreshDirty);
+  });
+
+  document.getElementById('fldRazaoSocial').addEventListener('input', function () {
+    var ok = document.getElementById('fldRazaoSocial').value.trim().length > 0;
+    document.getElementById('fldRazaoSocial').classList.toggle('err', !ok);
+    document.getElementById('errRazaoSocial').classList.toggle('show', !ok);
+  });
+
+  saveBtn.addEventListener('click', function () {
+    if (!document.getElementById('fldRazaoSocial').value.trim()) {
+      document.getElementById('fldRazaoSocial').classList.add('err');
+      document.getElementById('errRazaoSocial').classList.add('show');
+      return;
+    }
+    fields.forEach(function (el) {
+      initial[el.getAttribute('data-field')] = el.type === 'checkbox' ? el.checked : el.value;
+    });
+    refreshDirty();
+    showToast('Configurações salvas.');
+  });
+})();
+</script>

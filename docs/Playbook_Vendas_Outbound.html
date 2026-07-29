@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Playbook de Vendas Outbound — GD Diagnóstico</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --indigo: #2D3561;
+    --indigo-light: #3d4778;
+    --ambar: #C9A84C;
+    --azul: #0077A8;
+    --marfim: #F5F1EB;
+    --ink: #1c2033;
+    --muted: #5c6178;
+    --border: #e2ddd2;
+    --card-bg: #ffffff;
+    --ok-bg: #eef3ea;
+    --ok-ink: #3e6b2f;
+    --warn-bg: #fbf0dc;
+    --warn-ink: #8a6414;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    background: var(--marfim);
+    color: var(--ink);
+    line-height: 1.55;
+  }
+
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px 80px; }
+
+  header.hero {
+    background: linear-gradient(135deg, var(--indigo) 0%, var(--indigo-light) 100%);
+    color: #fff;
+    padding: 48px 24px 40px;
+    margin-bottom: 36px;
+  }
+  header.hero .wrap { padding: 0; max-width: 980px; margin: 0 auto; padding-left: 0; padding-right: 0; }
+  header.hero .tag {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    background: rgba(201,168,76,.18);
+    color: var(--ambar);
+    border: 1px solid rgba(201,168,76,.4);
+    border-radius: 999px;
+    padding: 4px 12px;
+    margin-bottom: 16px;
+  }
+  header.hero h1 { font-size: 30px; margin: 0 0 10px; font-weight: 700; }
+  header.hero p.lede { font-size: 15.5px; color: #d9dcef; max-width: 720px; margin: 0; }
+
+  h2 {
+    font-size: 22px;
+    color: var(--indigo);
+    border-bottom: 2px solid var(--ambar);
+    padding-bottom: 8px;
+    margin: 48px 0 18px;
+  }
+  h2 .n { color: var(--ambar); font-family: 'IBM Plex Mono', monospace; margin-right: 8px; }
+  h3 { font-size: 17px; color: var(--indigo); margin: 28px 0 10px; }
+  h4 { font-size: 14.5px; color: var(--indigo); margin: 20px 0 8px; }
+
+  p { font-size: 14.5px; color: var(--ink); }
+  .muted { color: var(--muted); font-size: 13.5px; }
+
+  .callout {
+    background: var(--warn-bg);
+    border: 1px solid #e6cf9a;
+    border-left: 4px solid var(--ambar);
+    border-radius: 6px;
+    padding: 14px 18px;
+    font-size: 13.8px;
+    color: var(--warn-ink);
+    margin: 18px 0;
+  }
+  .callout strong { color: var(--indigo); }
+  .callout.ok { background: var(--ok-bg); border-color: #cfe0c4; border-left-color: #5a8c46; color: var(--ok-ink); }
+  .callout.ok strong { color: var(--indigo); }
+
+  table.cadence {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.3px;
+    margin: 14px 0 8px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  table.cadence th {
+    background: var(--indigo);
+    color: #fff;
+    text-align: left;
+    padding: 9px 12px;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+  }
+  table.cadence td {
+    padding: 10px 12px;
+    border-top: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table.cadence tr:nth-child(even) td { background: #faf8f4; }
+  .pill {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .pill.ligacao { background: #e3edf5; color: var(--azul); }
+  .pill.email { background: #ece8fb; color: var(--indigo); }
+  .pill.whatsapp { background: #e2f3e6; color: #2e7d4f; }
+  .pill.followup { background: #fbf0dc; color: var(--warn-ink); }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 22px;
+    margin: 16px 0;
+  }
+  .card .meta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin-bottom: 4px;
+  }
+  .card .subject {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--indigo);
+    margin-bottom: 12px;
+  }
+  .card .body {
+    white-space: pre-line;
+    font-size: 13.8px;
+    border-top: 1px dashed var(--border);
+    padding-top: 12px;
+  }
+  .var { color: var(--azul); font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; }
+
+  .snippet {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--azul);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 10px 0;
+    font-size: 13.5px;
+  }
+  .snippet .sh { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--azul); margin-bottom: 4px; display: block; }
+  .snippet .body { white-space: pre-line; }
+
+  ol.steps { padding-left: 20px; font-size: 13.8px; }
+  ol.steps li { margin-bottom: 10px; }
+  ol.steps code, p code, li code {
+    background: #ece8fb;
+    color: var(--indigo);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 720px) { .grid2 { grid-template-columns: 1fr; } }
+
+  .toc {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 24px;
+    margin-bottom: 8px;
+  }
+  .toc h3 { margin-top: 0; }
+  .toc ol { font-size: 13.5px; padding-left: 20px; }
+  .toc a { color: var(--azul); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  footer { text-align: center; margin-top: 60px; color: var(--muted); font-size: 12px; }
+
+  @media print {
+    header.hero { background: var(--indigo) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .callout, table.cadence th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="tag">GD Conecta · Comercial</span>
+    <h1>Playbook de Vendas Outbound — GD Diagnóstico</h1>
+    <p class="lede">Dois processos de prospecção, cadência de atividades, modelos de e-mail e snippets prontos para cadastrar no CRM GD Conecta. Versão 1 — piloto de 10 contatos/semana para validar processo e ferramenta.</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="toc">
+    <h3>Neste documento</h3>
+    <ol>
+      <li><a href="#principios">Princípios do piloto</a></li>
+      <li><a href="#processo-a">Processo A — Prospecção fria (leads novos)</a></li>
+      <li><a href="#processo-b">Processo B — Reativação da base legada (80 clientes)</a></li>
+      <li><a href="#snippets-gerais">Snippets gerais (uso transversal)</a></li>
+      <li><a href="#cadastro">Passo a passo de cadastro no CRM</a></li>
+      <li><a href="#metricas">Métricas do piloto</a></li>
+    </ol>
+  </div>
+
+  <h2 id="principios"><span class="n">§0</span>Princípios do piloto</h2>
+
+  <p>Este playbook parte de duas decisões já tomadas sobre como a GD Conecta vende o GD Diagnóstico:</p>
+  <ul>
+    <li><strong>É um serviço, não um SaaS self-service.</strong> O cliente contrata um diagnóstico entregue pela GD Conecta — nunca falar em "demonstração da plataforma" ou "login". O CTA correto é sempre <em>solicitar o diagnóstico</em>.</li>
+    <li><strong>Narrativa de jornada em duas fases:</strong> Fase 1 = <strong>Diagnóstico</strong> (projeto pontual, "a fotografia" — onde estão as oportunidades) → Fase 2 = <strong>Governança de Frete</strong> (serviço recorrente, "o filme" — garante que as melhorias se sustentem). Todo material de venda deve reforçar essa sequência, nunca apresentar os dois como produtos soltos.</li>
+    <li><strong>Cuidado com claims de IA/Score:</strong> usar "motor de análise" / "IA em evolução", nunca "IA aplicada" como diferencial pronto. Qualquer número de exemplo (score, % de economia) deve vir marcado como <em>exemplo ilustrativo</em>.</li>
+    <li><strong>Dois públicos, dois tons.</strong> Prospect novo nunca ouviu falar da GD Conecta — cadência mais formal, motivo de contato precisa ser construído do zero. Cliente da base legada (TMS/WMS/YMS) já tem relação pessoal com você — cadência não pode soar como SDR frio nem exigir volume que você não executa sozinho.</li>
+    <li><strong>Volume do piloto: 10 empresas/semana</strong>, somando os dois processos, executadas pessoalmente por você. Ajuste o ritmo depois de medir taxa de resposta/reunião nas primeiras 2-3 semanas — não abra mais volume até validar a taxa de conversão de cada etapa.</li>
+  </ul>
+
+  <div class="callout">
+    <strong>Limitação atual do CRM que muda como você deve operar isso:</strong> conferi o código do módulo de Automação — hoje, tanto <strong>Sequência de Tarefas</strong> quanto <strong>Cadência de E-mails</strong> <u>não enviam e-mail nenhum sozinhas</u>. A cada passo vencido, o CRM cria uma <strong>Tarefa</strong> ("E-mail — [nome do modelo]") atribuída a você, e o envio real é manual — copiar o modelo, preencher as variáveis <span class="var">{{...}}</span> à mão e mandar pelo seu e-mail. Isso porque a camada de envio (SMTP/Microsoft 365) ainda não foi construída. Por isso este playbook usa <strong>Sequência de Tarefas</strong> para os dois processos (ela mistura ligação/e-mail/WhatsApp/follow-up no mesmo fluxo) em vez de Cadência (só e-mail) — o comportamento prático é o mesmo hoje, mas Sequência já fica pronta para quando a automação de fato existir.
+  </div>
+
+  <h2 id="processo-a"><span class="n">§1</span>Processo A — Prospecção fria (leads novos)</h2>
+  <p><strong>Público:</strong> empresas fora dos 80 clientes legados, gestor de logística ou C-Level como decisor. Priorize os setores já pontuados no Score ICP da Pesquisa de Leads (Farma, Alimentos, Autopeças, Etiquetas = peso 40; Plástico, Máquinas e Equipamentos, Química, Cosmético = peso 30) — são os leads que a Pesquisa de Leads já está te ajudando a levantar.</p>
+  <p><strong>Duração:</strong> 15 dias corridos, 7 toques, 4 canais. <strong>Objetivo do ciclo:</strong> conseguir uma call de 20 min para apresentar o GD Diagnóstico (não vender no primeiro contato).</p>
+
+  <table class="cadence">
+    <tr><th>Dia</th><th>Canal</th><th>Ação</th><th>Modelo/instrução</th></tr>
+    <tr>
+      <td>0</td>
+      <td><span class="pill followup">Follow-up</span></td>
+      <td>Conectar no LinkedIn com o decisor (sem pitch na mensagem de convite)</td>
+      <td>Snippet <code>#li-convite</code></td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td><span class="pill ligacao">Ligação</span></td>
+      <td>Tentativa 1 — abrir, identificar a dor de frete/gestão logística</td>
+      <td>Script "Abertura — ligação 1" (§1.2)</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><span class="pill email">E-mail</span></td>
+      <td>E-mail 1 — apresentação institucional + gancho de dor</td>
+      <td>Modelo "Prospecção 1 — Apresentação"</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><span class="pill followup">Follow-up</span></td>
+      <td>Reforço no LinkedIn (comentar post recente da empresa ou reagir/mencionar o e-mail enviado)</td>
+      <td>Snippet <code>#li-reforco</code></td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td><span class="pill ligacao">Ligação</span></td>
+      <td>Tentativa 2 — referenciar o e-mail, pedir 20 min</td>
+      <td>Script "Ligação 2 — retomada" (§1.2)</td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td><span class="pill email">E-mail</span></td>
+      <td>E-mail 2 — prova social (caso ilustrativo) + CTA de agenda</td>
+      <td>Modelo "Prospecção 2 — Prova social"</td>
+    </tr>
+    <tr>
+      <td>13</td>
+      <td><span class="pill ligacao">Ligação</span></td>
+      <td>Tentativa 3 — breakup call, direta e sem pressão</td>
+      <td>Script "Ligação 3 — breakup" (§1.2)</td>
+    </tr>
+    <tr>
+      <td>15</td>
+      <td><span class="pill email">E-mail</span></td>
+      <td>E-mail 3 — encerramento de ciclo, porta aberta</td>
+      <td>Modelo "Prospecção 3 — Encerramento"</td>
+    </tr>
+  </table>
+  <p class="muted">Ativar "Pausar em resposta" na sequência — qualquer resposta (e-mail, LinkedIn, retorno de ligação) tira a empresa do fluxo automático; a partir daí é conversa manual.</p>
+
+  <h3>1.1 Modelos de e-mail</h3>
+
+  <div class="card">
+    <div class="meta">Modelo · Prospecção 1 — Apresentação</div>
+    <div class="subject">Assunto: <span class="var">{{empresa}}</span> — quanto vocês sabem sobre o próprio frete?</div>
+    <div class="body">Olá, <span class="var">{{nome}}</span>,
+
+Meu nome é Daniel, da GD Conecta. Trabalhamos com empresas de logística/operação de frete ajudando a enxergar, com dados, onde estão as oportunidades de redução de custo e melhoria de nível de serviço — normalmente pontos que não aparecem no relatório mensal do TMS.
+
+O <strong>GD Diagnóstico</strong> é justamente isso: uma análise aplicada sobre o histórico de fretes de <span class="var">{{empresa}}</span> (CT-e, %Frete, benchmark de mercado por setor) que entrega um raio-x da operação em poucas semanas — sem trocar de sistema, sem processo novo para o time operar.
+
+Faz sentido uma conversa rápida de 20 minutos para eu te mostrar como isso funcionaria no caso de vocês?
+
+Abraço,
+Daniel Chagas
+GD Conecta</div>
+  </div>
+
+  <div class="card">
+    <div class="meta">Modelo · Prospecção 2 — Prova social</div>
+    <div class="subject">Assunto: como um cliente encontrou 18 meses de dados escondidos no próprio frete</div>
+    <div class="body">Olá, <span class="var">{{nome}}</span>,
+
+Tentei falar com você por telefone essa semana — sei que a agenda de quem cuida de logística não perdoa.
+
+Deixo um exemplo (ilustrativo, números variam por operação): um cliente nosso rodou o GD Diagnóstico sobre 18 meses de movimentação histórica e conseguiu enxergar, pela primeira vez, onde o %Frete estava fora da curva por corredor/UF — informação que existia nos CT-e, mas nunca tinha sido cruzada dessa forma.
+
+Se fizer sentido, consigo te mostrar em 20 minutos como seria aplicar essa mesma leitura na operação de <span class="var">{{empresa}}</span>. Qual desses horários funciona melhor: terça de manhã ou quinta à tarde?
+
+Abraço,
+Daniel Chagas
+GD Conecta</div>
+  </div>
+
+  <div class="card">
+    <div class="meta">Modelo · Prospecção 3 — Encerramento</div>
+    <div class="subject">Assunto: fechando esse ciclo por aqui, <span class="var">{{nome}}</span></div>
+    <div class="body">Olá, <span class="var">{{nome}}</span>,
+
+Tentei contato algumas vezes nas últimas semanas sobre o GD Diagnóstico — entendo que talvez não seja prioridade agora, ou que eu não tenha encontrado o momento certo.
+
+Vou parar de insistir por aqui, mas fica a porta aberta: se em algum momento fizer sentido enxergar com mais clareza onde está o custo/oportunidade escondida no frete de <span class="var">{{empresa}}</span>, é só responder este e-mail.
+
+Abraço,
+Daniel Chagas
+GD Conecta</div>
+  </div>
+
+  <h3>1.2 Scripts de ligação (roteiro curto, não decorado)</h3>
+
+  <div class="snippet">
+    <span class="sh">#call-abertura — Ligação 1 (dia 1)</span>
+    <div class="body">"Oi [nome], aqui é o Daniel, da GD Conecta — trabalhamos com análise de dados aplicada a logística/frete. Te ligo rapidinho, sem compromisso: hoje, como vocês enxergam se o frete que pagam está dentro do que deveria, por rota/região? [ouvir] ... É exatamente esse tipo de pergunta que o GD Diagnóstico responde com dado, não com achismo. Faz sentido eu te mandar mais detalhes por e-mail e a gente marcar 20 minutos?"</div>
+  </div>
+  <div class="snippet">
+    <span class="sh">#call-retomada — Ligação 2 (dia 6)</span>
+    <div class="body">"Oi [nome], Daniel de novo, da GD Conecta — te mandei um e-mail sobre o GD Diagnóstico na semana passada. Sei que a caixa de entrada é implacável, então resumo em uma frase: a gente analisa o histórico de CT-e de vocês e mostra onde o %Frete está fora da curva, por corredor. Vale 20 minutos essa semana ou a próxima é melhor?"</div>
+  </div>
+  <div class="snippet">
+    <span class="sh">#call-breakup — Ligação 3 (dia 13)</span>
+    <div class="body">"Oi [nome], última tentativa por telefone, prometo — não quero ser inconveniente. Se fizer sentido conversar sobre o GD Diagnóstico em outro momento, é só me responder o e-mail que mando fechando esse ciclo. Um abraço e boa semana."</div>
+  </div>
+
+  <h3>1.3 Snippets de LinkedIn</h3>
+  <div class="snippet">
+    <span class="sh">#li-convite (dia 0)</span>
+    <div class="body">Olá [nome], tudo bem? Trabalho com análise de dados aplicada a logística/frete na GD Conecta e acompanho o mercado de [setor]. Gostaria de me conectar.</div>
+  </div>
+  <div class="snippet">
+    <span class="sh">#li-reforco (dia 4)</span>
+    <div class="body">Oi [nome], te mandei um e-mail sobre o GD Diagnóstico essa semana — achei que poderia ser relevante para a operação de [empresa] dado [gancho específico: contratação recente, expansão, notícia do setor]. Fico à disposição se quiser trocar uma ideia por aqui mesmo.</div>
+  </div>
+
+  <h2 id="processo-b"><span class="n">§2</span>Processo B — Reativação da base legada (80 clientes)</h2>
+  <p><strong>Público:</strong> clientes que já compram TMS/WMS/YMS pela GD Conecta e têm relação pessoal com você. <strong>Diferença crítica em relação ao Processo A:</strong> aqui não existe "abertura fria" — toda mensagem parte do relacionamento existente. Tom de conversa entre pessoas que já se conhecem, não de SDR. Ritmo baixo, poucos toques, sem pressão de funil.</p>
+
+  <table class="cadence">
+    <tr><th>Dia</th><th>Canal</th><th>Ação</th><th>Modelo/instrução</th></tr>
+    <tr>
+      <td>0</td>
+      <td><span class="pill whatsapp">WhatsApp</span></td>
+      <td>Mensagem pessoal puxando assunto — nunca abrir já vendendo</td>
+      <td>Snippet <code>#reativ-wpp1</code></td>
+    </tr>
+    <tr>
+      <td>0</td>
+      <td><span class="pill email">E-mail</span></td>
+      <td>E-mail pessoal (não institucional) contando sobre o GD Diagnóstico</td>
+      <td>Modelo "Reativação 1 — Convite pessoal"</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td><span class="pill followup">Follow-up</span></td>
+      <td>Reforço leve, oferecendo mostrar um exemplo real de outro cliente</td>
+      <td>Snippet <code>#reativ-wpp2</code></td>
+    </tr>
+    <tr>
+      <td>12</td>
+      <td><span class="pill ligacao">Ligação</span></td>
+      <td>Ligação pessoal de fechamento — só se ainda não houve resposta</td>
+      <td>Script "Ligação — reativação" (§2.2)</td>
+    </tr>
+  </table>
+  <p class="muted">Esta é a única sequência em que faz sentido rodar mais de uma pessoa por semana em paralelo, já que o toque inicial (dia 0) é praticamente manual mesmo — a sequência serve mais como <em>lembrete de follow-up</em> do que como automação de verdade.</p>
+
+  <h3>2.1 Modelo de e-mail</h3>
+  <div class="card">
+    <div class="meta">Modelo · Reativação 1 — Convite pessoal</div>
+    <div class="subject">Assunto: uma ideia para a <span class="var">{{empresa}}</span>, <span class="var">{{nome}}</span></div>
+    <div class="body">Oi <span class="var">{{nome}}</span>, tudo bem?
+
+Faz tempo que a gente trabalha junto no TMS/WMS/YMS da <span class="var">{{empresa}}</span>, e queria te contar sobre algo novo que estamos aplicando com alguns clientes: o <strong>GD Diagnóstico</strong> — uma análise que a gente faz por trás, em cima do histórico de frete de vocês, para mostrar onde estão as oportunidades de redução de custo e melhoria de operação. É a mesma lógica de "fotografia da operação" antes de qualquer mudança.
+
+Não muda nada no que vocês já usam — a gente entra, analisa os dados que já existem e devolve um raio-x com recomendações concretas.
+
+Vale eu te mostrar como funcionaria para vocês? Posso passar aí ou marcar uma call rápida, o que for mais fácil.
+
+Abraço,
+Daniel</div>
+  </div>
+
+  <h3>2.2 Snippets e script</h3>
+  <div class="snippet">
+    <span class="sh">#reativ-wpp1 (dia 0)</span>
+    <div class="body">Oi [nome], tudo bem? Faz tempo que não trocamos uma ideia. Te mandei um e-mail contando sobre uma novidade que estamos aplicando com alguns clientes (o GD Diagnóstico) — acho que pode fazer sentido para a [empresa]. Dá uma olhada quando puder?</div>
+  </div>
+  <div class="snippet">
+    <span class="sh">#reativ-wpp2 (dia 5)</span>
+    <div class="body">Oi [nome], só reforçando — se quiser, te mostro rapidinho um exemplo real de outro cliente que já está testando o GD Diagnóstico (com dados de exemplo, sem expor nada confidencial deles). Te ajuda a decidir se vale a conversa. Um abraço.</div>
+  </div>
+  <div class="snippet">
+    <span class="sh">#call-reativacao (dia 12)</span>
+    <div class="body">"Oi [nome], tudo bem? Passando pra saber se você chegou a ver o que te mandei sobre o GD Diagnóstico. Não precisa decidir nada agora, só queria entender se faz sentido eu te mostrar com mais calma em algum momento."</div>
+  </div>
+
+  <h2 id="snippets-gerais"><span class="n">§3</span>Snippets gerais (uso transversal)</h2>
+  <p>Não fazem parte de nenhuma sequência automática — servem para inserção rápida em notas, tarefas ou qualquer campo de texto do CRM (atalho <code>#</code> + espaço).</p>
+  <div class="snippet">
+    <span class="sh">#assinatura</span>
+    <div class="body">Daniel Chagas
+GD Conecta — Inteligência Logística
+[telefone] · [e-mail] · gdconecta.com.br</div>
+  </div>
+  <div class="snippet">
+    <span class="sh">#agenda</span>
+    <div class="body">Consigo terça de manhã ou quinta à tarde — qual funciona melhor para você? Se nenhum dos dois for bom, me diga um dia/horário que te atenda.</div>
+  </div>
+  <div class="snippet">
+    <span class="sh">#objecao-preco</span>
+    <div class="body">Entendo a preocupação com investimento. O GD Diagnóstico tem um setup único (que já inclui a importação de 12 meses de histórico) e uma mensalidade fixa — o racional é que o próprio diagnóstico geralmente aponta economia superior a esse custo. Faz sentido eu te mostrar essa conta com números da sua operação?</div>
+  </div>
+  <div class="snippet">
+    <span class="sh">#objecao-tempo</span>
+    <div class="body">Sem problema — o Diagnóstico não exige nenhuma mudança de processo do seu time durante a análise, só o histórico de CT-e. O trabalho pesado é nosso. A única coisa que pede tempo de vocês é essa call inicial de 20 minutos.</div>
+  </div>
+
+  <h2 id="cadastro"><span class="n">§4</span>Passo a passo de cadastro no CRM</h2>
+  <p>Ordem recomendada: <strong>Modelos de e-mail → Snippets → Sequência de Tarefas → Inscrever empresas</strong>. Os modelos e a sequência precisam existir antes de conseguir montar os passos.</p>
+
+  <h3>4.1 Cadastrar os Modelos de e-mail (<code>/modelos-email</code>)</h3>
+  <ol class="steps">
+    <li>Abra <code>/modelos-email</code> → <strong>Novo modelo</strong>.</li>
+    <li>Preencha <strong>Nome</strong> exatamente como aparece neste playbook (ex.: <code>Prospecção 1 — Apresentação</code>) — é esse nome que você vai escolher depois ao montar a sequência.</li>
+    <li>Cole o <strong>Assunto</strong> e o <strong>Corpo</strong> de cada modelo (§1.1 e §2.1). Digite as variáveis exatamente como <code>{{nome}}</code> e <code>{{empresa}}</code> — o CRM reconhece qualquer texto entre chaves duplas automaticamente, não precisa cadastrar a variável em separado.</li>
+    <li>Repita para os 6 modelos (3 do Processo A + 1 do Processo B — os demais toques são ligação/WhatsApp/LinkedIn e não usam modelo de e-mail).</li>
+  </ol>
+  <div class="callout">
+    <strong>Lembrete:</strong> como o envio ainda é manual (ver §0), ao executar a tarefa de e-mail você mesmo precisa trocar <code>{{nome}}</code>/<code>{{empresa}}</code> pelos dados reais antes de mandar — o CRM não faz essa substituição sozinho hoje.
+  </div>
+
+  <h3>4.2 Cadastrar os Snippets (<code>/snippets</code>)</h3>
+  <ol class="steps">
+    <li>Abra <code>/snippets</code> → <strong>Novo snippet</strong>.</li>
+    <li>Nome livre (ex.: "Convite LinkedIn — prospecção"); <strong>Atalho</strong> só aceita letras minúsculas e números, sem <code>#</code> — cadastre <code>liconvite</code>, <code>lireforco</code>, <code>reativwpp1</code>, <code>reativwpp2</code>, <code>assinatura</code>, <code>agenda</code>, <code>objecaopreco</code>, <code>objecaotempo</code> (o <code>#</code> é só de exibição na hora de digitar).</li>
+    <li>Cole o conteúdo de cada snippet do §1.3/§2.2/§3.</li>
+    <li>Scripts de ligação (§1.2, §2.2) não precisam virar snippet — são roteiro de apoio, não texto para copiar/colar num campo.</li>
+  </ol>
+
+  <h3>4.3 Cadastrar a Sequência de Tarefas (<code>/sequencias</code>)</h3>
+  <ol class="steps">
+    <li>Abra <code>/sequencias</code> → <strong>Nova sequência</strong>. Crie duas: <code>Prospecção — GD Diagnóstico (novos)</code> e <code>Reativação — base legada</code>.</li>
+    <li>Ative <strong>"Pausar em resposta"</strong> nas duas.</li>
+    <li>Adicione os passos na ordem exata das tabelas do §1 e §2 — para cada linha, defina o <strong>Dia</strong> (offset), o <strong>Tipo</strong> (Ligação/E-mail/WhatsApp/Follow-up) e:
+      <ul>
+        <li>se Tipo = <strong>E-mail</strong>, selecione o Modelo correspondente no campo de template;</li>
+        <li>se Tipo = <strong>Ligação/WhatsApp/Follow-up</strong>, cole o roteiro/instrução no campo "Instruções" — é o texto que vai aparecer na Tarefa criada.</li>
+      </ul>
+    </li>
+    <li>Salve. A sequência entra na lista de <code>/sequencias</code> marcada como ativa.</li>
+  </ol>
+
+  <h3>4.4 Inscrever as primeiras 10 empresas</h3>
+  <ol class="steps">
+    <li>Para leads novos: em <code>/pesquisa-leads</code>, promova os prospects qualificados (status <code>qualificado</code>) para virarem <code>Company</code> — só depois disso dá para inscrever em sequência.</li>
+    <li>Abra a <strong>Empresa</strong> (ou o <strong>Negócio</strong>, se já existir) na tela de detalhe → botão <strong>"Inscrever em automação"</strong>.</li>
+    <li>No modal, escolha <strong>Sequência</strong> (não Cadência) e selecione <code>Prospecção — GD Diagnóstico (novos)</code> ou <code>Reativação — base legada</code>, conforme o caso.</li>
+    <li>A partir daí, o Celery Beat do CRM varre diariamente as inscrições ativas e cria as Tarefas na sua agenda (<code>/tarefas</code>) conforme os dias vencem — é lá que você vai executar cada toque.</li>
+  </ol>
+  <div class="callout ok">
+    <strong>Dica para o piloto:</strong> comece só com o Processo A (5-6 empresas) e o Processo B (4-5 clientes) na primeira semana. Acompanhe em <code>/tarefas</code> se as tarefas estão sendo criadas nos dias certos antes de inscrever mais gente — é a forma mais rápida de pegar qualquer ajuste de configuração da sequência.
+  </div>
+
+  <h2 id="metricas"><span class="n">§5</span>Métricas do piloto (2-3 primeiras semanas)</h2>
+  <table class="cadence">
+    <tr><th>Métrica</th><th>Onde olhar</th><th>O que decide</th></tr>
+    <tr><td>Taxa de resposta (e-mail + LinkedIn + WhatsApp)</td><td>Contagem manual, por enquanto</td><td>Se muito baixa, revisar assunto/gancho do e-mail 1 antes de aumentar volume</td></tr>
+    <tr><td>Ligações conectadas (falou com a pessoa)</td><td>Anotação na Timeline da Empresa</td><td>Mede se o horário/dia das ligações está certo</td></tr>
+    <tr><td>Calls de 20 min agendadas</td><td>Negócios criados/etapa avançada</td><td>É a métrica de sucesso real do processo — meta mínima do piloto</td></tr>
+    <tr><td>Negócios abertos a partir da sequência</td><td><code>/negocios</code>, origem = sequência</td><td>Confirma que a sequência está gerando pipeline, não só atividade</td></tr>
+  </table>
+  <p class="muted">Só depois de validar essas taxas com as 10 empresas iniciais vale considerar subir o volume semanal ou migrar para Cadência de E-mails automática (quando a integração Microsoft 365 estiver pronta).</p>
+
+  <footer>Playbook de Vendas Outbound — GD Diagnóstico · v1 · <span id="gendate"></span></footer>
+</div>
+
+<script>document.getElementById('gendate').textContent = new Date().toLocaleDateString('pt-BR');</script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  font-family: var(--font-display);
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: tabular-nums;
+}
+button { font-family: inherit; }
+a { color: inherit; }
+
+.btn-primary {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 16px;
+  font: inherit; font-size: 14px; font-weight: 600;
+  color: var(--panel-fg);
+  background: var(--indigo);
+  border: 1px solid var(--indigo);
+  border-radius: 9px;
+  cursor: pointer;
+  transition: background-color 120ms ease, box-shadow 120ms ease;
+}
+.btn-primary:hover { background: var(--indigo-600); }
+.btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 3.5px var(--focus-ring); }
+.btn-primary[disabled] { cursor: progress; opacity: 0.86; }
+
+.btn-ghost {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 16px;
+  font: inherit; font-size: 14px; font-weight: 600;
+  color: var(--ink);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  cursor: pointer;
+}
+.btn-ghost:hover { border-color: var(--ink-faint); }

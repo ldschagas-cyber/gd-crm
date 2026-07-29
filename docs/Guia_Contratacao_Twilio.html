@@ -1,0 +1,430 @@
+<title>Guia — Contratar Twilio (Voice + WhatsApp) — CRM GD Conecta</title>
+<style>
+  :root {
+    --font-display: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Cascadia Code", "SFMono-Regular", "Consolas", ui-monospace, monospace;
+
+    --indigo: #2D3561;
+    --indigo-600: #3B4478;
+    --amber: #C9A84C;
+    --azul: #0077A8;
+    --marfim: #F5F1EB;
+
+    --paper: var(--marfim);
+    --panel: var(--indigo);
+    --panel-fg: #F1EEE6;
+    --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12);
+    --panel-active-bg: rgba(201, 168, 76, 0.14);
+
+    --ink: #22243A;
+    --ink-dim: #5B5E78;
+    --ink-faint: #8B8EA6;
+    --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF;
+    --link: var(--azul);
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+
+    --good: #0ca30c;
+    --warning: #fab219;
+    --critical: #d03b3b;
+
+    --code-bg: #F0EEE6;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+      --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+      --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+      --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+      --code-bg: #10121F;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+    --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+    --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+    --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+    --code-bg: #10121F;
+  }
+  :root[data-theme="light"] {
+    --paper: #F5F1EB; --panel: #2D3561; --panel-fg: #F1EEE6; --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12); --panel-active-bg: rgba(201, 168, 76, 0.14);
+    --ink: #22243A; --ink-dim: #5B5E78; --ink-faint: #8B8EA6; --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF; --amber: #C9A84C; --azul: #0077A8; --link: #0077A8;
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+    --code-bg: #F0EEE6;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; font-family: var(--font-display); color: var(--ink); background: var(--paper);
+    -webkit-font-smoothing: antialiased; font-size: 15px; line-height: 1.65;
+  }
+  a { color: var(--link); }
+
+  .doc-shell { display: grid; grid-template-columns: 268px minmax(0, 1fr); min-height: 100vh; }
+
+  .doc-sidebar {
+    background: var(--panel); color: var(--panel-fg);
+    position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    padding: 22px 18px 32px;
+  }
+  .doc-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; padding: 0 6px; }
+  .doc-brand .monogram {
+    width: 34px; height: 34px; border-radius: 9px; flex: none;
+    background: var(--amber); color: var(--indigo);
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;
+  }
+  .doc-brand strong { display: block; font-size: 14px; font-weight: 650; line-height: 1.2; }
+  .doc-brand span {
+    display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--panel-fg-dim); margin-top: 2px;
+  }
+  .doc-meta {
+    font-family: var(--font-mono); font-size: 10.5px; color: var(--panel-fg-dim);
+    padding: 10px 6px 16px; margin-bottom: 10px; border-bottom: 1px solid var(--panel-border);
+  }
+
+  .doc-sidebar nav.toc ul { list-style: none; margin: 0; padding: 0; }
+  .doc-sidebar nav.toc > ul { padding: 0 4px; }
+  .doc-sidebar nav.toc ul ul { padding-left: 14px; border-left: 1px solid var(--panel-border); margin-left: 6px; }
+  .doc-sidebar nav.toc li { margin: 1px 0; }
+  .doc-sidebar nav.toc a {
+    display: block; padding: 5px 8px; border-radius: 6px; font-size: 12.6px;
+    color: var(--panel-fg-dim); text-decoration: none; line-height: 1.4;
+  }
+  .doc-sidebar nav.toc > ul > li > a { font-weight: 650; color: var(--panel-fg); font-size: 13px; margin-top: 6px; }
+  .doc-sidebar nav.toc a:hover { background: rgba(241, 238, 230, 0.08); color: var(--panel-fg); }
+  .doc-sidebar nav.toc a.active { background: var(--panel-active-bg); color: var(--panel-fg); font-weight: 600; }
+
+  .doc-main { padding: 40px clamp(24px, 5vw, 72px) 96px; min-width: 0; }
+  .doc-content { max-width: 840px; margin: 0 auto; }
+
+  .doc-content h1 {
+    font-size: 28px; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 8px; color: var(--ink);
+  }
+  .doc-content > p.subtitle {
+    font-size: 13.5px; color: var(--ink-dim); border-bottom: 1px solid var(--border);
+    padding-bottom: 20px; margin-bottom: 24px;
+  }
+  .doc-content h2 {
+    font-size: 21px; font-weight: 650; letter-spacing: -0.01em; color: var(--ink);
+    margin: 44px 0 16px; padding-top: 8px; border-top: 1px solid var(--border);
+    scroll-margin-top: 20px;
+  }
+  .doc-content > h2:first-of-type { border-top: none; margin-top: 0; }
+  .doc-content h3 { font-size: 16px; font-weight: 650; color: var(--ink); margin: 26px 0 10px; scroll-margin-top: 20px; }
+
+  .doc-content p { margin: 0 0 14px; color: var(--ink); }
+  .doc-content ul, .doc-content ol { margin: 0 0 14px; padding-left: 22px; }
+  .doc-content li { margin-bottom: 6px; }
+  .doc-content li > p { margin: 0; }
+  .doc-content hr { border: none; border-top: 1px solid var(--border); margin: 34px 0; }
+
+  .doc-content strong { font-weight: 650; color: var(--ink); }
+  .doc-content code {
+    font-family: var(--font-mono); font-size: 0.85em; background: var(--code-bg);
+    padding: 1.5px 5px; border-radius: 4px; color: var(--indigo);
+  }
+  :root[data-theme="dark"] .doc-content code { color: var(--amber); }
+  @media (prefers-color-scheme: dark) { .doc-content code { color: var(--amber); } }
+
+  .doc-content a { text-decoration: none; }
+  .doc-content a:hover { text-decoration: underline; }
+
+  /* passo numerado */
+  .step {
+    display: flex; gap: 14px; margin-bottom: 18px; padding: 16px 18px; border: 1px solid var(--border);
+    border-radius: 12px; background: var(--card-bg); box-shadow: var(--shadow);
+  }
+  .step .num {
+    flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--indigo); color: var(--panel-fg);
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; font-family: var(--font-mono);
+  }
+  :root[data-theme="dark"] .step .num, @media (prefers-color-scheme: dark) { }
+  .step .body { min-width: 0; }
+  .step .body h4 { margin: 0 0 6px; font-size: 14.5px; font-weight: 650; color: var(--ink); }
+  .step .body p:last-child, .step .body ul:last-child { margin-bottom: 0; }
+
+  /* callouts */
+  .note {
+    margin: 0 0 18px; padding: 12px 16px; border-left: 3px solid var(--azul);
+    background: color-mix(in srgb, var(--azul) 8%, var(--card-bg));
+    border-radius: 0 8px 8px 0; color: var(--ink-dim); font-size: 13.8px;
+  }
+  .note strong { color: var(--ink); }
+  .note.warning { border-left-color: var(--warning); background: color-mix(in srgb, var(--warning) 10%, var(--card-bg)); }
+  .note.good { border-left-color: var(--good); background: color-mix(in srgb, var(--good) 8%, var(--card-bg)); }
+  .note p { margin: 0 0 6px; }
+  .note p:last-child { margin-bottom: 0; }
+
+  .table-wrap { overflow-x: auto; margin: 0 0 22px; border: 1px solid var(--border); border-radius: 10px; }
+  .doc-content table { width: 100%; border-collapse: collapse; font-size: 13px; background: var(--card-bg); }
+  .doc-content th {
+    text-align: left; font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 650; padding: 9px 14px; background: color-mix(in srgb, var(--paper) 70%, transparent);
+    border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  .doc-content td { padding: 9px 14px; border-bottom: 1px solid var(--border); vertical-align: top; color: var(--ink); }
+  .doc-content tbody tr:last-child td { border-bottom: none; }
+
+  .badge {
+    display: inline-block; font-family: var(--font-mono); font-size: 10.5px; font-weight: 650;
+    letter-spacing: 0.03em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px;
+    margin-left: 6px; vertical-align: middle;
+  }
+  .badge.voice { background: color-mix(in srgb, var(--azul) 16%, transparent); color: var(--azul); }
+  .badge.whats { background: color-mix(in srgb, var(--good) 16%, transparent); color: var(--good); }
+
+  .checklist { list-style: none; padding-left: 0; }
+  .checklist li { padding-left: 28px; position: relative; }
+  .checklist li::before {
+    content: ''; position: absolute; left: 0; top: 3px; width: 16px; height: 16px; border-radius: 4px;
+    border: 1.5px solid var(--ink-faint); background: var(--card-bg);
+  }
+
+  .back-to-top {
+    position: fixed; right: 28px; bottom: 28px; width: 40px; height: 40px; border-radius: 50%;
+    background: var(--indigo); color: var(--panel-fg); border: 1px solid var(--indigo);
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: opacity 160ms ease, transform 160ms ease;
+    transform: translateY(8px);
+  }
+  .back-to-top.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
+  .back-to-top:hover { background: var(--indigo-600); }
+  .back-to-top svg { width: 18px; height: 18px; }
+
+  @media (max-width: 980px) {
+    .doc-shell { grid-template-columns: 1fr; }
+    .doc-sidebar { position: relative; height: auto; }
+  }
+
+  @media print {
+    .doc-sidebar, .back-to-top { display: none; }
+    .doc-shell { display: block; }
+    .doc-main { padding: 0; }
+  }
+</style>
+
+<div class="doc-shell">
+  <aside class="doc-sidebar">
+    <div class="doc-brand">
+      <div class="monogram">GD</div>
+      <div>
+        <strong>Conecta CRM</strong>
+        <span>Guia de contratação</span>
+      </div>
+    </div>
+    <div class="doc-meta">v1.0 &middot; 2026-07-29</div>
+    <nav class="toc" aria-label="Sumário">
+      <ul>
+        <li><a href="#visao-geral">1. Visão geral</a></li>
+        <li><a href="#criar-conta">2. Criar a conta Twilio</a></li>
+        <li><a href="#configurar-voice">3. Configurar Voice (VoIP)</a>
+          <ul>
+            <li><a href="#comprar-numero">3.1 Comprar o número</a></li>
+            <li><a href="#credenciais-voice">3.2 Gerar credenciais</a></li>
+          </ul>
+        </li>
+        <li><a href="#configurar-whatsapp">4. Configurar WhatsApp Sender</a>
+          <ul>
+            <li><a href="#sandbox">4.1 Sandbox (teste rápido)</a></li>
+            <li><a href="#embedded-signup">4.2 Produção — Embedded Signup</a></li>
+          </ul>
+        </li>
+        <li><a href="#custos">5. Custos estimados</a></li>
+        <li><a href="#depois">6. Depois de contratado — o que muda no CRM</a></li>
+        <li><a href="#checklist">7. Checklist resumido</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main class="doc-main">
+    <div class="doc-content">
+      <h1>Contratar a Twilio — Voice (VoIP) + WhatsApp Business API</h1>
+      <p class="subtitle">Passo a passo para abrir a conta na Twilio e habilitar os dois canais avaliados para o CRM GD Conecta: chamadas (Voice) e WhatsApp. Guia operacional — não é um roteiro de código.</p>
+
+      <h2 id="visao-geral">1. Visão geral</h2>
+      <p>A Twilio oferece Voice e WhatsApp Business API na mesma conta e console, então dá para contratar uma vez só e usar para os dois canais. Isso simplifica billing e reaproveita o mesmo padrão de integração (webhook + Access Token) já desenhado para o CRM.</p>
+      <div class="note warning">
+        <p><strong>O que a Twilio não elimina:</strong> para o WhatsApp, a verificação da conta Meta Business Manager (CNPJ, 2FA, número dedicado) continua obrigatória. A Twilio atua como intermediária (BSP) e tem um fluxo assistido — o <em>Embedded Signup</em> — que agiliza o cadastro, mas não pula a análise da Meta.</p>
+      </div>
+      <p>Para Voice, não há essa dependência: a compra do número e a ativação de chamadas são só com a Twilio.</p>
+
+      <h2 id="criar-conta">2. Criar a conta Twilio</h2>
+      <div class="step">
+        <div class="num">1</div>
+        <div class="body">
+          <h4>Cadastro inicial</h4>
+          <p>Acesse <code>twilio.com/try-twilio</code> e crie a conta com um e-mail corporativo da GD Conecta. Confirme o e-mail e verifique o telefone (chega um código por SMS).</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="num">2</div>
+        <div class="body">
+          <h4>Onboarding</h4>
+          <p>A Twilio pergunta "o que você quer construir" — pode escolher a opção genérica ou pular; isso só ajusta sugestões na tela inicial, não trava nada.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="num">3</div>
+        <div class="body">
+          <h4>Conta trial vs. paga</h4>
+          <p>A conta começa em modo <em>trial</em>, com crédito grátis (cerca de US$15) — dá para testar Voice sem cartão, mas só liga para números já verificados manualmente e insere um aviso de voz nas chamadas.</p>
+          <p>Para produção, faça o upgrade adicionando um cartão (Console → Billing → Upgrade). Isso remove as limitações do trial.</p>
+        </div>
+      </div>
+
+      <h2 id="configurar-voice">3. Configurar Voice (VoIP)</h2>
+
+      <h3 id="comprar-numero">3.1 Comprar o número<span class="badge voice">Voice</span></h3>
+      <div class="step">
+        <div class="num">1</div>
+        <div class="body">
+          <p>Console → <strong>Phone Numbers → Buy a Number</strong>. Filtre por país Brasil (BR) e capacidade "Voice".</p>
+        </div>
+      </div>
+      <div class="note">
+        <p><strong>Atenção:</strong> comprar um número brasileiro na Twilio exige o preenchimento de um <em>Regulatory Compliance Bundle</em> — documentos da empresa e comprovante de endereço, exigidos pela Anatel. É um processo bem mais rápido que a verificação da Meta (normalmente 1 a 3 dias úteis), mas não é instantâneo.</p>
+        <p>Se precisar testar antes disso, dá para usar um número dos EUA/virtual só para originar chamadas de saída enquanto o bundle BR é analisado.</p>
+      </div>
+
+      <h3 id="credenciais-voice">3.2 Gerar credenciais</h3>
+      <div class="step">
+        <div class="num">1</div>
+        <div class="body">
+          <h4>Account SID e API Key</h4>
+          <p>Console → <strong>Account → API keys &amp; tokens</strong>: anote o <code>Account SID</code> e crie uma <code>API Key</code>/<code>API Secret</code> nova (não reaproveitar a Auth Token principal em produção).</p>
+        </div>
+      </div>
+      <p>Essas credenciais são o que o backend do CRM usa para gerar o Access Token que o navegador consome via <code>Twilio.Device</code> (WebRTC) — o desenho técnico já está avaliado, só falta plugar os valores reais quando o número estiver aprovado.</p>
+
+      <h2 id="configurar-whatsapp">4. Configurar WhatsApp Sender <span class="badge whats">WhatsApp</span></h2>
+
+      <h3 id="sandbox">4.1 Sandbox (teste rápido, não é produção)</h3>
+      <div class="step">
+        <div class="num">1</div>
+        <div class="body">
+          <p>Console → <strong>Messaging → Try it out → Send a WhatsApp message</strong>. A Twilio dá um número compartilhado de sandbox — só para testes internos de desenvolvimento, com um código que cada participante precisa enviar manualmente para "entrar" na sandbox. Não serve para atender clientes reais.</p>
+        </div>
+      </div>
+
+      <h3 id="embedded-signup">4.2 Produção — Embedded Signup</h3>
+      <div class="step">
+        <div class="num">1</div>
+        <div class="body">
+          <h4>Criar o WhatsApp Sender</h4>
+          <p>Console → <strong>Messaging → Senders → WhatsApp senders → Create new WhatsApp Sender</strong>.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="num">2</div>
+        <div class="body">
+          <h4>Conectar (ou criar) a conta Meta Business Manager</h4>
+          <p>O fluxo da Twilio (<em>Embedded Signup</em>) conduz direto para dentro da tela — não precisa ir separadamente ao Meta Business Manager antes. Se a GD Conecta ainda não tiver uma conta Meta Business, o próprio fluxo cria uma.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="num">3</div>
+        <div class="body">
+          <h4>Verificação da empresa</h4>
+          <p>Ainda é exigido: documentos da empresa (CNPJ, contrato social ou comprovante), ativação de 2FA na conta Meta, e um número de telefone dedicado que <strong>não</strong> tenha WhatsApp pessoal/comum ativo (pode reaproveitar o mesmo número BR comprado no passo 3, desde que esteja livre).</p>
+        </div>
+      </div>
+      <div class="note good">
+        <p><strong>Prazo:</strong> o Embedded Signup costuma ser mais rápido que abrir a verificação manualmente direto no Meta Business Manager, mas ainda é variável — de poucos dias a algumas semanas, dependendo da fila de análise da Meta.</p>
+      </div>
+
+      <h2 id="custos">5. Custos estimados</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Item</th><th>Custo aproximado</th><th>Observação</th></tr></thead>
+          <tbody>
+            <tr><td>Número BR (Voice)</td><td>~US$1–2/mês</td><td>Sem mensalidade de plataforma além disso</td></tr>
+            <tr><td>Chamada de saída</td><td>Tarifa por minuto (variável)</td><td>Depende do destino (fixo/móvel)</td></tr>
+            <tr><td>WhatsApp — marketing</td><td>≈ R$0,39/mensagem</td><td>Cobrado pela Meta</td></tr>
+            <tr><td>WhatsApp — utilitária</td><td>≈ R$0,08/mensagem</td><td>Cobrado pela Meta</td></tr>
+            <tr><td>WhatsApp — autenticação</td><td>≈ R$0,09/mensagem</td><td>Cobrado pela Meta</td></tr>
+            <tr><td>Taxa Twilio (WhatsApp)</td><td>≈ US$0,005/mensagem</td><td>Somada por cima da tarifa da Meta</td></tr>
+            <tr><td>Regulatory bundle (BR)</td><td>Geralmente gratuito</td><td>Só exige documentação</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Nenhum dos dois canais tem mensalidade fixa de plataforma — o custo é por uso (minuto ou mensagem), o que torna viável um piloto pequeno antes de decidir se vira feature de equipe.</p>
+
+      <h2 id="depois">6. Depois de contratado — o que muda no CRM</h2>
+      <div class="step">
+        <div class="num">V</div>
+        <div class="body">
+          <h4>Voice</h4>
+          <p>O desenho já está pronto (<code>Twilio.Device</code> + Access Token gerado pelo backend). Basta plugar <code>Account SID</code>, <code>API Key/Secret</code> e o número comprado em variáveis de ambiente e ativar o piloto (1 número, só chamadas de saída) na aba Chamadas de Preferências.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="num">W</div>
+        <div class="body">
+          <h4>WhatsApp</h4>
+          <p>Depois do Sender aprovado, falta construir o webhook de mensagens recebidas (reaproveitando o mesmo padrão de fila usado em E-mail) e cadastrar os templates de mensagem pré-aprovados pela Meta — toda mensagem fora da janela de 24h de uma conversa iniciada pelo cliente exige um template aprovado.</p>
+        </div>
+      </div>
+
+      <h2 id="checklist">7. Checklist resumido</h2>
+      <ul class="checklist">
+        <li>Criar conta Twilio com e-mail corporativo e fazer upgrade para conta paga</li>
+        <li>Comprar número BR (Voice) e enviar o Regulatory Compliance Bundle</li>
+        <li>Gerar Account SID + API Key/Secret dedicados para o CRM</li>
+        <li>Abrir o WhatsApp Sender via Embedded Signup, reaproveitando o número BR</li>
+        <li>Reunir documentos da empresa (CNPJ, contrato social/comprovante) para a verificação Meta</li>
+        <li>Confirmar 2FA ativo na conta Meta Business Manager</li>
+        <li>Após aprovação: plugar credenciais reais no CRM e ativar o piloto de Voice</li>
+        <li>Após aprovação do Sender: priorizar o webhook de WhatsApp e os templates de mensagem</li>
+      </ul>
+    </div>
+  </main>
+</div>
+
+<button class="back-to-top" id="backToTop" aria-label="Voltar ao topo">
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5-5 5 5"/></svg>
+</button>
+
+<script>
+  (function () {
+    var backBtn = document.getElementById('backToTop');
+    window.addEventListener('scroll', function () {
+      backBtn.classList.toggle('show', window.scrollY > 400);
+    });
+    backBtn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    document.querySelectorAll('.doc-content table').forEach(function (t) {
+      var wrap = document.createElement('div');
+      wrap.className = 'table-wrap';
+      t.parentNode.insertBefore(wrap, t);
+      wrap.appendChild(t);
+    });
+
+    var tocLinks = Array.prototype.slice.call(document.querySelectorAll('.doc-sidebar nav.toc a'));
+    var targets = tocLinks.map(function (a) {
+      var id = a.getAttribute('href').slice(1);
+      return document.getElementById(id);
+    });
+    function onScroll() {
+      var pos = window.scrollY + 90;
+      var activeIdx = -1;
+      for (var i = 0; i < targets.length; i++) {
+        if (targets[i] && targets[i].offsetTop <= pos) activeIdx = i;
+      }
+      tocLinks.forEach(function (a, i) {
+        a.classList.toggle('active', i === activeIdx);
+      });
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>

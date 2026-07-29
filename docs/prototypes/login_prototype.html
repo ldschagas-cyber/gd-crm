@@ -1,0 +1,586 @@
+<title>Login — GD Conecta CRM</title>
+<style>
+  /* Font note: the real product should self-host IBM Plex Sans/Mono (per identity guide).
+     This artifact sandbox blocks font CDNs, so a close system-grotesque stack stands in here. */
+  :root {
+    --font-display: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Cascadia Code", "SFMono-Regular", "Consolas", ui-monospace, monospace;
+
+    --indigo: #2D3561;
+    --indigo-600: #3B4478;
+    --amber: #C9A84C;
+    --amber-ink: #7A5F1E;
+    --azul: #0077A8;
+    --marfim: #F5F1EB;
+
+    --paper: var(--marfim);
+    --panel: var(--indigo);
+    --panel-fg: #F1EEE6;
+    --panel-fg-dim: #C7CBE0;
+    --ink: #22243A;
+    --ink-dim: #5B5E78;
+    --border: rgba(45, 53, 97, 0.16);
+    --field-bg: #FFFFFF;
+    --accent: var(--amber);
+    --link: var(--azul);
+    --danger: #B5342C;
+    --danger-bg: #FBEAE8;
+    --success: #1E7A4C;
+    --focus-ring: rgba(0, 119, 168, 0.35);
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.06), 0 12px 28px -12px rgba(34, 36, 58, 0.18);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14172A;
+      --panel: #10121F;
+      --panel-fg: #F1EEE6;
+      --panel-fg-dim: #9AA0C0;
+      --ink: #EDEAE2;
+      --ink-dim: #A6A9C2;
+      --border: rgba(241, 238, 230, 0.14);
+      --field-bg: #1B1E33;
+      --amber: #D9B85E;
+      --azul: #4CB2DE;
+      --link: #4CB2DE;
+      --danger: #E2766D;
+      --danger-bg: rgba(181, 52, 44, 0.16);
+      --success: #4FBE86;
+      --focus-ring: rgba(76, 178, 222, 0.4);
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 20px 40px -16px rgba(0, 0, 0, 0.55);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+    --ink: #EDEAE2; --ink-dim: #A6A9C2; --border: rgba(241, 238, 230, 0.14);
+    --field-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+    --danger: #E2766D; --danger-bg: rgba(181, 52, 44, 0.16); --success: #4FBE86;
+    --focus-ring: rgba(76, 178, 222, 0.4);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 20px 40px -16px rgba(0, 0, 0, 0.55);
+  }
+  :root[data-theme="light"] {
+    --paper: #F5F1EB; --panel: #2D3561; --panel-fg: #F1EEE6; --panel-fg-dim: #C7CBE0;
+    --ink: #22243A; --ink-dim: #5B5E78; --border: rgba(45, 53, 97, 0.16);
+    --field-bg: #FFFFFF; --amber: #C9A84C; --azul: #0077A8; --link: #0077A8;
+    --danger: #B5342C; --danger-bg: #FBEAE8; --success: #1E7A4C;
+    --focus-ring: rgba(0, 119, 168, 0.35);
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.06), 0 12px 28px -12px rgba(34, 36, 58, 0.18);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-family: var(--font-display);
+    color: var(--ink);
+    background: var(--paper);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .screen {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  /* ---------- Brand panel ---------- */
+  .brand {
+    position: relative;
+    background: var(--panel);
+    color: var(--panel-fg);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: clamp(28px, 4vw, 56px);
+    overflow: hidden;
+  }
+  .brand canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.55;
+  }
+  .brand::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(60% 55% at 78% 12%, rgba(201, 168, 76, 0.22), transparent 70%),
+                linear-gradient(180deg, rgba(16, 18, 31, 0) 0%, rgba(16, 18, 31, 0.55) 100%);
+    pointer-events: none;
+  }
+  .brand-top, .brand-bottom { position: relative; z-index: 1; }
+
+  .wordmark { display: flex; align-items: center; gap: 12px; }
+  .monogram {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: var(--amber);
+    color: var(--indigo);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 16px; letter-spacing: 0.02em;
+    flex: none;
+  }
+  .wordmark-text { line-height: 1.15; }
+  .wordmark-text strong { display: block; font-size: 17px; font-weight: 650; letter-spacing: 0.01em; }
+  .wordmark-text span {
+    display: block; font-family: var(--font-mono); font-size: 11px;
+    color: var(--panel-fg-dim); letter-spacing: 0.08em; text-transform: uppercase;
+  }
+
+  .brand-claim { max-width: 30ch; margin-top: clamp(40px, 14vh, 140px); }
+  .brand-claim h1 {
+    font-size: clamp(28px, 3vw, 38px);
+    line-height: 1.18;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0 0 14px;
+    text-wrap: balance;
+  }
+  .brand-claim p {
+    margin: 0;
+    color: var(--panel-fg-dim);
+    font-size: 15px;
+    line-height: 1.6;
+    max-width: 34ch;
+  }
+
+  .brand-stats {
+    display: flex; gap: 28px; margin-top: 40px; flex-wrap: wrap;
+  }
+  .brand-stats dl { margin: 0; }
+  .brand-stats dt {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--panel-fg-dim); margin-bottom: 4px;
+  }
+  .brand-stats dd { margin: 0; font-size: 20px; font-weight: 600; }
+
+  .brand-bottom {
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: var(--font-mono); font-size: 11.5px; color: var(--panel-fg-dim);
+    letter-spacing: 0.02em; padding-top: 24px; border-top: 1px solid rgba(241,238,230,0.14);
+  }
+  .env-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 9px; border-radius: 100px; border: 1px solid rgba(241,238,230,0.22);
+  }
+  .env-pill::before {
+    content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--success);
+  }
+
+  /* ---------- Form panel ---------- */
+  .form-panel {
+    display: flex; align-items: center; justify-content: center;
+    padding: 32px;
+    background: var(--paper);
+  }
+  .form-card { width: 100%; max-width: 380px; }
+
+  .form-mobile-brand { display: none; }
+
+  .form-card h2 {
+    font-size: 24px; font-weight: 650; letter-spacing: -0.01em;
+    margin: 0 0 6px; color: var(--ink);
+  }
+  .form-card .sub {
+    margin: 0 0 30px; color: var(--ink-dim); font-size: 14.5px; line-height: 1.5;
+  }
+
+  .field { margin-bottom: 18px; }
+  .field label {
+    display: block; font-size: 13px; font-weight: 600; margin-bottom: 7px; color: var(--ink);
+  }
+  .field-control {
+    position: relative;
+    display: flex; align-items: center;
+  }
+  .field input {
+    width: 100%;
+    font: inherit;
+    font-size: 15px;
+    color: var(--ink);
+    background: var(--field-bg);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 11px 13px;
+  }
+  .field input::placeholder { color: var(--ink-dim); opacity: 0.7; }
+  .field input:focus-visible {
+    outline: none;
+    border-color: var(--azul);
+    box-shadow: 0 0 0 3.5px var(--focus-ring);
+  }
+  .field input[aria-invalid="true"] {
+    border-color: var(--danger);
+  }
+  .field input[aria-invalid="true"]:focus-visible {
+    box-shadow: 0 0 0 3.5px rgba(181, 52, 44, 0.22);
+  }
+  .field-control.has-toggle input { padding-right: 42px; }
+
+  .toggle-visibility {
+    position: absolute; right: 6px;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent; border: none; border-radius: 7px;
+    color: var(--ink-dim); cursor: pointer;
+  }
+  .toggle-visibility:hover { color: var(--ink); background: rgba(45,53,97,0.06); }
+  @media (prefers-color-scheme: dark) { .toggle-visibility:hover { background: rgba(241,238,230,0.08); } }
+  .toggle-visibility:focus-visible { outline: 2px solid var(--azul); outline-offset: 1px; }
+  .toggle-visibility svg { width: 18px; height: 18px; }
+  .toggle-visibility .eye-off { display: none; }
+  .toggle-visibility[aria-pressed="true"] .eye-on { display: none; }
+  .toggle-visibility[aria-pressed="true"] .eye-off { display: block; }
+
+  .row-between {
+    display: flex; align-items: center; justify-content: space-between;
+    margin: 4px 0 24px; font-size: 13.5px;
+  }
+  .remember { display: flex; align-items: center; gap: 8px; color: var(--ink-dim); cursor: pointer; }
+  .remember input {
+    width: 16px; height: 16px; accent-color: var(--indigo); cursor: pointer;
+  }
+  a.link, .forgot { color: var(--link); text-decoration: none; font-weight: 500; }
+  a.link:hover, .forgot:hover { text-decoration: underline; }
+  a.link:focus-visible, .forgot:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; border-radius: 3px; }
+
+  .submit {
+    width: 100%;
+    display: flex; align-items: center; justify-content: center; gap: 9px;
+    padding: 12px 16px;
+    font: inherit; font-size: 15px; font-weight: 600;
+    color: var(--panel-fg);
+    background: var(--indigo);
+    border: 1px solid var(--indigo);
+    border-radius: 9px;
+    cursor: pointer;
+    transition: background-color 120ms ease, box-shadow 120ms ease, transform 60ms ease;
+  }
+  .submit:hover { background: var(--indigo-600); }
+  .submit:active { transform: translateY(1px); }
+  .submit:focus-visible { outline: none; box-shadow: 0 0 0 3.5px var(--focus-ring); }
+  .submit[disabled] { cursor: progress; opacity: 0.86; }
+
+  .spinner {
+    width: 15px; height: 15px; border-radius: 50%;
+    border: 2px solid rgba(241,238,230,0.35); border-top-color: var(--panel-fg);
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+  .submit.is-loading .spinner { display: inline-block; }
+  .submit.is-loading .submit-label { opacity: 0.85; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .alert {
+    display: none;
+    align-items: flex-start; gap: 9px;
+    font-size: 13.5px; line-height: 1.5;
+    padding: 11px 12px; border-radius: 8px;
+    margin-bottom: 18px;
+  }
+  .alert.show { display: flex; }
+  .alert svg { width: 17px; height: 17px; flex: none; margin-top: 1px; }
+  .alert.error { background: var(--danger-bg); color: var(--danger); }
+  .alert.success { background: rgba(30, 122, 76, 0.12); color: var(--success); }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 12px);
+    background: var(--ink); color: var(--paper);
+    font-size: 13.5px; padding: 10px 16px; border-radius: 8px;
+    box-shadow: var(--shadow);
+    opacity: 0; pointer-events: none;
+    transition: opacity 180ms ease, transform 180ms ease;
+    z-index: 20;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+
+  .hint {
+    margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--border);
+    font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-dim);
+    line-height: 1.7;
+  }
+  .hint b { color: var(--ink); font-weight: 600; }
+
+  @media (max-width: 860px) {
+    .screen { grid-template-columns: 1fr; }
+    .brand { display: none; }
+    .form-mobile-brand {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 34px;
+    }
+    .form-mobile-brand .monogram { background: var(--indigo); color: var(--amber); }
+    .form-mobile-brand strong { display: block; font-size: 16px; color: var(--ink); }
+    .form-mobile-brand span {
+      display: block; font-family: var(--font-mono); font-size: 10.5px;
+      letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim);
+    }
+    .form-panel { padding: 40px 24px; align-items: flex-start; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .spinner { animation: none; border-top-color: transparent; }
+    .toast, .submit { transition: none; }
+  }
+</style>
+
+<div class="screen">
+  <aside class="brand" aria-hidden="false">
+    <canvas id="net" aria-hidden="true"></canvas>
+
+    <div class="brand-top">
+      <div class="wordmark">
+        <div class="monogram">GD</div>
+        <div class="wordmark-text">
+          <strong>Conecta CRM</strong>
+          <span>Gestão comercial B2B</span>
+        </div>
+      </div>
+
+      <div class="brand-claim">
+        <h1>Cada empresa da sua carteira, num único lugar.</h1>
+        <p>Prospecção, pipeline e relacionamento comercial — organizados do primeiro contato ao fechamento.</p>
+      </div>
+
+      <div class="brand-stats">
+        <dl>
+          <dt>Pipelines ativos</dt>
+          <dd>12</dd>
+        </dl>
+        <dl>
+          <dt>Negócios em aberto</dt>
+          <dd>184</dd>
+        </dl>
+        <dl>
+          <dt>Empresas na base</dt>
+          <dd>3.402</dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="brand-bottom">
+      <span>GD Conecta &copy; 2026</span>
+      <span class="env-pill">v1.0 · ambiente local</span>
+    </div>
+  </aside>
+
+  <main class="form-panel">
+    <div class="form-card">
+      <div class="form-mobile-brand">
+        <div class="monogram">GD</div>
+        <div>
+          <strong>Conecta CRM</strong>
+          <span>Gestão comercial B2B</span>
+        </div>
+      </div>
+
+      <h2>Entrar na sua conta</h2>
+      <p class="sub">Use o e-mail e a senha cadastrados pelo administrador da sua empresa.</p>
+
+      <div class="alert error" id="alertError" role="alert">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="8"/><path d="M10 6.5v4.2M10 13.4h.01"/></svg>
+        <span id="alertErrorText">E-mail ou senha inválidos.</span>
+      </div>
+      <div class="alert success" id="alertSuccess" role="status">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="8"/><path d="M6.5 10.3l2.3 2.3 4.7-5"/></svg>
+        <span>Autenticado. Redirecionando para o painel&hellip;</span>
+      </div>
+
+      <form id="loginForm" novalidate>
+        <div class="field">
+          <label for="email">E-mail</label>
+          <div class="field-control">
+            <input type="email" id="email" name="email" autocomplete="username"
+                   placeholder="voce@suaempresa.com.br" required />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="password">Senha</label>
+          <div class="field-control has-toggle">
+            <input type="password" id="password" name="password" autocomplete="current-password"
+                   placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" required />
+            <button type="button" class="toggle-visibility" id="toggleVisibility" aria-pressed="false"
+                    aria-label="Mostrar senha">
+              <svg class="eye-on" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1.5 10S4.5 4.5 10 4.5 18.5 10 18.5 10 15.5 15.5 10 15.5 1.5 10 1.5 10Z"/><circle cx="10" cy="10" r="2.6"/></svg>
+              <svg class="eye-off" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 2.5l15 15M8.3 8.4a2.6 2.6 0 003.4 3.4M6 5.2C3.3 6.6 1.5 10 1.5 10s3 5.5 8.5 5.5c1.4 0 2.7-.35 3.8-.9M12.2 5.1c-.7-.2-1.4-.3-2.2-.3-1 0-1.9.16-2.7.45"/><path d="M15.6 6.9c1.5 1.2 2.9 3.1 2.9 3.1s-.7 1.28-2 2.6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="row-between">
+          <label class="remember">
+            <input type="checkbox" id="remember" name="remember" />
+            Lembrar-me
+          </label>
+          <a href="#" class="forgot" id="forgotLink">Esqueci minha senha</a>
+        </div>
+
+        <button type="submit" class="submit" id="submitBtn">
+          <span class="spinner" aria-hidden="true"></span>
+          <span class="submit-label">Entrar</span>
+        </button>
+      </form>
+
+      <div class="hint">
+        <b>Prot&oacute;tipo de tela</b> &mdash; sem backend conectado ainda.<br />
+        Use as credenciais do seed para ver o estado de sucesso:<br />
+        <b>admin@gdconecta.com.br</b> / <b>Admin@123456</b>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  (function () {
+    // ---- ambient node network on the brand panel ----
+    var canvas = document.getElementById('net');
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (canvas) {
+      var ctx = canvas.getContext('2d');
+      var w, h, nodes, raf;
+      var brandEl = canvas.parentElement;
+
+      function resize() {
+        var rect = brandEl.getBoundingClientRect();
+        w = canvas.width = rect.width;
+        h = canvas.height = rect.height;
+      }
+
+      function makeNodes() {
+        var count = Math.max(14, Math.floor((w * h) / 42000));
+        nodes = [];
+        for (var i = 0; i < count; i++) {
+          nodes.push({
+            x: Math.random() * w,
+            y: Math.random() * h,
+            vx: (Math.random() - 0.5) * 0.12,
+            vy: (Math.random() - 0.5) * 0.12,
+          });
+        }
+      }
+
+      function frame() {
+        ctx.clearRect(0, 0, w, h);
+        for (var i = 0; i < nodes.length; i++) {
+          var n = nodes[i];
+          n.x += n.vx; n.y += n.vy;
+          if (n.x < 0 || n.x > w) n.vx *= -1;
+          if (n.y < 0 || n.y > h) n.vy *= -1;
+        }
+        for (var i = 0; i < nodes.length; i++) {
+          for (var j = i + 1; j < nodes.length; j++) {
+            var a = nodes[i], b = nodes[j];
+            var dx = a.x - b.x, dy = a.y - b.y;
+            var dist = Math.sqrt(dx * dx + dy * dy);
+            var max = 140;
+            if (dist < max) {
+              ctx.strokeStyle = 'rgba(199, 203, 224,' + (0.16 * (1 - dist / max)) + ')';
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+              ctx.stroke();
+            }
+          }
+        }
+        for (var i = 0; i < nodes.length; i++) {
+          ctx.fillStyle = 'rgba(201, 168, 76, 0.55)';
+          ctx.beginPath();
+          ctx.arc(nodes[i].x, nodes[i].y, 1.6, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        raf = requestAnimationFrame(frame);
+      }
+
+      resize();
+      makeNodes();
+      if (!reduceMotion) {
+        frame();
+      } else {
+        frame_static();
+      }
+      function frame_static() { ctx.clearRect(0, 0, w, h); }
+
+      window.addEventListener('resize', function () {
+        cancelAnimationFrame(raf);
+        resize();
+        makeNodes();
+        if (!reduceMotion) frame(); else frame_static();
+      });
+    }
+
+    // ---- password visibility ----
+    var toggle = document.getElementById('toggleVisibility');
+    var pwd = document.getElementById('password');
+    toggle.addEventListener('click', function () {
+      var showing = toggle.getAttribute('aria-pressed') === 'true';
+      toggle.setAttribute('aria-pressed', String(!showing));
+      toggle.setAttribute('aria-label', showing ? 'Mostrar senha' : 'Ocultar senha');
+      pwd.type = showing ? 'password' : 'text';
+    });
+
+    // ---- forgot password (feature not implemented yet, per spec gap G4) ----
+    var toastEl = document.getElementById('toast');
+    var toastTimer;
+    function showToast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 3200);
+    }
+    document.getElementById('forgotLink').addEventListener('click', function (e) {
+      e.preventDefault();
+      showToast('Recuperação por e-mail ainda não está disponível nesta versão.');
+    });
+
+    // ---- mock submit flow ----
+    var form = document.getElementById('loginForm');
+    var emailInput = document.getElementById('email');
+    var submitBtn = document.getElementById('submitBtn');
+    var alertError = document.getElementById('alertError');
+    var alertErrorText = document.getElementById('alertErrorText');
+    var alertSuccess = document.getElementById('alertSuccess');
+
+    var SEED_EMAIL = 'admin@gdconecta.com.br';
+    var SEED_PASS = 'Admin@123456';
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      alertError.classList.remove('show');
+      alertSuccess.classList.remove('show');
+      emailInput.removeAttribute('aria-invalid');
+      pwd.removeAttribute('aria-invalid');
+
+      var email = emailInput.value.trim();
+      var pass = pwd.value;
+
+      if (!email || !pass) {
+        alertErrorText.textContent = 'Preencha e-mail e senha para continuar.';
+        alertError.classList.add('show');
+        if (!email) emailInput.setAttribute('aria-invalid', 'true');
+        if (!pass) pwd.setAttribute('aria-invalid', 'true');
+        return;
+      }
+
+      submitBtn.classList.add('is-loading');
+      submitBtn.setAttribute('disabled', 'true');
+
+      setTimeout(function () {
+        submitBtn.classList.remove('is-loading');
+        submitBtn.removeAttribute('disabled');
+
+        if (email.toLowerCase() === SEED_EMAIL && pass === SEED_PASS) {
+          alertSuccess.classList.add('show');
+          form.querySelectorAll('input, button').forEach(function (el) { el.setAttribute('disabled', 'true'); });
+        } else {
+          alertErrorText.textContent = 'E-mail ou senha inválidos.';
+          alertError.classList.add('show');
+          emailInput.setAttribute('aria-invalid', 'true');
+          pwd.setAttribute('aria-invalid', 'true');
+          pwd.focus();
+        }
+      }, 850);
+    });
+  })();
+</script>

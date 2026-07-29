@@ -1,0 +1,31 @@
+/* kanban */
+.kanban-scroll { overflow-x: auto; padding-bottom: 6px; }
+.kanban { display: flex; gap: 14px; align-items: flex-start; min-width: min-content; }
+.kb-col {
+  width: 248px; flex: none; background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: 12px; box-shadow: var(--shadow); display: flex; flex-direction: column;
+  max-height: calc(100vh - 220px);
+}
+.kb-col-head { display: flex; align-items: center; gap: 8px; padding: 12px 13px; border-bottom: 1px solid var(--border); }
+.kb-col-title { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 650; flex: 1; min-width: 0; }
+.kb-col-title .d { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.kb-col-title .d[data-status='lead'] { background: var(--azul); }
+.kb-col-title .d[data-status='qualificado'] { background: var(--warning); }
+.kb-col-title .d[data-status='cliente'] { background: var(--good); }
+.kb-col-title .d[data-status='perdido'] { background: var(--critical); }
+.kb-col-title .d[data-status='inativo'] { background: var(--ink-faint); }
+.kb-col-count {
+  font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; color: var(--ink-dim);
+  background: var(--paper); border: 1px solid var(--border); border-radius: 100px;
+  min-width: 19px; height: 19px; padding: 0 5px; display: flex; align-items: center;
+  justify-content: center; flex: none;
+}
+.kb-col-body {
+  padding: 10px; overflow-y: auto; flex: 1; display: flex; flex-direction: column;
+  gap: 8px; min-height: 60px; transition: background-color 100ms ease;
+}
+.kb-col-body.drag-over { background: rgba(0, 119, 168, 0.06); }
+.kb-card { background: var(--paper); border: 1px solid var(--border); border-radius: 9px; padding: 10px 11px; cursor: grab; }
+.kb-card:active { cursor: grabbing; }
+.kb-card-name { font-size: 12.8px; font-weight: 650; color: var(--ink); }
+.kb-card-sub { font-size: 11px; color: var(--ink-faint); margin-top: 2px; }

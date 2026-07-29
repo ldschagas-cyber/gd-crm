@@ -1,0 +1,658 @@
+<title>Contrato anual logística — GD Conecta CRM</title>
+<style>
+  /* Font note: real product should self-host IBM Plex Sans/Mono; CDN fonts are blocked
+     in this artifact sandbox, so a close system-grotesque stack stands in here. */
+  :root {
+    --font-display: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Cascadia Code", "SFMono-Regular", "Consolas", ui-monospace, monospace;
+
+    --indigo: #2D3561;
+    --indigo-600: #3B4478;
+    --amber: #C9A84C;
+    --azul: #0077A8;
+    --marfim: #F5F1EB;
+
+    --paper: var(--marfim);
+    --panel: var(--indigo);
+    --panel-fg: #F1EEE6;
+    --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12);
+    --panel-active-bg: rgba(201, 168, 76, 0.14);
+
+    --ink: #22243A;
+    --ink-dim: #5B5E78;
+    --ink-faint: #8B8EA6;
+    --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF;
+    --accent: var(--amber);
+    --link: var(--azul);
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+
+    --good: #0ca30c;
+    --warning: #fab219;
+    --serious: #ec835a;
+    --critical: #d03b3b;
+
+    --seq-5: #104281;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+      --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+      --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+      --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+      --seq-5: #184f95;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+    --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+    --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+    --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+    --seq-5: #184f95;
+  }
+  :root[data-theme="light"] {
+    --paper: #F5F1EB; --panel: #2D3561; --panel-fg: #F1EEE6; --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12); --panel-active-bg: rgba(201, 168, 76, 0.14);
+    --ink: #22243A; --ink-dim: #5B5E78; --ink-faint: #8B8EA6; --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF; --amber: #C9A84C; --azul: #0077A8; --link: #0077A8;
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+    --seq-5: #104281;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; font-family: var(--font-display); color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; }
+  button, input, select, textarea { font-family: inherit; }
+  a { color: inherit; }
+  ::selection { background: rgba(201,168,76,.3); }
+  :focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; border-radius: 4px; }
+
+  .shell { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+
+  /* ---------------- Sidebar ---------------- */
+  .sidebar { background: var(--panel); color: var(--panel-fg); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+  .sb-brand { display: flex; align-items: center; gap: 10px; padding: 20px 18px 16px; }
+  .monogram { width: 34px; height: 34px; border-radius: 9px; flex: none; background: var(--amber); color: var(--indigo); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+  .sb-brand strong { display: block; font-size: 14.5px; font-weight: 650; line-height: 1.2; }
+  .sb-brand span { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--panel-fg-dim); margin-top: 2px; }
+  .sb-nav { flex: 1; overflow-y: auto; padding: 10px 12px; }
+  .sb-group + .sb-group { margin-top: 18px; }
+  .sb-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--panel-fg-dim); padding: 0 10px; margin-bottom: 6px; }
+  .sb-item { display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: 8px; margin-bottom: 2px; font-size: 13.6px; font-weight: 500; color: var(--panel-fg-dim); text-decoration: none; cursor: pointer; border: 1px solid transparent; position: relative; }
+  .sb-item svg { width: 17px; height: 17px; flex: none; opacity: 0.9; }
+  .sb-item:hover { background: rgba(241, 238, 230, 0.06); color: var(--panel-fg); }
+  .sb-item.active { background: var(--panel-active-bg); color: var(--panel-fg); font-weight: 650; }
+  .sb-item.active::before { content: ""; position: absolute; left: -12px; top: 6px; bottom: 6px; width: 3px; background: var(--amber); border-radius: 2px; }
+  .sb-item .chip { margin-left: auto; font-family: var(--font-mono); font-size: 10px; background: rgba(241,238,230,0.12); color: var(--panel-fg-dim); padding: 1px 6px; border-radius: 100px; }
+  .sb-user { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-top: 1px solid var(--panel-border); }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; flex: none; background: rgba(201,168,76,0.18); color: var(--amber); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; border: 1px solid rgba(201,168,76,0.3); }
+  .sb-user-meta { min-width: 0; flex: 1; }
+  .sb-user-meta strong { display: block; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-user-meta span { display: block; font-size: 11px; color: var(--panel-fg-dim); }
+
+  /* ---------------- Main column ---------------- */
+  .main-col { display: flex; flex-direction: column; min-width: 0; }
+  .content { padding: 20px 28px 48px; display: flex; flex-direction: column; gap: 16px; }
+
+  .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--ink-dim); cursor: pointer; width: fit-content; }
+  .back-link:hover { color: var(--ink); }
+  .back-link svg { width: 14px; height: 14px; }
+
+  .deal-head { display: flex; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+  .deal-head h1 { margin: 0 0 6px; font-size: 21px; font-weight: 700; letter-spacing: -0.01em; }
+  .deal-head-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 12.8px; color: var(--ink-dim); }
+  .company-chip { display: inline-flex; align-items: center; gap: 6px; color: var(--link); cursor: pointer; font-weight: 600; }
+  .company-chip:hover { text-decoration: underline; }
+  .stage-pill-lg { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 100px; }
+  .stage-pill-lg .d { width: 7px; height: 7px; border-radius: 50%; }
+  .stage-pill-lg.aberta { background: rgba(16,66,129,0.12); color: var(--seq-5); }
+  .stage-pill-lg.aberta .d { background: var(--seq-5); }
+  .stage-pill-lg.ganho { background: rgba(12,163,12,0.14); color: var(--good); }
+  .stage-pill-lg.ganho .d { background: var(--good); }
+  .stage-pill-lg.perdido { background: rgba(208,59,59,0.12); color: var(--critical); }
+  .stage-pill-lg.perdido .d { background: var(--critical); }
+  .deal-actions { margin-left: auto; display: flex; gap: 8px; flex: none; flex-wrap: wrap; }
+
+  .btn-primary { display: flex; align-items: center; gap: 7px; background: var(--indigo); color: var(--panel-fg); border: 1px solid var(--indigo); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-primary:hover { background: var(--indigo-600); }
+  .btn-primary:disabled { opacity: .45; cursor: not-allowed; }
+  .btn-primary svg { width: 14px; height: 14px; }
+  .btn-good { display: flex; align-items: center; gap: 7px; background: var(--good); color: #fff; border: 1px solid var(--good); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-good:hover { filter: brightness(0.94); }
+  .btn-good:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-ghost { display: flex; align-items: center; gap: 7px; background: var(--card-bg); color: var(--ink); border: 1px solid var(--border); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-ghost:hover { border-color: var(--ink-faint); }
+  .btn-ghost:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-danger-outline { display: flex; align-items: center; gap: 7px; background: var(--card-bg); color: var(--critical); border: 1px solid rgba(208,59,59,.35); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-danger-outline:hover { background: rgba(208,59,59,.06); }
+  .btn-danger-outline:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-danger { display: flex; align-items: center; gap: 7px; background: var(--critical); color: #fff; border: 1px solid var(--critical); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-danger:hover { filter: brightness(0.94); }
+  .btn-sm { padding: 6px 11px; font-size: 12px; border-radius: 7px; }
+
+  .closed-banner { display: none; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; }
+  .closed-banner.show { display: flex; }
+  .closed-banner.ganho { background: rgba(12,163,12,0.1); color: var(--good); }
+  .closed-banner.perdido { background: rgba(208,59,59,0.1); color: var(--critical); }
+  .closed-banner svg { width: 16px; height: 16px; flex: none; }
+
+  .stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+  .stat-tile { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; box-shadow: var(--shadow); }
+  .stat-tile .t { font-size: 11px; color: var(--ink-faint); font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+  .stat-tile .v { font-size: 19px; font-weight: 700; margin-top: 4px; font-family: var(--font-mono); }
+
+  .grid-main { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  .col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+  .card-head { padding: 14px 18px 10px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .card-head h2 { margin: 0; font-size: 13.5px; font-weight: 700; }
+  .card-head p { margin: 2px 0 0; font-size: 11.5px; color: var(--ink-dim); }
+  .card-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+  .link-action { font-size: 12px; font-weight: 600; color: var(--link); cursor: pointer; text-decoration: none; }
+  .link-action:hover { text-decoration: underline; }
+
+  /* activity composer */
+  .composer-types { display: flex; gap: 6px; flex-wrap: wrap; }
+  .composer-type { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--ink-dim); background: var(--paper); border: 1px solid var(--border); border-radius: 100px; padding: 5px 11px; cursor: pointer; }
+  .composer-type svg { width: 13px; height: 13px; }
+  .composer-type.active { background: var(--indigo); color: var(--panel-fg); border-color: var(--indigo); }
+  .composer-textarea { border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; font-size: 13px; color: var(--ink); width: 100%; min-height: 64px; resize: vertical; outline: none; }
+  .composer-textarea:focus { border-color: var(--azul); box-shadow: 0 0 0 3px rgba(0,119,168,.14); }
+  .composer-foot { display: flex; justify-content: flex-end; }
+
+  /* timeline */
+  .timeline { display: flex; flex-direction: column; }
+  .tl-item { display: flex; gap: 12px; padding: 12px 0; position: relative; }
+  .tl-item:not(:last-child)::before { content: ""; position: absolute; left: 14px; top: 34px; bottom: -12px; width: 1.5px; background: var(--border); }
+  .tl-icon { width: 29px; height: 29px; border-radius: 50%; background: var(--paper); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--ink-dim); flex: none; z-index: 1; }
+  .tl-icon svg { width: 14px; height: 14px; }
+  .tl-icon.ligacao { color: var(--azul); }
+  .tl-icon.email { color: var(--azul); }
+  .tl-icon.nota { color: var(--amber); }
+  .tl-icon.pipeline { color: var(--seq-5); }
+  .tl-icon.cadastro { color: var(--ink-faint); }
+  .tl-icon.tarefa { color: var(--good); }
+  .tl-body { flex: 1; min-width: 0; }
+  .tl-title { font-size: 13px; font-weight: 650; color: var(--ink); }
+  .tl-desc { font-size: 12.5px; color: var(--ink-dim); margin-top: 2px; line-height: 1.5; }
+  .tl-meta { font-size: 11px; color: var(--ink-faint); margin-top: 4px; font-family: var(--font-mono); }
+
+  /* deal details form */
+  .f-group { display: flex; flex-direction: column; gap: 6px; }
+  .f-label { font-size: 11.5px; font-weight: 600; color: var(--ink-dim); }
+  .f-select, .f-input { border: 1px solid var(--border); border-radius: 8px; padding: 8px 11px; background: var(--card-bg); color: var(--ink); width: 100%; outline: none; font-size: 13px; }
+  .f-select:focus, .f-input:focus { border-color: var(--azul); box-shadow: 0 0 0 3px rgba(0,119,168,.14); }
+  .f-select:disabled, .f-input:disabled { opacity: .55; background: var(--paper); cursor: not-allowed; }
+  .f-hint { font-size: 11px; color: var(--ink-faint); }
+
+  /* company / contact mini cards */
+  .mini-card { display: flex; align-items: center; gap: 11px; }
+  .mini-card .avatar { width: 38px; height: 38px; font-size: 13px; }
+  .mini-body { flex: 1; min-width: 0; }
+  .mini-title { font-size: 13.3px; font-weight: 650; color: var(--ink); }
+  .mini-sub { font-size: 11.5px; color: var(--ink-faint); margin-top: 1px; }
+  .mini-facts { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .mini-fact { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink-dim); }
+  .mini-fact svg { width: 13px; height: 13px; color: var(--ink-faint); flex: none; }
+  .quick-icons { display: flex; gap: 5px; margin-top: 10px; }
+  .quick-icons a { width: 30px; height: 30px; border-radius: 8px; background: var(--paper); color: var(--azul); display: flex; align-items: center; justify-content: center; text-decoration: none; }
+  .quick-icons a:hover { filter: brightness(0.96); }
+  .quick-icons a svg { width: 15px; height: 15px; }
+
+  /* linked tasks */
+  .task-row { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+  .task-row:last-child { border-bottom: none; }
+  .task-check { width: 18px; height: 18px; border-radius: 50%; border: 1.6px solid var(--border); background: var(--card-bg); flex: none; margin-top: 1px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: transparent; }
+  .task-check svg { width: 10px; height: 10px; }
+  .task-row.done .task-check { background: var(--good); border-color: var(--good); color: #fff; }
+  .task-row.done .task-title { text-decoration: line-through; color: var(--ink-faint); }
+  .task-title { font-size: 12.8px; font-weight: 600; color: var(--ink); }
+  .task-meta { font-size: 11px; color: var(--ink-faint); margin-top: 2px; font-family: var(--font-mono); }
+
+  .modal-scrim { position: fixed; inset: 0; background: rgba(20,23,43,.46); opacity: 0; pointer-events: none; transition: opacity .16s ease; z-index: 50; }
+  .modal-scrim.show { opacity: 1; pointer-events: auto; }
+  .modal-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-46%); width: 380px; max-width: calc(100vw - 32px); background: var(--card-bg); border-radius: 14px; box-shadow: var(--shadow); z-index: 51; padding: 22px; opacity: 0; pointer-events: none; transition: opacity .16s ease, transform .16s ease; }
+  .modal-box.show { opacity: 1; pointer-events: auto; transform: translate(-50%,-50%); }
+  .modal-box h3 { margin: 0 0 8px; font-size: 15.5px; }
+  .modal-box .sub { margin: 0 0 16px; font-size: 12.5px; color: var(--ink-dim); }
+  .modal-box .row { display: flex; justify-content: flex-end; gap: 10px; }
+  .f-err { font-size: 11.5px; color: var(--critical); display: none; margin-top: -6px; }
+  .f-err.show { display: block; }
+
+  .toast { position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 12px); background: var(--ink); color: var(--paper); font-size: 13.5px; padding: 10px 16px; border-radius: 8px; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: opacity 180ms ease, transform 180ms ease; z-index: 60; max-width: 88vw; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+
+  @media (max-width: 1080px) { .grid-main { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar { position: relative; height: auto; }
+    .sb-nav, .sb-user { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { .toast, .modal-box, .modal-scrim { transition: none; } }
+</style>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="monogram">GD</div>
+      <div><strong>Conecta CRM</strong><span>Gestão comercial</span></div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-group">
+        <a class="sb-item" href="#" data-page="Dashboard">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="2.5" width="6.2" height="6.2" rx="1.3"/><rect x="11.3" y="2.5" width="6.2" height="4.4" rx="1.3"/><rect x="11.3" y="9.4" width="6.2" height="8.1" rx="1.3"/><rect x="2.5" y="11.2" width="6.2" height="6.3" rx="1.3"/></svg>
+          Dashboard
+        </a>
+        <a class="sb-item" href="#" data-page="Pesquisa de Leads">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7"/><circle cx="10" cy="10" r="3.2"/><path d="M10 3v2.4M10 14.6V17M17 10h-2.4M5.4 10H3"/></svg>
+          Pesquisa de Leads
+        </a>
+        <a class="sb-item" href="#" data-page="Empresas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17.5V3.8a.8.8 0 01.8-.8h6.4a.8.8 0 01.8.8v13.7"/><path d="M13 17.5V8.3a.8.8 0 01.8-.8h3.4a.8.8 0 01.8.8v9.2"/><path d="M5.4 6h1.6M5.4 9h1.6M5.4 12h1.6M15 10.6h1M15 13.4h1"/></svg>
+          Empresas
+          <span class="chip">3.402</span>
+        </a>
+        <a class="sb-item" href="#" data-page="Contatos">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="6.6" r="3.1"/><path d="M3.6 17c.7-3.4 3.2-5.2 6.4-5.2s5.7 1.8 6.4 5.2"/></svg>
+          Contatos
+        </a>
+        <div class="sb-item active">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 10.3l3-4.6a1 1 0 01.85-.47h7.3a1 1 0 01.85.47l3 4.6"/><path d="M2.5 10.3v5.2a1 1 0 001 1h13a1 1 0 001-1v-5.2"/><path d="M7.3 10.3a2.7 2.7 0 005.4 0"/></svg>
+          Negócios
+          <span class="chip">184</span>
+        </div>
+        <a class="sb-item" href="#" data-page="Pipeline">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="3" width="4.2" height="14" rx="1"/><rect x="7.9" y="3" width="4.2" height="9.5" rx="1"/><rect x="13.3" y="3" width="4.2" height="6" rx="1"/></svg>
+          Pipeline
+        </a>
+        <a class="sb-item" href="#" data-page="Tarefas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2.2"/><path d="M6.6 10.2l2 2 4.6-4.9"/></svg>
+          Tarefas
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Marketing</div>
+        <a class="sb-item" href="#" data-page="Formulários">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="2.5" width="14" height="15" rx="1.8"/><path d="M6.3 6.6h7.4M6.3 9.6h7.4M6.3 12.6h4.4"/></svg>
+          Formulários
+        </a>
+        <a class="sb-item" href="#" data-page="Rastreio do site">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7.3"/><path d="M10 5.6v4.4l3 1.8"/></svg>
+          Rastreio do site
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Administração</div>
+        <a class="sb-item" href="#" data-page="Usuários">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="6.4" r="2.8"/><path d="M2.6 16.4c.6-3 2.7-4.6 5.4-4.6s4.8 1.6 5.4 4.6"/><path d="M13.6 4.6c1.3.3 2.2 1.4 2.2 2.9 0 1.3-.7 2.3-1.8 2.8M15.6 11.9c1.4.6 2.3 1.9 2.7 3.9"/></svg>
+          Usuários
+        </a>
+        <a class="sb-item" href="#" data-page="Configurações">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="2.6"/><path d="M10 2.8v2M10 15.2v2M17.2 10h-2M4.8 10h-2M15.1 4.9l-1.4 1.4M6.3 13.7l-1.4 1.4M15.1 15.1l-1.4-1.4M6.3 6.3L4.9 4.9"/></svg>
+          Configurações
+        </a>
+      </div>
+    </nav>
+
+    <div class="sb-user">
+      <div class="avatar">AD</div>
+      <div class="sb-user-meta"><strong>Administrador</strong><span>Admin · GD Conecta</span></div>
+    </div>
+  </aside>
+
+  <div class="main-col">
+    <div class="content">
+      <a class="back-link" id="backLink"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5l-5 5 5 5"/></svg>Voltar para Negócios</a>
+
+      <div class="deal-head">
+        <div>
+          <h1 id="dealName">Contrato anual logística</h1>
+          <div class="deal-head-meta">
+            <span class="company-chip" id="companyLink"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" style="width:13px;height:13px;"><path d="M3 17.5V3.8a.8.8 0 01.8-.8h6.4a.8.8 0 01.8.8v13.7"/><path d="M13 17.5V8.3a.8.8 0 01.8-.8h3.4a.8.8 0 01.8.8v9.2"/></svg>Grupo Andrade</span>
+            <span>·</span>
+            <span class="stage-pill-lg aberta" id="stagePill"><span class="d"></span>Negociação</span>
+            <span>·</span>
+            <span>Responsável: <strong id="respName">Felipe Nogueira</strong></span>
+          </div>
+        </div>
+        <div class="deal-actions">
+          <button class="btn-ghost" id="editBtn">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M11 4.5L15.5 9 6 18.5H1.5V14z"/></svg>
+            Editar
+          </button>
+          <button class="btn-danger-outline" id="lostBtn">Marcar como perdido</button>
+          <button class="btn-good" id="wonBtn">Marcar como ganho</button>
+        </div>
+      </div>
+
+      <div class="closed-banner" id="closedBanner">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4M10 14h.01"/></svg>
+        <span id="closedBannerText"></span>
+      </div>
+
+      <div class="stat-strip">
+        <div class="stat-tile"><div class="t">Valor previsto</div><div class="v" id="statValor">R$ 156.000</div></div>
+        <div class="stat-tile"><div class="t">Probabilidade</div><div class="v" id="statProb">80%</div></div>
+        <div class="stat-tile"><div class="t">Previsão de fechamento</div><div class="v" id="statPrev">03/08/2026</div></div>
+        <div class="stat-tile"><div class="t">Origem</div><div class="v" id="statOrigem" style="font-size:15px;">Indicação</div></div>
+      </div>
+
+      <div class="grid-main">
+        <div class="col">
+          <div class="card">
+            <div class="card-head"><h2>Adicionar atividade</h2></div>
+            <div class="card-body">
+              <div class="composer-types" id="composerTypes">
+                <button class="composer-type active" data-type="nota"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 3.5h9l3 3v10a1 1 0 01-1 1H4a1 1 0 01-1-1v-12a1 1 0 011-1z"/><path d="M13 3.5V7h3.5"/></svg>Nota</button>
+                <button class="composer-type" data-type="ligacao"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 3.5c1.6 5.6 6.4 10.4 12 12l1.8-2.6a1 1 0 00-.5-1.5l-3-1.1a1 1 0 00-1.1.3l-1 1.2a10 10 0 01-5.5-5.5l1.2-1a1 1 0 00.3-1.1l-1.1-3a1 1 0 00-1.5-.5L4 3.5z"/></svg>Ligação</button>
+                <button class="composer-type" data-type="email"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2.5" y="4" width="15" height="12" rx="1.8"/><path d="M3 5l7 5.5L17 5"/></svg>E-mail</button>
+                <button class="composer-type" data-type="reuniao"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2.5" y="4" width="15" height="13" rx="1.8"/><path d="M2.5 8h15M6 2.5v3M14 2.5v3"/></svg>Reunião</button>
+              </div>
+              <textarea class="composer-textarea" id="composerText" placeholder="Escreva uma nota sobre este negócio…"></textarea>
+              <div class="composer-foot">
+                <button class="btn-primary btn-sm" id="composerSave">Adicionar</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h2>Linha do tempo</h2></div>
+            <div class="card-body">
+              <div class="timeline" id="timeline"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="card">
+            <div class="card-head"><h2>Detalhes do negócio</h2></div>
+            <div class="card-body">
+              <div class="f-group">
+                <label class="f-label">Pipeline</label>
+                <input class="f-input" value="Vendas B2B" disabled />
+              </div>
+              <div class="f-group">
+                <label class="f-label">Etapa</label>
+                <select class="f-select" id="fldStage">
+                  <option value="lead">Lead captado</option>
+                  <option value="contato">Primeiro contato</option>
+                  <option value="diag">Diagnóstico</option>
+                  <option value="proposta">Proposta</option>
+                  <option value="negociacao" selected>Negociação</option>
+                </select>
+                <span class="f-hint">Mudar aqui reflete no board de Negócios.</span>
+              </div>
+              <div class="f-group">
+                <label class="f-label">Valor previsto (R$)</label>
+                <input class="f-input" id="fldValor" value="156.000" />
+              </div>
+              <div class="f-group">
+                <label class="f-label">Probabilidade (%)</label>
+                <input class="f-input" id="fldProb" type="number" min="0" max="100" value="80" />
+              </div>
+              <div class="f-group">
+                <label class="f-label">Previsão de fechamento</label>
+                <input class="f-input" id="fldPrev" type="date" value="2026-08-03" />
+              </div>
+              <div class="f-group">
+                <label class="f-label">Origem</label>
+                <select class="f-select" id="fldOrigem">
+                  <option>Indicação</option>
+                  <option>Site institucional</option>
+                  <option>Formulário do site</option>
+                  <option>Prospecção ativa</option>
+                  <option>Cadência de e-mail</option>
+                </select>
+              </div>
+              <button class="btn-primary btn-sm" id="saveDetailsBtn" style="width:fit-content;">Salvar alterações</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h2>Empresa</h2><a class="link-action" id="companyCardLink">Ver empresa</a></div>
+            <div class="card-body">
+              <div class="mini-card">
+                <span class="avatar">GA</span>
+                <div class="mini-body">
+                  <div class="mini-title">Grupo Andrade</div>
+                  <div class="mini-sub">Distribuição atacadista</div>
+                </div>
+              </div>
+              <div class="mini-facts">
+                <div class="mini-fact"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 18s6-5.2 6-9.6A6 6 0 004 8.4C4 12.8 10 18 10 18z"/><circle cx="10" cy="8" r="2"/></svg>São Paulo/SP</div>
+                <div class="mini-fact"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6c1.4 4.8 5.4 8.4 9.6 9.6l1.5-2.2a.9.9 0 00-.4-1.3l-2.5-.9a.9.9 0 00-1 .3l-.8 1a8.6 8.6 0 01-4.7-4.7l1-.8a.9.9 0 00.3-1l-.9-2.5a.9.9 0 00-1.3-.4L3 6z"/></svg>(11) 4002-8922</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h2>Contato principal</h2><a class="link-action" id="contactsCardLink">Ver contatos</a></div>
+            <div class="card-body">
+              <div class="mini-card">
+                <span class="avatar">MF</span>
+                <div class="mini-body">
+                  <div class="mini-title">Marcos Vinícius Ferreira</div>
+                  <div class="mini-sub">Diretor Comercial</div>
+                </div>
+              </div>
+              <div class="quick-icons">
+                <a href="mailto:marcos.ferreira@transportesvale.com.br" title="E-mail"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2.5" y="4" width="15" height="12" rx="1.8"/><path d="M3 5l7 5.5L17 5"/></svg></a>
+                <a href="tel:11988124471" title="Telefone"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 3.5c1.6 5.6 6.4 10.4 12 12l1.8-2.6a1 1 0 00-.5-1.5l-3-1.1a1 1 0 00-1.1.3l-1 1.2a10 10 0 01-5.5-5.5l1.2-1a1 1 0 00.3-1.1l-1.1-3a1 1 0 00-1.5-.5L4 3.5z"/></svg></a>
+                <a href="https://wa.me/5511988124471" target="_blank" rel="noopener" title="WhatsApp"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 17l1.1-3.4a6.9 6.9 0 113 2.7z"/><path d="M7.3 8.3c.2 2.4 2 4.2 4.4 4.4"/></svg></a>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h2>Tarefas vinculadas</h2><a class="link-action" id="newTaskLink">Nova tarefa</a></div>
+            <div class="card-body" id="tasksBody"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-scrim" id="lostScrim"></div>
+<div class="modal-box" id="lostModal">
+  <h3>Marcar como perdido</h3>
+  <p class="sub">Registrar o motivo ajuda a entender padrões de perda.</p>
+  <div class="f-group">
+    <label class="f-label">Motivo da perda</label>
+    <select class="f-select" id="lostMotivo">
+      <option value="">Selecione…</option>
+      <option>Preço</option>
+      <option>Concorrência</option>
+      <option>Não é o momento</option>
+      <option>Sem orçamento</option>
+      <option>Perda de contato</option>
+      <option>Outro</option>
+    </select>
+    <span class="f-err" id="errMotivo">Selecione um motivo.</span>
+  </div>
+  <div class="row">
+    <button class="btn-ghost" id="lostCancel">Cancelar</button>
+    <button class="btn-danger" id="lostConfirm">Confirmar perda</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var NEGOCIOS_URL = 'https://claude.ai/code/artifact/82e81dd1-e721-406e-83b3-7b1c72d450c9';
+  var EMPRESA_URL = 'https://claude.ai/code/artifact/3599deda-92ca-456e-871a-0d16a10f940f';
+  var CONTATOS_URL = 'https://claude.ai/code/artifact/730fd57c-e123-4084-82a6-567408153326';
+  var TAREFAS_URL = 'https://claude.ai/code/artifact/cb45f1d7-a551-44d9-a093-bf3ef770ae80';
+
+  var toastEl = document.getElementById('toast');
+  var toastTimer;
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 3400);
+  }
+  document.querySelectorAll('[data-page]').forEach(function (el) {
+    el.addEventListener('click', function (e) { e.preventDefault(); showToast('Tela "' + el.getAttribute('data-page') + '" ainda não foi prototipada.'); });
+  });
+  document.getElementById('backLink').addEventListener('click', function () { window.open(NEGOCIOS_URL, '_blank', 'noopener'); });
+  document.getElementById('companyLink').addEventListener('click', function () { window.open(EMPRESA_URL, '_blank', 'noopener'); });
+  document.getElementById('companyCardLink').addEventListener('click', function () { window.open(EMPRESA_URL, '_blank', 'noopener'); });
+  document.getElementById('contactsCardLink').addEventListener('click', function () { window.open(CONTATOS_URL, '_blank', 'noopener'); });
+  document.getElementById('editBtn').addEventListener('click', function () { showToast('Edição rápida do nome/campos principais ainda não foi prototipada — use os campos em "Detalhes do negócio".'); });
+  document.getElementById('newTaskLink').addEventListener('click', function () { window.open(TAREFAS_URL, '_blank', 'noopener'); });
+
+  var ICONS = {
+    ligacao: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 3.5c1.6 5.6 6.4 10.4 12 12l1.8-2.6a1 1 0 00-.5-1.5l-3-1.1a1 1 0 00-1.1.3l-1 1.2a10 10 0 01-5.5-5.5l1.2-1a1 1 0 00.3-1.1l-1.1-3a1 1 0 00-1.5-.5L4 3.5z"/></svg>',
+    email: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2.5" y="4" width="15" height="12" rx="1.8"/><path d="M3 5l7 5.5L17 5"/></svg>',
+    nota: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 3.5h9l3 3v10a1 1 0 01-1 1H4a1 1 0 01-1-1v-12a1 1 0 011-1z"/><path d="M13 3.5V7h3.5"/></svg>',
+    pipeline: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2.5" y="3" width="4.2" height="14" rx="1"/><rect x="7.9" y="3" width="4.2" height="9.5" rx="1"/><rect x="13.3" y="3" width="4.2" height="6" rx="1"/></svg>',
+    cadastro: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M10 4v12M4 10h12"/></svg>',
+    tarefa: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 10l3.5 3.5L15.5 6"/></svg>',
+    reuniao: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2.5" y="4" width="15" height="13" rx="1.8"/><path d="M2.5 8h15M6 2.5v3M14 2.5v3"/></svg>'
+  };
+
+  var TIMELINE = [
+    { tipo: 'cadastro', titulo: 'Negócio criado', desc: 'Origem: Indicação · etapa inicial Lead captado', autor: 'Felipe Nogueira', data: '2026-06-10 09:12' },
+    { tipo: 'pipeline', titulo: 'Movido para Diagnóstico', desc: '', autor: 'Felipe Nogueira', data: '2026-06-18 14:30' },
+    { tipo: 'pipeline', titulo: 'Movido para Proposta', desc: '', autor: 'Felipe Nogueira', data: '2026-07-02 11:05' },
+    { tipo: 'pipeline', titulo: 'Movido para Negociação', desc: 'Probabilidade atualizada para 80%.', autor: 'Felipe Nogueira', data: '2026-07-15 16:47' },
+    { tipo: 'nota', titulo: 'Nota adicionada', desc: 'Cliente pediu ajuste na cláusula de reajuste anual antes de assinar.', autor: 'Felipe Nogueira', data: '2026-07-20 10:22' },
+    { tipo: 'tarefa', titulo: 'Tarefa concluída: Confirmar proposta com Grupo Andrade', desc: 'Ligação · 09:00', autor: 'Felipe Nogueira', data: '2026-07-26 09:04' },
+    { tipo: 'tarefa', titulo: 'Tarefa pendente: Enviar contrato para assinatura', desc: 'E-mail · dia todo', autor: 'Felipe Nogueira', data: '2026-07-26' }
+  ];
+
+  var TASKS = [
+    { id: 't1', titulo: 'Confirmar proposta com Grupo Andrade', tipo: 'ligacao', hora: '09:00', done: true },
+    { id: 't7', titulo: 'Enviar contrato para assinatura', tipo: 'email', hora: 'Dia todo', done: false }
+  ];
+
+  function escapeHtml(s) { return (s || '').replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function fmtDateBR(iso) {
+    var datePart = iso.split(' ')[0];
+    var p = datePart.split('-');
+    return p[2] + '/' + p[1] + '/' + p[0] + (iso.indexOf(' ') !== -1 ? ' às ' + iso.split(' ')[1] : '');
+  }
+
+  function renderTimeline() {
+    var el = document.getElementById('timeline');
+    el.innerHTML = TIMELINE.slice().reverse().map(function (t) {
+      return '<div class="tl-item">' +
+        '<span class="tl-icon ' + t.tipo + '">' + ICONS[t.tipo] + '</span>' +
+        '<div class="tl-body">' +
+          '<div class="tl-title">' + escapeHtml(t.titulo) + '</div>' +
+          (t.desc ? '<div class="tl-desc">' + escapeHtml(t.desc) + '</div>' : '') +
+          '<div class="tl-meta">' + escapeHtml(t.autor) + ' · ' + fmtDateBR(t.data) + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function renderTasks() {
+    var el = document.getElementById('tasksBody');
+    el.innerHTML = TASKS.map(function (t) {
+      return '<div class="task-row' + (t.done ? ' done' : '') + '" data-id="' + t.id + '">' +
+        '<button class="task-check"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4.5 10l3.5 3.5L15.5 6"/></svg></button>' +
+        '<div><div class="task-title">' + escapeHtml(t.titulo) + '</div><div class="task-meta">' + t.tipo + ' · ' + t.hora + '</div></div>' +
+      '</div>';
+    }).join('');
+    el.querySelectorAll('.task-check').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var row = btn.closest('.task-row');
+        var id = row.getAttribute('data-id');
+        var t = TASKS.filter(function (x) { return x.id === id; })[0];
+        t.done = !t.done;
+        renderTasks();
+        showToast(t.done ? 'Tarefa concluída.' : 'Tarefa reaberta.');
+      });
+    });
+  }
+
+  var composerType = 'nota';
+  document.querySelectorAll('.composer-type').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.composer-type').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      composerType = btn.getAttribute('data-type');
+    });
+  });
+  document.getElementById('composerSave').addEventListener('click', function () {
+    var text = document.getElementById('composerText').value.trim();
+    if (!text) { showToast('Escreva algo antes de adicionar.'); return; }
+    var labels = { nota: 'Nota adicionada', ligacao: 'Ligação registrada', email: 'E-mail registrado', reuniao: 'Reunião registrada' };
+    TIMELINE.push({ tipo: composerType, titulo: labels[composerType], desc: text, autor: 'Administrador', data: '2026-07-27 ' + new Date().toTimeString().slice(0,5) });
+    document.getElementById('composerText').value = '';
+    renderTimeline();
+    showToast('Atividade adicionada à linha do tempo.');
+  });
+
+  document.getElementById('saveDetailsBtn').addEventListener('click', function () {
+    var stageSel = document.getElementById('fldStage');
+    var stageName = stageSel.options[stageSel.selectedIndex].text;
+    document.getElementById('stagePill').innerHTML = '<span class="d"></span>' + stageName;
+    document.getElementById('statValor').textContent = 'R$ ' + document.getElementById('fldValor').value;
+    document.getElementById('statProb').textContent = document.getElementById('fldProb').value + '%';
+    var prev = document.getElementById('fldPrev').value;
+    if (prev) { var p = prev.split('-'); document.getElementById('statPrev').textContent = p[2] + '/' + p[1] + '/' + p[0]; }
+    document.getElementById('statOrigem').textContent = document.getElementById('fldOrigem').value;
+    showToast('Detalhes atualizados — refletido no board de Negócios.');
+  });
+
+  /* ---------------- close deal ---------------- */
+  var closed = false;
+  function setClosed(kind, motivo) {
+    closed = true;
+    document.getElementById('wonBtn').disabled = true;
+    document.getElementById('lostBtn').disabled = true;
+    document.getElementById('editBtn').disabled = false;
+    document.getElementById('fldStage').disabled = true;
+    var banner = document.getElementById('closedBanner');
+    banner.classList.remove('ganho', 'perdido');
+    banner.classList.add('show', kind);
+    document.getElementById('closedBannerText').textContent = kind === 'ganho'
+      ? 'Negócio marcado como ganho.'
+      : 'Negócio marcado como perdido — motivo: ' + motivo + '.';
+    var stagePill = document.getElementById('stagePill');
+    stagePill.className = 'stage-pill-lg ' + kind;
+    stagePill.innerHTML = '<span class="d"></span>' + (kind === 'ganho' ? 'Ganho' : 'Perdido');
+    TIMELINE.push({ tipo: kind === 'ganho' ? 'tarefa' : 'pipeline', titulo: kind === 'ganho' ? 'Negócio marcado como ganho' : 'Negócio marcado como perdido', desc: kind === 'perdido' ? 'Motivo: ' + motivo : '', autor: 'Administrador', data: '2026-07-27 ' + new Date().toTimeString().slice(0,5) });
+    renderTimeline();
+  }
+  document.getElementById('wonBtn').addEventListener('click', function () {
+    if (closed) return;
+    setClosed('ganho');
+    showToast('Negócio "Contrato anual logística" marcado como ganho.');
+  });
+
+  var lostScrim = document.getElementById('lostScrim'), lostModal = document.getElementById('lostModal');
+  document.getElementById('lostBtn').addEventListener('click', function () {
+    document.getElementById('lostMotivo').value = '';
+    document.getElementById('errMotivo').classList.remove('show');
+    lostScrim.classList.add('show'); lostModal.classList.add('show');
+  });
+  function closeLostModal() { lostScrim.classList.remove('show'); lostModal.classList.remove('show'); }
+  document.getElementById('lostCancel').addEventListener('click', closeLostModal);
+  lostScrim.addEventListener('click', closeLostModal);
+  document.getElementById('lostConfirm').addEventListener('click', function () {
+    var motivo = document.getElementById('lostMotivo').value;
+    if (!motivo) { document.getElementById('errMotivo').classList.add('show'); return; }
+    closeLostModal();
+    setClosed('perdido', motivo);
+    showToast('Negócio marcado como perdido.');
+  });
+
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeLostModal(); });
+
+  renderTimeline();
+  renderTasks();
+})();
+</script>

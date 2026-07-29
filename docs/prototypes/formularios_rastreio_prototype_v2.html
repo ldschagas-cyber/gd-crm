@@ -1,0 +1,1111 @@
+<title>Formulários &amp; Rastreio do site — GD Conecta CRM (V2 — proposta)</title>
+<style>
+  /* Font note: real product should self-host IBM Plex Sans/Mono; CDN fonts are blocked
+     in this artifact sandbox, so a close system-grotesque stack stands in here. */
+  :root {
+    --font-display: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Cascadia Code", "SFMono-Regular", "Consolas", ui-monospace, monospace;
+
+    --indigo: #2D3561;
+    --indigo-600: #3B4478;
+    --amber: #C9A84C;
+    --azul: #0077A8;
+    --marfim: #F5F1EB;
+
+    --paper: var(--marfim);
+    --panel: var(--indigo);
+    --panel-fg: #F1EEE6;
+    --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12);
+    --panel-active-bg: rgba(201, 168, 76, 0.14);
+
+    --ink: #22243A;
+    --ink-dim: #5B5E78;
+    --ink-faint: #8B8EA6;
+    --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF;
+    --accent: var(--amber);
+    --link: var(--azul);
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+
+    --good: #0ca30c;
+    --warning: #fab219;
+    --serious: #ec835a;
+    --critical: #d03b3b;
+
+    --chart-line: var(--azul);
+    --chart-fill-a: rgba(0, 119, 168, 0.22);
+    --chart-fill-b: rgba(0, 119, 168, 0);
+    --chart-grid: rgba(45, 53, 97, 0.09);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+      --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+      --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+      --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+      --chart-line: #4CB2DE; --chart-fill-a: rgba(76, 178, 222, 0.24); --chart-fill-b: rgba(76, 178, 222, 0);
+      --chart-grid: rgba(241, 238, 230, 0.08);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+    --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+    --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+    --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+    --chart-line: #4CB2DE; --chart-fill-a: rgba(76, 178, 222, 0.24); --chart-fill-b: rgba(76, 178, 222, 0);
+    --chart-grid: rgba(241, 238, 230, 0.08);
+  }
+  :root[data-theme="light"] {
+    --paper: #F5F1EB; --panel: #2D3561; --panel-fg: #F1EEE6; --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(45, 53, 97, 0.12); --panel-active-bg: rgba(201, 168, 76, 0.14);
+    --ink: #22243A; --ink-dim: #5B5E78; --ink-faint: #8B8EA6; --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF; --amber: #C9A84C; --azul: #0077A8; --link: #0077A8;
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+    --chart-line: #0077A8; --chart-fill-a: rgba(0, 119, 168, 0.22); --chart-fill-b: rgba(0, 119, 168, 0);
+    --chart-grid: rgba(45, 53, 97, 0.09);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; font-family: var(--font-display); color: var(--ink); background: var(--paper);
+    -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums;
+  }
+  button { font-family: inherit; }
+  a { color: inherit; }
+
+  .shell { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+
+  /* ---------------- Sidebar (shared shell) ---------------- */
+  .sidebar { background: var(--panel); color: var(--panel-fg); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+  .sb-brand { display: flex; align-items: center; gap: 10px; padding: 20px 18px 16px; }
+  .monogram {
+    width: 34px; height: 34px; border-radius: 9px; flex: none; background: var(--amber); color: var(--indigo);
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;
+  }
+  .sb-brand strong { display: block; font-size: 14.5px; font-weight: 650; line-height: 1.2; }
+  .sb-brand span { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--panel-fg-dim); margin-top: 2px; }
+
+  .sb-nav { flex: 1; overflow-y: auto; padding: 10px 12px; }
+  .sb-group + .sb-group { margin-top: 18px; }
+  .sb-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--panel-fg-dim); padding: 0 10px; margin-bottom: 6px; }
+  .sb-item {
+    display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: 8px; margin-bottom: 2px;
+    font-size: 13.6px; font-weight: 500; color: var(--panel-fg-dim); text-decoration: none; cursor: pointer;
+    border: 1px solid transparent; position: relative;
+  }
+  .sb-item svg { width: 17px; height: 17px; flex: none; opacity: 0.9; }
+  .sb-item:hover { background: rgba(241, 238, 230, 0.06); color: var(--panel-fg); }
+  .sb-item:focus-visible { outline: 2px solid var(--amber); outline-offset: -2px; }
+  .sb-item.active { background: var(--panel-active-bg); color: var(--panel-fg); font-weight: 650; }
+  .sb-item.active::before { content: ""; position: absolute; left: -12px; top: 6px; bottom: 6px; width: 3px; background: var(--amber); border-radius: 2px; }
+  .sb-item .chip { margin-left: auto; font-family: var(--font-mono); font-size: 10px; background: rgba(241,238,230,0.12); color: var(--panel-fg-dim); padding: 1px 6px; border-radius: 100px; }
+  .sb-item .chip.beta { background: rgba(201,168,76,0.2); color: var(--amber); font-weight: 700; }
+
+  .sb-user { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-top: 1px solid var(--panel-border); }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; flex: none; background: rgba(201,168,76,0.18); color: var(--amber); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; border: 1px solid rgba(201,168,76,0.3); }
+  .sb-user-meta { min-width: 0; flex: 1; }
+  .sb-user-meta strong { display: block; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-user-meta span { display: block; font-size: 11px; color: var(--panel-fg-dim); }
+
+  /* ---------------- Main column ---------------- */
+  .main-col { display: flex; flex-direction: column; min-width: 0; }
+  .topbar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 20px; padding: 16px 28px; background: var(--paper); border-bottom: 1px solid var(--border); }
+  .topbar-title h1 { font-size: 19px; font-weight: 650; letter-spacing: -0.01em; margin: 0; }
+  .topbar-title p { margin: 2px 0 0; font-size: 12.5px; color: var(--ink-dim); }
+  .topbar-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+
+  .period-pill { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: var(--ink); background: var(--card-bg); border: 1px solid var(--border); border-radius: 100px; padding: 7px 12px; cursor: pointer; }
+  .period-pill svg { width: 13px; height: 13px; color: var(--ink-faint); }
+
+  .btn-primary { display: flex; align-items: center; gap: 7px; background: var(--indigo); color: var(--panel-fg); border: 1px solid var(--indigo); font-size: 13.5px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-primary:hover { background: var(--indigo-600); }
+  .btn-primary svg { width: 15px; height: 15px; }
+  .btn-ghost { display: flex; align-items: center; gap: 7px; background: var(--card-bg); color: var(--ink); border: 1px solid var(--border); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 7px 12px; cursor: pointer; }
+  .btn-ghost:hover { border-color: var(--ink-faint); }
+  .btn-ghost svg { width: 14px; height: 14px; }
+
+  .content { padding: 20px 28px 48px; display: flex; flex-direction: column; gap: 20px; }
+
+  /* segmented tabs */
+  .segmented { display: inline-flex; gap: 3px; padding: 3px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; width: fit-content; }
+  .segmented button {
+    border: none; background: transparent; padding: 7px 14px; border-radius: 7px; font-size: 13px; font-weight: 600;
+    color: var(--ink-dim); cursor: pointer; display: flex; align-items: center; gap: 7px;
+  }
+  .segmented button svg { width: 14px; height: 14px; }
+  .segmented button.active { background: var(--indigo); color: var(--panel-fg); }
+  .segmented button:not(.active):hover { color: var(--ink); }
+
+  .tab-panel { display: none; flex-direction: column; gap: 20px; }
+  .tab-panel.active { display: flex; }
+
+  /* kpi */
+  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .kpi-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 15px 18px; box-shadow: var(--shadow); }
+  .kpi-card .label { font-size: 12.5px; color: var(--ink-dim); font-weight: 500; margin-bottom: 9px; }
+  .kpi-card .value { font-size: 23px; font-weight: 650; letter-spacing: -0.01em; }
+  .kpi-card .note { font-size: 11.5px; color: var(--ink-faint); margin-top: 6px; }
+  .kpi-card .delta { display: inline-flex; align-items: center; gap: 4px; margin-top: 7px; font-size: 12px; font-weight: 600; }
+  .kpi-card .delta svg { width: 11px; height: 11px; }
+  .delta.up { color: var(--good); }
+  .delta.down { color: var(--critical); }
+  .delta .vs { color: var(--ink-faint); font-weight: 400; margin-left: 2px; }
+
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+  .card-head { display: flex; align-items: baseline; justify-content: space-between; padding: 16px 18px 12px; gap: 12px; }
+  .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 650; }
+  .card-head p { margin: 2px 0 0; font-size: 12px; color: var(--ink-dim); }
+  .card-head .link-action { font-size: 12.5px; font-weight: 600; color: var(--link); text-decoration: none; white-space: nowrap; }
+  .card-head .link-action:hover { text-decoration: underline; }
+
+  /* ---- forms table ---- */
+  table.data { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.data th { text-align: left; font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); font-weight: 600; padding: 8px 18px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  table.data td { padding: 11px 18px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  table.data tbody tr:last-child td { border-bottom: none; }
+  table.data tbody tr:hover { background: color-mix(in srgb, var(--paper) 55%, transparent); }
+  .row-title { font-weight: 600; color: var(--ink); }
+  .row-sub { font-size: 11.5px; color: var(--ink-faint); margin-top: 1px; font-family: var(--font-mono); }
+  .num { text-align: right; font-weight: 600; }
+
+  .status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 3px 9px 3px 7px; border-radius: 100px; }
+  .status-pill .d { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+  .status-pill.on { background: rgba(12,163,12,0.12); color: var(--good); }
+  .status-pill.on .d { background: var(--good); }
+  .status-pill.draft { background: rgba(139,142,166,0.14); color: var(--ink-dim); }
+  .status-pill.draft .d { background: var(--ink-faint); }
+  .status-pill.paused { background: rgba(250,178,25,0.16); color: color-mix(in srgb, var(--warning) 55%, var(--ink-dim)); }
+  .status-pill.paused .d { background: var(--warning); }
+
+  .row-actions { display: flex; gap: 6px; justify-content: flex-end; }
+  .icon-action { width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--border); background: var(--card-bg); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ink-dim); }
+  .icon-action:hover { color: var(--ink); border-color: var(--ink-faint); }
+  .icon-action svg { width: 14px; height: 14px; }
+
+  /* submissions mini list */
+  .subm-list { display: flex; flex-direction: column; padding: 2px 18px 16px; }
+  .subm-item { display: flex; align-items: center; gap: 11px; padding: 9px 0; }
+  .subm-item + .subm-item { border-top: 1px dashed var(--border); }
+  .subm-avatar { width: 27px; height: 27px; border-radius: 50%; flex: none; background: color-mix(in srgb, var(--azul) 16%, transparent); color: var(--azul); display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 700; }
+  .subm-text { flex: 1; min-width: 0; font-size: 12.8px; color: var(--ink); }
+  .subm-text b { font-weight: 600; }
+  .subm-meta { font-size: 11px; color: var(--ink-faint); margin-top: 2px; font-family: var(--font-mono); }
+  .tag-lead { font-size: 10.5px; font-weight: 700; color: var(--good); background: rgba(12,163,12,0.12); padding: 2px 7px; border-radius: 100px; white-space: nowrap; }
+  .tag-dup { font-size: 10.5px; font-weight: 700; color: var(--ink-faint); background: rgba(139,142,166,0.14); padding: 2px 7px; border-radius: 100px; white-space: nowrap; }
+
+  /* ---- chart ---- */
+  .chart-wrap { padding: 6px 18px 14px; }
+  .chart-svg { width: 100%; height: 200px; display: block; overflow: visible; }
+  .chart-tooltip {
+    position: absolute; pointer-events: none; opacity: 0; transition: opacity 100ms ease;
+    background: var(--ink); color: var(--paper); font-size: 11.5px; padding: 6px 9px; border-radius: 7px;
+    transform: translate(-50%, -115%); white-space: nowrap; z-index: 4; font-family: var(--font-mono);
+  }
+  .chart-tooltip.show { opacity: 1; }
+  .chart-area-inner { position: relative; }
+
+  /* pages list */
+  .page-list { display: flex; flex-direction: column; padding: 4px 18px 16px; }
+  .page-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; font-size: 13px; }
+  .page-row + .page-row { border-top: 1px dashed var(--border); }
+  .page-row .path { font-family: var(--font-mono); font-size: 12px; color: var(--ink); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .page-row .views { font-weight: 650; width: 52px; text-align: right; }
+  .page-row .avgtime { color: var(--ink-faint); width: 44px; text-align: right; font-size: 12px; }
+
+  /* company badges */
+  .co-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 100px; }
+  .co-badge.new { background: rgba(0,119,168,0.12); color: var(--azul); }
+  .co-badge.lead { background: rgba(250,178,25,0.16); color: color-mix(in srgb, var(--warning) 55%, var(--ink-dim)); }
+  .co-badge.client { background: rgba(12,163,12,0.12); color: var(--good); }
+
+  .source-cell { display: flex; align-items: center; gap: 6px; color: var(--ink-dim); font-size: 12.5px; }
+  .source-cell svg { width: 13px; height: 13px; flex: none; color: var(--ink-faint); }
+
+  .caveat { display: flex; gap: 9px; align-items: flex-start; padding: 12px 16px; background: color-mix(in srgb, var(--paper) 60%, transparent); border: 1px dashed var(--border); border-radius: 10px; font-size: 12.5px; color: var(--ink-dim); line-height: 1.5; }
+  .caveat svg { width: 15px; height: 15px; flex: none; margin-top: 1px; color: var(--ink-faint); }
+
+  /* ---- slide-over: new form ---- */
+  .overlay { position: fixed; inset: 0; background: rgba(20, 23, 42, 0.42); opacity: 0; pointer-events: none; transition: opacity 160ms ease; z-index: 15; }
+  .overlay.show { opacity: 1; pointer-events: auto; }
+  .drawer {
+    position: fixed; top: 50%; left: 50%; width: min(920px, 95vw); max-height: 88vh;
+    background: var(--card-bg); box-shadow: var(--shadow); z-index: 16; border-radius: 14px;
+    opacity: 0; pointer-events: none; transform: translate(-50%, -46%);
+    transition: opacity 180ms ease, transform 180ms ease;
+    display: flex; flex-direction: column;
+  }
+  .drawer.show { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%); }
+  .drawer-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; border-bottom: 1px solid var(--border); }
+  .drawer-head h3 { margin: 0; font-size: 16px; font-weight: 650; }
+  .drawer-close { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border); background: transparent; cursor: pointer; color: var(--ink-dim); display: flex; align-items: center; justify-content: center; }
+  .drawer-close:hover { color: var(--ink); }
+  .drawer-close svg { width: 15px; height: 15px; }
+  .drawer-body { padding: 18px 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 18px; }
+  .drawer-foot { padding: 16px 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; }
+
+  .field label { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 6px; color: var(--ink); }
+  .field input[type="text"], .field select {
+    width: 100%; font: inherit; font-size: 13.5px; color: var(--ink); background: var(--paper);
+    border: 1px solid var(--border); border-radius: 8px; padding: 9px 11px;
+  }
+  .field input:focus-visible, .field select:focus-visible { outline: none; border-color: var(--azul); box-shadow: 0 0 0 3px rgba(0,119,168,0.18); }
+  .field .hint-text { font-size: 11.5px; color: var(--ink-faint); margin-top: 5px; }
+
+  /* ---- V2 review banner ---- */
+  .v2-banner { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 10px; background: rgba(201,168,76,0.14); border: 1px solid rgba(201,168,76,0.45); font-size: 12.5px; color: var(--ink); line-height: 1.5; }
+  .v2-banner b { color: var(--amber-ink, #7A5F1E); }
+  .v2-pill { display: inline-flex; align-items: center; font-family: var(--font-mono); font-size: 10px; font-weight: 700; letter-spacing: 0.04em; background: var(--amber); color: var(--indigo); padding: 2px 7px; border-radius: 100px; margin-left: 10px; }
+  .field-new-badge { font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: 0.03em; background: rgba(201,168,76,0.22); color: var(--amber); padding: 1px 6px; border-radius: 100px; margin-left: 6px; text-transform: uppercase; }
+
+  .radio-row { display: flex; flex-direction: column; gap: 8px; }
+  .radio-item { display: flex; align-items: flex-start; gap: 9px; padding: 10px 11px; border: 1px solid var(--border); border-radius: 9px; cursor: pointer; }
+  .radio-item:has(input:checked) { border-color: var(--azul); background: rgba(0,119,168,0.06); }
+  .radio-item input { margin-top: 2px; accent-color: var(--azul); }
+  .radio-item .t { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .radio-item .d { font-size: 11.5px; color: var(--ink-dim); margin-top: 2px; }
+
+  /* ---- drag-and-drop form builder: field palette + live WYSIWYG canvas ---- */
+  .field-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  .builder-grid { display: grid; grid-template-columns: 208px 1fr; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+
+  .palette-col { background: var(--paper); padding: 14px; max-height: 400px; overflow-y: auto; border-right: 1px solid var(--border); }
+  .palette-group-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); margin: 14px 0 6px; }
+  .palette-group-label:first-child { margin-top: 0; }
+  .palette-chip {
+    display: flex; align-items: center; gap: 7px; padding: 7px 9px; border-radius: 7px;
+    border: 1px solid var(--border); background: var(--card-bg); font-size: 12.3px; color: var(--ink);
+    margin-bottom: 6px; cursor: grab; user-select: none;
+  }
+  .palette-chip.is-new { border-color: var(--amber); background: rgba(201,168,76,0.08); }
+  .palette-chip:active { cursor: grabbing; }
+  .palette-chip svg { width: 12px; height: 12px; color: var(--ink-faint); flex: none; }
+  .palette-chip.added { opacity: 0.5; cursor: not-allowed; background: var(--paper); }
+  .palette-chip .added-check { margin-left: auto; color: var(--good); }
+  .palette-chip .added-check svg { width: 12px; height: 12px; color: var(--good); }
+  .palette-hint { font-size: 11px; color: var(--ink-faint); line-height: 1.5; margin: 0 0 10px; }
+  .palette-add-row { display: flex; gap: 6px; margin-top: 14px; }
+  .palette-add-row input {
+    flex: 1; min-width: 0; font: inherit; font-size: 12px; padding: 7px 8px;
+    border: 1px solid var(--border); border-radius: 6px; background: var(--card-bg); color: var(--ink);
+  }
+  .palette-add-btn {
+    border: 1px solid var(--border); background: var(--card-bg); border-radius: 6px; width: 30px; flex: none;
+    display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ink-dim);
+  }
+  .palette-add-btn:hover { color: var(--ink); border-color: var(--ink-faint); }
+  .palette-add-btn svg { width: 13px; height: 13px; }
+
+  .canvas-col { padding: 16px; max-height: 400px; overflow-y: auto; background: var(--card-bg); }
+  .canvas-intro { font-size: 12.5px; color: var(--ink); line-height: 1.5; margin: 0 0 14px; }
+  .canvas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; align-items: start; }
+  .canvas-field { position: relative; display: flex; flex-direction: column; gap: 5px; border: 1.5px solid transparent; border-radius: 8px; padding: 3px; transition: border-color 100ms ease, background-color 100ms ease; }
+  .canvas-field.full { grid-column: 1 / -1; }
+  .canvas-field.drag-over { border-color: var(--azul); background: rgba(0,119,168,0.05); }
+  .canvas-field.is-new { border-color: var(--amber); background: rgba(201,168,76,0.06); }
+  .canvas-field label { font-size: 11px; font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 5px; }
+  .canvas-field .req { color: var(--critical); }
+  .canvas-field .lock-icon { color: var(--ink-faint); }
+  .canvas-field .lock-icon svg { width: 10px; height: 10px; }
+  .canvas-field input, .canvas-field textarea, .canvas-field select {
+    font: inherit; font-size: 12.5px; color: var(--ink-faint); background: var(--paper);
+    border: 1px solid var(--border); border-radius: 6px; padding: 8px 9px; width: 100%;
+  }
+  .canvas-field textarea { min-height: 52px; resize: none; font-family: inherit; }
+  .canvas-field .field-tools { position: absolute; top: -8px; right: 3px; display: flex; gap: 3px; opacity: 0; transition: opacity 100ms ease; }
+  .canvas-field:hover .field-tools { opacity: 1; }
+  .canvas-field .drag-handle, .canvas-field .remove-btn {
+    cursor: pointer; background: var(--card-bg); border: 1px solid var(--border); border-radius: 5px;
+    width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+  }
+  .canvas-field .drag-handle { cursor: grab; color: var(--ink-faint); }
+  .canvas-field .drag-handle:active { cursor: grabbing; }
+  .canvas-field .remove-btn { color: var(--critical); }
+  .canvas-field .drag-handle svg, .canvas-field .remove-btn svg { width: 11px; height: 11px; }
+
+  .canvas-dropzone {
+    grid-column: 1 / -1; border: 1.5px dashed var(--border); border-radius: 8px; padding: 12px;
+    text-align: center; font-size: 12px; color: var(--ink-faint); margin-top: 2px; transition: border-color 100ms ease, color 100ms ease;
+  }
+  .canvas-dropzone.drag-over { border-color: var(--azul); color: var(--azul); background: rgba(0,119,168,0.06); }
+
+  .canvas-actions { display: flex; justify-content: flex-end; margin-top: 16px; }
+  .preview-submit {
+    background: var(--indigo); color: var(--panel-fg); border: 1px solid var(--indigo);
+    font-weight: 650; font-size: 13px; padding: 9px 22px; border-radius: 6px; cursor: default;
+  }
+
+  .toast { position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 12px); background: var(--ink); color: var(--paper); font-size: 13.5px; padding: 10px 16px; border-radius: 8px; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: opacity 180ms ease, transform 180ms ease; z-index: 30; max-width: 88vw; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+
+  @media (max-width: 1180px) {
+    .kpi-row { grid-template-columns: repeat(2, 1fr); }
+    table.data { min-width: 720px; }
+    .table-scroll { overflow-x: auto; }
+  }
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar { position: relative; height: auto; }
+    .sb-nav, .sb-user { display: none; }
+    .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .toast, .drawer, .overlay, .chart-tooltip { transition: none; }
+  }
+</style>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="monogram">GD</div>
+      <div><strong>Conecta CRM</strong><span>Gestão comercial</span></div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-group">
+        <a class="sb-item" href="#" data-page="Dashboard">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="2.5" width="6.2" height="6.2" rx="1.3"/><rect x="11.3" y="2.5" width="6.2" height="4.4" rx="1.3"/><rect x="11.3" y="9.4" width="6.2" height="8.1" rx="1.3"/><rect x="2.5" y="11.2" width="6.2" height="6.3" rx="1.3"/></svg>
+          Dashboard
+        </a>
+        <a class="sb-item" href="#" data-page="Empresas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17.5V3.8a.8.8 0 01.8-.8h6.4a.8.8 0 01.8.8v13.7"/><path d="M13 17.5V8.3a.8.8 0 01.8-.8h3.4a.8.8 0 01.8.8v9.2"/><path d="M5.4 6h1.6M5.4 9h1.6M5.4 12h1.6M15 10.6h1M15 13.4h1"/></svg>
+          Empresas
+        </a>
+        <a class="sb-item" href="#" data-page="Contatos">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="6.6" r="3.1"/><path d="M3.6 17c.7-3.4 3.2-5.2 6.4-5.2s5.7 1.8 6.4 5.2"/></svg>
+          Contatos
+        </a>
+        <a class="sb-item" href="#" data-page="Negócios">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 10.3l3-4.6a1 1 0 01.85-.47h7.3a1 1 0 01.85.47l3 4.6"/><path d="M2.5 10.3v5.2a1 1 0 001 1h13a1 1 0 001-1v-5.2"/><path d="M7.3 10.3a2.7 2.7 0 005.4 0"/></svg>
+          Negócios
+        </a>
+        <a class="sb-item" href="#" data-page="Pipeline">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="3" width="4.2" height="14" rx="1"/><rect x="7.9" y="3" width="4.2" height="9.5" rx="1"/><rect x="13.3" y="3" width="4.2" height="6" rx="1"/></svg>
+          Pipeline
+        </a>
+        <a class="sb-item" href="#" data-page="Tarefas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2.2"/><path d="M6.6 10.2l2 2 4.6-4.9"/></svg>
+          Tarefas
+        </a>
+      </div>
+
+      <div class="sb-group">
+        <div class="sb-label">Marketing</div>
+        <div class="sb-item active" id="navForms">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="2.5" width="14" height="15" rx="1.8"/><path d="M6.3 6.6h7.4M6.3 9.6h7.4M6.3 12.6h4.4"/></svg>
+          Formulários
+        </div>
+        <div class="sb-item" id="navTracking">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7.3"/><path d="M10 5.6v4.4l3 1.8"/></svg>
+          Rastreio do site
+          <span class="chip beta">novo</span>
+        </div>
+      </div>
+
+      <div class="sb-group">
+        <div class="sb-label">Administração</div>
+        <a class="sb-item" href="#" data-page="Usuários">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="6.4" r="2.8"/><path d="M2.6 16.4c.6-3 2.7-4.6 5.4-4.6s4.8 1.6 5.4 4.6"/><path d="M13.6 4.6c1.3.3 2.2 1.4 2.2 2.9 0 1.3-.7 2.3-1.8 2.8M15.6 11.9c1.4.6 2.3 1.9 2.7 3.9"/></svg>
+          Usuários
+        </a>
+        <a class="sb-item" href="#" data-page="Configurações">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="2.6"/><path d="M10 2.8v2M10 15.2v2M17.2 10h-2M4.8 10h-2M15.1 4.9l-1.4 1.4M6.3 13.7l-1.4 1.4M15.1 15.1l-1.4-1.4M6.3 6.3L4.9 4.9"/></svg>
+          Configurações
+        </a>
+      </div>
+    </nav>
+
+    <div class="sb-user">
+      <div class="avatar">AD</div>
+      <div class="sb-user-meta"><strong>Administrador</strong><span>Admin · GD Conecta</span></div>
+    </div>
+  </aside>
+
+  <div class="main-col">
+    <header class="topbar">
+      <div class="topbar-title">
+        <h1 id="pageTitle">Formulários</h1>
+        <p id="pageSub">Capture leads direto do site institucional gdconecta.com.br</p>
+      </div>
+      <div class="topbar-actions" id="topActionsForms">
+        <button class="btn-primary" id="newFormBtn">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 4v12M4 10h12"/></svg>
+          Novo formulário
+        </button>
+      </div>
+      <div class="topbar-actions" id="topActionsTracking" style="display:none;">
+        <div class="period-pill">
+          Últimos 30 dias
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l5 5 5-5"/></svg>
+        </div>
+        <button class="btn-ghost" id="exportBtn">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M10 3v9.5M6.3 9l3.7 3.7L13.7 9"/><path d="M4 15.5h12"/></svg>
+          Exportar CSV
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="segmented" role="tablist" aria-label="Alternar seção">
+        <button class="active" id="tabFormsBtn" role="tab" aria-selected="true">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="2.5" width="14" height="15" rx="1.8"/><path d="M6.3 6.6h7.4M6.3 9.6h7.4M6.3 12.6h4.4"/></svg>
+          Formulários
+        </button>
+        <button id="tabTrackingBtn" role="tab" aria-selected="false">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="7.3"/><path d="M10 5.6v4.4l3 1.8"/></svg>
+          Rastreio do site
+        </button>
+      </div>
+
+      <!-- ===================== FORMULÁRIOS ===================== -->
+      <section class="tab-panel active" id="panel-forms">
+        <div class="kpi-row">
+          <div class="kpi-card">
+            <div class="label">Formulários ativos</div>
+            <div class="value">3</div>
+            <div class="note">de 4 cadastrados</div>
+          </div>
+          <div class="kpi-card">
+            <div class="label">Envios (30 dias)</div>
+            <div class="value">312</div>
+            <div class="delta up"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 4l6 8H4z"/></svg>+16% <span class="vs">vs. mês anterior</span></div>
+          </div>
+          <div class="kpi-card">
+            <div class="label">Taxa de conversão média</div>
+            <div class="value">18,4%</div>
+            <div class="note">visitas → envio</div>
+          </div>
+          <div class="kpi-card">
+            <div class="label">Leads gerados no CRM</div>
+            <div class="value">57</div>
+            <div class="note">criados automaticamente</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div><h3>Todos os formulários</h3><p>Publicados no site institucional e no blog</p></div>
+          </div>
+          <div class="table-scroll">
+            <table class="data">
+              <thead>
+                <tr><th>Formulário</th><th>Envios (30d)</th><th>Conversão</th><th>Status</th><th>Atualizado</th><th></th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><div class="row-title">Diagnóstico Gratuito de Frete</div><div class="row-sub">/diagnostico</div></td>
+                  <td class="num">184</td>
+                  <td class="num">22,4%</td>
+                  <td><span class="status-pill on"><span class="d"></span>Ativo</span></td>
+                  <td>há 3 dias</td>
+                  <td>
+                    <div class="row-actions">
+                      <button class="icon-action" title="Código de incorporação" data-action="embed"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 6L3 10l4 4M13 6l4 4-4 4"/></svg></button>
+                      <button class="icon-action" title="Editar" data-action="edit"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 16l.6-3.3L13 4.3a1.5 1.5 0 012.1 0l.6.6a1.5 1.5 0 010 2.1L7.3 15.4 4 16z"/></svg></button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><div class="row-title">Fale com um especialista</div><div class="row-sub">/contato</div></td>
+                  <td class="num">76</td>
+                  <td class="num">9,1%</td>
+                  <td><span class="status-pill on"><span class="d"></span>Ativo</span></td>
+                  <td>há 12 dias</td>
+                  <td>
+                    <div class="row-actions">
+                      <button class="icon-action" title="Código de incorporação" data-action="embed"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 6L3 10l4 4M13 6l4 4-4 4"/></svg></button>
+                      <button class="icon-action" title="Editar" data-action="edit"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 16l.6-3.3L13 4.3a1.5 1.5 0 012.1 0l.6.6a1.5 1.5 0 010 2.1L7.3 15.4 4 16z"/></svg></button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><div class="row-title">Newsletter GD Conecta</div><div class="row-sub">/blog</div></td>
+                  <td class="num">41</td>
+                  <td class="num">4,8%</td>
+                  <td><span class="status-pill paused"><span class="d"></span>Pausado</span></td>
+                  <td>há 20 dias</td>
+                  <td>
+                    <div class="row-actions">
+                      <button class="icon-action" title="Código de incorporação" data-action="embed"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 6L3 10l4 4M13 6l4 4-4 4"/></svg></button>
+                      <button class="icon-action" title="Editar" data-action="edit"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 16l.6-3.3L13 4.3a1.5 1.5 0 012.1 0l.6.6a1.5 1.5 0 010 2.1L7.3 15.4 4 16z"/></svg></button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><div class="row-title">Simulação de economia</div><div class="row-sub">/simulador</div></td>
+                  <td class="num">—</td>
+                  <td class="num">—</td>
+                  <td><span class="status-pill draft"><span class="d"></span>Rascunho</span></td>
+                  <td>há 1 dia</td>
+                  <td>
+                    <div class="row-actions">
+                      <button class="icon-action" title="Editar" data-action="edit"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 16l.6-3.3L13 4.3a1.5 1.5 0 012.1 0l.6.6a1.5 1.5 0 010 2.1L7.3 15.4 4 16z"/></svg></button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div><h3>Últimos envios</h3><p>Formulário "Diagnóstico Gratuito de Frete"</p></div>
+            <a class="link-action" href="#" data-toast="Lista completa de respostas ainda não foi prototipada.">Ver todos</a>
+          </div>
+          <div class="subm-list">
+            <div class="subm-item">
+              <div class="subm-avatar">RV</div>
+              <div class="subm-text"><b>Distribuidora Rio Verde</b> · joana.pires@riorevede.com.br<div class="subm-meta">há 34min</div></div>
+              <span class="tag-lead">novo lead criado</span>
+            </div>
+            <div class="subm-item">
+              <div class="subm-avatar">CE</div>
+              <div class="subm-text"><b>Agroindustrial Cerrado</b> · rafael.melo@agrocerrado.com<div class="subm-meta">há 2h</div></div>
+              <span class="tag-dup">empresa já existente</span>
+            </div>
+            <div class="subm-item">
+              <div class="subm-avatar">NM</div>
+              <div class="subm-text"><b>Distribuidora Norte Mix</b> · camila.rezende@nortemix.com.br<div class="subm-meta">há 5h</div></div>
+              <span class="tag-dup">empresa já existente</span>
+            </div>
+            <div class="subm-item">
+              <div class="subm-avatar">PL</div>
+              <div class="subm-text"><b>Papelaria Litoral Sul</b> · vendas@litoralsul.com.br<div class="subm-meta">há 1 dia</div></div>
+              <span class="tag-lead">novo lead criado</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== RASTREIO DO SITE ===================== -->
+      <section class="tab-panel" id="panel-tracking">
+        <div class="kpi-row">
+          <div class="kpi-card">
+            <div class="label">Visitas (30 dias)</div>
+            <div class="value">8.412</div>
+            <div class="delta up"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 4l6 8H4z"/></svg>+9,7% <span class="vs">vs. período anterior</span></div>
+          </div>
+          <div class="kpi-card">
+            <div class="label">Empresas identificadas</div>
+            <div class="value">96</div>
+            <div class="note">com pelo menos 1 visita</div>
+          </div>
+          <div class="kpi-card">
+            <div class="label">Taxa de identificação</div>
+            <div class="value">3,2%</div>
+            <div class="note">das sessões, por rede corporativa</div>
+          </div>
+          <div class="kpi-card">
+            <div class="label">Negócios abertos a partir do site</div>
+            <div class="value">11</div>
+            <div class="note">nos últimos 30 dias</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div><h3>Sessões por dia</h3><p>Últimos 14 dias &middot; gdconecta.com.br</p></div>
+          </div>
+          <div class="chart-wrap">
+            <div class="chart-area-inner" id="chartContainer">
+              <svg class="chart-svg" id="trafficChart" viewBox="0 0 760 200" preserveAspectRatio="none" role="img" aria-label="Sessões diárias nos últimos 14 dias"></svg>
+              <div class="chart-tooltip" id="chartTooltip"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-main" style="display:grid; grid-template-columns: minmax(0,1.6fr) minmax(0,1fr); gap:18px; align-items:start;">
+          <div class="card">
+            <div class="card-head">
+              <div><h3>Empresas identificadas recentemente</h3><p>Correspondência por rede/IP corporativo</p></div>
+            </div>
+            <div class="table-scroll">
+              <table class="data">
+                <thead><tr><th>Empresa</th><th>Páginas visitadas</th><th>Origem</th><th>Última visita</th><th>No CRM</th><th></th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td><div class="row-title">Distribuidora Rio Verde</div></td>
+                    <td class="row-sub">/diagnostico, /precos</td>
+                    <td><span class="source-cell"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7.3"/><path d="M2.7 10h14.6M10 2.7c2.3 2 3.6 4.7 3.6 7.3s-1.3 5.3-3.6 7.3c-2.3-2-3.6-4.7-3.6-7.3S7.7 4.7 10 2.7z"/></svg>Google orgânico</span></td>
+                    <td class="row-sub">há 18min</td>
+                    <td><span class="co-badge new">Novo lead do form</span></td>
+                    <td><div class="row-actions"><button class="icon-action" title="Ver empresa" data-toast="Perfil da empresa ainda não foi prototipado."><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10s2.4-4.5 6-4.5 6 4.5 6 4.5-2.4 4.5-6 4.5-6-4.5-6-4.5z"/><circle cx="10" cy="10" r="1.8"/></svg></button></div></td>
+                  </tr>
+                  <tr>
+                    <td><div class="row-title">Grupo Andrade</div></td>
+                    <td class="row-sub">/planos</td>
+                    <td><span class="source-cell"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 2.5v15M2.5 10h15"/></svg>Direto</span></td>
+                    <td class="row-sub">há 40min</td>
+                    <td><span class="co-badge lead">Já é lead</span></td>
+                    <td><div class="row-actions"><button class="icon-action" title="Ver empresa" data-toast="Perfil da empresa ainda não foi prototipado."><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10s2.4-4.5 6-4.5 6 4.5 6 4.5-2.4 4.5-6 4.5-6-4.5-6-4.5z"/><circle cx="10" cy="10" r="1.8"/></svg></button></div></td>
+                  </tr>
+                  <tr>
+                    <td><div class="row-title">Metalúrgica Bragança</div></td>
+                    <td class="row-sub">/diagnostico</td>
+                    <td><span class="source-cell"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="2.5" width="15" height="15" rx="2"/><circle cx="6.6" cy="6.6" r="1"/><path d="M6.6 9.5v5M10.2 14.5v-3a1.7 1.7 0 013.4 0v3M10.2 9.5v.4"/></svg>LinkedIn</span></td>
+                    <td class="row-sub">há 2h</td>
+                    <td><span class="co-badge client">Cliente</span></td>
+                    <td><div class="row-actions"><button class="icon-action" title="Ver empresa" data-toast="Perfil da empresa ainda não foi prototipado."><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10s2.4-4.5 6-4.5 6 4.5 6 4.5-2.4 4.5-6 4.5-6-4.5-6-4.5z"/><circle cx="10" cy="10" r="1.8"/></svg></button></div></td>
+                  </tr>
+                  <tr>
+                    <td><div class="row-title">Agroindustrial Cerrado</div></td>
+                    <td class="row-sub">/blog/reducao-custos-frete</td>
+                    <td><span class="source-cell"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5.5h14v9H3z"/><path d="M3 5.5l7 5 7-5"/></svg>E-mail (cadência)</span></td>
+                    <td class="row-sub">há 3h</td>
+                    <td><span class="co-badge lead">Já é lead</span></td>
+                    <td><div class="row-actions"><button class="icon-action" title="Ver empresa" data-toast="Perfil da empresa ainda não foi prototipado."><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10s2.4-4.5 6-4.5 6 4.5 6 4.5-2.4 4.5-6 4.5-6-4.5-6-4.5z"/><circle cx="10" cy="10" r="1.8"/></svg></button></div></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div style="padding: 12px 18px 18px;">
+              <div class="caveat">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7.5"/><path d="M10 6.8v4M10 13.2h.01"/></svg>
+                Só é possível identificar a empresa quando a visita parte de uma rede corporativa com IP conhecido. A maior parte das visitas (redes residenciais e móveis) permanece anônima — por isso a taxa de identificação é baixa mesmo com bom volume de tráfego.
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><div><h3>Páginas mais visitadas</h3><p>Últimos 30 dias</p></div></div>
+            <div class="page-list">
+              <div class="page-row"><span class="path">/diagnostico</span><span class="views">2.140</span><span class="avgtime">3m10s</span></div>
+              <div class="page-row"><span class="path">/precos</span><span class="views">1.480</span><span class="avgtime">1m42s</span></div>
+              <div class="page-row"><span class="path">/blog</span><span class="views">1.205</span><span class="avgtime">2m05s</span></div>
+              <div class="page-row"><span class="path">/contato</span><span class="views">860</span><span class="avgtime">0m54s</span></div>
+              <div class="page-row"><span class="path">/simulador</span><span class="views">512</span><span class="avgtime">4m20s</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <div class="drawer-head">
+    <h3>Novo formulário <span class="v2-pill">V2 — proposta</span></h3>
+    <button class="drawer-close" id="drawerClose" aria-label="Fechar"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
+  </div>
+  <div class="drawer-body">
+    <div class="v2-banner">
+      <span>💡</span>
+      <span>O que muda nesta V2: o campo <b>"Já utiliza TMS?"</b> entra na paleta "Outros" e, por ser Sim/Não, é renderizado como uma lista suspensa (não texto livre) — tanto aqui no builder quanto no formulário público que o visitante do site preenche. Continua sendo um campo fixo do catálogo, não um sistema de campos personalizados genérico.</span>
+    </div>
+
+    <div class="field-row-2">
+      <div class="field">
+        <label for="formName">Nome interno</label>
+        <input type="text" id="formName" value="Diagnóstico Gratuito de Frete" placeholder="Ex.: Solicitar cotação de frete" />
+      </div>
+      <div class="field">
+        <label for="formPage">Página de publicação</label>
+        <select id="formPage">
+          <option>/diagnostico</option>
+          <option>/contato</option>
+          <option>/precos</option>
+          <option>/blog</option>
+          <option>Nova página…</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Campos do formulário</label>
+      <p class="hint-text" style="margin: -2px 0 10px;">Arraste um campo da lista para o formulário à direita. Para tirar um campo, use o × ao passar o mouse sobre ele.</p>
+      <div class="builder-grid">
+        <div class="palette-col" id="paletteCol"></div>
+        <div class="canvas-col">
+          <p class="canvas-intro">Queremos ouvir sua opinião! Preencha o formulário que entraremos em contato assim que for possível.</p>
+          <div class="canvas-grid" id="canvasGrid"></div>
+          <div class="canvas-actions"><button type="button" class="preview-submit">Enviar</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Ao receber uma resposta</label>
+      <div class="radio-row">
+        <label class="radio-item">
+          <input type="radio" name="postSubmit" checked />
+          <div><div class="t">Criar empresa/lead e notificar o responsável</div><div class="d">Cai direto no pipeline "Lead Captado" do funil padrão.</div></div>
+        </label>
+        <label class="radio-item">
+          <input type="radio" name="postSubmit" />
+          <div><div class="t">Só registrar a resposta</div><div class="d">Fica disponível para revisão manual antes de virar lead.</div></div>
+        </label>
+      </div>
+    </div>
+  </div>
+  <div class="drawer-foot">
+    <button class="btn-ghost" id="drawerCancel" style="flex:1; justify-content:center;">Cancelar</button>
+    <button class="btn-primary" id="drawerSave" style="flex:1; justify-content:center;">Salvar formulário</button>
+  </div>
+</aside>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  (function () {
+    var toastEl = document.getElementById('toast');
+    var toastTimer;
+    function showToast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 3000);
+    }
+
+    document.querySelectorAll('[data-page]').forEach(function (el) {
+      el.addEventListener('click', function (e) {
+        e.preventDefault();
+        showToast('Tela "' + el.getAttribute('data-page') + '" ainda não foi prototipada.');
+      });
+    });
+    document.querySelectorAll('[data-toast]').forEach(function (el) {
+      el.addEventListener('click', function (e) {
+        e.preventDefault();
+        showToast(el.getAttribute('data-toast'));
+      });
+    });
+    document.querySelectorAll('[data-action="embed"]').forEach(function (el) {
+      el.addEventListener('click', function () { showToast('Código de incorporação (embed) ainda não foi prototipado.'); });
+    });
+    document.querySelectorAll('[data-action="edit"]').forEach(function (el) {
+      el.addEventListener('click', function () { showToast('Editor de formulário ainda não foi prototipado.'); });
+    });
+    document.getElementById('exportBtn').addEventListener('click', function () {
+      showToast('Exportação de CSV ainda não conectada ao backend.');
+    });
+
+    // ---- tabs ----
+    var tabFormsBtn = document.getElementById('tabFormsBtn');
+    var tabTrackingBtn = document.getElementById('tabTrackingBtn');
+    var navForms = document.getElementById('navForms');
+    var navTracking = document.getElementById('navTracking');
+    var panelForms = document.getElementById('panel-forms');
+    var panelTracking = document.getElementById('panel-tracking');
+    var pageTitle = document.getElementById('pageTitle');
+    var pageSub = document.getElementById('pageSub');
+    var topActionsForms = document.getElementById('topActionsForms');
+    var topActionsTracking = document.getElementById('topActionsTracking');
+    var chartDrawn = false;
+
+    function activate(tab) {
+      var isForms = tab === 'forms';
+      tabFormsBtn.classList.toggle('active', isForms);
+      tabTrackingBtn.classList.toggle('active', !isForms);
+      tabFormsBtn.setAttribute('aria-selected', String(isForms));
+      tabTrackingBtn.setAttribute('aria-selected', String(!isForms));
+      navForms.classList.toggle('active', isForms);
+      navTracking.classList.toggle('active', !isForms);
+      panelForms.classList.toggle('active', isForms);
+      panelTracking.classList.toggle('active', !isForms);
+      topActionsForms.style.display = isForms ? 'flex' : 'none';
+      topActionsTracking.style.display = isForms ? 'none' : 'flex';
+      pageTitle.textContent = isForms ? 'Formulários' : 'Rastreio do site';
+      pageSub.textContent = isForms
+        ? 'Capture leads direto do site institucional gdconecta.com.br'
+        : 'Visitantes identificados no site institucional gdconecta.com.br';
+      if (!isForms && !chartDrawn) { drawChart(); chartDrawn = true; }
+    }
+
+    tabFormsBtn.addEventListener('click', function () { activate('forms'); });
+    tabTrackingBtn.addEventListener('click', function () { activate('tracking'); });
+    navForms.addEventListener('click', function () { activate('forms'); });
+    navTracking.addEventListener('click', function () { activate('tracking'); });
+
+    // ---- drag-and-drop form builder: palette (available fields) + canvas (live form) ----
+    var LOCKED_FIELDS = [
+      { id: 'nome', label: 'Nome', width: 'half' },
+      { id: 'email', label: 'E-mail', width: 'full' },
+    ];
+    // V2: 'ja_utiliza_tms' is the new fixed field. It carries type:'boolean' so both
+    // this builder preview and the real public embed widget (app/api/v1/embed.py)
+    // render a Sim/Não <select> instead of a free-text <input> — same mechanism
+    // already used for 'mensagem' rendering as a <textarea> by key.
+    var FIELD_LIBRARY = [
+      { id: 'empresa', label: 'Empresa', width: 'half', group: 'Empresa' },
+      { id: 'cnpj', label: 'CNPJ', width: 'half', group: 'Empresa' },
+      { id: 'site', label: 'Site', width: 'half', group: 'Empresa' },
+      { id: 'cidade', label: 'Cidade', width: 'half', group: 'Empresa' },
+      { id: 'uf', label: 'UF', width: 'half', group: 'Empresa' },
+      { id: 'segmento', label: 'Segmento', width: 'half', group: 'Empresa' },
+      { id: 'porte', label: 'Porte', width: 'half', group: 'Empresa' },
+      { id: 'telefone', label: 'Telefone', width: 'half', group: 'Contato' },
+      { id: 'whatsapp', label: 'WhatsApp', width: 'half', group: 'Contato' },
+      { id: 'linkedin', label: 'LinkedIn', width: 'half', group: 'Contato' },
+      { id: 'cargo', label: 'Cargo', width: 'half', group: 'Contato' },
+      { id: 'nascimento', label: 'Data de nascimento', width: 'half', group: 'Contato' },
+      { id: 'origem', label: 'Origem do lead', width: 'half', group: 'Outros' },
+      { id: 'ja_utiliza_tms', label: 'Já utiliza TMS?', width: 'half', group: 'Outros', type: 'boolean', isNew: true },
+      { id: 'mensagem', label: 'Mensagem', width: 'full', textarea: true, group: 'Outros' },
+    ];
+    // demo starting state — 'ja_utiliza_tms' pre-added so reviewers see the Sim/Não
+    // rendering immediately without needing to drag it in themselves.
+    var canvasOrder = ['empresa', 'telefone', 'ja_utiliza_tms'];
+    var draggingId = null;
+
+    function fieldById(id) {
+      for (var i = 0; i < FIELD_LIBRARY.length; i++) if (FIELD_LIBRARY[i].id === id) return FIELD_LIBRARY[i];
+      return null;
+    }
+
+    function insertField(id, beforeId) {
+      var idx = canvasOrder.indexOf(id);
+      if (idx > -1) canvasOrder.splice(idx, 1);
+      var targetIdx = beforeId ? canvasOrder.indexOf(beforeId) : -1;
+      if (targetIdx < 0) targetIdx = canvasOrder.length;
+      canvasOrder.splice(targetIdx, 0, id);
+      renderBuilder();
+    }
+    function removeField(id) {
+      canvasOrder = canvasOrder.filter(function (x) { return x !== id; });
+      renderBuilder();
+    }
+
+    function renderPalette() {
+      var col = document.getElementById('paletteCol');
+      col.innerHTML = '';
+      var groups = ['Empresa', 'Contato', 'Outros'];
+      groups.forEach(function (g) {
+        var label = document.createElement('div');
+        label.className = 'palette-group-label';
+        label.textContent = g;
+        col.appendChild(label);
+        FIELD_LIBRARY.filter(function (f) { return f.group === g; }).forEach(function (f) {
+          var added = canvasOrder.indexOf(f.id) > -1;
+          var chip = document.createElement('div');
+          chip.className = 'palette-chip' + (added ? ' added' : '') + (f.isNew ? ' is-new' : '');
+          chip.setAttribute('draggable', added ? 'false' : 'true');
+          chip.innerHTML = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="6" cy="6" r="1"/><circle cx="6" cy="10" r="1"/><circle cx="6" cy="14" r="1"/><circle cx="10" cy="6" r="1"/><circle cx="10" cy="10" r="1"/><circle cx="10" cy="14" r="1"/></svg><span>' + f.label + '</span>' +
+            (f.isNew ? '<span class="field-new-badge">novo</span>' : '') +
+            (added ? '<span class="added-check"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4.5 10l3.5 3.5L15.5 6"/></svg></span>' : '');
+          if (!added) {
+            chip.addEventListener('dragstart', function (e) {
+              draggingId = f.id;
+              e.dataTransfer.setData('text/plain', f.id);
+              e.dataTransfer.effectAllowed = 'copy';
+            });
+          }
+          col.appendChild(chip);
+        });
+      });
+
+      var hint = document.createElement('p');
+      hint.className = 'palette-hint';
+      hint.style.marginTop = '14px';
+      hint.textContent = 'Não achou o campo? Crie um personalizado (sempre texto livre):';
+      col.appendChild(hint);
+
+      var row = document.createElement('div');
+      row.className = 'palette-add-row';
+      row.innerHTML = '<input type="text" id="customFieldInput" placeholder="Nome do campo" />' +
+        '<button type="button" class="palette-add-btn" id="customFieldAdd" aria-label="Adicionar campo"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 4v12M4 10h12"/></svg></button>';
+      col.appendChild(row);
+
+      document.getElementById('customFieldAdd').addEventListener('click', function () {
+        var input = document.getElementById('customFieldInput');
+        var val = input.value.trim();
+        if (!val) return;
+        var id = 'custom_' + Date.now();
+        FIELD_LIBRARY.push({ id: id, label: val, width: 'half', group: 'Outros' });
+        insertField(id, null);
+      });
+    }
+
+    function makeFieldBlock(field, opts) {
+      opts = opts || {};
+      var block = document.createElement('div');
+      block.className = 'canvas-field' + (field.width === 'full' ? ' full' : '') + (opts.locked ? ' locked' : '') + (field.isNew ? ' is-new' : '');
+      var lab = document.createElement('label');
+      var labelHtml = field.label;
+      if (field.isNew) labelHtml += ' <span class="field-new-badge">novo</span>';
+      if (opts.locked) {
+        labelHtml += ' <span class="lock-icon" title="Sempre presente e obrigatório"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="9" width="10" height="7" rx="1.5"/><path d="M7 9V6.5a3 3 0 016 0V9"/></svg></span>';
+      }
+      lab.innerHTML = labelHtml;
+      block.appendChild(lab);
+
+      var input;
+      if (field.type === 'boolean') {
+        input = document.createElement('select');
+        ['Selecione', 'Sim', 'Não'].forEach(function (opt) {
+          var o = document.createElement('option');
+          o.textContent = opt;
+          input.appendChild(o);
+        });
+      } else {
+        input = document.createElement(field.textarea ? 'textarea' : 'input');
+        if (!field.textarea) input.type = 'text';
+      }
+      input.disabled = true;
+      block.appendChild(input);
+
+      if (!opts.locked) {
+        var tools = document.createElement('div');
+        tools.className = 'field-tools';
+        tools.innerHTML = '<span class="drag-handle" title="Arrastar para reordenar"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="7" cy="6" r="1"/><circle cx="7" cy="10" r="1"/><circle cx="7" cy="14" r="1"/><circle cx="13" cy="6" r="1"/><circle cx="13" cy="10" r="1"/><circle cx="13" cy="14" r="1"/></svg></span>' +
+          '<span class="remove-btn" title="Remover campo"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 5l10 10M15 5L5 15"/></svg></span>';
+        block.appendChild(tools);
+
+        block.setAttribute('draggable', 'true');
+        block.addEventListener('dragstart', function (e) {
+          draggingId = field.id;
+          e.dataTransfer.setData('text/plain', field.id);
+          e.dataTransfer.effectAllowed = 'move';
+        });
+        block.addEventListener('dragover', function (e) { e.preventDefault(); block.classList.add('drag-over'); });
+        block.addEventListener('dragleave', function () { block.classList.remove('drag-over'); });
+        block.addEventListener('drop', function (e) {
+          e.preventDefault();
+          block.classList.remove('drag-over');
+          var id = e.dataTransfer.getData('text/plain') || draggingId;
+          if (id && id !== field.id) insertField(id, field.id);
+        });
+        tools.querySelector('.remove-btn').addEventListener('click', function () { removeField(field.id); });
+      }
+      return block;
+    }
+
+    function renderCanvas() {
+      var grid = document.getElementById('canvasGrid');
+      grid.innerHTML = '';
+      LOCKED_FIELDS.forEach(function (f) { grid.appendChild(makeFieldBlock(f, { locked: true })); });
+      canvasOrder.forEach(function (id) {
+        var f = fieldById(id);
+        if (f) grid.appendChild(makeFieldBlock(f, { locked: false }));
+      });
+
+      var drop = document.createElement('div');
+      drop.className = 'canvas-dropzone';
+      drop.textContent = canvasOrder.length ? 'Solte aqui para adicionar ao final' : 'Arraste campos da lista à esquerda para adicionar ao formulário';
+      drop.addEventListener('dragover', function (e) { e.preventDefault(); drop.classList.add('drag-over'); });
+      drop.addEventListener('dragleave', function () { drop.classList.remove('drag-over'); });
+      drop.addEventListener('drop', function (e) {
+        e.preventDefault();
+        drop.classList.remove('drag-over');
+        var id = e.dataTransfer.getData('text/plain') || draggingId;
+        if (id) insertField(id, null);
+      });
+      grid.appendChild(drop);
+    }
+
+    function renderBuilder() { renderPalette(); renderCanvas(); }
+    renderBuilder();
+
+    // ---- drawer ----
+    var overlay = document.getElementById('overlay');
+    var drawer = document.getElementById('drawer');
+    function openDrawer() { overlay.classList.add('show'); drawer.classList.add('show'); drawer.setAttribute('aria-hidden', 'false'); }
+    function closeDrawer() { overlay.classList.remove('show'); drawer.classList.remove('show'); drawer.setAttribute('aria-hidden', 'true'); }
+    document.getElementById('newFormBtn').addEventListener('click', openDrawer);
+    document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+    document.getElementById('drawerCancel').addEventListener('click', closeDrawer);
+    overlay.addEventListener('click', closeDrawer);
+    document.getElementById('drawerSave').addEventListener('click', function () {
+      closeDrawer();
+      showToast('Rascunho do formulário salvo (simulado — sem backend conectado).');
+    });
+
+    // ---- traffic chart (single-series area + line, hover crosshair) ----
+    function drawChart() {
+      var svg = document.getElementById('trafficChart');
+      var tooltip = document.getElementById('chartTooltip');
+      var container = document.getElementById('chartContainer');
+      var days = ['13','14','15','16','17','18','19','20','21','22','23','24','25','26'];
+      var values = [480, 512, 540, 560, 505, 260, 210, 530, 575, 602, 588, 540, 245, 610];
+
+      var W = 760, H = 200, padL = 6, padR = 6, padT = 14, padB = 22;
+      var innerW = W - padL - padR, innerH = H - padT - padB;
+      var max = Math.max.apply(null, values);
+      var min = 0;
+
+      function x(i) { return padL + (i / (values.length - 1)) * innerW; }
+      function y(v) { return padT + innerH - ((v - min) / (max - min)) * innerH; }
+
+      var ns = 'http://www.w3.org/2000/svg';
+      function el(tag, attrs) {
+        var e = document.createElementNS(ns, tag);
+        for (var k in attrs) e.setAttribute(k, attrs[k]);
+        return e;
+      }
+
+      // grid lines (recessive)
+      for (var g = 0; g <= 3; g++) {
+        var gy = padT + (innerH / 3) * g;
+        svg.appendChild(el('line', { x1: padL, x2: W - padR, y1: gy, y2: gy, stroke: 'var(--chart-grid)', 'stroke-width': 1 }));
+      }
+
+      var linePts = values.map(function (v, i) { return x(i) + ',' + y(v); }).join(' ');
+      var areaPts = 'M ' + x(0) + ',' + (padT + innerH) + ' L ' + values.map(function (v, i) { return x(i) + ',' + y(v); }).join(' L ') + ' L ' + x(values.length - 1) + ',' + (padT + innerH) + ' Z';
+
+      var gradId = 'areaGrad';
+      var defs = el('defs', {});
+      var grad = el('linearGradient', { id: gradId, x1: '0', y1: '0', x2: '0', y2: '1' });
+      grad.appendChild(el('stop', { offset: '0%', 'stop-color': 'var(--chart-fill-a)' }));
+      grad.appendChild(el('stop', { offset: '100%', 'stop-color': 'var(--chart-fill-b)' }));
+      defs.appendChild(grad);
+      svg.appendChild(defs);
+
+      svg.appendChild(el('path', { d: areaPts, fill: 'url(#' + gradId + ')', stroke: 'none' }));
+      svg.appendChild(el('polyline', { points: linePts, fill: 'none', stroke: 'var(--chart-line)', 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
+
+      // endpoint emphasis
+      var lastX = x(values.length - 1), lastY = y(values[values.length - 1]);
+      svg.appendChild(el('circle', { cx: lastX, cy: lastY, r: 4.2, fill: 'var(--chart-line)', stroke: 'var(--card-bg)', 'stroke-width': 2 }));
+
+      // x-axis day labels (every other day to avoid crowding)
+      days.forEach(function (d, i) {
+        if (i % 2 !== 0 && i !== days.length - 1) return;
+        var t = el('text', { x: x(i), y: H - 4, 'text-anchor': 'middle', 'font-size': '10', fill: 'var(--ink-faint)', 'font-family': 'var(--font-mono)' });
+        t.textContent = d;
+        svg.appendChild(t);
+      });
+
+      // hover layer
+      var hoverDot = el('circle', { r: 4, fill: 'var(--chart-line)', stroke: 'var(--card-bg)', 'stroke-width': 2, style: 'opacity:0;' });
+      var crosshair = el('line', { y1: padT, y2: padT + innerH, stroke: 'var(--chart-grid)', 'stroke-width': 1, style: 'opacity:0;' });
+      svg.appendChild(crosshair);
+      svg.appendChild(hoverDot);
+
+      var hitArea = el('rect', { x: padL, y: 0, width: innerW, height: H, fill: 'transparent', style: 'cursor:crosshair;' });
+      svg.appendChild(hitArea);
+
+      function nearestIndex(px) {
+        var ratio = (px - padL) / innerW;
+        var i = Math.round(ratio * (values.length - 1));
+        return Math.max(0, Math.min(values.length - 1, i));
+      }
+
+      hitArea.addEventListener('mousemove', function (evt) {
+        var rect = svg.getBoundingClientRect();
+        var px = ((evt.clientX - rect.left) / rect.width) * W;
+        var i = nearestIndex(px);
+        var vx = x(i), vy = y(values[i]);
+        hoverDot.setAttribute('cx', vx); hoverDot.setAttribute('cy', vy); hoverDot.style.opacity = 1;
+        crosshair.setAttribute('x1', vx); crosshair.setAttribute('x2', vx); crosshair.style.opacity = 1;
+
+        var contRect = container.getBoundingClientRect();
+        var svgScale = contRect.width / W;
+        tooltip.style.left = (vx * svgScale) + 'px';
+        tooltip.style.top = (vy * (contRect.height / H)) + 'px';
+        tooltip.textContent = 'jul ' + days[i] + ' · ' + values[i] + ' sessões';
+        tooltip.classList.add('show');
+      });
+      hitArea.addEventListener('mouseleave', function () {
+        hoverDot.style.opacity = 0; crosshair.style.opacity = 0; tooltip.classList.remove('show');
+      });
+    }
+
+    // review mode: open the drawer immediately so the new field is visible on load
+    openDrawer();
+  })();
+</script>

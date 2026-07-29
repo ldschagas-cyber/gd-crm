@@ -1,0 +1,791 @@
+<title>Cadências — GD Conecta CRM</title>
+<style>
+  /* Font note: real product should self-host IBM Plex Sans/Mono; CDN fonts are blocked
+     in this artifact sandbox, so a close system-grotesque stack stands in here. */
+  :root {
+    --font-display: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Cascadia Code", "SFMono-Regular", "Consolas", ui-monospace, monospace;
+
+    --indigo: #2D3561;
+    --indigo-600: #3B4478;
+    --amber: #C9A84C;
+    --azul: #0077A8;
+    --marfim: #F5F1EB;
+
+    --paper: var(--marfim);
+    --panel: var(--indigo);
+    --panel-fg: #F1EEE6;
+    --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12);
+    --panel-active-bg: rgba(201, 168, 76, 0.14);
+
+    --ink: #22243A;
+    --ink-dim: #5B5E78;
+    --ink-faint: #8B8EA6;
+    --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF;
+    --accent: var(--amber);
+    --link: var(--azul);
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+
+    --good: #0ca30c;
+    --warning: #fab219;
+    --serious: #ec835a;
+    --critical: #d03b3b;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+      --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+      --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+      --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+    --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+    --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+    --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+  }
+  :root[data-theme="light"] {
+    --paper: #F5F1EB; --panel: #2D3561; --panel-fg: #F1EEE6; --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12); --panel-active-bg: rgba(201, 168, 76, 0.14);
+    --ink: #22243A; --ink-dim: #5B5E78; --ink-faint: #8B8EA6; --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF; --amber: #C9A84C; --azul: #0077A8; --link: #0077A8;
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; font-family: var(--font-display); color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; }
+  button, input, select, textarea { font-family: inherit; }
+  a { color: inherit; }
+  ::selection { background: rgba(201,168,76,.3); }
+  :focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; border-radius: 4px; }
+
+  .shell { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+
+  /* ---------------- Sidebar ---------------- */
+  .sidebar { background: var(--panel); color: var(--panel-fg); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+  .sb-brand { display: flex; align-items: center; gap: 10px; padding: 20px 18px 16px; }
+  .monogram { width: 34px; height: 34px; border-radius: 9px; flex: none; background: var(--amber); color: var(--indigo); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+  .sb-brand strong { display: block; font-size: 14.5px; font-weight: 650; line-height: 1.2; }
+  .sb-brand span { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--panel-fg-dim); margin-top: 2px; }
+  .sb-nav { flex: 1; overflow-y: auto; padding: 10px 12px; }
+  .sb-group + .sb-group { margin-top: 18px; }
+  .sb-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--panel-fg-dim); padding: 0 10px; margin-bottom: 6px; }
+  .sb-item { display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: 8px; margin-bottom: 2px; font-size: 13.6px; font-weight: 500; color: var(--panel-fg-dim); text-decoration: none; cursor: pointer; border: 1px solid transparent; position: relative; }
+  .sb-item svg { width: 17px; height: 17px; flex: none; opacity: 0.9; }
+  .sb-item:hover { background: rgba(241, 238, 230, 0.06); color: var(--panel-fg); }
+  .sb-item.active { background: var(--panel-active-bg); color: var(--panel-fg); font-weight: 650; }
+  .sb-item.active::before { content: ""; position: absolute; left: -12px; top: 6px; bottom: 6px; width: 3px; background: var(--amber); border-radius: 2px; }
+  .sb-item .chip { margin-left: auto; font-family: var(--font-mono); font-size: 10px; background: rgba(241,238,230,0.12); color: var(--panel-fg-dim); padding: 1px 6px; border-radius: 100px; }
+  .sb-item .badge-soon { margin-left: auto; font-family: var(--font-mono); font-size: 9px; letter-spacing: .03em; background: rgba(217,184,94,0.16); color: var(--amber); padding: 1px 6px; border-radius: 100px; }
+  .sb-user { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-top: 1px solid var(--panel-border); }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; flex: none; background: rgba(201,168,76,0.18); color: var(--amber); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; border: 1px solid rgba(201,168,76,0.3); }
+  .sb-user-meta { min-width: 0; flex: 1; }
+  .sb-user-meta strong { display: block; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-user-meta span { display: block; font-size: 11px; color: var(--panel-fg-dim); }
+
+  /* ---------------- Main column ---------------- */
+  .main-col { display: flex; flex-direction: column; min-width: 0; }
+  .content { padding: 22px 28px 48px; display: flex; flex-direction: column; gap: 16px; }
+
+  .page-head { display: flex; align-items: flex-start; gap: 16px; }
+  .page-head h1 { margin: 0; font-size: 20px; font-weight: 650; letter-spacing: -0.01em; }
+  .page-head p { margin: 3px 0 0; font-size: 12.5px; color: var(--ink-dim); }
+  .page-head p .mono { font-family: var(--font-mono); color: var(--ink); font-weight: 500; }
+  .page-actions { margin-left: auto; display: flex; gap: 8px; flex: none; }
+
+  .btn-primary { display: flex; align-items: center; gap: 7px; background: var(--indigo); color: var(--panel-fg); border: 1px solid var(--indigo); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-primary:hover { background: var(--indigo-600); }
+  .btn-primary:disabled { opacity: .45; cursor: not-allowed; }
+  .btn-primary svg { width: 14px; height: 14px; }
+  .btn-primary.sm { padding: 6px 11px; font-size: 12.5px; border-radius: 7px; }
+  .btn-ghost { display: flex; align-items: center; gap: 7px; background: var(--card-bg); color: var(--ink); border: 1px solid var(--border); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-ghost:hover { border-color: var(--ink-faint); }
+  .btn-ghost.sm { padding: 6px 11px; font-size: 12.5px; border-radius: 7px; }
+  .btn-danger { display: flex; align-items: center; gap: 7px; background: var(--critical); color: #fff; border: 1px solid var(--critical); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-danger:hover { filter: brightness(0.94); }
+
+  .help-card { display: flex; gap: 11px; padding: 14px 16px; background: color-mix(in srgb, var(--azul) 6%, var(--card-bg)); border: 1px solid var(--border); border-radius: 12px; }
+  .help-card svg { width: 17px; height: 17px; color: var(--azul); flex: none; margin-top: 1px; }
+  .help-card p { margin: 0; font-size: 12.5px; color: var(--ink-dim); line-height: 1.5; }
+  .help-card p strong { color: var(--ink); }
+  .help-card code { font-family: var(--font-mono); font-size: 11px; background: var(--paper); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; }
+
+  .stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
+  .stat-tile { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; box-shadow: var(--shadow); }
+  .stat-tile .t { font-size: 11px; color: var(--ink-faint); font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+  .stat-tile .v { font-size: 19px; font-weight: 700; margin-top: 4px; font-family: var(--font-mono); }
+
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+  .table-scroll { overflow-x: auto; }
+  table.data { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 860px; }
+  table.data th { text-align: left; font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); font-weight: 600; padding: 10px 16px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  table.data td { padding: 11px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  table.data tbody tr:last-child td { border-bottom: none; }
+  table.data tbody tr:hover { background: color-mix(in srgb, var(--paper) 55%, transparent); }
+  .row-title { font-weight: 600; color: var(--ink); cursor: pointer; }
+  .row-title:hover { color: var(--link); }
+  .row-sub { font-size: 11.5px; color: var(--ink-faint); margin-top: 1px; }
+
+  .status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 650; padding: 3px 10px; border-radius: 100px; white-space: nowrap; }
+  .status-pill .d { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+  .status-pill.ativo { background: rgba(12,163,12,0.12); color: var(--good); }
+  .status-pill.ativo .d { background: var(--good); }
+  .status-pill.inativo { background: var(--paper); color: var(--ink-faint); border: 1px solid var(--border); }
+  .status-pill.inativo .d { background: var(--ink-faint); }
+
+  .pause-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--ink-dim); }
+  .pause-badge svg { width: 13px; height: 13px; }
+  .pause-badge.on { color: var(--azul); }
+  .pause-badge.off { color: var(--ink-faint); }
+
+  .row-actions { display: flex; gap: 2px; justify-content: flex-end; }
+  .icon-btn { width: 26px; height: 26px; border-radius: 7px; border: none; background: transparent; color: var(--ink-faint); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .icon-btn:hover { background: var(--paper); color: var(--ink); }
+  .icon-btn.danger:hover { background: rgba(208,59,59,0.1); color: var(--critical); }
+  .icon-btn svg { width: 14px; height: 14px; }
+
+  /* ---------------- Drawer ---------------- */
+  .scrim { position: fixed; inset: 0; background: rgba(20,23,43,.4); opacity: 0; pointer-events: none; transition: opacity .18s ease; z-index: 40; }
+  .scrim.show { opacity: 1; pointer-events: auto; }
+  .drawer { position: fixed; top: 0; right: 0; height: 100%; width: min(640px, 100vw); background: var(--card-bg); box-shadow: -8px 0 40px rgba(20,23,43,.25); z-index: 41; display: flex; flex-direction: column; transform: translateX(100%); transition: transform .22s cubic-bezier(.4,0,.2,1); }
+  .drawer.show { transform: translateX(0); }
+  .drawer-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 24px 16px; border-bottom: 1px solid var(--border); }
+  .drawer-head h2 { margin: 0 0 3px; font-size: 16.5px; font-weight: 700; }
+  .drawer-head p { margin: 0; font-size: 12.5px; color: var(--ink-dim); }
+  .drawer-close { width: 30px; height: 30px; border-radius: 8px; border: none; background: transparent; color: var(--ink-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; flex: none; }
+  .drawer-close:hover { background: var(--paper); color: var(--ink); }
+  .drawer-close svg { width: 16px; height: 16px; }
+  .drawer-body { flex: 1; overflow-y: auto; padding: 18px 24px 24px; display: flex; flex-direction: column; gap: 18px; }
+  .drawer-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 24px; border-top: 1px solid var(--border); }
+
+  .f-group { display: flex; flex-direction: column; gap: 6px; }
+  .f-row { display: flex; gap: 12px; }
+  .f-row .f-group { flex: 1; min-width: 0; }
+  .f-label { font-size: 12.5px; font-weight: 600; color: var(--ink-dim); display: flex; justify-content: space-between; }
+  .f-label .req { color: var(--critical); }
+  .f-label .opt { font-weight: 400; color: var(--ink-faint); }
+  .f-input, .f-select, .f-textarea { border: 1px solid var(--border); border-radius: 8px; padding: 8px 11px; background: var(--card-bg); color: var(--ink); width: 100%; outline: none; font-size: 13px; transition: border-color .12s ease, box-shadow .12s ease; }
+  .f-input:focus, .f-select:focus, .f-textarea:focus { border-color: var(--azul); box-shadow: 0 0 0 3px rgba(0,119,168,.14); }
+  .f-input.err { border-color: var(--critical); }
+  .f-err { font-size: 11.5px; color: var(--critical); display: none; }
+  .f-err.show { display: block; }
+  .f-input:disabled, .f-select:disabled { opacity: .55; background: var(--paper); cursor: not-allowed; }
+
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .toggle-row .t { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .toggle-row .sub { font-size: 11.5px; color: var(--ink-faint); margin-top: 1px; }
+  .switch { position: relative; width: 34px; height: 19px; flex: none; }
+  .switch input { opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+  .switch .track { position: absolute; inset: 0; background: var(--border); border-radius: 100px; transition: background 150ms ease; pointer-events: none; }
+  .switch .knob { position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.25); transition: transform 150ms ease; pointer-events: none; }
+  .switch input:checked + .track { background: var(--good); }
+  .switch input:checked ~ .knob { transform: translateX(15px); }
+
+  .section-title { font-size: 12.5px; font-weight: 700; color: var(--ink); display: flex; align-items: center; justify-content: space-between; }
+
+  /* step builder */
+  .step-list { display: flex; flex-direction: column; gap: 8px; }
+  .step-row { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; background: var(--paper); }
+  .step-row-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .step-drag { color: var(--ink-faint); cursor: grab; flex: none; }
+  .step-drag svg { width: 14px; height: 14px; }
+  .step-num { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-faint); flex: none; width: 20px; }
+  .step-wait { display: flex; align-items: baseline; gap: 4px; flex: none; }
+  .step-wait input { width: 42px; border: 1px solid var(--border); border-radius: 6px; padding: 5px 6px; font-family: var(--font-mono); font-size: 12.5px; text-align: right; background: var(--card-bg); color: var(--ink); }
+  .step-wait .suffix { font-size: 11px; color: var(--ink-faint); white-space: nowrap; }
+  .step-tpl { flex: 1; min-width: 160px; }
+  .step-tpl select { width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; font-size: 12.3px; background: var(--card-bg); color: var(--ink); }
+  .step-del { flex: none; }
+  .step-preview-btn { font-size: 11px; font-weight: 600; color: var(--link); background: none; border: none; cursor: pointer; padding: 0; flex: none; }
+  .step-preview { margin-top: 9px; padding: 10px 12px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; display: none; }
+  .step-preview.show { display: block; }
+  .step-preview .pv-subject { font-size: 12.5px; font-weight: 650; color: var(--ink); }
+  .step-preview .pv-body { font-size: 12px; color: var(--ink-dim); margin-top: 5px; line-height: 1.55; white-space: pre-wrap; }
+  .step-preview .pv-note { font-size: 10.5px; color: var(--ink-faint); margin-top: 7px; }
+  .var-fill { color: var(--azul); font-weight: 600; }
+  .add-step-btn { display: flex; align-items: center; justify-content: center; gap: 6px; border: 1.5px dashed var(--border); border-radius: 10px; padding: 10px; font-size: 12.5px; font-weight: 600; color: var(--ink-dim); background: transparent; cursor: pointer; }
+  .add-step-btn:hover { border-color: var(--azul); color: var(--azul); }
+  .add-step-btn svg { width: 14px; height: 14px; }
+
+  .followup-box { border: 1px solid var(--border); border-radius: 10px; padding: 12px; background: var(--paper); display: flex; flex-direction: column; gap: 10px; }
+
+  /* enrollments */
+  .enroll-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+  .enroll-row:last-child { border-bottom: none; }
+  .enroll-body { flex: 1; min-width: 0; }
+  .enroll-name { font-size: 12.8px; font-weight: 650; color: var(--ink); }
+  .enroll-meta { font-size: 11.5px; color: var(--ink-faint); margin-top: 1px; }
+  .enroll-status { font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 100px; flex: none; white-space: nowrap; }
+  .enroll-status.ativa { background: rgba(0,119,168,0.12); color: var(--azul); }
+  .enroll-status.pausada { background: rgba(250,178,25,0.16); color: color-mix(in srgb, var(--warning) 55%, var(--ink-dim)); }
+  .enroll-status.concluida { background: rgba(12,163,12,0.12); color: var(--good); }
+  .enroll-status.cancelada { background: rgba(208,59,59,0.1); color: var(--critical); }
+
+  .modal-scrim { position: fixed; inset: 0; background: rgba(20,23,43,.46); opacity: 0; pointer-events: none; transition: opacity .16s ease; z-index: 50; }
+  .modal-scrim.show { opacity: 1; pointer-events: auto; }
+  .modal-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-46%); width: 380px; max-width: calc(100vw - 32px); background: var(--card-bg); border-radius: 14px; box-shadow: var(--shadow); z-index: 51; padding: 22px; opacity: 0; pointer-events: none; transition: opacity .16s ease, transform .16s ease; }
+  .modal-box.show { opacity: 1; pointer-events: auto; transform: translate(-50%,-50%); }
+  .modal-box h3 { margin: 0 0 8px; font-size: 15.5px; }
+  .modal-box .sub { margin: 0 0 16px; font-size: 12.5px; color: var(--ink-dim); }
+  .modal-box .sub strong { color: var(--ink); }
+  .modal-box .row { display: flex; justify-content: flex-end; gap: 10px; }
+
+  .toast { position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 12px); background: var(--ink); color: var(--paper); font-size: 13.5px; padding: 10px 16px; border-radius: 8px; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: opacity 180ms ease, transform 180ms ease; z-index: 60; max-width: 88vw; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar { position: relative; height: auto; }
+    .sb-nav, .sb-user { display: none; }
+    .page-head { flex-wrap: wrap; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .toast, .drawer, .scrim, .modal-box, .modal-scrim { transition: none; }
+  }
+</style>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="monogram">GD</div>
+      <div><strong>Conecta CRM</strong><span>Gestão comercial</span></div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-group">
+        <a class="sb-item" href="#" data-page="Dashboard">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="2.5" width="6.2" height="6.2" rx="1.3"/><rect x="11.3" y="2.5" width="6.2" height="4.4" rx="1.3"/><rect x="11.3" y="9.4" width="6.2" height="8.1" rx="1.3"/><rect x="2.5" y="11.2" width="6.2" height="6.3" rx="1.3"/></svg>
+          Dashboard
+        </a>
+        <a class="sb-item" href="#" data-page="Pesquisa de Leads">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7"/><circle cx="10" cy="10" r="3.2"/><path d="M10 3v2.4M10 14.6V17M17 10h-2.4M5.4 10H3"/></svg>
+          Pesquisa de Leads
+        </a>
+        <a class="sb-item" href="#" data-page="Empresas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17.5V3.8a.8.8 0 01.8-.8h6.4a.8.8 0 01.8.8v13.7"/><path d="M13 17.5V8.3a.8.8 0 01.8-.8h3.4a.8.8 0 01.8.8v9.2"/><path d="M5.4 6h1.6M5.4 9h1.6M5.4 12h1.6M15 10.6h1M15 13.4h1"/></svg>
+          Empresas
+          <span class="chip">3.402</span>
+        </a>
+        <a class="sb-item" href="#" data-page="Contatos">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="6.6" r="3.1"/><path d="M3.6 17c.7-3.4 3.2-5.2 6.4-5.2s5.7 1.8 6.4 5.2"/></svg>
+          Contatos
+        </a>
+        <a class="sb-item" href="#" data-page="Negócios">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 10.3l3-4.6a1 1 0 01.85-.47h7.3a1 1 0 01.85.47l3 4.6"/><path d="M2.5 10.3v5.2a1 1 0 001 1h13a1 1 0 001-1v-5.2"/><path d="M7.3 10.3a2.7 2.7 0 005.4 0"/></svg>
+          Negócios
+          <span class="chip">184</span>
+        </a>
+        <a class="sb-item" href="#" data-page="Pipeline">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="3" width="4.2" height="14" rx="1"/><rect x="7.9" y="3" width="4.2" height="9.5" rx="1"/><rect x="13.3" y="3" width="4.2" height="6" rx="1"/></svg>
+          Pipeline
+        </a>
+        <a class="sb-item" href="#" data-page="Tarefas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2.2"/><path d="M6.6 10.2l2 2 4.6-4.9"/></svg>
+          Tarefas
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Automação · Fase 2</div>
+        <a class="sb-item" href="#" data-page="Sequências">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4h5.5l1.5 2h5v10H4z"/><path d="M8 9h4M8 12h6"/></svg>
+          Sequências
+        </a>
+        <div class="sb-item active">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="4" width="15" height="12" rx="1.8"/><path d="M3 5l7 5.5L17 5"/></svg>
+          Cadências
+          <span class="chip" id="sbCadChip">3</span>
+        </div>
+        <a class="sb-item" href="#" data-page="Workflows">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="5" cy="5" r="2.2"/><circle cx="15" cy="5" r="2.2"/><circle cx="10" cy="15" r="2.2"/><path d="M6.8 6.4L9 13.2M13.2 6.4L11 13.2"/></svg>
+          Workflows
+          <span class="badge-soon">em breve</span>
+        </a>
+        <a class="sb-item" href="#" data-page="Modelos de e-mail">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="1.8"/><path d="M6 7h8M6 10h8M6 13h5"/></svg>
+          Modelos de e-mail
+          <span class="badge-soon">em breve</span>
+        </a>
+        <a class="sb-item" href="#" data-page="Snippets">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 4L3 10l4 6M13 4l4 6-4 6"/></svg>
+          Snippets
+          <span class="badge-soon">em breve</span>
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Marketing</div>
+        <a class="sb-item" href="#" data-page="Formulários">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="2.5" width="14" height="15" rx="1.8"/><path d="M6.3 6.6h7.4M6.3 9.6h7.4M6.3 12.6h4.4"/></svg>
+          Formulários
+        </a>
+        <a class="sb-item" href="#" data-page="Rastreio do site">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7.3"/><path d="M10 5.6v4.4l3 1.8"/></svg>
+          Rastreio do site
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Administração</div>
+        <a class="sb-item" href="#" data-page="Usuários">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="6.4" r="2.8"/><path d="M2.6 16.4c.6-3 2.7-4.6 5.4-4.6s4.8 1.6 5.4 4.6"/><path d="M13.6 4.6c1.3.3 2.2 1.4 2.2 2.9 0 1.3-.7 2.3-1.8 2.8M15.6 11.9c1.4.6 2.3 1.9 2.7 3.9"/></svg>
+          Usuários
+        </a>
+        <a class="sb-item" href="#" data-page="Configurações">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="2.6"/><path d="M10 2.8v2M10 15.2v2M17.2 10h-2M4.8 10h-2M15.1 4.9l-1.4 1.4M6.3 13.7l-1.4 1.4M15.1 15.1l-1.4-1.4M6.3 6.3L4.9 4.9"/></svg>
+          Configurações
+        </a>
+      </div>
+    </nav>
+
+    <div class="sb-user">
+      <div class="avatar">AD</div>
+      <div class="sb-user-meta"><strong>Administrador</strong><span>Admin · GD Conecta</span></div>
+    </div>
+  </aside>
+
+  <div class="main-col">
+    <div class="content">
+      <div class="page-head">
+        <div>
+          <h1>Cadências</h1>
+          <p><span class="mono" id="headTotal">3</span> cadências · <span class="mono" id="headAtivas">2</span> ativas · <span class="mono" id="headInscritos">4</span> inscrições em andamento</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn-primary" id="newCadBtn">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 4v12M4 10h12"/></svg>
+            Nova cadência
+          </button>
+        </div>
+      </div>
+
+      <div class="help-card">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="7.3"/><path d="M10 9v4.2M10 6.6h.01"/></svg>
+        <p>Cadência é uma sequência restrita a <strong>e-mail</strong>: cada etapa espera N dias após a anterior e envia um modelo, com <code>{{nome}}</code> <code>{{empresa}}</code> <code>{{cargo}}</code> <code>{{responsavel}}</code> substituídos no momento do envio. Os envios saem pela conta de e-mail conectada em Preferências (Microsoft 365). Ao final, pode criar automaticamente uma tarefa de follow-up.</p>
+      </div>
+
+      <div class="stat-strip">
+        <div class="stat-tile"><div class="t">Cadências</div><div class="v" id="statTotal">3</div></div>
+        <div class="stat-tile"><div class="t">Ativas</div><div class="v" id="statAtivas">2</div></div>
+        <div class="stat-tile"><div class="t">Inscrições ativas</div><div class="v" id="statInscritosAtivas">3</div></div>
+        <div class="stat-tile"><div class="t">Pausadas (resposta)</div><div class="v" id="statPausadas">1</div></div>
+      </div>
+
+      <div class="card">
+        <div class="table-scroll">
+          <table class="data">
+            <thead>
+              <tr>
+                <th>Cadência</th>
+                <th>Status</th>
+                <th>Pausa por resposta</th>
+                <th>E-mails</th>
+                <th>Duração</th>
+                <th>Inscritos ativos</th>
+                <th style="text-align:right;">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="listBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div>
+      <h2 id="drawerTitle">Nova cadência</h2>
+      <p id="drawerSub">Configure os e-mails e acompanhe quem está inscrito</p>
+    </div>
+    <button class="drawer-close" id="drawerClose"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5L5 15M5 5l10 10"/></svg></button>
+  </div>
+  <div class="drawer-body">
+    <div class="f-group">
+      <label class="f-label">Nome da cadência <span class="req">*</span></label>
+      <input class="f-input" id="fldNome" placeholder="Ex.: Cadência de reativação — leads frios" />
+      <span class="f-err" id="errNome">Informe o nome da cadência.</span>
+    </div>
+
+    <div class="toggle-row">
+      <div><div class="t">Ativa</div><div class="sub">Cadências inativas não disparam novos envios nem aceitam novas inscrições</div></div>
+      <label class="switch"><input type="checkbox" id="fldAtivo" checked /><span class="track"></span><span class="knob"></span></label>
+    </div>
+    <div class="toggle-row">
+      <div><div class="t">Pausar quando houver resposta</div><div class="sub">Requer e-mail conectado em Preferências (Microsoft 365)</div></div>
+      <label class="switch"><input type="checkbox" id="fldPausarResposta" checked /><span class="track"></span><span class="knob"></span></label>
+    </div>
+
+    <div class="section-title"><span>E-mails</span></div>
+    <div class="step-list" id="stepList"></div>
+    <button class="add-step-btn" id="addStepBtn" type="button">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 4v12M4 10h12"/></svg>
+      Adicionar e-mail
+    </button>
+
+    <div class="section-title"><span>Ao final da cadência</span></div>
+    <div class="followup-box">
+      <div class="toggle-row">
+        <div><div class="t">Criar tarefa de follow-up</div><div class="sub">Se ninguém responder até o último e-mail, cria uma tarefa pro responsável</div></div>
+        <label class="switch"><input type="checkbox" id="fldFollowup" checked /><span class="track"></span><span class="knob"></span></label>
+      </div>
+      <div class="f-group" id="followupTitleGroup">
+        <label class="f-label">Título da tarefa</label>
+        <input class="f-input" id="fldFollowupTitulo" placeholder="Ex.: Ligar — sem resposta na cadência" />
+      </div>
+    </div>
+
+    <div class="section-title">
+      <span>Inscritos</span>
+      <span id="enrollCount" style="font-family:var(--font-mono);font-size:11.5px;color:var(--ink-faint);"></span>
+    </div>
+    <div id="enrollList"></div>
+  </div>
+  <div class="drawer-foot">
+    <button class="btn-ghost" id="drawerCancel">Cancelar</button>
+    <button class="btn-primary" id="drawerSave">Salvar cadência</button>
+  </div>
+</div>
+
+<div class="modal-scrim" id="delScrim"></div>
+<div class="modal-box" id="delModal">
+  <h3>Excluir cadência</h3>
+  <p class="sub">Tem certeza que deseja excluir <strong id="delCadName">esta cadência</strong>? As inscrições ativas serão canceladas. Essa ação não pode ser desfeita.</p>
+  <div class="row">
+    <button class="btn-ghost" id="delCancel">Cancelar</button>
+    <button class="btn-danger" id="delConfirm">Excluir</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var toastEl = document.getElementById('toast');
+  var toastTimer;
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 3600);
+  }
+  document.querySelectorAll('[data-page]').forEach(function (el) {
+    el.addEventListener('click', function (e) {
+      e.preventDefault();
+      var page = el.getAttribute('data-page');
+      var soon = el.querySelector('.badge-soon');
+      showToast(soon ? '"' + page + '" está planejado, mas ainda não foi prototipado.' : 'Tela "' + page + '" ainda não foi prototipada.');
+    });
+  });
+
+  function escapeHtml(s) { return (s || '').replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+
+  var EMAIL_TEMPLATES = {
+    'Apresentação institucional': { assunto: 'Olá {{nome}}, tudo bem?', corpo: 'Sou {{responsavel}} da GD Conecta. Notei que a {{empresa}} pode se beneficiar de uma gestão de frete mais eficiente. Podemos conversar 15 minutos essa semana?' },
+    'Reforço de proposta': { assunto: 'Sobre a proposta que enviamos à {{empresa}}', corpo: 'Oi {{nome}}, só reforçando o contato sobre a proposta. Como {{cargo}}, você deve ter visibilidade se faz sentido avançar. Fico à disposição.' },
+    'Convite para diagnóstico gratuito': { assunto: 'Diagnóstico gratuito de frete para a {{empresa}}', corpo: 'Olá {{nome}}, gostaríamos de oferecer um diagnóstico gratuito da operação de frete da {{empresa}}. Tem 20 minutos essa semana?' }
+  };
+  var PREVIEW_SAMPLE = { nome: 'Ana Beatriz Souza', empresa: 'Distribuidora Rio Verde', cargo: 'Gerente de Compras', responsavel: 'Felipe Nogueira' };
+
+  function mergeVars(text) {
+    return escapeHtml(text).replace(/\{\{(\w+)\}\}/g, function (m, key) {
+      return '<span class="var-fill">' + escapeHtml(PREVIEW_SAMPLE[key] || m) + '</span>';
+    });
+  }
+
+  var seq = 10;
+  var CADENCES = [
+    {
+      id: 'cd1', nome: 'Cadência de reativação — leads frios', ativo: true, pausarResposta: true,
+      followup: true, followupTitulo: 'Ligar — sem resposta na cadência',
+      steps: [
+        { espera: 0, template: 'Apresentação institucional' },
+        { espera: 4, template: 'Reforço de proposta' },
+        { espera: 7, template: 'Convite para diagnóstico gratuito' }
+      ],
+      enrollments: [
+        { alvo: 'Comércio Ferreira Ltda', tipo: 'Empresa', stepAtual: 0, status: 'ativa', iniciado: '25/07/2026' },
+        { alvo: 'Distribuidora Rio Verde', tipo: 'Empresa', stepAtual: 1, status: 'ativa', iniciado: '20/07/2026' },
+        { alvo: 'Transportes Cavalcante', tipo: 'Empresa', stepAtual: 2, status: 'pausada', motivo: 'resposta_recebida', iniciado: '12/07/2026' }
+      ]
+    },
+    {
+      id: 'cd2', nome: 'Nutrição pós-formulário do site', ativo: true, pausarResposta: true,
+      followup: false, followupTitulo: '',
+      steps: [
+        { espera: 0, template: 'Apresentação institucional' },
+        { espera: 5, template: 'Convite para diagnóstico gratuito' }
+      ],
+      enrollments: [
+        { alvo: 'Papelaria Litoral Sul', tipo: 'Empresa', stepAtual: 0, status: 'ativa', iniciado: '24/07/2026' }
+      ]
+    },
+    {
+      id: 'cd3', nome: 'Cadência para clientes inativos', ativo: false, pausarResposta: false,
+      followup: true, followupTitulo: 'Ligar para reativação manual',
+      steps: [
+        { espera: 0, template: 'Reforço de proposta' },
+        { espera: 6, template: 'Convite para diagnóstico gratuito' }
+      ],
+      enrollments: []
+    }
+  ];
+
+  function countAtivas() { return CADENCES.filter(function (s) { return s.ativo; }).length; }
+  function countEnrollBy(status) {
+    var n = 0;
+    CADENCES.forEach(function (s) { s.enrollments.forEach(function (e) { if (e.status === status) n++; }); });
+    return n;
+  }
+  function countAllEnroll() {
+    var n = 0;
+    CADENCES.forEach(function (s) { n += s.enrollments.length; });
+    return n;
+  }
+  function totalDias(steps) { return steps.length ? steps.reduce(function (sum, s) { return sum + s.espera; }, 0) : 0; }
+
+  function recalcStats() {
+    document.getElementById('headTotal').textContent = CADENCES.length;
+    document.getElementById('headAtivas').textContent = countAtivas();
+    document.getElementById('headInscritos').textContent = countAllEnroll();
+    document.getElementById('sbCadChip').textContent = CADENCES.length;
+    document.getElementById('statTotal').textContent = CADENCES.length;
+    document.getElementById('statAtivas').textContent = countAtivas();
+    document.getElementById('statInscritosAtivas').textContent = countEnrollBy('ativa');
+    document.getElementById('statPausadas').textContent = countEnrollBy('pausada');
+  }
+
+  function rowHtml(c) {
+    var ativosCount = c.enrollments.filter(function (e) { return e.status === 'ativa'; }).length;
+    return '' +
+      '<tr data-id="' + c.id + '">' +
+        '<td><div class="row-title" data-act="edit">' + escapeHtml(c.nome) + '</div><div class="row-sub">' + (c.followup ? 'Cria tarefa de follow-up ao final' : 'Sem follow-up automático') + '</div></td>' +
+        '<td><span class="status-pill ' + (c.ativo ? 'ativo' : 'inativo') + '"><span class="d"></span>' + (c.ativo ? 'Ativa' : 'Inativa') + '</span></td>' +
+        '<td><span class="pause-badge ' + (c.pausarResposta ? 'on' : 'off') + '">' + (c.pausarResposta
+          ? '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 10l3.5 3.5L15.5 6"/></svg>Sim'
+          : '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l8 8M14 6l-8 8"/></svg>Não') + '</span></td>' +
+        '<td class="mono">' + c.steps.length + '</td>' +
+        '<td class="mono">' + totalDias(c.steps) + ' dias</td>' +
+        '<td class="mono">' + ativosCount + '</td>' +
+        '<td><div class="row-actions">' +
+          '<button class="icon-btn" data-act="clone" title="Clonar"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="7" y="7" width="9" height="9" rx="1.4"/><path d="M4 13V5a1 1 0 011-1h8"/></svg></button>' +
+          '<button class="icon-btn" data-act="edit" title="Editar"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M11 4.5L15.5 9 6 18.5H1.5V14z"/></svg></button>' +
+          '<button class="icon-btn danger" data-act="del" title="Excluir"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 6h12"/><path d="M7.5 6V4.6a1 1 0 011-1h3a1 1 0 011 1V6"/><path d="M6 6l.7 9.4a1 1 0 001 .9h4.6a1 1 0 001-.9L14 6"/></svg></button>' +
+        '</div></td>' +
+      '</tr>';
+  }
+
+  function renderList() {
+    var tbody = document.getElementById('listBody');
+    tbody.innerHTML = CADENCES.map(rowHtml).join('');
+    tbody.querySelectorAll('[data-act="edit"]').forEach(function (el) { el.addEventListener('click', function () { openDrawer(el.closest('tr').getAttribute('data-id')); }); });
+    tbody.querySelectorAll('[data-act="del"]').forEach(function (el) { el.addEventListener('click', function () { openDelModal(el.closest('tr').getAttribute('data-id')); }); });
+    tbody.querySelectorAll('[data-act="clone"]').forEach(function (el) { el.addEventListener('click', function () { cloneCadence(el.closest('tr').getAttribute('data-id')); }); });
+  }
+
+  function cloneCadence(id) {
+    var c = CADENCES.filter(function (x) { return x.id === id; })[0];
+    if (!c) return;
+    seq++;
+    var clone = JSON.parse(JSON.stringify(c));
+    clone.id = 'cd' + seq;
+    clone.nome = c.nome + ' (cópia)';
+    clone.ativo = false;
+    clone.enrollments = [];
+    CADENCES.push(clone);
+    renderList(); recalcStats();
+    showToast('Cadência clonada como "' + clone.nome + '" (inativa, sem inscritos).');
+  }
+
+  /* ---------------- drawer ---------------- */
+  var drawer = document.getElementById('drawer'), scrim = document.getElementById('scrim');
+  var editingId = null;
+  var draftSteps = [];
+
+  function stepRowHtml(step, idx) {
+    var tpl = EMAIL_TEMPLATES[step.template];
+    return '' +
+      '<div class="step-row" data-idx="' + idx + '" draggable="true">' +
+        '<div class="step-row-top">' +
+          '<span class="step-drag"><svg viewBox="0 0 20 20" fill="currentColor"><circle cx="7" cy="6" r="1.3"/><circle cx="13" cy="6" r="1.3"/><circle cx="7" cy="10" r="1.3"/><circle cx="13" cy="10" r="1.3"/><circle cx="7" cy="14" r="1.3"/><circle cx="13" cy="14" r="1.3"/></svg></span>' +
+          '<span class="step-num">#' + (idx + 1) + '</span>' +
+          '<div class="step-wait"><span class="suffix">espera</span><input type="number" min="0" class="wait-input" data-idx="' + idx + '" value="' + step.espera + '" /><span class="suffix">dias</span></div>' +
+          '<div class="step-tpl"><select class="tpl-select" data-idx="' + idx + '">' +
+            Object.keys(EMAIL_TEMPLATES).map(function (t) { return '<option' + (t === step.template ? ' selected' : '') + '>' + escapeHtml(t) + '</option>'; }).join('') +
+          '</select></div>' +
+          '<button type="button" class="step-preview-btn" data-idx="' + idx + '">Prévia</button>' +
+          '<button type="button" class="icon-btn danger step-del" data-idx="' + idx + '" title="Remover e-mail"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 6h12"/><path d="M7.5 6V4.6a1 1 0 011-1h3a1 1 0 011 1V6"/><path d="M6 6l.7 9.4a1 1 0 001 .9h4.6a1 1 0 001-.9L14 6"/></svg></button>' +
+        '</div>' +
+        '<div class="step-preview" data-idx="' + idx + '">' +
+          '<div class="pv-subject">' + mergeVars(tpl.assunto) + '</div>' +
+          '<div class="pv-body">' + mergeVars(tpl.corpo) + '</div>' +
+          '<div class="pv-note">Prévia com dados de exemplo (Distribuidora Rio Verde) — as variáveis reais são resolvidas no momento do envio.</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function renderSteps() {
+    var el = document.getElementById('stepList');
+    el.innerHTML = draftSteps.map(stepRowHtml).join('');
+    el.querySelectorAll('.wait-input').forEach(function (inp) {
+      inp.addEventListener('change', function () { draftSteps[+inp.getAttribute('data-idx')].espera = parseInt(inp.value, 10) || 0; });
+    });
+    el.querySelectorAll('.tpl-select').forEach(function (sel) {
+      sel.addEventListener('change', function () {
+        draftSteps[+sel.getAttribute('data-idx')].template = sel.value;
+        renderSteps();
+      });
+    });
+    el.querySelectorAll('.step-del').forEach(function (btn) {
+      btn.addEventListener('click', function () { draftSteps.splice(+btn.getAttribute('data-idx'), 1); renderSteps(); });
+    });
+    el.querySelectorAll('.step-preview-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var idx = btn.getAttribute('data-idx');
+        el.querySelector('.step-preview[data-idx="' + idx + '"]').classList.toggle('show');
+      });
+    });
+    wireStepDrag(el);
+  }
+
+  var draggingIdx = null;
+  function wireStepDrag(container) {
+    container.querySelectorAll('.step-row').forEach(function (row) {
+      row.addEventListener('dragstart', function () { draggingIdx = +row.getAttribute('data-idx'); row.classList.add('dragging'); });
+      row.addEventListener('dragend', function () { row.classList.remove('dragging'); draggingIdx = null; });
+      row.addEventListener('dragover', function (e) { e.preventDefault(); });
+      row.addEventListener('drop', function (e) {
+        e.preventDefault();
+        var targetIdx = +row.getAttribute('data-idx');
+        if (draggingIdx === null || draggingIdx === targetIdx) return;
+        var moved = draftSteps.splice(draggingIdx, 1)[0];
+        draftSteps.splice(targetIdx, 0, moved);
+        renderSteps();
+      });
+    });
+  }
+
+  document.getElementById('addStepBtn').addEventListener('click', function () {
+    draftSteps.push({ espera: draftSteps.length ? 4 : 0, template: Object.keys(EMAIL_TEMPLATES)[0] });
+    renderSteps();
+  });
+
+  function toggleFollowupTitle() {
+    document.getElementById('followupTitleGroup').style.display = document.getElementById('fldFollowup').checked ? 'flex' : 'none';
+  }
+  document.getElementById('fldFollowup').addEventListener('change', toggleFollowupTitle);
+
+  function enrollRowHtml(e) {
+    return '<div class="enroll-row">' +
+      '<div class="enroll-body"><div class="enroll-name">' + escapeHtml(e.alvo) + '</div><div class="enroll-meta">' + e.tipo + ' · e-mail ' + (e.stepAtual + 1) + ' · desde ' + e.iniciado + (e.motivo ? ' · motivo: ' + e.motivo.replace('_', ' ') : '') + '</div></div>' +
+      '<span class="enroll-status ' + e.status + '">' + e.status + '</span>' +
+    '</div>';
+  }
+  function renderEnrollments(c) {
+    document.getElementById('enrollCount').textContent = c.enrollments.length + ' inscrito' + (c.enrollments.length === 1 ? '' : 's');
+    var el = document.getElementById('enrollList');
+    el.innerHTML = c.enrollments.length
+      ? c.enrollments.map(enrollRowHtml).join('')
+      : '<div style="font-size:12.5px;color:var(--ink-faint);padding:8px 0;">Nenhuma inscrição ainda.</div>';
+  }
+
+  function openDrawer(id) {
+    editingId = id || null;
+    var c = id ? CADENCES.filter(function (x) { return x.id === id; })[0] : null;
+    document.getElementById('drawerTitle').textContent = c ? 'Editar cadência' : 'Nova cadência';
+    document.getElementById('drawerSub').textContent = c ? 'Atualize os e-mails de ' + c.nome : 'Configure os e-mails e acompanhe quem está inscrito';
+    document.getElementById('errNome').classList.remove('show');
+    document.getElementById('fldNome').classList.remove('err');
+    if (c) {
+      document.getElementById('fldNome').value = c.nome;
+      document.getElementById('fldAtivo').checked = c.ativo;
+      document.getElementById('fldPausarResposta').checked = c.pausarResposta;
+      document.getElementById('fldFollowup').checked = c.followup;
+      document.getElementById('fldFollowupTitulo').value = c.followupTitulo;
+      draftSteps = JSON.parse(JSON.stringify(c.steps));
+      renderEnrollments(c);
+    } else {
+      document.getElementById('fldNome').value = '';
+      document.getElementById('fldAtivo').checked = true;
+      document.getElementById('fldPausarResposta').checked = true;
+      document.getElementById('fldFollowup').checked = true;
+      document.getElementById('fldFollowupTitulo').value = '';
+      draftSteps = [{ espera: 0, template: Object.keys(EMAIL_TEMPLATES)[0] }];
+      renderEnrollments({ enrollments: [] });
+    }
+    toggleFollowupTitle();
+    renderSteps();
+    drawer.classList.add('show'); scrim.classList.add('show');
+    setTimeout(function () { document.getElementById('fldNome').focus(); }, 220);
+  }
+  function closeDrawer() { drawer.classList.remove('show'); scrim.classList.remove('show'); }
+  document.getElementById('newCadBtn').addEventListener('click', function () { openDrawer(null); });
+  document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+  document.getElementById('drawerCancel').addEventListener('click', closeDrawer);
+  scrim.addEventListener('click', closeDrawer);
+
+  document.getElementById('drawerSave').addEventListener('click', function () {
+    var nome = document.getElementById('fldNome').value.trim();
+    if (!nome) {
+      document.getElementById('errNome').classList.add('show');
+      document.getElementById('fldNome').classList.add('err');
+      return;
+    }
+    var payload = {
+      nome: nome,
+      ativo: document.getElementById('fldAtivo').checked,
+      pausarResposta: document.getElementById('fldPausarResposta').checked,
+      followup: document.getElementById('fldFollowup').checked,
+      followupTitulo: document.getElementById('fldFollowupTitulo').value.trim(),
+      steps: draftSteps
+    };
+    if (editingId) {
+      var idx = CADENCES.findIndex(function (x) { return x.id === editingId; });
+      CADENCES[idx] = Object.assign({ id: editingId, enrollments: CADENCES[idx].enrollments }, payload);
+      showToast('Cadência "' + nome + '" atualizada.');
+    } else {
+      seq++;
+      payload.id = 'cd' + seq;
+      payload.enrollments = [];
+      CADENCES.push(payload);
+      showToast('Cadência "' + nome + '" criada.');
+    }
+    closeDrawer();
+    renderList(); recalcStats();
+  });
+
+  /* ---------------- delete ---------------- */
+  var delModal = document.getElementById('delModal'), delScrim = document.getElementById('delScrim');
+  var deletingId = null;
+  function openDelModal(id) {
+    var c = CADENCES.filter(function (x) { return x.id === id; })[0];
+    if (!c) return;
+    deletingId = id;
+    document.getElementById('delCadName').textContent = c.nome;
+    delModal.classList.add('show'); delScrim.classList.add('show');
+  }
+  function closeDelModal() { delModal.classList.remove('show'); delScrim.classList.remove('show'); deletingId = null; }
+  document.getElementById('delCancel').addEventListener('click', closeDelModal);
+  delScrim.addEventListener('click', closeDelModal);
+  document.getElementById('delConfirm').addEventListener('click', function () {
+    var c = CADENCES.filter(function (x) { return x.id === deletingId; })[0];
+    CADENCES = CADENCES.filter(function (x) { return x.id !== deletingId; });
+    closeDelModal();
+    renderList(); recalcStats();
+    if (c) showToast('Cadência "' + c.nome + '" excluída.');
+  });
+
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeDrawer(); closeDelModal(); } });
+
+  recalcStats();
+  renderList();
+})();
+</script>

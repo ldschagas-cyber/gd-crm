@@ -1,0 +1,481 @@
+<title>Desempenho de Pesquisa — GD Conecta CRM</title>
+<style>
+  /* Font note: real product should self-host IBM Plex Sans/Mono; CDN fonts are blocked
+     in this artifact sandbox, so a close system-grotesque stack stands in here. */
+  :root {
+    --font-display: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Cascadia Code", "SFMono-Regular", "Consolas", ui-monospace, monospace;
+
+    --indigo: #2D3561;
+    --indigo-600: #3B4478;
+    --amber: #C9A84C;
+    --azul: #0077A8;
+    --marfim: #F5F1EB;
+
+    --paper: var(--marfim);
+    --panel: var(--indigo);
+    --panel-fg: #F1EEE6;
+    --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12);
+    --panel-active-bg: rgba(201, 168, 76, 0.14);
+
+    --ink: #22243A;
+    --ink-dim: #5B5E78;
+    --ink-faint: #8B8EA6;
+    --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF;
+    --accent: var(--amber);
+    --link: var(--azul);
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+
+    --good: #0ca30c;
+    --warning: #fab219;
+    --serious: #ec835a;
+    --critical: #d03b3b;
+
+    --seq-1: #86b6ef;
+    --seq-2: #5598e7;
+    --seq-3: #2a78d6;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+      --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+      --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+      --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+      --seq-1: #9ec5f4; --seq-2: #6da7ec; --seq-3: #3987e5;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+    --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+    --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+    --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+    --seq-1: #9ec5f4; --seq-2: #6da7ec; --seq-3: #3987e5;
+  }
+  :root[data-theme="light"] {
+    --paper: #F5F1EB; --panel: #2D3561; --panel-fg: #F1EEE6; --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12); --panel-active-bg: rgba(201, 168, 76, 0.14);
+    --ink: #22243A; --ink-dim: #5B5E78; --ink-faint: #8B8EA6; --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF; --amber: #C9A84C; --azul: #0077A8; --link: #0077A8;
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+    --seq-1: #86b6ef; --seq-2: #5598e7; --seq-3: #2a78d6;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; font-family: var(--font-display); color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; }
+  button, input, select { font-family: inherit; }
+  a { color: inherit; }
+  ::selection { background: rgba(201,168,76,.3); }
+  :focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; border-radius: 4px; }
+
+  .shell { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+
+  /* ---------------- Sidebar ---------------- */
+  .sidebar { background: var(--panel); color: var(--panel-fg); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+  .sb-brand { display: flex; align-items: center; gap: 10px; padding: 20px 18px 16px; }
+  .monogram { width: 34px; height: 34px; border-radius: 9px; flex: none; background: var(--amber); color: var(--indigo); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+  .sb-brand strong { display: block; font-size: 14.5px; font-weight: 650; line-height: 1.2; }
+  .sb-brand span { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--panel-fg-dim); margin-top: 2px; }
+  .sb-nav { flex: 1; overflow-y: auto; padding: 10px 12px; }
+  .sb-group + .sb-group { margin-top: 18px; }
+  .sb-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--panel-fg-dim); padding: 0 10px; margin-bottom: 6px; }
+  .sb-item { display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: 8px; margin-bottom: 2px; font-size: 13.6px; font-weight: 500; color: var(--panel-fg-dim); text-decoration: none; cursor: pointer; border: 1px solid transparent; position: relative; }
+  .sb-item svg { width: 17px; height: 17px; flex: none; opacity: 0.9; }
+  .sb-item:hover { background: rgba(241, 238, 230, 0.06); color: var(--panel-fg); }
+  .sb-item.active { background: var(--panel-active-bg); color: var(--panel-fg); font-weight: 650; }
+  .sb-item.active::before { content: ""; position: absolute; left: -12px; top: 6px; bottom: 6px; width: 3px; background: var(--amber); border-radius: 2px; }
+  .sb-item .chip { margin-left: auto; font-family: var(--font-mono); font-size: 10px; background: rgba(241,238,230,0.12); color: var(--panel-fg-dim); padding: 1px 6px; border-radius: 100px; }
+  .sb-item.sub { padding-left: 30px; font-size: 12.8px; }
+  .sb-user { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-top: 1px solid var(--panel-border); }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; flex: none; background: rgba(201,168,76,0.18); color: var(--amber); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; border: 1px solid rgba(201,168,76,0.3); }
+  .sb-user-meta { min-width: 0; flex: 1; }
+  .sb-user-meta strong { display: block; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-user-meta span { display: block; font-size: 11px; color: var(--panel-fg-dim); }
+
+  /* ---------------- Main column ---------------- */
+  .main-col { display: flex; flex-direction: column; min-width: 0; }
+  .content { padding: 22px 28px 48px; display: flex; flex-direction: column; gap: 16px; }
+
+  .page-head { display: flex; align-items: flex-start; gap: 16px; }
+  .page-head h1 { margin: 0; font-size: 20px; font-weight: 650; letter-spacing: -0.01em; }
+  .page-head p { margin: 3px 0 0; font-size: 12.5px; color: var(--ink-dim); }
+  .page-head p .mono { font-family: var(--font-mono); color: var(--ink); font-weight: 500; }
+  .page-actions { margin-left: auto; display: flex; gap: 8px; flex: none; }
+
+  .btn-ghost { display: flex; align-items: center; gap: 7px; background: var(--card-bg); color: var(--ink); border: 1px solid var(--border); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-ghost:hover { border-color: var(--ink-faint); }
+  .btn-ghost svg { width: 14px; height: 14px; }
+
+  .filters-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .filter-select-wrap { position: relative; }
+  .filter-select { appearance: none; font-size: 13px; color: var(--ink); background: var(--card-bg); border: 1px solid var(--border); border-radius: 9px; padding: 8px 28px 8px 12px; cursor: pointer; }
+  .filter-select-wrap svg { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); width: 11px; height: 11px; pointer-events: none; color: var(--ink-faint); }
+
+  .help-card { display: flex; gap: 11px; padding: 14px 16px; background: color-mix(in srgb, var(--azul) 6%, var(--card-bg)); border: 1px solid var(--border); border-radius: 12px; }
+  .help-card svg { width: 17px; height: 17px; color: var(--azul); flex: none; margin-top: 1px; }
+  .help-card p { margin: 0; font-size: 12.5px; color: var(--ink-dim); line-height: 1.5; }
+  .help-card p strong { color: var(--ink); }
+
+  .stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .stat-tile { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; box-shadow: var(--shadow); }
+  .stat-tile .t { font-size: 11px; color: var(--ink-faint); font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+  .stat-tile .v { font-size: 20px; font-weight: 700; margin-top: 4px; font-family: var(--font-mono); }
+  .stat-tile.bonus .v { color: var(--amber); }
+
+  .grid-main { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.5fr); gap: 16px; align-items: start; }
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+  .card-head { padding: 14px 18px 10px; border-bottom: 1px solid var(--border); }
+  .card-head h2 { margin: 0; font-size: 13.5px; font-weight: 700; }
+  .card-head p { margin: 2px 0 0; font-size: 11.5px; color: var(--ink-dim); }
+  .card-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; }
+
+  /* ranking */
+  .rank-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .rank-row:last-child { border-bottom: none; }
+  .rank-medal { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex: none; font-family: var(--font-mono); }
+  .rank-medal.p1 { background: rgba(201,168,76,0.22); color: var(--amber); }
+  .rank-medal.p2 { background: rgba(139,142,166,0.18); color: var(--ink-dim); }
+  .rank-medal.p3 { background: rgba(178,123,58,0.18); color: #b27b3a; }
+  .rank-body { flex: 1; min-width: 0; }
+  .rank-name { font-size: 13.3px; font-weight: 650; color: var(--ink); }
+  .rank-meta { font-size: 11.5px; color: var(--ink-faint); margin-top: 1px; }
+  .rank-value { text-align: right; flex: none; }
+  .rank-value .v { font-family: var(--font-mono); font-size: 15px; font-weight: 700; color: var(--ink); }
+  .rank-value .t { font-size: 10px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .03em; }
+
+  /* bar chart */
+  .bar-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+  .bar-name { width: 130px; flex: none; font-size: 12.5px; color: var(--ink-dim); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar-track { flex: 1; height: 20px; background: var(--paper); border-radius: 5px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 5px; transition: width 400ms ease; }
+  .bar-value { width: 34px; flex: none; text-align: right; font-family: var(--font-mono); font-size: 12.5px; font-weight: 650; }
+
+  .table-scroll { overflow-x: auto; }
+  table.data { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 760px; }
+  table.data th { text-align: left; font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); font-weight: 600; padding: 10px 16px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  table.data td { padding: 11px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  table.data tbody tr:last-child td { border-bottom: none; }
+  table.data tbody tr:hover { background: color-mix(in srgb, var(--paper) 55%, transparent); }
+  .row-resp { display: flex; align-items: center; gap: 9px; }
+  .row-resp .avatar { width: 26px; height: 26px; font-size: 10.5px; }
+  .row-resp-name { font-weight: 600; color: var(--ink); font-size: 13px; }
+  .cell-num { font-family: var(--font-mono); text-align: right; }
+  .qual-pill { font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 100px; font-family: var(--font-mono); }
+  .qual-pill.high { background: rgba(12,163,12,0.12); color: var(--good); }
+  .qual-pill.mid { background: rgba(250,178,25,0.16); color: color-mix(in srgb, var(--warning) 55%, var(--ink-dim)); }
+  .qual-pill.low { background: rgba(208,59,59,0.1); color: var(--critical); }
+  .bonus-cell { font-family: var(--font-mono); font-weight: 700; color: var(--amber); text-align: right; }
+
+  @media (max-width: 1080px) { .grid-main { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar { position: relative; height: auto; }
+    .sb-nav, .sb-user { display: none; }
+    .page-head { flex-wrap: wrap; }
+  }
+</style>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="monogram">GD</div>
+      <div><strong>Conecta CRM</strong><span>Gestão comercial</span></div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-group">
+        <a class="sb-item" href="#" data-page="Dashboard">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="2.5" width="6.2" height="6.2" rx="1.3"/><rect x="11.3" y="2.5" width="6.2" height="4.4" rx="1.3"/><rect x="11.3" y="9.4" width="6.2" height="8.1" rx="1.3"/><rect x="2.5" y="11.2" width="6.2" height="6.3" rx="1.3"/></svg>
+          Dashboard
+        </a>
+        <a class="sb-item" href="#" data-page="Pesquisa de Leads">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7"/><circle cx="10" cy="10" r="3.2"/><path d="M10 3v2.4M10 14.6V17M17 10h-2.4M5.4 10H3"/></svg>
+          Pesquisa de Leads
+        </a>
+        <div class="sb-item sub active">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17h14M5 17V9.5M9.3 17V5.5M13.6 17v-8"/></svg>
+          Desempenho
+        </div>
+        <a class="sb-item" href="#" data-page="Empresas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17.5V3.8a.8.8 0 01.8-.8h6.4a.8.8 0 01.8.8v13.7"/><path d="M13 17.5V8.3a.8.8 0 01.8-.8h3.4a.8.8 0 01.8.8v9.2"/><path d="M5.4 6h1.6M5.4 9h1.6M5.4 12h1.6M15 10.6h1M15 13.4h1"/></svg>
+          Empresas
+          <span class="chip">3.402</span>
+        </a>
+        <a class="sb-item" href="#" data-page="Contatos">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="6.6" r="3.1"/><path d="M3.6 17c.7-3.4 3.2-5.2 6.4-5.2s5.7 1.8 6.4 5.2"/></svg>
+          Contatos
+        </a>
+        <a class="sb-item" href="#" data-page="Negócios">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 10.3l3-4.6a1 1 0 01.85-.47h7.3a1 1 0 01.85.47l3 4.6"/><path d="M2.5 10.3v5.2a1 1 0 001 1h13a1 1 0 001-1v-5.2"/><path d="M7.3 10.3a2.7 2.7 0 005.4 0"/></svg>
+          Negócios
+          <span class="chip">184</span>
+        </a>
+        <a class="sb-item" href="#" data-page="Pipeline">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="3" width="4.2" height="14" rx="1"/><rect x="7.9" y="3" width="4.2" height="9.5" rx="1"/><rect x="13.3" y="3" width="4.2" height="6" rx="1"/></svg>
+          Pipeline
+        </a>
+        <a class="sb-item" href="#" data-page="Tarefas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2.2"/><path d="M6.6 10.2l2 2 4.6-4.9"/></svg>
+          Tarefas
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Automação · Fase 2</div>
+        <a class="sb-item" href="#" data-page="Sequências">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4h5.5l1.5 2h5v10H4z"/><path d="M8 9h4M8 12h6"/></svg>
+          Sequências
+        </a>
+        <a class="sb-item" href="#" data-page="Cadências">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="4" width="15" height="12" rx="1.8"/><path d="M3 5l7 5.5L17 5"/></svg>
+          Cadências
+        </a>
+        <a class="sb-item" href="#" data-page="Workflows">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="5" cy="5" r="2.2"/><circle cx="15" cy="5" r="2.2"/><circle cx="10" cy="15" r="2.2"/><path d="M6.8 6.4L9 13.2M13.2 6.4L11 13.2"/></svg>
+          Workflows
+        </a>
+        <a class="sb-item" href="#" data-page="Modelos de e-mail">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="1.8"/><path d="M6 7h8M6 10h8M6 13h5"/></svg>
+          Modelos de e-mail
+        </a>
+        <a class="sb-item" href="#" data-page="Snippets">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 4L3 10l4 6M13 4l4 6-4 6"/></svg>
+          Snippets
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Marketing</div>
+        <a class="sb-item" href="#" data-page="Formulários">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="2.5" width="14" height="15" rx="1.8"/><path d="M6.3 6.6h7.4M6.3 9.6h7.4M6.3 12.6h4.4"/></svg>
+          Formulários
+        </a>
+        <a class="sb-item" href="#" data-page="Rastreio do site">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7.3"/><path d="M10 5.6v4.4l3 1.8"/></svg>
+          Rastreio do site
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Administração</div>
+        <a class="sb-item" href="#" data-page="Usuários">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="6.4" r="2.8"/><path d="M2.6 16.4c.6-3 2.7-4.6 5.4-4.6s4.8 1.6 5.4 4.6"/><path d="M13.6 4.6c1.3.3 2.2 1.4 2.2 2.9 0 1.3-.7 2.3-1.8 2.8M15.6 11.9c1.4.6 2.3 1.9 2.7 3.9"/></svg>
+          Usuários
+        </a>
+        <a class="sb-item" href="#" data-page="Configurações">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="2.6"/><path d="M10 2.8v2M10 15.2v2M17.2 10h-2M4.8 10h-2M15.1 4.9l-1.4 1.4M6.3 13.7l-1.4 1.4M15.1 15.1l-1.4-1.4M6.3 6.3L4.9 4.9"/></svg>
+          Configurações
+        </a>
+      </div>
+    </nav>
+
+    <div class="sb-user">
+      <div class="avatar">AD</div>
+      <div class="sb-user-meta"><strong>Administrador</strong><span>Admin · GD Conecta</span></div>
+    </div>
+  </aside>
+
+  <div class="main-col">
+    <div class="content">
+      <div class="page-head">
+        <div>
+          <h1>Desempenho de Pesquisa</h1>
+          <p>Gamificação e bônus por pesquisador — a tela de consumo do que é calculado em <span class="mono">Pesquisa de Leads</span></p>
+        </div>
+        <div class="page-actions">
+          <button class="btn-ghost" id="exportBtn">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M10 4v9.5M6.3 10.2L10 13.9l3.7-3.7"/><path d="M4 15.5h12"/></svg>
+            Exportar .csv
+          </button>
+        </div>
+      </div>
+
+      <div class="filters-bar">
+        <div class="filter-select-wrap">
+          <select class="filter-select" id="mesFilter">
+            <option value="2026-07">Julho / 2026</option>
+            <option value="2026-06">Junho / 2026</option>
+          </select>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l5 5 5-5"/></svg>
+        </div>
+      </div>
+
+      <div class="help-card">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="7.3"/><path d="M10 9v4.2M10 6.6h.01"/></svg>
+        <p>Bônus só é <strong>válido</strong> quando a pesquisa vira empresa de verdade (status "Promovido" em Pesquisa de Leads) — completar os campos não basta. Esse relatório é só consulta; não existe módulo de folha de pagamento aqui.</p>
+      </div>
+
+      <div class="stat-strip">
+        <div class="stat-tile"><div class="t">Pesquisas no mês</div><div class="v" id="statTotal">14</div></div>
+        <div class="stat-tile"><div class="t">Promovidos</div><div class="v" id="statPromovidos">1</div></div>
+        <div class="stat-tile"><div class="t">Taxa de qualificação</div><div class="v" id="statQualif">71%</div></div>
+        <div class="stat-tile bonus"><div class="t">Bônus total do mês</div><div class="v" id="statBonus">R$ 1,00</div></div>
+      </div>
+
+      <div class="grid-main">
+        <div class="card">
+          <div class="card-head"><h2>Ranking do mês</h2><p>Por taxa de qualificação (ICP A + B)</p></div>
+          <div class="card-body" id="rankBody"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2>Pesquisas realizadas</h2><p>Volume por pesquisador no mês selecionado</p></div>
+          <div class="card-body" id="barBody"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="table-scroll">
+          <table class="data">
+            <thead>
+              <tr>
+                <th>Pesquisador</th>
+                <th class="cell-num">Pesquisas</th>
+                <th class="cell-num">ICP A</th>
+                <th class="cell-num">ICP B</th>
+                <th class="cell-num">ICP C</th>
+                <th class="cell-num">Sem perfil/Não aval.</th>
+                <th style="text-align:right;">Taxa qualif.</th>
+                <th class="cell-num">Promovidos</th>
+                <th style="text-align:right;">Bônus válido</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  document.querySelectorAll('[data-page]').forEach(function (el) {
+    el.addEventListener('click', function (e) { e.preventDefault(); });
+  });
+
+  var REP_NAMES = { FN: 'Felipe Nogueira', MD: 'Marina Duarte', CR: 'Camila Rezende' };
+  var BAR_COLOR = { FN: 'var(--seq-1)', MD: 'var(--seq-2)', CR: 'var(--seq-3)' };
+
+  // Cada linha reflete exatamente os leads mockados em Pesquisa de Leads (julho/2026):
+  // FN: p1 A, p3 A, p6 A, p9 B  |  MD: p2 A, p5 A, p10 B, p12 NãoAval  |  CR: p4 A, p7 C, p8 C, p11 SemPerfil, p13 B, p14 A(promovido)
+  var DATA = {
+    '2026-07': {
+      FN: { total: 4, a: 3, b: 1, c: 0, sp: 0, promovidos: 0, bonus: 0 },
+      MD: { total: 4, a: 2, b: 1, c: 0, sp: 1, promovidos: 0, bonus: 0 },
+      CR: { total: 6, a: 2, b: 1, c: 2, sp: 1, promovidos: 1, bonus: 1 }
+    },
+    '2026-06': {
+      FN: { total: 6, a: 2, b: 2, c: 1, sp: 1, promovidos: 1, bonus: 1 },
+      MD: { total: 5, a: 1, b: 2, c: 1, sp: 1, promovidos: 0, bonus: 0 },
+      CR: { total: 7, a: 3, b: 2, c: 1, sp: 1, promovidos: 2, bonus: 2 }
+    }
+  };
+
+  function money(n) { return 'R$ ' + n.toFixed(2).replace('.', ','); }
+  function qualPct(row) { return row.total ? Math.round(((row.a + row.b) / row.total) * 100) : 0; }
+  function qualClass(pct) { return pct >= 70 ? 'high' : pct >= 40 ? 'mid' : 'low'; }
+
+  function computeSummary(mes) {
+    var rows = DATA[mes];
+    var total = 0, promovidos = 0, bonus = 0, aeb = 0;
+    Object.keys(rows).forEach(function (rep) {
+      var r = rows[rep];
+      total += r.total; promovidos += r.promovidos; bonus += r.bonus; aeb += (r.a + r.b);
+    });
+    return { total: total, promovidos: promovidos, bonus: bonus, qualif: total ? Math.round((aeb / total) * 100) : 0 };
+  }
+
+  function renderStats(mes) {
+    var s = computeSummary(mes);
+    document.getElementById('statTotal').textContent = s.total;
+    document.getElementById('statPromovidos').textContent = s.promovidos;
+    document.getElementById('statQualif').textContent = s.qualif + '%';
+    document.getElementById('statBonus').textContent = money(s.bonus);
+  }
+
+  function renderRanking(mes) {
+    var rows = DATA[mes];
+    var reps = Object.keys(rows).map(function (rep) {
+      return Object.assign({ rep: rep }, rows[rep], { qualif: qualPct(rows[rep]) });
+    }).sort(function (a, b) { return b.qualif - a.qualif || b.promovidos - a.promovidos; });
+
+    var el = document.getElementById('rankBody');
+    el.innerHTML = reps.map(function (r, i) {
+      var medalClass = i === 0 ? 'p1' : i === 1 ? 'p2' : 'p3';
+      return '<div class="rank-row">' +
+        '<span class="rank-medal ' + medalClass + '">' + (i + 1) + 'º</span>' +
+        '<div class="rank-body"><div class="rank-name">' + REP_NAMES[r.rep] + '</div><div class="rank-meta">' + r.total + ' pesquisas · ' + r.promovidos + ' promovido' + (r.promovidos === 1 ? '' : 's') + '</div></div>' +
+        '<div class="rank-value"><div class="v">' + r.qualif + '%</div><div class="t">qualificação</div></div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function renderBars(mes) {
+    var rows = DATA[mes];
+    var max = Math.max.apply(null, Object.keys(rows).map(function (r) { return rows[r].total; }));
+    var el = document.getElementById('barBody');
+    el.innerHTML = Object.keys(rows).map(function (rep) {
+      var r = rows[rep];
+      var pct = max ? (r.total / max) * 100 : 0;
+      return '<div class="bar-row">' +
+        '<span class="bar-name">' + REP_NAMES[rep] + '</span>' +
+        '<div class="bar-track"><div class="bar-fill" style="width:' + pct + '%;background:' + BAR_COLOR[rep] + ';"></div></div>' +
+        '<span class="bar-value">' + r.total + '</span>' +
+      '</div>';
+    }).join('');
+  }
+
+  function renderTable(mes) {
+    var rows = DATA[mes];
+    var el = document.getElementById('tableBody');
+    el.innerHTML = Object.keys(rows).map(function (rep) {
+      var r = rows[rep];
+      var pct = qualPct(r);
+      return '<tr>' +
+        '<td><div class="row-resp"><span class="avatar">' + rep + '</span><span class="row-resp-name">' + REP_NAMES[rep] + '</span></div></td>' +
+        '<td class="cell-num">' + r.total + '</td>' +
+        '<td class="cell-num">' + r.a + '</td>' +
+        '<td class="cell-num">' + r.b + '</td>' +
+        '<td class="cell-num">' + r.c + '</td>' +
+        '<td class="cell-num">' + r.sp + '</td>' +
+        '<td style="text-align:right;"><span class="qual-pill ' + qualClass(pct) + '">' + pct + '%</span></td>' +
+        '<td class="cell-num">' + r.promovidos + '</td>' +
+        '<td class="bonus-cell">' + money(r.bonus) + '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  function renderAll() {
+    var mes = document.getElementById('mesFilter').value;
+    renderStats(mes);
+    renderRanking(mes);
+    renderBars(mes);
+    renderTable(mes);
+  }
+  document.getElementById('mesFilter').addEventListener('change', renderAll);
+
+  document.getElementById('exportBtn').addEventListener('click', function () {
+    var mes = document.getElementById('mesFilter').value;
+    var rows = DATA[mes];
+    var headers = ['pesquisador', 'pesquisas', 'icp_a', 'icp_b', 'icp_c', 'sem_perfil_nao_avaliado', 'taxa_qualificacao', 'promovidos', 'bonus_valido'];
+    var lines = [headers.join(',')];
+    Object.keys(rows).forEach(function (rep) {
+      var r = rows[rep];
+      lines.push([REP_NAMES[rep], r.total, r.a, r.b, r.c, r.sp, qualPct(r) + '%', r.promovidos, r.bonus.toFixed(2)].join(','));
+    });
+    var blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'desempenho-pesquisa-' + mes + '.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  renderAll();
+})();
+</script>

@@ -1,0 +1,976 @@
+<title>Pesquisa de Leads — GD Conecta CRM</title>
+<style>
+  /* Font note: real product should self-host IBM Plex Sans/Mono; CDN fonts are blocked
+     in this artifact sandbox, so a close system-grotesque stack stands in here. */
+  :root {
+    --font-display: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Cascadia Code", "SFMono-Regular", "Consolas", ui-monospace, monospace;
+
+    --indigo: #2D3561;
+    --indigo-600: #3B4478;
+    --amber: #C9A84C;
+    --azul: #0077A8;
+    --marfim: #F5F1EB;
+
+    --paper: var(--marfim);
+    --panel: var(--indigo);
+    --panel-fg: #F1EEE6;
+    --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12);
+    --panel-active-bg: rgba(201, 168, 76, 0.14);
+
+    --ink: #22243A;
+    --ink-dim: #5B5E78;
+    --ink-faint: #8B8EA6;
+    --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF;
+    --accent: var(--amber);
+    --link: var(--azul);
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+
+    --good: #0ca30c;
+    --warning: #fab219;
+    --serious: #ec835a;
+    --critical: #d03b3b;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+      --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+      --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+      --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+    --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+    --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+    --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+  }
+  :root[data-theme="light"] {
+    --paper: #F5F1EB; --panel: #2D3561; --panel-fg: #F1EEE6; --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12); --panel-active-bg: rgba(201, 168, 76, 0.14);
+    --ink: #22243A; --ink-dim: #5B5E78; --ink-faint: #8B8EA6; --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF; --amber: #C9A84C; --azul: #0077A8; --link: #0077A8;
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; font-family: var(--font-display); color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; }
+  button, input, select, textarea { font-family: inherit; }
+  a { color: inherit; }
+  ::selection { background: rgba(201,168,76,.3); }
+  :focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; border-radius: 4px; }
+
+  .shell { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+
+  /* ---------------- Sidebar ---------------- */
+  .sidebar { background: var(--panel); color: var(--panel-fg); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+  .sb-brand { display: flex; align-items: center; gap: 10px; padding: 20px 18px 16px; }
+  .monogram { width: 34px; height: 34px; border-radius: 9px; flex: none; background: var(--amber); color: var(--indigo); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+  .sb-brand strong { display: block; font-size: 14.5px; font-weight: 650; line-height: 1.2; }
+  .sb-brand span { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--panel-fg-dim); margin-top: 2px; }
+  .sb-nav { flex: 1; overflow-y: auto; padding: 10px 12px; }
+  .sb-group + .sb-group { margin-top: 18px; }
+  .sb-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--panel-fg-dim); padding: 0 10px; margin-bottom: 6px; }
+  .sb-item { display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: 8px; margin-bottom: 2px; font-size: 13.6px; font-weight: 500; color: var(--panel-fg-dim); text-decoration: none; cursor: pointer; border: 1px solid transparent; position: relative; }
+  .sb-item svg { width: 17px; height: 17px; flex: none; opacity: 0.9; }
+  .sb-item:hover { background: rgba(241, 238, 230, 0.06); color: var(--panel-fg); }
+  .sb-item.active { background: var(--panel-active-bg); color: var(--panel-fg); font-weight: 650; }
+  .sb-item.active::before { content: ""; position: absolute; left: -12px; top: 6px; bottom: 6px; width: 3px; background: var(--amber); border-radius: 2px; }
+  .sb-item .chip { margin-left: auto; font-family: var(--font-mono); font-size: 10px; background: rgba(241,238,230,0.12); color: var(--panel-fg-dim); padding: 1px 6px; border-radius: 100px; }
+  .sb-user { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-top: 1px solid var(--panel-border); }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; flex: none; background: rgba(201,168,76,0.18); color: var(--amber); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; border: 1px solid rgba(201,168,76,0.3); }
+  .sb-user-meta { min-width: 0; flex: 1; }
+  .sb-user-meta strong { display: block; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-user-meta span { display: block; font-size: 11px; color: var(--panel-fg-dim); }
+
+  /* ---------------- Main column ---------------- */
+  .main-col { display: flex; flex-direction: column; min-width: 0; }
+  .content { padding: 22px 28px 48px; display: flex; flex-direction: column; gap: 16px; }
+
+  .page-head { display: flex; align-items: flex-start; gap: 16px; }
+  .page-head h1 { margin: 0; font-size: 20px; font-weight: 650; letter-spacing: -0.01em; }
+  .page-head p { margin: 3px 0 0; font-size: 12.5px; color: var(--ink-dim); }
+  .page-head p .mono { font-family: var(--font-mono); color: var(--ink); font-weight: 500; }
+  .page-actions { margin-left: auto; display: flex; gap: 8px; flex: none; }
+
+  .btn-primary { display: flex; align-items: center; gap: 7px; background: var(--indigo); color: var(--panel-fg); border: 1px solid var(--indigo); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-primary:hover { background: var(--indigo-600); }
+  .btn-primary svg { width: 14px; height: 14px; }
+  .btn-primary.sm { padding: 5px 10px; font-size: 12px; border-radius: 7px; }
+  .btn-ghost { display: flex; align-items: center; gap: 7px; background: var(--card-bg); color: var(--ink); border: 1px solid var(--border); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-ghost:hover { border-color: var(--ink-faint); }
+  .btn-ghost svg { width: 14px; height: 14px; }
+  .btn-danger { display: flex; align-items: center; gap: 7px; background: var(--critical); color: #fff; border: 1px solid var(--critical); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-danger:hover { filter: brightness(0.94); }
+
+  /* stat strip */
+  .stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 12px; }
+  .stat-tile { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; box-shadow: var(--shadow); }
+  .stat-tile .t { font-size: 11px; color: var(--ink-faint); font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+  .stat-tile .v { font-size: 19px; font-weight: 700; margin-top: 4px; font-family: var(--font-mono); }
+  .stat-tile.fit-A .v { color: var(--good); }
+  .stat-tile.fit-B .v { color: var(--azul); }
+  .stat-tile.fit-C .v { color: color-mix(in srgb, var(--warning) 60%, var(--ink-dim)); }
+  .stat-tile.bonus .v { color: var(--amber); }
+
+  /* filters */
+  .filters-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .search { display: flex; align-items: center; gap: 8px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 9px; padding: 8px 12px; color: var(--ink-faint); flex: 1; min-width: 190px; max-width: 260px; }
+  .search svg { width: 15px; height: 15px; flex: none; }
+  .search input { border: none; outline: none; background: transparent; font-size: 13px; color: var(--ink); width: 100%; }
+  .search input::placeholder { color: var(--ink-faint); }
+  .filter-select-wrap { position: relative; }
+  .filter-select { appearance: none; font-size: 13px; color: var(--ink); background: var(--card-bg); border: 1px solid var(--border); border-radius: 9px; padding: 8px 28px 8px 12px; cursor: pointer; }
+  .filter-select-wrap svg { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); width: 11px; height: 11px; pointer-events: none; color: var(--ink-faint); }
+  .chip-toggle { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--ink-dim); background: var(--card-bg); border: 1px solid var(--border); border-radius: 9px; padding: 8px 12px; cursor: pointer; user-select: none; margin-left: auto; }
+  .chip-toggle input { width: 14px; height: 14px; accent-color: var(--indigo); cursor: pointer; }
+
+  /* table */
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+  .table-scroll { overflow-x: auto; }
+  table.data { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 980px; }
+  table.data th { text-align: left; font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); font-weight: 600; padding: 10px 16px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  table.data td { padding: 11px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  table.data tbody tr:last-child td { border-bottom: none; }
+  table.data tbody tr:hover { background: color-mix(in srgb, var(--paper) 55%, transparent); }
+  .row-title { font-weight: 600; color: var(--ink); }
+  .row-sub { font-size: 11.5px; color: var(--ink-faint); margin-top: 1px; }
+  .row-resp { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--ink-dim); white-space: nowrap; }
+  .row-resp .avatar { width: 22px; height: 22px; font-size: 9.5px; }
+
+  .status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 650; padding: 3px 10px; border-radius: 100px; white-space: nowrap; }
+  .status-pill .d { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+  .status-pill[data-status="pesquisando"] { background: rgba(0,119,168,0.12); color: var(--azul); }
+  .status-pill[data-status="pesquisando"] .d { background: var(--azul); }
+  .status-pill[data-status="enriquecido"] { background: rgba(250,178,25,0.16); color: color-mix(in srgb, var(--warning) 55%, var(--ink-dim)); }
+  .status-pill[data-status="enriquecido"] .d { background: var(--warning); }
+  .status-pill[data-status="pronto_para_cadencia"] { background: rgba(12,163,12,0.12); color: var(--good); }
+  .status-pill[data-status="pronto_para_cadencia"] .d { background: var(--good); }
+  .status-pill[data-status="descartado"] { background: rgba(208,59,59,0.12); color: var(--critical); }
+  .status-pill[data-status="descartado"] .d { background: var(--critical); }
+  .status-pill[data-status="promovido"] { background: rgba(201,168,76,0.18); color: var(--amber); }
+  .status-pill[data-status="promovido"] .d { background: var(--amber); }
+
+  .fit-cell { display: flex; align-items: center; gap: 8px; }
+  .fit-badge { width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex: none; }
+  .fit-badge.A { background: rgba(12,163,12,0.14); color: var(--good); }
+  .fit-badge.B { background: rgba(0,119,168,0.14); color: var(--azul); }
+  .fit-badge.C { background: rgba(250,178,25,0.18); color: color-mix(in srgb, var(--warning) 55%, var(--ink-dim)); }
+  .fit-badge.SemPerfil { background: rgba(208,59,59,0.12); color: var(--critical); font-size: 9px; }
+  .fit-badge.NaoAvaliado { background: var(--paper); color: var(--ink-faint); font-size: 9px; }
+  .fit-score { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-faint); }
+
+  .gam-cell { display: flex; flex-direction: column; gap: 4px; min-width: 84px; }
+  .gam-bar-track { height: 5px; border-radius: 100px; background: var(--paper); overflow: hidden; }
+  .gam-bar-fill { height: 100%; border-radius: 100px; background: var(--amber); }
+  .gam-num { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-faint); }
+  .bonus-pill { font-size: 10.5px; font-weight: 700; padding: 1px 7px; border-radius: 100px; white-space: nowrap; }
+  .bonus-pill.yes { background: rgba(201,168,76,0.18); color: var(--amber); }
+  .bonus-pill.pending { background: transparent; color: var(--amber); border: 1px dashed var(--amber); }
+  .bonus-pill.no { background: var(--paper); color: var(--ink-faint); }
+
+  .row-actions { display: flex; gap: 2px; justify-content: flex-end; align-items: center; }
+  .icon-btn { width: 26px; height: 26px; border-radius: 7px; border: none; background: transparent; color: var(--ink-faint); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .icon-btn:hover { background: var(--paper); color: var(--ink); }
+  .icon-btn.danger:hover { background: rgba(208,59,59,0.1); color: var(--critical); }
+  .icon-btn svg { width: 14px; height: 14px; }
+
+  .table-empty { padding: 60px 24px; text-align: center; color: var(--ink-dim); }
+  .table-empty svg { width: 36px; height: 36px; color: var(--ink-faint); margin-bottom: 10px; }
+  .table-empty h3 { margin: 0 0 4px; font-size: 14.5px; color: var(--ink); }
+  .table-empty p { margin: 0; font-size: 12.5px; }
+
+  /* ---------------- Drawer ---------------- */
+  .scrim { position: fixed; inset: 0; background: rgba(20,23,43,.4); opacity: 0; pointer-events: none; transition: opacity .18s ease; z-index: 40; }
+  .scrim.show { opacity: 1; pointer-events: auto; }
+  .drawer { position: fixed; top: 0; right: 0; height: 100%; width: min(480px, 100vw); background: var(--card-bg); box-shadow: -8px 0 40px rgba(20,23,43,.25); z-index: 41; display: flex; flex-direction: column; transform: translateX(100%); transition: transform .22s cubic-bezier(.4,0,.2,1); }
+  .drawer.show { transform: translateX(0); }
+  .drawer-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 22px 16px; border-bottom: 1px solid var(--border); }
+  .drawer-head h2 { margin: 0 0 3px; font-size: 16.5px; font-weight: 700; }
+  .drawer-head p { margin: 0; font-size: 12.5px; color: var(--ink-dim); }
+  .drawer-close { width: 30px; height: 30px; border-radius: 8px; border: none; background: transparent; color: var(--ink-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; flex: none; }
+  .drawer-close:hover { background: var(--paper); color: var(--ink); }
+  .drawer-close svg { width: 16px; height: 16px; }
+  .drawer-body { flex: 1; overflow-y: auto; padding: 18px 22px 22px; display: flex; flex-direction: column; gap: 14px; }
+  .drawer-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 14px 22px; border-top: 1px solid var(--border); }
+
+  .f-group { display: flex; flex-direction: column; gap: 6px; }
+  .f-row { display: flex; gap: 12px; }
+  .f-row .f-group { flex: 1; min-width: 0; }
+  .f-label { font-size: 12.5px; font-weight: 600; color: var(--ink-dim); display: flex; justify-content: space-between; }
+  .f-label .req { color: var(--critical); }
+  .f-label .opt { font-weight: 400; color: var(--ink-faint); }
+  .f-input, .f-select, .f-textarea { border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; background: var(--card-bg); color: var(--ink); width: 100%; outline: none; transition: border-color .12s ease, box-shadow .12s ease; }
+  .f-input:focus, .f-select:focus, .f-textarea:focus { border-color: var(--azul); box-shadow: 0 0 0 3px rgba(0,119,168,.14); }
+  .f-input.err, .f-select.err { border-color: var(--critical); }
+  .f-err { font-size: 11.5px; color: var(--critical); display: none; }
+  .f-err.show { display: block; }
+  .f-textarea { resize: vertical; min-height: 60px; font-family: inherit; }
+  .f-hint { font-size: 11.5px; color: var(--ink-faint); }
+
+  .live-preview { background: var(--paper); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+  .live-preview .lp-title { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-faint); font-weight: 700; }
+  .live-preview .lp-row { display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; }
+  .live-preview .lp-row b { font-family: var(--font-mono); }
+
+  .divider-label { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-faint); font-weight: 700; padding-top: 4px; border-top: 1px solid var(--border); margin-top: 2px; }
+
+  /* ---------------- Criteria drawer ---------------- */
+  .rule-table { display: flex; flex-direction: column; gap: 6px; }
+  .rule-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 0; }
+  .rule-row span { font-size: 13px; color: var(--ink); }
+  .rule-row input { width: 60px; border: 1px solid var(--border); border-radius: 6px; padding: 5px 7px; font-family: var(--font-mono); font-size: 12.5px; text-align: right; background: var(--paper); color: var(--ink); }
+  .rule-row input:focus { border-color: var(--azul); outline: none; background: var(--card-bg); }
+  .rule-section-title { font-size: 12.5px; font-weight: 700; color: var(--ink); margin-top: 6px; }
+  .rule-note { font-size: 11.5px; color: var(--ink-faint); background: color-mix(in srgb, var(--azul) 6%, var(--card-bg)); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+
+  /* modal */
+  .modal-scrim { position: fixed; inset: 0; background: rgba(20,23,43,.46); opacity: 0; pointer-events: none; transition: opacity .16s ease; z-index: 50; }
+  .modal-scrim.show { opacity: 1; pointer-events: auto; }
+  .modal-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-46%); width: 400px; max-width: calc(100vw - 32px); background: var(--card-bg); border-radius: 14px; box-shadow: var(--shadow); z-index: 51; padding: 22px; opacity: 0; pointer-events: none; transition: opacity .16s ease, transform .16s ease; }
+  .modal-box.show { opacity: 1; pointer-events: auto; transform: translate(-50%,-50%); }
+  .modal-box h3 { margin: 0 0 8px; font-size: 15.5px; }
+  .modal-box .sub { margin: 0 0 16px; font-size: 12.5px; color: var(--ink-dim); line-height: 1.5; }
+  .modal-box .sub strong { color: var(--ink); }
+  .modal-box .row { display: flex; justify-content: flex-end; gap: 10px; }
+
+  .toast { position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 12px); background: var(--ink); color: var(--paper); font-size: 13.5px; padding: 10px 16px; border-radius: 8px; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: opacity 180ms ease, transform 180ms ease; z-index: 60; max-width: 88vw; display: flex; align-items: center; gap: 10px; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+  .toast a { color: var(--amber); font-weight: 600; text-decoration: underline; }
+
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar { position: relative; height: auto; }
+    .sb-nav, .sb-user { display: none; }
+    .page-head { flex-wrap: wrap; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .toast, .drawer, .scrim, .modal-box, .modal-scrim { transition: none; }
+  }
+</style>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="monogram">GD</div>
+      <div><strong>Conecta CRM</strong><span>Gestão comercial</span></div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-group">
+        <a class="sb-item" href="#" data-page="Dashboard">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="2.5" width="6.2" height="6.2" rx="1.3"/><rect x="11.3" y="2.5" width="6.2" height="4.4" rx="1.3"/><rect x="11.3" y="9.4" width="6.2" height="8.1" rx="1.3"/><rect x="2.5" y="11.2" width="6.2" height="6.3" rx="1.3"/></svg>
+          Dashboard
+        </a>
+        <div class="sb-item active">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7"/><circle cx="10" cy="10" r="3.2"/><path d="M10 3v2.4M10 14.6V17M17 10h-2.4M5.4 10H3"/></svg>
+          Pesquisa de Leads
+          <span class="chip" id="sbLeadsChip">14</span>
+        </div>
+        <a class="sb-item" href="#" data-page="Empresas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17.5V3.8a.8.8 0 01.8-.8h6.4a.8.8 0 01.8.8v13.7"/><path d="M13 17.5V8.3a.8.8 0 01.8-.8h3.4a.8.8 0 01.8.8v9.2"/><path d="M5.4 6h1.6M5.4 9h1.6M5.4 12h1.6M15 10.6h1M15 13.4h1"/></svg>
+          Empresas
+          <span class="chip">3.402</span>
+        </a>
+        <a class="sb-item" href="#" data-page="Contatos">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="6.6" r="3.1"/><path d="M3.6 17c.7-3.4 3.2-5.2 6.4-5.2s5.7 1.8 6.4 5.2"/></svg>
+          Contatos
+        </a>
+        <a class="sb-item" href="#" data-page="Negócios">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 10.3l3-4.6a1 1 0 01.85-.47h7.3a1 1 0 01.85.47l3 4.6"/><path d="M2.5 10.3v5.2a1 1 0 001 1h13a1 1 0 001-1v-5.2"/><path d="M7.3 10.3a2.7 2.7 0 005.4 0"/></svg>
+          Negócios
+          <span class="chip">184</span>
+        </a>
+        <a class="sb-item" href="#" data-page="Pipeline">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="3" width="4.2" height="14" rx="1"/><rect x="7.9" y="3" width="4.2" height="9.5" rx="1"/><rect x="13.3" y="3" width="4.2" height="6" rx="1"/></svg>
+          Pipeline
+        </a>
+        <a class="sb-item" href="#" data-page="Tarefas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2.2"/><path d="M6.6 10.2l2 2 4.6-4.9"/></svg>
+          Tarefas
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Marketing</div>
+        <a class="sb-item" href="#" data-page="Formulários">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="2.5" width="14" height="15" rx="1.8"/><path d="M6.3 6.6h7.4M6.3 9.6h7.4M6.3 12.6h4.4"/></svg>
+          Formulários
+        </a>
+        <a class="sb-item" href="#" data-page="Rastreio do site">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7.3"/><path d="M10 5.6v4.4l3 1.8"/></svg>
+          Rastreio do site
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Administração</div>
+        <a class="sb-item" href="#" data-page="Usuários">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="6.4" r="2.8"/><path d="M2.6 16.4c.6-3 2.7-4.6 5.4-4.6s4.8 1.6 5.4 4.6"/><path d="M13.6 4.6c1.3.3 2.2 1.4 2.2 2.9 0 1.3-.7 2.3-1.8 2.8M15.6 11.9c1.4.6 2.3 1.9 2.7 3.9"/></svg>
+          Usuários
+        </a>
+        <a class="sb-item" href="#" data-page="Configurações">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="2.6"/><path d="M10 2.8v2M10 15.2v2M17.2 10h-2M4.8 10h-2M15.1 4.9l-1.4 1.4M6.3 13.7l-1.4 1.4M15.1 15.1l-1.4-1.4M6.3 6.3L4.9 4.9"/></svg>
+          Configurações
+        </a>
+      </div>
+    </nav>
+
+    <div class="sb-user">
+      <div class="avatar">AD</div>
+      <div class="sb-user-meta"><strong>Administrador</strong><span>Admin · GD Conecta</span></div>
+    </div>
+  </aside>
+
+  <div class="main-col">
+    <div class="content">
+      <div class="page-head">
+        <div>
+          <h1>Pesquisa de Leads</h1>
+          <p><span class="mono" id="headTotal">14</span> empresas pesquisadas este mês · <span class="mono" id="headBonusCount">1</span> com bônus válido (<span class="mono" id="headBonusValor">R$ 1,00</span>) · <span class="mono" id="headBonusPending">8</span> pendentes de promoção</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn-ghost" id="criteriaBtn">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="2.6"/><path d="M10 2.8v2M10 15.2v2M17.2 10h-2M4.8 10h-2M15.1 4.9l-1.4 1.4M6.3 13.7l-1.4 1.4M15.1 15.1l-1.4-1.4M6.3 6.3L4.9 4.9"/></svg>
+            Critérios de pontuação
+          </button>
+          <button class="btn-primary" id="newLeadBtn">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 4v12M4 10h12"/></svg>
+            Nova pesquisa
+          </button>
+        </div>
+      </div>
+
+      <div class="stat-strip">
+        <div class="stat-tile"><div class="t">Total</div><div class="v" id="statTotal">14</div></div>
+        <div class="stat-tile fit-A"><div class="t">ICP A</div><div class="v" id="statA">7</div></div>
+        <div class="stat-tile fit-B"><div class="t">ICP B</div><div class="v" id="statB">3</div></div>
+        <div class="stat-tile fit-C"><div class="t">ICP C</div><div class="v" id="statC">2</div></div>
+        <div class="stat-tile"><div class="t">Sem perfil / não avaliado</div><div class="v" id="statSemPerfil">2</div></div>
+        <div class="stat-tile"><div class="t">Prontas p/ cadência</div><div class="v" id="statPronto">1</div></div>
+        <div class="stat-tile bonus"><div class="t">Promovidas</div><div class="v" id="statPromovidas">1</div></div>
+      </div>
+
+      <div class="filters-bar">
+        <div class="search">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="8.8" cy="8.8" r="5.8"/><path d="M17 17l-3.6-3.6"/></svg>
+          <input type="text" id="searchInput" placeholder="Buscar por empresa ou setor" />
+        </div>
+        <div class="filter-select-wrap">
+          <select class="filter-select" id="statusFilter">
+            <option value="">Todos os status</option>
+            <option value="pesquisando">Pesquisando</option>
+            <option value="enriquecido">Enriquecido</option>
+            <option value="pronto_para_cadencia">Pronto para cadência</option>
+            <option value="promovido">Promovido</option>
+            <option value="descartado">Descartado</option>
+          </select>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l5 5 5-5"/></svg>
+        </div>
+        <div class="filter-select-wrap">
+          <select class="filter-select" id="fitFilter">
+            <option value="">Todo ICP Fit</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="Sem Perfil">Sem Perfil</option>
+            <option value="Não avaliado">Não avaliado</option>
+          </select>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l5 5 5-5"/></svg>
+        </div>
+        <div class="filter-select-wrap">
+          <select class="filter-select" id="pesquisadorFilter">
+            <option value="">Todos os pesquisadores</option>
+            <option value="FN">Felipe Nogueira</option>
+            <option value="MD">Marina Duarte</option>
+            <option value="CR">Camila Rezende</option>
+          </select>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l5 5 5-5"/></svg>
+        </div>
+        <label class="chip-toggle">
+          <input type="checkbox" id="onlyBonus" />
+          Somente com bônus válido
+        </label>
+      </div>
+
+      <div class="card">
+        <div class="table-scroll">
+          <table class="data">
+            <thead>
+              <tr>
+                <th>Empresa</th>
+                <th>Status</th>
+                <th>ICP Fit</th>
+                <th>Faixa / UF</th>
+                <th>Gamificação</th>
+                <th>Pesquisador</th>
+                <th style="text-align:right;">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="listBody"></tbody>
+          </table>
+        </div>
+        <div class="table-empty" id="listEmpty" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <h3>Nenhuma pesquisa encontrada</h3>
+          <p>Ajuste os filtros para ver mais resultados.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div>
+      <h2 id="drawerTitle">Nova pesquisa</h2>
+      <p id="drawerSub">Preencha os dados coletados na pesquisa</p>
+    </div>
+    <button class="drawer-close" id="drawerClose"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5L5 15M5 5l10 10"/></svg></button>
+  </div>
+  <div class="drawer-body">
+    <div class="f-group">
+      <label class="f-label">Empresa <span class="req">*</span></label>
+      <input class="f-input" id="fldEmpresa" placeholder="Razão social ou nome comercial" />
+      <span class="f-err" id="errEmpresa">Informe o nome da empresa.</span>
+    </div>
+
+    <div class="f-row">
+      <div class="f-group">
+        <label class="f-label">Setor <span class="opt">define o Score ICP</span></label>
+        <select class="f-select" id="fldSetor">
+          <option value="">Selecione…</option>
+          <option>Farma</option><option>Alimentos</option><option>Autopeças</option><option>Etiquetas</option>
+          <option>Plástico</option><option>Máquinas e Equipamentos</option><option>Química</option><option>Cosmético</option>
+          <option>Serviços</option><option>Tecnologia</option><option>Varejo</option><option>Outro</option>
+        </select>
+      </div>
+      <div class="f-group">
+        <label class="f-label">Segmento <span class="opt">subcategoria</span></label>
+        <input class="f-input" id="fldSegmento" placeholder="Ex.: Genéricos, Embalagens flexíveis…" />
+      </div>
+    </div>
+
+    <div class="f-row">
+      <div class="f-group">
+        <label class="f-label">UF <span class="opt">define a Região</span></label>
+        <select class="f-select" id="fldUf">
+          <option value="">Selecione…</option>
+        </select>
+      </div>
+      <div class="f-group">
+        <label class="f-label">Faixa de funcionários</label>
+        <select class="f-select" id="fldFaixa">
+          <option value="">Selecione…</option>
+          <option>1-50</option><option>51-200</option><option>201-500</option><option>501-1.000</option>
+          <option>1.001-5.000</option><option>5.001-10.000</option><option>+ de 10.001</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="f-row">
+      <div class="f-group">
+        <label class="f-label">Faturamento estimado <span class="opt">opcional</span></label>
+        <input class="f-input" id="fldFaturamento" placeholder="Ex.: R$ 20.000.000" />
+      </div>
+      <div class="f-group">
+        <label class="f-label">Telefone <span class="opt">opcional</span></label>
+        <input class="f-input" id="fldTelefone" placeholder="(00) 0000-0000" />
+      </div>
+    </div>
+
+    <div class="f-row">
+      <div class="f-group">
+        <label class="f-label">Site <span class="opt">opcional</span></label>
+        <input class="f-input" id="fldSite" placeholder="empresa.com.br" />
+      </div>
+      <div class="f-group">
+        <label class="f-label">LinkedIn <span class="opt">opcional</span></label>
+        <input class="f-input" id="fldLinkedin" placeholder="linkedin.com/company/…" />
+      </div>
+    </div>
+
+    <div class="f-group">
+      <label class="f-label">Contato sugerido <span class="opt">opcional</span></label>
+      <input class="f-input" id="fldContato" placeholder="Ex.: Ana Paula — Gerente de Compras" />
+    </div>
+
+    <div class="f-group">
+      <label class="f-label">Dor sugerida <span class="opt">opcional</span></label>
+      <textarea class="f-textarea" id="fldDor" placeholder="Hipótese de dor levantada na pesquisa (via Claude Chat, fontes públicas, etc.)"></textarea>
+    </div>
+
+    <div class="live-preview" id="livePreview">
+      <div class="lp-title">Cálculo automático</div>
+      <div class="lp-row"><span>Score ICP</span><b id="lpScore">0</b></div>
+      <div class="lp-row"><span>ICP Fit</span><b id="lpFit">Não avaliado</b></div>
+      <div class="lp-row"><span>Gamificação</span><b id="lpGam">0</b></div>
+      <div class="lp-row"><span>Bônus</span><b id="lpBonus">Não</b></div>
+    </div>
+
+    <div class="divider-label">Fluxo</div>
+
+    <div class="f-row">
+      <div class="f-group">
+        <label class="f-label">Status</label>
+        <select class="f-select" id="fldStatus">
+          <option value="pesquisando">Pesquisando</option>
+          <option value="enriquecido">Enriquecido</option>
+          <option value="pronto_para_cadencia">Pronto para cadência</option>
+          <option value="promovido">Promovido</option>
+          <option value="descartado">Descartado</option>
+        </select>
+        <span class="f-hint">Bônus só é válido quando o status vira "Promovido".</span>
+      </div>
+      <div class="f-group">
+        <label class="f-label">Pesquisado por</label>
+        <select class="f-select" id="fldPesquisador">
+          <option value="FN">Felipe Nogueira</option>
+          <option value="MD">Marina Duarte</option>
+          <option value="CR">Camila Rezende</option>
+        </select>
+      </div>
+    </div>
+
+  </div>
+  <div class="drawer-foot">
+    <button class="btn-ghost" id="drawerCancel">Cancelar</button>
+    <button class="btn-primary" id="drawerSave">Salvar pesquisa</button>
+  </div>
+</div>
+
+<div class="scrim" id="critScrim"></div>
+<div class="drawer" id="critDrawer">
+  <div class="drawer-head">
+    <div>
+      <h2>Critérios de pontuação</h2>
+      <p>Pesos do Score ICP, do corte de ICP Fit e do valor do bônus</p>
+    </div>
+    <button class="drawer-close" id="critClose"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5L5 15M5 5l10 10"/></svg></button>
+  </div>
+  <div class="drawer-body">
+    <div class="rule-note">Esses critérios ficam salvos por tenant — cada cliente da CRM pode ter pesos diferentes de setor, região e porte. Alterar aqui recalcula todas as pesquisas na hora.</div>
+
+    <div class="rule-section-title">Setor (pontos)</div>
+    <div class="rule-table" id="ruleSetor"></div>
+    <div class="f-hint">Setores fora desta lista pontuam 10 por padrão.</div>
+
+    <div class="rule-section-title">Região (pontos)</div>
+    <div class="rule-table" id="ruleRegiao"></div>
+
+    <div class="rule-section-title">Porte / faixa de funcionários (pontos)</div>
+    <div class="rule-table" id="ruleFaixa"></div>
+
+    <div class="rule-section-title">Corte de ICP Fit</div>
+    <div class="rule-table">
+      <div class="rule-row"><span>A a partir de</span><input type="number" id="ruleCorteA" min="0" max="100" /></div>
+      <div class="rule-row"><span>B a partir de</span><input type="number" id="ruleCorteB" min="0" max="100" /></div>
+      <div class="rule-row"><span>C a partir de</span><input type="number" id="ruleCorteC" min="0" max="100" /></div>
+    </div>
+
+    <div class="rule-section-title">Bônus</div>
+    <div class="rule-table">
+      <div class="rule-row"><span>Valor por lead qualificado (R$)</span><input type="number" id="ruleBonusValor" min="0" step="0.5" /></div>
+    </div>
+  </div>
+  <div class="drawer-foot">
+    <button class="btn-ghost" id="critCancel">Fechar sem salvar</button>
+    <button class="btn-primary" id="critSave">Salvar critérios</button>
+  </div>
+</div>
+
+<div class="modal-scrim" id="delScrim"></div>
+<div class="modal-box" id="delModal">
+  <h3>Excluir pesquisa</h3>
+  <p class="sub">Tem certeza que deseja excluir <strong id="delLeadName">esta pesquisa</strong>? Essa ação não pode ser desfeita.</p>
+  <div class="row">
+    <button class="btn-ghost" id="delCancel">Cancelar</button>
+    <button class="btn-danger" id="delConfirm">Excluir</button>
+  </div>
+</div>
+
+<div class="modal-scrim" id="promoteScrim"></div>
+<div class="modal-box" id="promoteModal">
+  <h3>Promover para Empresa</h3>
+  <p class="sub"><strong id="promoteLeadName">Esta empresa</strong> entrará no cadastro oficial de Empresas como <strong>lead</strong>, com os dados desta pesquisa. O registro de pesquisa continua aqui, marcado como "Promovido" — é só a partir de agora que o bônus de quem pesquisou se torna válido.</p>
+  <div class="row">
+    <button class="btn-ghost" id="promoteCancel">Cancelar</button>
+    <button class="btn-primary" id="promoteConfirm">Promover</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var UFS = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
+  var UF_REGIAO = {
+    AC:'Norte', AP:'Norte', AM:'Norte', PA:'Norte', RO:'Norte', RR:'Norte', TO:'Norte',
+    AL:'Nordeste', BA:'Nordeste', CE:'Nordeste', MA:'Nordeste', PB:'Nordeste', PE:'Nordeste', PI:'Nordeste', RN:'Nordeste', SE:'Nordeste',
+    DF:'Centro-Oeste', GO:'Centro-Oeste', MT:'Centro-Oeste', MS:'Centro-Oeste',
+    ES:'Sudeste', MG:'Sudeste', RJ:'Sudeste', SP:'Sudeste',
+    PR:'Sul', RS:'Sul', SC:'Sul'
+  };
+  var fldUf = document.getElementById('fldUf');
+  fldUf.innerHTML += UFS.map(function (uf) { return '<option value="' + uf + '">' + uf + ' — ' + UF_REGIAO[uf] + '</option>'; }).join('');
+
+  var REP_NAMES = { FN: 'Felipe Nogueira', MD: 'Marina Duarte', CR: 'Camila Rezende' };
+  var STATUS_LABEL = { pesquisando: 'Pesquisando', enriquecido: 'Enriquecido', pronto_para_cadencia: 'Pronto p/ cadência', promovido: 'Promovido', descartado: 'Descartado' };
+  var COMPANY_PROFILE_URL = 'https://claude.ai/code/artifact/3599deda-92ca-456e-871a-0d16a10f940f';
+
+  var RULES = {
+    setor: { 'Farma': 40, 'Alimentos': 40, 'Autopeças': 40, 'Etiquetas': 40, 'Plástico': 30, 'Máquinas e Equipamentos': 30, 'Química': 30, 'Cosmético': 30 },
+    setorFallback: 10,
+    regiao: { 'Sudeste': 30, 'Sul': 30, 'Nordeste': 30, 'Norte': 0, 'Centro-Oeste': 0 },
+    faixa: { '1-50': 0, '51-200': 30, '201-500': 30, '501-1.000': 30, '1.001-5.000': 40, '5.001-10.000': 50, '+ de 10.001': 0 },
+    corteA: 80, corteB: 70, corteC: 40,
+    bonusValor: 1.00
+  };
+
+  function scoreSetor(setor) { if (!setor) return 0; return RULES.setor.hasOwnProperty(setor) ? RULES.setor[setor] : RULES.setorFallback; }
+  function scoreRegiao(uf) { var r = UF_REGIAO[uf]; if (!r) return 0; return RULES.regiao.hasOwnProperty(r) ? RULES.regiao[r] : 0; }
+  function scoreFaixa(faixa) { if (!faixa) return 0; return RULES.faixa.hasOwnProperty(faixa) ? RULES.faixa[faixa] : 0; }
+  function computeScore(p) { return Math.min(100, scoreSetor(p.setor) + scoreRegiao(p.uf) + scoreFaixa(p.faixa)); }
+  function computeFit(p) {
+    var score = computeScore(p);
+    if (score === 0 && !p.setor && !p.uf && !p.faixa) return 'Não avaliado';
+    if (score >= RULES.corteA) return 'A';
+    if (score >= RULES.corteB) return 'B';
+    if (score >= RULES.corteC) return 'C';
+    return 'Sem Perfil';
+  }
+  function computeGam(p) {
+    var fit = computeFit(p);
+    if (fit === 'C' || fit === 'Sem Perfil' || fit === 'Não avaliado' || p.status === 'descartado') return 0;
+    var g = 0;
+    if (p.telefone) g += 40;
+    if (p.setor) g += 20;
+    if (p.uf) g += 20;
+    if (p.faixa) g += 10;
+    if (p.site) g += 10;
+    return g;
+  }
+  function recebeBonus(p) { return p.status === 'promovido' && computeGam(p) > 70; }
+  function bonusValor(p) { return recebeBonus(p) ? RULES.bonusValor : 0; }
+  function bonusStatus(p) {
+    if (computeGam(p) <= 70) return 'none';
+    return p.status === 'promovido' ? 'valid' : 'pending';
+  }
+  function fitClass(fit) { return fit === 'Sem Perfil' ? 'SemPerfil' : fit === 'Não avaliado' ? 'NaoAvaliado' : fit; }
+  function fitShort(fit) { return fit === 'Sem Perfil' ? 'SP' : fit === 'Não avaliado' ? '—' : fit; }
+  function escapeHtml(s) { return (s || '').replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function money(n) { return 'R$ ' + n.toFixed(2).replace('.', ','); }
+
+  var seq = 40;
+  var LEADS = [
+    { id: 'p1', empresa: 'Laboratório Vitalfarma', setor: 'Farma', segmento: 'Genéricos', uf: 'SP', faixa: '1.001-5.000', faturamento: 'R$ 180.000.000', telefone: '(11) 4522-8810', site: 'vitalfarma.com.br', linkedin: 'linkedin.com/company/vitalfarma', contato: 'Renato Oliveira — Diretor Industrial', dor: 'Alta variação no custo de frete entre CDs regionais.', status: 'enriquecido', pesquisador: 'FN' },
+    { id: 'p2', empresa: 'Distribuidora Alimentos Bom Prato', setor: 'Alimentos', segmento: 'Laticínios', uf: 'PR', faixa: '501-1.000', faturamento: 'R$ 65.000.000', telefone: '(41) 3355-9010', site: 'bomprato.com.br', linkedin: '', contato: '', dor: 'Perda de validade em transporte refrigerado.', status: 'enriquecido', pesquisador: 'MD' },
+    { id: 'p3', empresa: 'Autopeças Rolamento Sul', setor: 'Autopeças', segmento: 'Rolamentos e correias', uf: 'SC', faixa: '201-500', faturamento: 'R$ 32.000.000', telefone: '(47) 3433-2210', site: 'rolamentosul.com.br', linkedin: 'linkedin.com/company/rolamentosul', contato: 'Diego Fontana — Compras', dor: '', status: 'enriquecido', pesquisador: 'FN' },
+    { id: 'p4', empresa: 'Etiquetas Adesiva Print', setor: 'Etiquetas', segmento: 'Rotulagem industrial', uf: 'SP', faixa: '51-200', faturamento: '', telefone: '(11) 2233-4410', site: 'adesivaprint.com.br', linkedin: '', contato: '', dor: 'Entregas fracionadas com muitos atrasos.', status: 'pesquisando', pesquisador: 'CR' },
+    { id: 'p5', empresa: 'Plástico Injetados Sul', setor: 'Plástico', segmento: 'Embalagens flexíveis', uf: 'RS', faixa: '1.001-5.000', faturamento: 'R$ 90.000.000', telefone: '(51) 3025-6600', site: 'injetadossul.com.br', linkedin: 'linkedin.com/company/injetadossul', contato: 'Bianca Souza — Supply Chain', dor: '', status: 'pronto_para_cadencia', pesquisador: 'MD' },
+    { id: 'p6', empresa: 'Máquinas Industriais Progresso', setor: 'Máquinas e Equipamentos', segmento: 'Bens de capital', uf: 'MG', faixa: '5.001-10.000', faturamento: 'R$ 240.000.000', telefone: '(31) 3277-9080', site: 'progressoindustrial.com.br', linkedin: 'linkedin.com/company/progressoindustrial', contato: 'Ricardo Lemos — Logística', dor: 'Custo alto de frete em cargas superdimensionadas.', status: 'enriquecido', pesquisador: 'FN' },
+    { id: 'p7', empresa: 'Química Nortex', setor: 'Química', segmento: 'Especialidades químicas', uf: 'PA', faixa: '201-500', faturamento: '', telefone: '(91) 3241-5500', site: 'quimicanortex.com.br', linkedin: '', contato: '', dor: '', status: 'pesquisando', pesquisador: 'CR' },
+    { id: 'p8', empresa: 'Cosméticos Bela Flor', setor: 'Cosmético', segmento: 'Cuidados capilares', uf: 'BA', faixa: '1-50', faturamento: 'R$ 8.000.000', telefone: '(71) 3288-1100', site: 'belaflorcosmeticos.com.br', linkedin: '', contato: '', dor: '', status: 'pesquisando', pesquisador: 'CR' },
+    { id: 'p9', empresa: 'Consultoria Prime Serviços', setor: 'Serviços', segmento: 'Consultoria empresarial', uf: 'SP', faixa: '501-1.000', faturamento: 'R$ 40.000.000', telefone: '(11) 3055-7700', site: 'primeservicos.com.br', linkedin: 'linkedin.com/company/primeservicos', contato: 'Fernanda Diniz — Operações', dor: 'Sem visibilidade de custo logístico por unidade de negócio.', status: 'enriquecido', pesquisador: 'FN' },
+    { id: 'p10', empresa: 'Tecnologia DataFlow Sistemas', setor: 'Tecnologia', segmento: 'Software B2B', uf: 'SC', faixa: '51-200', faturamento: '', telefone: '', site: 'dataflow.com.br', linkedin: 'linkedin.com/company/dataflow', contato: '', dor: '', status: 'pesquisando', pesquisador: 'MD' },
+    { id: 'p11', empresa: 'Varejo ModaCerta', setor: 'Varejo', segmento: 'Vestuário', uf: 'GO', faixa: '1-50', faturamento: '', telefone: '(62) 3221-4400', site: '', linkedin: '', contato: '', dor: '', status: 'descartado', pesquisador: 'CR' },
+    { id: 'p12', empresa: 'Metalúrgica Nova Era', setor: '', segmento: '', uf: '', faixa: '', faturamento: '', telefone: '', site: '', linkedin: '', contato: '', dor: '', status: 'pesquisando', pesquisador: 'MD' },
+    { id: 'p13', empresa: 'Farmacêutica NovoRemédio', setor: 'Farma', segmento: 'Referência', uf: 'RJ', faixa: '+ de 10.001', faturamento: 'R$ 620.000.000', telefone: '(21) 3322-9900', site: 'novoremedio.com.br', linkedin: 'linkedin.com/company/novoremedio', contato: 'Cláudia Ferraz — Diretora de Operações', dor: 'Fragmentação de transportadoras entre regiões.', status: 'enriquecido', pesquisador: 'CR' },
+    { id: 'p14', empresa: 'Química Andrade & Filhos', setor: 'Química', segmento: 'Insumos industriais', uf: 'MG', faixa: '1.001-5.000', faturamento: 'R$ 110.000.000', telefone: '(31) 3299-8800', site: 'quimicaandrade.com.br', linkedin: 'linkedin.com/company/quimicaandrade', contato: 'Marcos Andrade — Sócio-Diretor', dor: 'Falta de indicadores de nível de serviço dos transportadores.', status: 'promovido', pesquisador: 'CR' }
+  ];
+
+  var toastEl = document.getElementById('toast');
+  var toastTimer;
+  function showToast(html) {
+    toastEl.innerHTML = html;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 4200);
+  }
+  document.querySelectorAll('[data-page]').forEach(function (el) {
+    el.addEventListener('click', function (e) { e.preventDefault(); showToast('Tela "' + el.getAttribute('data-page') + '" ainda não foi prototipada.'); });
+  });
+
+  var respFilter = '', fitFilter = '', statusFilter = '', searchQ = '', onlyBonus = false;
+
+  function passesFilter(p) {
+    if (statusFilter && p.status !== statusFilter) return false;
+    if (fitFilter && computeFit(p) !== fitFilter) return false;
+    if (respFilter && p.pesquisador !== respFilter) return false;
+    if (onlyBonus && !recebeBonus(p)) return false;
+    if (searchQ) {
+      var hay = (p.empresa + ' ' + p.setor + ' ' + p.segmento).toLowerCase();
+      if (hay.indexOf(searchQ) === -1) return false;
+    }
+    return true;
+  }
+
+  function recalcStats() {
+    var total = LEADS.length;
+    var counts = { A: 0, B: 0, C: 0, sp: 0 };
+    var bonusCount = 0, bonusTotal = 0, bonusPending = 0, prontos = 0, promovidos = 0;
+    LEADS.forEach(function (p) {
+      var fit = computeFit(p);
+      if (fit === 'A') counts.A++;
+      else if (fit === 'B') counts.B++;
+      else if (fit === 'C') counts.C++;
+      else counts.sp++;
+      var bs = bonusStatus(p);
+      if (bs === 'valid') { bonusCount++; bonusTotal += bonusValor(p); }
+      else if (bs === 'pending') bonusPending++;
+      if (p.status === 'pronto_para_cadencia') prontos++;
+      if (p.status === 'promovido') promovidos++;
+    });
+    document.getElementById('headTotal').textContent = total;
+    document.getElementById('sbLeadsChip').textContent = total;
+    document.getElementById('headBonusCount').textContent = bonusCount;
+    document.getElementById('headBonusValor').textContent = money(bonusTotal);
+    document.getElementById('headBonusPending').textContent = bonusPending;
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statA').textContent = counts.A;
+    document.getElementById('statB').textContent = counts.B;
+    document.getElementById('statC').textContent = counts.C;
+    document.getElementById('statSemPerfil').textContent = counts.sp;
+    document.getElementById('statPronto').textContent = prontos;
+    document.getElementById('statPromovidas').textContent = promovidos;
+  }
+
+  function rowHtml(p) {
+    var fit = computeFit(p);
+    var score = computeScore(p);
+    var gam = computeGam(p);
+    var bs = bonusStatus(p);
+    var bonusPillHtml = bs === 'valid'
+      ? '<span class="bonus-pill yes">Bônus ' + money(bonusValor(p)) + '</span>'
+      : bs === 'pending'
+        ? '<span class="bonus-pill pending">Bônus pendente</span>'
+        : '<span class="bonus-pill no">Sem bônus</span>';
+    var promoteBtn = p.status === 'pronto_para_cadencia'
+      ? '<button class="btn-primary sm" data-act="promote" title="Promover para Empresa">Promover</button>'
+      : '';
+    return '' +
+      '<tr data-id="' + p.id + '">' +
+        '<td><div class="row-title">' + escapeHtml(p.empresa) + '</div><div class="row-sub">' + escapeHtml(p.setor || 'Setor não informado') + (p.segmento ? ' · ' + escapeHtml(p.segmento) : '') + '</div></td>' +
+        '<td><span class="status-pill" data-status="' + p.status + '"><span class="d"></span>' + STATUS_LABEL[p.status] + '</span></td>' +
+        '<td><div class="fit-cell"><span class="fit-badge ' + fitClass(fit) + '">' + fitShort(fit) + '</span><span class="fit-score">' + score + ' pts</span></div></td>' +
+        '<td><div class="row-sub">' + escapeHtml(p.faixa || '—') + '</div><div class="row-sub">' + escapeHtml(p.uf ? p.uf + ' · ' + UF_REGIAO[p.uf] : '—') + '</div></td>' +
+        '<td><div class="gam-cell"><div class="gam-bar-track"><div class="gam-bar-fill" style="width:' + gam + '%;"></div></div><div class="gam-num">' + gam + ' pts</div>' + bonusPillHtml + '</div></td>' +
+        '<td><span class="row-resp"><span class="avatar">' + p.pesquisador + '</span>' + REP_NAMES[p.pesquisador] + '</span></td>' +
+        '<td><div class="row-actions">' + promoteBtn +
+          '<button class="icon-btn" data-act="edit" title="Editar"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M11 4.5L15.5 9 6 18.5H1.5V14z"/></svg></button>' +
+          '<button class="icon-btn danger" data-act="del" title="Excluir"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 6h12"/><path d="M7.5 6V4.6a1 1 0 011-1h3a1 1 0 011 1V6"/><path d="M6 6l.7 9.4a1 1 0 001 .9h4.6a1 1 0 001-.9L14 6"/></svg></button>' +
+        '</div></td>' +
+      '</tr>';
+  }
+
+  function renderList() {
+    var filtered = LEADS.filter(passesFilter);
+    var tbody = document.getElementById('listBody');
+    document.getElementById('listEmpty').style.display = filtered.length === 0 ? 'block' : 'none';
+    tbody.innerHTML = filtered.map(rowHtml).join('');
+    tbody.querySelectorAll('[data-act="edit"]').forEach(function (btn) { btn.addEventListener('click', function () { openDrawer(btn.closest('tr').getAttribute('data-id')); }); });
+    tbody.querySelectorAll('[data-act="del"]').forEach(function (btn) { btn.addEventListener('click', function () { openDelModal(btn.closest('tr').getAttribute('data-id')); }); });
+    tbody.querySelectorAll('[data-act="promote"]').forEach(function (btn) { btn.addEventListener('click', function () { openPromoteModal(btn.closest('tr').getAttribute('data-id')); }); });
+  }
+
+  document.getElementById('searchInput').addEventListener('input', function (e) { searchQ = e.target.value.trim().toLowerCase(); renderList(); });
+  document.getElementById('statusFilter').addEventListener('change', function (e) { statusFilter = e.target.value; renderList(); });
+  document.getElementById('fitFilter').addEventListener('change', function (e) { fitFilter = e.target.value; renderList(); });
+  document.getElementById('pesquisadorFilter').addEventListener('change', function (e) { respFilter = e.target.value; renderList(); });
+  document.getElementById('onlyBonus').addEventListener('change', function (e) { onlyBonus = e.target.checked; renderList(); });
+
+  /* ---------------- drawer (create/edit) ---------------- */
+  var drawer = document.getElementById('drawer'), scrim = document.getElementById('scrim');
+  var editingId = null;
+
+  function currentFormAsLead() {
+    return {
+      setor: document.getElementById('fldSetor').value,
+      uf: document.getElementById('fldUf').value,
+      faixa: document.getElementById('fldFaixa').value,
+      telefone: document.getElementById('fldTelefone').value.trim(),
+      site: document.getElementById('fldSite').value.trim(),
+      status: document.getElementById('fldStatus').value
+    };
+  }
+  function updateLivePreview() {
+    var p = currentFormAsLead();
+    var score = computeScore(p), fit = computeFit(p), gam = computeGam(p), bonus = recebeBonus(p);
+    document.getElementById('lpScore').textContent = score;
+    document.getElementById('lpFit').textContent = fit;
+    document.getElementById('lpGam').textContent = gam;
+    document.getElementById('lpBonus').textContent = bonus ? 'Sim (' + money(bonusValor(p)) + ')' : 'Não';
+  }
+  ['fldSetor', 'fldUf', 'fldFaixa', 'fldTelefone', 'fldSite', 'fldStatus'].forEach(function (id) {
+    document.getElementById(id).addEventListener('input', updateLivePreview);
+    document.getElementById(id).addEventListener('change', updateLivePreview);
+  });
+
+  function openDrawer(id) {
+    editingId = id || null;
+    var p = id ? LEADS.filter(function (x) { return x.id === id; })[0] : null;
+    document.getElementById('drawerTitle').textContent = p ? 'Editar pesquisa' : 'Nova pesquisa';
+    document.getElementById('drawerSub').textContent = p ? 'Atualize os dados de ' + p.empresa : 'Preencha os dados coletados na pesquisa';
+    document.getElementById('errEmpresa').classList.remove('show');
+    document.getElementById('fldEmpresa').classList.remove('err');
+    var f = {
+      empresa: '', setor: '', segmento: '', uf: '', faixa: '', faturamento: '', telefone: '', site: '', linkedin: '',
+      contato: '', dor: '', status: 'pesquisando', pesquisador: 'FN'
+    };
+    if (p) f = Object.assign({}, f, p);
+    document.getElementById('fldEmpresa').value = f.empresa;
+    document.getElementById('fldSetor').value = f.setor;
+    document.getElementById('fldSegmento').value = f.segmento;
+    document.getElementById('fldUf').value = f.uf;
+    document.getElementById('fldFaixa').value = f.faixa;
+    document.getElementById('fldFaturamento').value = f.faturamento;
+    document.getElementById('fldTelefone').value = f.telefone;
+    document.getElementById('fldSite').value = f.site;
+    document.getElementById('fldLinkedin').value = f.linkedin;
+    document.getElementById('fldContato').value = f.contato;
+    document.getElementById('fldDor').value = f.dor;
+    document.getElementById('fldStatus').value = f.status;
+    document.getElementById('fldPesquisador').value = f.pesquisador;
+    updateLivePreview();
+    drawer.classList.add('show'); scrim.classList.add('show');
+    setTimeout(function () { document.getElementById('fldEmpresa').focus(); }, 220);
+  }
+  function closeDrawer() { drawer.classList.remove('show'); scrim.classList.remove('show'); }
+  document.getElementById('newLeadBtn').addEventListener('click', function () { openDrawer(null); });
+  document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+  document.getElementById('drawerCancel').addEventListener('click', closeDrawer);
+  scrim.addEventListener('click', closeDrawer);
+
+  document.getElementById('drawerSave').addEventListener('click', function () {
+    var empresa = document.getElementById('fldEmpresa').value.trim();
+    if (!empresa) {
+      document.getElementById('errEmpresa').classList.add('show');
+      document.getElementById('fldEmpresa').classList.add('err');
+      return;
+    }
+    var payload = {
+      empresa: empresa,
+      setor: document.getElementById('fldSetor').value,
+      segmento: document.getElementById('fldSegmento').value.trim(),
+      uf: document.getElementById('fldUf').value,
+      faixa: document.getElementById('fldFaixa').value,
+      faturamento: document.getElementById('fldFaturamento').value.trim(),
+      telefone: document.getElementById('fldTelefone').value.trim(),
+      site: document.getElementById('fldSite').value.trim(),
+      linkedin: document.getElementById('fldLinkedin').value.trim(),
+      contato: document.getElementById('fldContato').value.trim(),
+      dor: document.getElementById('fldDor').value.trim(),
+      status: document.getElementById('fldStatus').value,
+      pesquisador: document.getElementById('fldPesquisador').value
+    };
+    if (editingId) {
+      var idx = LEADS.findIndex(function (x) { return x.id === editingId; });
+      LEADS[idx] = Object.assign({ id: editingId }, payload);
+      showToast('Pesquisa "' + empresa + '" atualizada.');
+    } else {
+      seq++;
+      payload.id = 'p' + seq;
+      LEADS.push(payload);
+      showToast('Pesquisa "' + empresa + '" criada.');
+    }
+    closeDrawer();
+    renderList(); recalcStats();
+  });
+
+  /* ---------------- criteria drawer ---------------- */
+  var critDrawer = document.getElementById('critDrawer'), critScrim = document.getElementById('critScrim');
+  function renderRuleTable(containerId, map, unit) {
+    var el = document.getElementById(containerId);
+    el.innerHTML = Object.keys(map).map(function (k) {
+      return '<div class="rule-row"><span>' + escapeHtml(k) + '</span><input type="number" data-key="' + escapeHtml(k) + '" value="' + map[k] + '" /></div>';
+    }).join('');
+  }
+  function openCriteria() {
+    renderRuleTable('ruleSetor', RULES.setor);
+    renderRuleTable('ruleRegiao', RULES.regiao);
+    renderRuleTable('ruleFaixa', RULES.faixa);
+    document.getElementById('ruleCorteA').value = RULES.corteA;
+    document.getElementById('ruleCorteB').value = RULES.corteB;
+    document.getElementById('ruleCorteC').value = RULES.corteC;
+    document.getElementById('ruleBonusValor').value = RULES.bonusValor;
+    critDrawer.classList.add('show'); critScrim.classList.add('show');
+  }
+  function closeCriteria() { critDrawer.classList.remove('show'); critScrim.classList.remove('show'); }
+  document.getElementById('criteriaBtn').addEventListener('click', openCriteria);
+  document.getElementById('critClose').addEventListener('click', closeCriteria);
+  document.getElementById('critCancel').addEventListener('click', closeCriteria);
+  critScrim.addEventListener('click', closeCriteria);
+  document.getElementById('critSave').addEventListener('click', function () {
+    ['ruleSetor', 'ruleRegiao', 'ruleFaixa'].forEach(function (containerId, i) {
+      var target = i === 0 ? RULES.setor : i === 1 ? RULES.regiao : RULES.faixa;
+      document.getElementById(containerId).querySelectorAll('input').forEach(function (inp) {
+        var v = parseInt(inp.value, 10);
+        target[inp.getAttribute('data-key')] = isNaN(v) ? 0 : v;
+      });
+    });
+    RULES.corteA = parseInt(document.getElementById('ruleCorteA').value, 10) || 80;
+    RULES.corteB = parseInt(document.getElementById('ruleCorteB').value, 10) || 70;
+    RULES.corteC = parseInt(document.getElementById('ruleCorteC').value, 10) || 40;
+    RULES.bonusValor = parseFloat(document.getElementById('ruleBonusValor').value) || 0;
+    closeCriteria();
+    renderList(); recalcStats();
+    showToast('Critérios atualizados — ' + LEADS.length + ' pesquisas recalculadas.');
+  });
+
+  /* ---------------- delete ---------------- */
+  var delModal = document.getElementById('delModal'), delScrim = document.getElementById('delScrim');
+  var deletingId = null;
+  function openDelModal(id) {
+    var p = LEADS.filter(function (x) { return x.id === id; })[0];
+    if (!p) return;
+    deletingId = id;
+    document.getElementById('delLeadName').textContent = p.empresa;
+    delModal.classList.add('show'); delScrim.classList.add('show');
+  }
+  function closeDelModal() { delModal.classList.remove('show'); delScrim.classList.remove('show'); deletingId = null; }
+  document.getElementById('delCancel').addEventListener('click', closeDelModal);
+  delScrim.addEventListener('click', closeDelModal);
+  document.getElementById('delConfirm').addEventListener('click', function () {
+    var p = LEADS.filter(function (x) { return x.id === deletingId; })[0];
+    LEADS = LEADS.filter(function (x) { return x.id !== deletingId; });
+    closeDelModal();
+    renderList(); recalcStats();
+    if (p) showToast('Pesquisa "' + p.empresa + '" excluída.');
+  });
+
+  /* ---------------- promote ---------------- */
+  var promoteModal = document.getElementById('promoteModal'), promoteScrim = document.getElementById('promoteScrim');
+  var promotingId = null;
+  function openPromoteModal(id) {
+    var p = LEADS.filter(function (x) { return x.id === id; })[0];
+    if (!p) return;
+    promotingId = id;
+    document.getElementById('promoteLeadName').textContent = p.empresa;
+    promoteModal.classList.add('show'); promoteScrim.classList.add('show');
+  }
+  function closePromoteModal() { promoteModal.classList.remove('show'); promoteScrim.classList.remove('show'); promotingId = null; }
+  document.getElementById('promoteCancel').addEventListener('click', closePromoteModal);
+  promoteScrim.addEventListener('click', closePromoteModal);
+  document.getElementById('promoteConfirm').addEventListener('click', function () {
+    var p = LEADS.filter(function (x) { return x.id === promotingId; })[0];
+    if (p) p.status = 'promovido';
+    closePromoteModal();
+    renderList(); recalcStats();
+    if (p) showToast('"' + escapeHtml(p.empresa) + '" promovida para Empresas — bônus de ' + escapeHtml(REP_NAMES[p.pesquisador]) + ' agora é válido. <a href="' + COMPANY_PROFILE_URL + '" target="_blank" rel="noopener">Ver em Empresas</a>');
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { closeDrawer(); closeCriteria(); closeDelModal(); closePromoteModal(); }
+  });
+
+  recalcStats();
+  renderList();
+})();
+</script>

@@ -1,0 +1,86 @@
+import { useState } from 'react'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { createSequenceEnrollment, listSequences } from '../api/sequences'
+import { createCadenceEnrollment, listCadences } from '../api/cadences'
+import './EnrollModal.css'
+
+// Modal compartilhado por Empresa/Negócio/Contato (individual ou em lote) para inscrever
+// em uma Sequência ou Cadência já cadastrada (ver SequenciasPage/CadenciasPage).
+// `alvos` é uma lista de { company_id } | { contact_id } | { deal_id } — um item pro caso
+// de uma tela de detalhe, vários pro caso de seleção em lote numa lista.
+export default function EnrollModal({ alvos, alvoLabel, onClose, onEnrolled }) {
+  const [tipo, setTipo] = useState('sequencia')
+  const [selectedId, setSelectedId] = useState('')
+  const [touched, setTouched] = useState(false)
+
+  const sequencesQuery = useQuery({ queryKey: ['sequences', 'for-enroll'], queryFn: () => listSequences({ size: 100 }) })
+  const cadencesQuery = useQuery({ queryKey: ['cadences', 'for-enroll'], queryFn: () => listCadences({ size: 100 }) })
+  const sequences = (sequencesQuery.data?.items ?? []).filter((s) => s.ativo)
+  const cadences = (cadencesQuery.data?.items ?? []).filter((c) => c.ativo)
+  const options = tipo === 'sequencia' ? sequences : cadences
+
+  const enrollMutation = useMutation({
+    mutationFn: () => Promise.all(alvos.map((alvo) => (
+      tipo === 'sequencia'
+        ? createSequenceEnrollment(selectedId, alvo)
+        : createCadenceEnrollment(selectedId, alvo)
+    ))),
+    onSuccess: () => { onEnrolled?.(); onClose() },
+  })
+
+  function handleTipoChange(next) {
+    setTipo(next)
+    setSelectedId('')
+    setTouched(false)
+  }
+
+  function handleConfirm() {
+    setTouched(true)
+    if (!selectedId) return
+    enrollMutation.mutate()
+  }
+
+  return (
+    <div className="scrim show" onClick={onClose}>
+      <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+        <h3>Inscrever em automação</h3>
+        <p className="sub">Inscrever <strong>{alvoLabel}</strong> em uma sequência de tarefas ou cadência de e-mail.</p>
+
+        <div className="f-group">
+          <label className="f-label">Tipo</label>
+          <div className="tipo-toggle">
+            <button type="button" className={`tipo-btn${tipo === 'sequencia' ? ' active' : ''}`} onClick={() => handleTipoChange('sequencia')}>Sequência</button>
+            <button type="button" className={`tipo-btn${tipo === 'cadencia' ? ' active' : ''}`} onClick={() => handleTipoChange('cadencia')}>Cadência</button>
+          </div>
+        </div>
+
+        <div className="f-group">
+          <label className="f-label">{tipo === 'sequencia' ? 'Sequência' : 'Cadência'}</label>
+          <select className={`f-select${touched && !selectedId ? ' err' : ''}`} value={selectedId} onChange={(e) => setSelectedId(e.target.value)}>
+            <option value="">Selecione…</option>
+            {options.map((o) => <option key={o.id} value={o.id}>{o.nome}</option>)}
+          </select>
+          {options.length === 0 && (
+            <span className="f-hint">
+              Nenhuma {tipo === 'sequencia' ? 'sequência ativa' : 'cadência ativa'} cadastrada ainda.
+            </span>
+          )}
+          {touched && !selectedId && <span className="f-err show">Selecione {tipo === 'sequencia' ? 'uma sequência' : 'uma cadência'}.</span>}
+        </div>
+
+        {enrollMutation.isError && (
+          <p className="state-msg error">
+            {enrollMutation.error?.response?.data?.error?.message ?? 'Não foi possível inscrever. Tente de novo.'}
+          </p>
+        )}
+
+        <div className="row">
+          <button className="btn-ghost" onClick={onClose}>Cancelar</button>
+          <button className="btn-primary" disabled={enrollMutation.isPending} onClick={handleConfirm}>
+            {enrollMutation.isPending ? 'Inscrevendo…' : 'Inscrever'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}

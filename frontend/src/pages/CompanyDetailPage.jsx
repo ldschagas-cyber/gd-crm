@@ -1,0 +1,357 @@
+import { useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { getCompany, setCompanyStatus, updateCompany } from '../api/companies'
+import { listContacts, createContact } from '../api/contacts'
+import { listDeals } from '../api/deals'
+import { listTasks, completeTask } from '../api/tasks'
+import { listTimeline, addTimelineNote } from '../api/timeline'
+import { getContactEmails } from '../api/contacts'
+import { listUsers } from '../api/users'
+import { CompanyModal } from './EmpresasPage.jsx'
+import { ContactModal } from './ContatosPage.jsx'
+import EnrollModal from '../components/EnrollModal.jsx'
+import TimelineComposer from '../components/TimelineComposer.jsx'
+import '../styles/dataTable.css'
+import '../styles/detailPage.css'
+import './CompanyDetailPage.css'
+
+const STATUS_LABEL = { lead: 'Lead', qualificado: 'Qualificado', cliente: 'Cliente', perdido: 'Perdido', inativo: 'Inativo' }
+const FILTER_CHIPS = [
+  { key: 'all', label: 'Tudo' },
+  { key: 'ligacao', label: 'Ligações' },
+  { key: 'email', label: 'E-mails' },
+  { key: 'reuniao', label: 'Reuniões' },
+  { key: 'pipeline', label: 'Negócios' },
+  { key: 'nota', label: 'Notas' },
+]
+
+function initials(nome) {
+  if (!nome) return '?'
+  const parts = nome.trim().split(/\s+/)
+  return (parts[0][0] + (parts[1]?.[0] ?? '')).toUpperCase()
+}
+function formatCurrency(v) {
+  return v == null ? '—' : v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })
+}
+
+export default function CompanyDetailPage() {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [showNewContact, setShowNewContact] = useState(false)
+  const [showEnrollModal, setShowEnrollModal] = useState(false)
+  const [timelineFilter, setTimelineFilter] = useState('all')
+  const [emailsContactId, setEmailsContactId] = useState('')
+
+  const companyQuery = useQuery({ queryKey: ['companies', 'detail', id], queryFn: () => getCompany(id) })
+  const usersQuery = useQuery({ queryKey: ['users', 'for-assign'], queryFn: () => listUsers({ size: 100 }), retry: false })
+  const timelineQuery = useQuery({ queryKey: ['timeline', id], queryFn: () => listTimeline(id) })
+  const contactsQuery = useQuery({ queryKey: ['contacts', 'mini', id], queryFn: () => listContacts({ companyId: id, size: 5 }) })
+  const dealsQuery = useQuery({ queryKey: ['deals', 'mini', id], queryFn: () => listDeals({ companyId: id, size: 5 }) })
+  const tasksQuery = useQuery({ queryKey: ['tasks', 'mini', id], queryFn: () => listTasks({ companyId: id, size: 5 }) })
+  const emailsQuery = useQuery({
+    queryKey: ['contact-emails', emailsContactId],
+    queryFn: () => getContactEmails(emailsContactId),
+    enabled: false,
+  })
+
+  const usersById = Object.fromEntries((usersQuery.data?.items ?? []).map((u) => [u.id, u.nome]))
+
+  const statusMutation = useMutation({
+    mutationFn: (status) => setCompanyStatus(id, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['companies', 'detail', id] })
+      queryClient.invalidateQueries({ queryKey: ['timeline', id] })
+    },
+  })
+  const updateMutation = useMutation({
+    mutationFn: (data) => updateCompany(id, data),
+    onSuccess: () => {
+      setShowEditModal(false)
+      queryClient.invalidateQueries({ queryKey: ['companies', 'detail', id] })
+    },
+  })
+  const noteMutation = useMutation({
+    mutationFn: (data) => addTimelineNote(id, data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['timeline', id] }),
+  })
+  const createContactMutation = useMutation({
+    mutationFn: createContact,
+    onSuccess: () => {
+      setShowNewContact(false)
+      queryClient.invalidateQueries({ queryKey: ['contacts', 'mini', id] })
+    },
+  })
+  const completeTaskMutation = useMutation({
+    mutationFn: completeTask,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tasks', 'mini', id] }),
+  })
+
+  if (companyQuery.isLoading) return <div className="content"><p className="state-msg">Carregando…</p></div>
+  if (companyQuery.isError) return <div className="content"><p className="state-msg error">Empresa não encontrada.</p></div>
+
+  const company = companyQuery.data
+  const timelineItems = (timelineQuery.data?.items ?? []).filter(
+    (e) => timelineFilter === 'all' || e.tipo === timelineFilter,
+  )
+
+  return (
+    <>
+      <header className="topbar">
+        <div className="breadcrumb">
+          <Link to="/empresas">Empresas</Link>
+          <span>/</span>
+          <span className="current">{company.razao_social}</span>
+        </div>
+      </header>
+
+      <div className="content">
+        <section className="card co-header">
+          <div className="co-header-top">
+            <div className="co-logo">{initials(company.razao_social)}</div>
+            <div className="co-title-block">
+              <div className="co-title-row">
+                <h1>{company.razao_social}</h1>
+                <div className="status-select-wrap">
+                  <span className="dot" />
+                  <select
+                    className="status-select"
+                    data-status={company.status}
+                    value={company.status}
+                    onChange={(e) => statusMutation.mutate(e.target.value)}
+                  >
+                    {Object.entries(STATUS_LABEL).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                  </select>
+                </div>
+              </div>
+              {company.nome_fantasia && <p className="co-sub">{company.nome_fantasia}</p>}
+              <div className="co-tags">
+                {company.segmento && <span className="tag">{company.segmento}</span>}
+                {company.porte && <span className="tag">{company.porte}</span>}
+                {company.origem && <span className="tag">{company.origem}</span>}
+              </div>
+            </div>
+            <div className="co-actions">
+              <button className="btn-ghost" onClick={() => setShowEnrollModal(true)}>Inscrever</button>
+              <button className="btn-ghost" onClick={() => setShowEditModal(true)}>Editar</button>
+            </div>
+          </div>
+
+          <dl className="key-facts">
+            <div className="fact"><dt>CNPJ</dt><dd>{company.cnpj ?? '—'}</dd></div>
+            <div className="fact"><dt>Site</dt><dd>{company.site ? <a href={company.site.startsWith('http') ? company.site : `https://${company.site}`} target="_blank" rel="noopener noreferrer">{company.site}</a> : '—'}</dd></div>
+            <div className="fact"><dt>Telefone</dt><dd>{company.telefone ?? '—'}</dd></div>
+            <div className="fact"><dt>E-mail</dt><dd>{company.email ?? '—'}</dd></div>
+            <div className="fact"><dt>Localização</dt><dd>{company.cidade ? `${company.cidade}, ${company.uf ?? ''}` : '—'}</dd></div>
+            <div className="fact"><dt>Funcionários</dt><dd>{company.num_funcionarios?.toLocaleString('pt-BR') ?? '—'}</dd></div>
+            <div className="fact"><dt>Faturamento estimado</dt><dd>{formatCurrency(company.faturamento_estimado)}</dd></div>
+            <div className="fact resp"><dt>Responsável</dt><dd>{company.responsavel_id ? (usersById[company.responsavel_id] ?? '—') : '—'}</dd></div>
+          </dl>
+        </section>
+
+        <section className="grid-main">
+          <div className="col">
+            <div className="card">
+              <div className="card-head"><div><h3>Timeline</h3><p>Todo o histórico de interações com esta empresa</p></div></div>
+
+              <div className="filter-row">
+                {FILTER_CHIPS.map((f) => (
+                  <button key={f.key} className={`filter-chip${timelineFilter === f.key ? ' active' : ''}`} onClick={() => setTimelineFilter(f.key)}>
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+
+              <TimelineComposer
+                placeholder="Registre uma nota, o resumo de uma ligação, e-mail ou reunião..."
+                submitting={noteMutation.isPending}
+                onSubmit={(payload, reset) => noteMutation.mutate(payload, { onSuccess: reset })}
+              />
+
+              <div className="timeline">
+                {timelineQuery.isLoading && <p className="state-msg">Carregando…</p>}
+                {timelineItems.map((e) => (
+                  <div className="tl-item" key={e.id}>
+                    <div className={`tl-icon t-${e.tipo}`}>{tipoGlyph(e.tipo)}</div>
+                    <div className="tl-body">
+                      <div className="tl-title">
+                        {e.titulo}
+                        {e.evento_meta?.enviado && <span className="tl-tag ok">Enviado</span>}
+                        {e.evento_meta?.teams_join_url && <span className="tl-tag teams">Teams</span>}
+                      </div>
+                      {e.descricao && <div className="tl-desc">{e.descricao}</div>}
+                      {e.evento_meta?.teams_join_url && (
+                        <a className="tl-teams-link" href={e.evento_meta.teams_join_url} target="_blank" rel="noopener noreferrer">
+                          Entrar na reunião do Teams
+                        </a>
+                      )}
+                      <div className="tl-meta">
+                        {e.user_id && <span className="who">{usersById[e.user_id] ?? ''}</span>}
+                        <span>{new Date(e.created_at).toLocaleString('pt-BR')}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {timelineQuery.data && timelineItems.length === 0 && (
+                  <p className="state-msg">Nenhum evento com esse filtro.</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="col">
+            <div className="card">
+              <div className="card-head">
+                <div><h3>Contatos</h3></div>
+                <Link className="link-action" to={`/contatos?empresa=${id}`}>Ver todos</Link>
+              </div>
+              <div className="mini-list">
+                {(contactsQuery.data?.items ?? []).map((c) => (
+                  <div className="mini-row" key={c.id}>
+                    <span className="avatar">{initials(c.nome)}</span>
+                    <div className="mini-main">
+                      <div className="mini-title">{c.nome}</div>
+                      <div className="mini-sub">{c.cargo ?? '—'}</div>
+                    </div>
+                  </div>
+                ))}
+                {contactsQuery.data && contactsQuery.data.items.length === 0 && (
+                  <p className="state-msg">Nenhum contato ainda.</p>
+                )}
+              </div>
+              <div className="add-row-btn" onClick={() => setShowNewContact(true)}>+ Novo contato</div>
+            </div>
+
+            <div className="card">
+              <div className="card-head"><div><h3>E-mails trocados</h3><p>Busca sob demanda na sua caixa conectada</p></div></div>
+              <div className="card-body">
+                <div className="f-row" style={{ gap: 8 }}>
+                  <select
+                    className="f-select"
+                    value={emailsContactId}
+                    onChange={(e) => { setEmailsContactId(e.target.value); }}
+                  >
+                    <option value="">Selecione um contato…</option>
+                    {(contactsQuery.data?.items ?? []).filter((c) => c.email).map((c) => (
+                      <option key={c.id} value={c.id}>{c.nome}</option>
+                    ))}
+                  </select>
+                  <button
+                    className="btn-ghost"
+                    disabled={!emailsContactId || emailsQuery.isFetching}
+                    onClick={() => emailsQuery.refetch()}
+                  >
+                    {emailsQuery.isFetching ? 'Buscando…' : 'Buscar e-mails'}
+                  </button>
+                </div>
+                {emailsQuery.isError && (
+                  <p className="state-msg error">{emailsQuery.error?.response?.data?.error?.message ?? 'Não foi possível buscar.'}</p>
+                )}
+                {emailsQuery.data && (
+                  <div className="email-lookup-list">
+                    {emailsQuery.data.map((m, i) => (
+                      <div className="email-lookup-row" key={i}>
+                        <span className={`email-lookup-dir ${m.direcao}`}>{m.direcao === 'enviado' ? '↑' : '↓'}</span>
+                        <div className="email-lookup-main">
+                          <div className="email-lookup-subj">{m.assunto}</div>
+                          <div className="email-lookup-snip">{m.resumo}</div>
+                        </div>
+                        {m.quando && <div className="email-lookup-when">{new Date(m.quando).toLocaleDateString('pt-BR')}</div>}
+                      </div>
+                    ))}
+                    {emailsQuery.data.length === 0 && <p className="state-msg">Nenhum e-mail encontrado com este contato.</p>}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="card-head">
+                <div><h3>Negócios</h3></div>
+                <Link className="link-action" to="/negocios">Ver todos</Link>
+              </div>
+              <div className="mini-list">
+                {(dealsQuery.data?.items ?? []).map((d) => (
+                  <div className="mini-row" key={d.id}>
+                    <div className="mini-main">
+                      <div className="mini-title">{d.nome}</div>
+                      <span className={`deal-status-pill deal-status-${d.status}`}>{d.status}</span>
+                    </div>
+                    <div className="mini-val">{formatCurrency(d.valor_previsto)}</div>
+                  </div>
+                ))}
+                {dealsQuery.data && dealsQuery.data.items.length === 0 && (
+                  <p className="state-msg">Nenhum negócio ainda.</p>
+                )}
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="card-head">
+                <div><h3>Próximas tarefas</h3></div>
+                <Link className="link-action" to="/tarefas">Ver agenda</Link>
+              </div>
+              <div className="task-list">
+                {(tasksQuery.data?.items ?? []).map((t) => (
+                  <div className={`task-item${t.status === 'concluida' ? ' done' : ''}`} key={t.id}>
+                    <button
+                      className="task-check"
+                      onClick={() => t.status !== 'concluida' && completeTaskMutation.mutate(t.id)}
+                    >
+                      {t.status === 'concluida' && '✓'}
+                    </button>
+                    <div>
+                      <div className="task-title">{t.titulo}</div>
+                      <div className="task-meta">{new Date(t.data).toLocaleDateString('pt-BR')}{t.hora ? ` às ${t.hora}` : ''} · {t.prioridade}</div>
+                    </div>
+                  </div>
+                ))}
+                {tasksQuery.data && tasksQuery.data.items.length === 0 && (
+                  <p className="state-msg">Nenhuma tarefa vinculada.</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      {showEditModal && (
+        <CompanyModal
+          company={company}
+          users={usersQuery.data?.items ?? []}
+          usersError={usersQuery.isError}
+          onClose={() => setShowEditModal(false)}
+          onSubmit={(data) => updateMutation.mutate(data)}
+          submitting={updateMutation.isPending}
+          error={updateMutation.error}
+        />
+      )}
+
+      {showNewContact && (
+        <ContactModal
+          contact={{ company_id: id }}
+          companies={[company]}
+          onClose={() => setShowNewContact(false)}
+          onSubmit={(data) => createContactMutation.mutate({ ...data, company_id: id })}
+          submitting={createContactMutation.isPending}
+          error={createContactMutation.error}
+        />
+      )}
+
+      {showEnrollModal && (
+        <EnrollModal
+          alvos={[{ company_id: id }]}
+          alvoLabel={company.razao_social}
+          onClose={() => setShowEnrollModal(false)}
+        />
+      )}
+    </>
+  )
+}
+
+function tipoGlyph(tipo) {
+  const map = { nota: '📝', ligacao: '📞', email: '✉️', reuniao: '📅', pipeline: '📈', tarefa: '✔️', cadastro: '●' }
+  return map[tipo] ?? '●'
+}

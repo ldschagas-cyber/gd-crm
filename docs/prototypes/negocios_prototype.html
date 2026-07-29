@@ -1,0 +1,1233 @@
+<title>Negócios — GD Conecta CRM</title>
+<style>
+  /* Font note: real product should self-host IBM Plex Sans/Mono; CDN fonts are blocked
+     in this artifact sandbox, so a close system-grotesque stack stands in here. */
+  :root {
+    --font-display: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Cascadia Code", "SFMono-Regular", "Consolas", ui-monospace, monospace;
+
+    --indigo: #2D3561;
+    --indigo-600: #3B4478;
+    --amber: #C9A84C;
+    --azul: #0077A8;
+    --marfim: #F5F1EB;
+
+    --paper: var(--marfim);
+    --panel: var(--indigo);
+    --panel-fg: #F1EEE6;
+    --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12);
+    --panel-active-bg: rgba(201, 168, 76, 0.14);
+
+    --ink: #22243A;
+    --ink-dim: #5B5E78;
+    --ink-faint: #8B8EA6;
+    --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF;
+    --accent: var(--amber);
+    --link: var(--azul);
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+
+    --good: #0ca30c;
+    --warning: #fab219;
+    --serious: #ec835a;
+    --critical: #d03b3b;
+
+    --seq-1: #86b6ef;
+    --seq-2: #5598e7;
+    --seq-3: #2a78d6;
+    --seq-4: #1c5cab;
+    --seq-5: #104281;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+      --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+      --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+      --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+      --seq-1: #9ec5f4; --seq-2: #6da7ec; --seq-3: #3987e5; --seq-4: #256abf; --seq-5: #184f95;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+    --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+    --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+    --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+    --seq-1: #9ec5f4; --seq-2: #6da7ec; --seq-3: #3987e5; --seq-4: #256abf; --seq-5: #184f95;
+  }
+  :root[data-theme="light"] {
+    --paper: #F5F1EB; --panel: #2D3561; --panel-fg: #F1EEE6; --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12); --panel-active-bg: rgba(201, 168, 76, 0.14);
+    --ink: #22243A; --ink-dim: #5B5E78; --ink-faint: #8B8EA6; --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF; --amber: #C9A84C; --azul: #0077A8; --link: #0077A8;
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+    --seq-1: #86b6ef; --seq-2: #5598e7; --seq-3: #2a78d6; --seq-4: #1c5cab; --seq-5: #104281;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; font-family: var(--font-display); color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; }
+  button, input, select, textarea { font-family: inherit; }
+  a { color: inherit; }
+  ::selection { background: rgba(201,168,76,.3); }
+  :focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; border-radius: 4px; }
+
+  .shell { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+
+  /* ---------------- Sidebar (matches Empresas/Dashboard) ---------------- */
+  .sidebar { background: var(--panel); color: var(--panel-fg); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+  .sb-brand { display: flex; align-items: center; gap: 10px; padding: 20px 18px 16px; }
+  .monogram { width: 34px; height: 34px; border-radius: 9px; flex: none; background: var(--amber); color: var(--indigo); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+  .sb-brand strong { display: block; font-size: 14.5px; font-weight: 650; line-height: 1.2; }
+  .sb-brand span { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--panel-fg-dim); margin-top: 2px; }
+  .sb-nav { flex: 1; overflow-y: auto; padding: 10px 12px; }
+  .sb-group + .sb-group { margin-top: 18px; }
+  .sb-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--panel-fg-dim); padding: 0 10px; margin-bottom: 6px; }
+  .sb-item { display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: 8px; margin-bottom: 2px; font-size: 13.6px; font-weight: 500; color: var(--panel-fg-dim); text-decoration: none; cursor: pointer; border: 1px solid transparent; position: relative; }
+  .sb-item svg { width: 17px; height: 17px; flex: none; opacity: 0.9; }
+  .sb-item:hover { background: rgba(241, 238, 230, 0.06); color: var(--panel-fg); }
+  .sb-item.active { background: var(--panel-active-bg); color: var(--panel-fg); font-weight: 650; }
+  .sb-item.active::before { content: ""; position: absolute; left: -12px; top: 6px; bottom: 6px; width: 3px; background: var(--amber); border-radius: 2px; }
+  .sb-item .chip { margin-left: auto; font-family: var(--font-mono); font-size: 10px; background: rgba(241,238,230,0.12); color: var(--panel-fg-dim); padding: 1px 6px; border-radius: 100px; }
+  .sb-user { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-top: 1px solid var(--panel-border); }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; flex: none; background: rgba(201,168,76,0.18); color: var(--amber); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; border: 1px solid rgba(201,168,76,0.3); }
+  .sb-user-meta { min-width: 0; flex: 1; }
+  .sb-user-meta strong { display: block; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-user-meta span { display: block; font-size: 11px; color: var(--panel-fg-dim); }
+
+  /* ---------------- Main column ---------------- */
+  .main-col { display: flex; flex-direction: column; min-width: 0; }
+  .content { padding: 22px 28px 48px; display: flex; flex-direction: column; gap: 16px; }
+
+  .page-head { display: flex; align-items: flex-start; gap: 16px; }
+  .page-head h1 { margin: 0; font-size: 20px; font-weight: 650; letter-spacing: -0.01em; }
+  .page-head p { margin: 3px 0 0; font-size: 12.5px; color: var(--ink-dim); }
+  .page-head p .mono { font-family: var(--font-mono); color: var(--ink); font-weight: 500; }
+  .page-actions { margin-left: auto; display: flex; gap: 8px; flex: none; }
+
+  .btn-primary { display: flex; align-items: center; gap: 7px; background: var(--indigo); color: var(--panel-fg); border: 1px solid var(--indigo); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-primary:hover { background: var(--indigo-600); }
+  .btn-primary svg { width: 14px; height: 14px; }
+  .btn-ghost { display: flex; align-items: center; gap: 7px; background: var(--card-bg); color: var(--ink); border: 1px solid var(--border); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-ghost:hover { border-color: var(--ink-faint); }
+  .btn-ghost svg { width: 14px; height: 14px; }
+  .btn-danger { display: flex; align-items: center; gap: 7px; background: var(--critical); color: #fff; border: 1px solid var(--critical); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-danger:hover { filter: brightness(0.94); }
+
+  /* filters bar */
+  .filters-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .search { display: flex; align-items: center; gap: 8px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 9px; padding: 8px 12px; color: var(--ink-faint); flex: 1; min-width: 200px; max-width: 320px; }
+  .search svg { width: 15px; height: 15px; flex: none; }
+  .search input { border: none; outline: none; background: transparent; font-size: 13px; color: var(--ink); width: 100%; }
+  .search input::placeholder { color: var(--ink-faint); }
+
+  .filter-select-wrap { position: relative; }
+  .filter-select { appearance: none; font-size: 13px; color: var(--ink); background: var(--card-bg); border: 1px solid var(--border); border-radius: 9px; padding: 8px 28px 8px 12px; cursor: pointer; }
+  .filter-select-wrap svg { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); width: 11px; height: 11px; pointer-events: none; color: var(--ink-faint); }
+
+  .segmented { display: inline-flex; gap: 3px; padding: 3px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; margin-left: auto; flex: none; }
+  .segmented button { border: none; background: transparent; padding: 6px 12px; border-radius: 7px; font-size: 12.5px; font-weight: 600; color: var(--ink-dim); cursor: pointer; display: flex; align-items: center; gap: 6px; }
+  .segmented button svg { width: 13px; height: 13px; }
+  .segmented button.active { background: var(--indigo); color: var(--panel-fg); }
+  .segmented button:not(.active):hover { color: var(--ink); }
+
+  .result-count { font-size: 12px; color: var(--ink-faint); }
+
+  /* ---------------- Kanban ---------------- */
+  .kanban-scroll { overflow-x: auto; padding-bottom: 6px; }
+  .kanban { display: flex; gap: 14px; align-items: flex-start; min-width: min-content; }
+  .kb-col { width: 268px; flex: none; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); display: flex; flex-direction: column; max-height: calc(100vh - 210px); }
+  .kb-col-head { display: flex; align-items: center; gap: 8px; padding: 12px 13px; border-bottom: 1px solid var(--border); }
+  .kb-col-title { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 650; flex: 1; min-width: 0; }
+  .kb-col-title .d { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .kb-col-title .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .kb-col-count { font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; color: var(--ink-dim); background: var(--paper); border: 1px solid var(--border); border-radius: 100px; min-width: 19px; height: 19px; padding: 0 5px; display: flex; align-items: center; justify-content: center; flex: none; }
+  .kb-col-value { padding: 8px 13px 0; font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); }
+  .kb-col-body { padding: 10px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 8px; min-height: 90px; transition: background-color 100ms ease; }
+  .kb-col-body.drag-over { background: rgba(0,119,168,0.07); }
+  .kb-card { background: var(--paper); border: 1px solid var(--border); border-left: 3px solid var(--border); border-radius: 9px; padding: 10px 11px; cursor: grab; transition: transform 120ms ease, box-shadow 120ms ease, opacity 150ms ease; }
+  .kb-card:active { cursor: grabbing; }
+  .kb-card.dragging { opacity: 0.35; }
+  .kb-card.stalled { border-left-color: var(--serious); }
+  .kb-card.leaving { transform: scale(0.94); opacity: 0; }
+  .kb-card-name { font-size: 12.8px; font-weight: 650; color: var(--ink); }
+  .kb-card-company { font-size: 11px; color: var(--link); margin-top: 2px; cursor: pointer; }
+  .kb-card-company:hover { text-decoration: underline; }
+  .kb-card-value { font-family: var(--font-mono); font-size: 13px; font-weight: 650; color: var(--ink); margin-top: 7px; }
+  .kb-card-meta { display: flex; align-items: center; gap: 6px; margin-top: 5px; font-size: 11px; color: var(--ink-faint); }
+  .kb-card-meta svg { width: 11px; height: 11px; flex: none; }
+  .kb-card-stall { display: flex; align-items: center; gap: 5px; margin-top: 7px; padding: 5px 7px; background: rgba(236,131,90,0.12); color: var(--serious); border-radius: 6px; font-size: 10.5px; font-weight: 650; }
+  .kb-card-stall svg { width: 12px; height: 12px; flex: none; }
+  .kb-card-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 9px; padding-top: 8px; border-top: 1px solid var(--border); }
+  .kb-card-foot .avatar { width: 20px; height: 20px; font-size: 9px; }
+  .kb-card-prob { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-dim); }
+  .kb-card-tools { display: flex; gap: 2px; opacity: 0; transition: opacity 120ms ease; }
+  .kb-card:hover .kb-card-tools, .kb-card:focus-within .kb-card-tools { opacity: 1; }
+  .kb-card-tools button { width: 22px; height: 22px; border-radius: 6px; border: none; background: transparent; color: var(--ink-faint); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .kb-card-tools button:hover { background: var(--card-bg); color: var(--ink); }
+  .kb-card-tools button.won:hover { color: var(--good); }
+  .kb-card-tools button.lost:hover { color: var(--critical); }
+  .kb-card-tools button svg { width: 13px; height: 13px; }
+  .kb-col-more { font-size: 11px; color: var(--link); text-align: center; padding: 6px 0 2px; cursor: pointer; background: none; border: none; width: 100%; font-weight: 600; }
+  .kb-col-more:hover { text-decoration: underline; }
+
+  /* ---------------- List view (reuses Empresas table language) ---------------- */
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+  .table-scroll { overflow-x: auto; }
+  table.data { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 780px; }
+  table.data th { text-align: left; font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); font-weight: 600; padding: 10px 18px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  table.data th.sortable { cursor: pointer; user-select: none; }
+  table.data th.sortable:hover { color: var(--ink-dim); }
+  table.data th.sortable .sort-icon { display: inline-flex; margin-left: 4px; vertical-align: middle; opacity: 0.55; }
+  table.data th.sortable .sort-icon svg { width: 10px; height: 10px; }
+  table.data th.sortable.sort-active .sort-icon { opacity: 1; color: var(--azul); }
+  table.data td { padding: 11px 18px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  table.data tbody tr:last-child td { border-bottom: none; }
+  table.data tbody tr:hover { background: color-mix(in srgb, var(--paper) 55%, transparent); }
+  .row-title { font-weight: 600; color: var(--ink); }
+  .row-sub { font-size: 11.5px; color: var(--link); margin-top: 1px; cursor: pointer; }
+  .row-sub:hover { text-decoration: underline; }
+  .row-resp { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--ink-dim); }
+  .row-resp .avatar { width: 22px; height: 22px; font-size: 9.5px; }
+  .cell-value { font-family: var(--font-mono); font-weight: 650; text-align: right; white-space: nowrap; }
+  .stage-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink); white-space: nowrap; }
+  .stage-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+  .updated { color: var(--ink-faint); font-size: 12px; white-space: nowrap; font-family: var(--font-mono); }
+
+  .table-empty { padding: 60px 24px; text-align: center; color: var(--ink-dim); }
+  .table-empty svg { width: 36px; height: 36px; color: var(--ink-faint); margin-bottom: 10px; }
+  .table-empty h3 { margin: 0 0 4px; font-size: 14.5px; color: var(--ink); }
+  .table-empty p { margin: 0; font-size: 12.5px; }
+
+  .pagination { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; }
+  .pagination .info { font-size: 12px; color: var(--ink-faint); font-family: var(--font-mono); }
+  .pagination .controls { display: flex; gap: 6px; }
+  .page-btn { width: 30px; height: 30px; border-radius: 7px; border: 1px solid var(--border); background: var(--card-bg); color: var(--ink-dim); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .page-btn:hover { color: var(--ink); }
+  .page-btn svg { width: 13px; height: 13px; }
+  .page-btn[disabled] { opacity: 0.4; cursor: not-allowed; }
+
+  /* ---------------- Drawer (create/edit deal) ---------------- */
+  .scrim { position: fixed; inset: 0; background: rgba(20,23,43,.4); opacity: 0; pointer-events: none; transition: opacity .18s ease; z-index: 40; }
+  .scrim.show { opacity: 1; pointer-events: auto; }
+  .drawer { position: fixed; top: 0; right: 0; height: 100%; width: min(460px, 100vw); background: var(--card-bg); box-shadow: -8px 0 40px rgba(20,23,43,.25); z-index: 41; display: flex; flex-direction: column; transform: translateX(100%); transition: transform .22s cubic-bezier(.4,0,.2,1); }
+  .drawer.show { transform: translateX(0); }
+  .drawer-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 22px 16px; border-bottom: 1px solid var(--border); }
+  .drawer-head h2 { margin: 0 0 3px; font-size: 16.5px; font-weight: 700; }
+  .drawer-head p { margin: 0; font-size: 12.5px; color: var(--ink-dim); }
+  .drawer-close { width: 30px; height: 30px; border-radius: 8px; border: none; background: transparent; color: var(--ink-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; flex: none; }
+  .drawer-close:hover { background: var(--paper); color: var(--ink); }
+  .drawer-close svg { width: 16px; height: 16px; }
+  .drawer-body { flex: 1; overflow-y: auto; padding: 18px 22px 22px; display: flex; flex-direction: column; gap: 14px; }
+  .drawer-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 22px; border-top: 1px solid var(--border); }
+
+  .f-group { display: flex; flex-direction: column; gap: 6px; }
+  .f-row { display: flex; gap: 12px; }
+  .f-row .f-group { flex: 1; min-width: 0; }
+  .f-label { font-size: 12.5px; font-weight: 600; color: var(--ink-dim); display: flex; justify-content: space-between; }
+  .f-label .req { color: var(--critical); }
+  .f-label .opt { font-weight: 400; color: var(--ink-faint); }
+  .f-input, .f-select { border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; background: var(--card-bg); color: var(--ink); width: 100%; outline: none; transition: border-color .12s ease, box-shadow .12s ease; }
+  .f-input:focus, .f-select:focus { border-color: var(--azul); box-shadow: 0 0 0 3px rgba(0,119,168,.14); }
+  .f-input.err, .f-select.err { border-color: var(--critical); }
+  .f-err { font-size: 11.5px; color: var(--critical); display: none; }
+  .f-err.show { display: block; }
+  .f-select:disabled { opacity: .55; cursor: not-allowed; }
+
+  .combo { position: relative; }
+  .combo-list { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow); max-height: 210px; overflow-y: auto; z-index: 5; display: none; }
+  .combo-list.show { display: block; }
+  .combo-opt { padding: 9px 12px; cursor: pointer; font-size: 13px; display: flex; flex-direction: column; gap: 1px; }
+  .combo-opt:hover, .combo-opt.hi { background: var(--paper); }
+  .combo-opt .oc-seg { font-size: 11.5px; color: var(--ink-faint); }
+  .combo-empty { padding: 12px; font-size: 12.5px; color: var(--ink-faint); text-align: center; }
+
+  /* ---------------- Lost-reason modal ---------------- */
+  .modal-scrim { position: fixed; inset: 0; background: rgba(20,23,43,.46); opacity: 0; pointer-events: none; transition: opacity .16s ease; z-index: 50; }
+  .modal-scrim.show { opacity: 1; pointer-events: auto; }
+  .modal-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-46%); width: 400px; max-width: calc(100vw - 32px); background: var(--card-bg); border-radius: 14px; box-shadow: var(--shadow); z-index: 51; padding: 22px; opacity: 0; pointer-events: none; transition: opacity .16s ease, transform .16s ease; }
+  .modal-box.show { opacity: 1; pointer-events: auto; transform: translate(-50%,-50%); }
+  .modal-box h3 { margin: 0 0 4px; font-size: 15.5px; }
+  .modal-box .sub { margin: 0 0 16px; font-size: 12.5px; color: var(--ink-dim); }
+  .modal-box .sub strong { color: var(--ink); }
+  .modal-box .row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+
+  .toast { position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 12px); background: var(--ink); color: var(--paper); font-size: 13.5px; padding: 10px 16px; border-radius: 8px; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: opacity 180ms ease, transform 180ms ease; z-index: 60; max-width: 88vw; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+
+  /* ---------------- Import drawer ---------------- */
+  .import-cols { font-size: 12px; color: var(--ink-dim); background: var(--paper); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; line-height: 1.6; }
+  .import-cols code { font-family: var(--font-mono); font-size: 11px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; }
+  .drop-zone { border: 1.5px dashed var(--border); border-radius: 12px; padding: 28px 16px; text-align: center; cursor: pointer; }
+  .drop-zone:hover, .drop-zone.drag-over { border-color: var(--azul); background: rgba(0,119,168,0.04); }
+  .drop-zone svg { width: 30px; height: 30px; color: var(--ink-faint); margin-bottom: 8px; }
+  .drop-zone .dz-title { font-size: 13.3px; font-weight: 650; color: var(--ink); }
+  .drop-zone .dz-sub { font-size: 11.5px; color: var(--ink-faint); margin-top: 3px; }
+  .drop-zone input[type="file"] { display: none; }
+  .import-summary { display: flex; gap: 10px; }
+  .summary-tile { flex: 1; background: var(--paper); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; text-align: center; }
+  .summary-tile .v { font-size: 18px; font-weight: 700; font-family: var(--font-mono); }
+  .summary-tile .t { font-size: 10.5px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .03em; margin-top: 2px; }
+  .summary-tile.ok .v { color: var(--good); }
+  .summary-tile.erro .v { color: var(--critical); }
+  .import-results { border: 1px solid var(--border); border-radius: 10px; max-height: 260px; overflow-y: auto; }
+  .import-row { display: flex; gap: 10px; padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 12.3px; align-items: flex-start; }
+  .import-row:last-child { border-bottom: none; }
+  .import-row .ln { font-family: var(--font-mono); color: var(--ink-faint); width: 26px; flex: none; }
+  .import-row .nome { font-weight: 600; color: var(--ink); }
+  .import-row .motivo { color: var(--critical); font-size: 11.5px; }
+  .import-pill { font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 100px; flex: none; white-space: nowrap; }
+  .import-pill.ok { background: rgba(12,163,12,0.12); color: var(--good); }
+  .import-pill.erro { background: rgba(208,59,59,0.1); color: var(--critical); }
+  .xlsx-warning { display: flex; gap: 10px; padding: 12px 14px; background: rgba(250,178,25,0.12); border: 1px solid var(--border); border-radius: 10px; font-size: 12.5px; color: var(--ink-dim); }
+  .xlsx-warning svg { width: 16px; height: 16px; color: color-mix(in srgb, var(--warning) 55%, var(--ink-dim)); flex: none; margin-top: 1px; }
+
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar { position: relative; height: auto; }
+    .sb-nav, .sb-user { display: none; }
+    .page-head { flex-wrap: wrap; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .toast, .kb-card, .drawer, .scrim, .modal-box, .modal-scrim { transition: none; }
+  }
+</style>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="monogram">GD</div>
+      <div><strong>Conecta CRM</strong><span>Gestão comercial</span></div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-group">
+        <a class="sb-item" href="#" data-page="Dashboard">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="2.5" width="6.2" height="6.2" rx="1.3"/><rect x="11.3" y="2.5" width="6.2" height="4.4" rx="1.3"/><rect x="11.3" y="9.4" width="6.2" height="8.1" rx="1.3"/><rect x="2.5" y="11.2" width="6.2" height="6.3" rx="1.3"/></svg>
+          Dashboard
+        </a>
+        <a class="sb-item" href="#" data-page="Empresas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17.5V3.8a.8.8 0 01.8-.8h6.4a.8.8 0 01.8.8v13.7"/><path d="M13 17.5V8.3a.8.8 0 01.8-.8h3.4a.8.8 0 01.8.8v9.2"/><path d="M5.4 6h1.6M5.4 9h1.6M5.4 12h1.6M15 10.6h1M15 13.4h1"/></svg>
+          Empresas
+          <span class="chip">3.402</span>
+        </a>
+        <a class="sb-item" href="#" data-page="Contatos">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="6.6" r="3.1"/><path d="M3.6 17c.7-3.4 3.2-5.2 6.4-5.2s5.7 1.8 6.4 5.2"/></svg>
+          Contatos
+        </a>
+        <div class="sb-item active">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 10.3l3-4.6a1 1 0 01.85-.47h7.3a1 1 0 01.85.47l3 4.6"/><path d="M2.5 10.3v5.2a1 1 0 001 1h13a1 1 0 001-1v-5.2"/><path d="M7.3 10.3a2.7 2.7 0 005.4 0"/></svg>
+          Negócios
+          <span class="chip" id="sbDealsChip">184</span>
+        </div>
+        <a class="sb-item" href="#" data-page="Pipeline">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="3" width="4.2" height="14" rx="1"/><rect x="7.9" y="3" width="4.2" height="9.5" rx="1"/><rect x="13.3" y="3" width="4.2" height="6" rx="1"/></svg>
+          Pipeline
+        </a>
+        <a class="sb-item" href="#" data-page="Tarefas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2.2"/><path d="M6.6 10.2l2 2 4.6-4.9"/></svg>
+          Tarefas
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Marketing</div>
+        <a class="sb-item" href="#" data-page="Formulários">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="2.5" width="14" height="15" rx="1.8"/><path d="M6.3 6.6h7.4M6.3 9.6h7.4M6.3 12.6h4.4"/></svg>
+          Formulários
+        </a>
+        <a class="sb-item" href="#" data-page="Rastreio do site">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7.3"/><path d="M10 5.6v4.4l3 1.8"/></svg>
+          Rastreio do site
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Administração</div>
+        <a class="sb-item" href="#" data-page="Usuários">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="6.4" r="2.8"/><path d="M2.6 16.4c.6-3 2.7-4.6 5.4-4.6s4.8 1.6 5.4 4.6"/><path d="M13.6 4.6c1.3.3 2.2 1.4 2.2 2.9 0 1.3-.7 2.3-1.8 2.8M15.6 11.9c1.4.6 2.3 1.9 2.7 3.9"/></svg>
+          Usuários
+        </a>
+        <a class="sb-item" href="#" data-page="Configurações">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="2.6"/><path d="M10 2.8v2M10 15.2v2M17.2 10h-2M4.8 10h-2M15.1 4.9l-1.4 1.4M6.3 13.7l-1.4 1.4M15.1 15.1l-1.4-1.4M6.3 6.3L4.9 4.9"/></svg>
+          Configurações
+        </a>
+      </div>
+    </nav>
+
+    <div class="sb-user">
+      <div class="avatar">AD</div>
+      <div class="sb-user-meta"><strong>Administrador</strong><span>Admin · GD Conecta</span></div>
+    </div>
+  </aside>
+
+  <div class="main-col">
+    <div class="content">
+      <div class="page-head">
+        <div>
+          <h1>Negócios</h1>
+          <p><span class="mono" id="headCount">184</span> negócios abertos · <span class="mono" id="headValue">R$ 1.842.300</span> em previsão · pipeline <strong>Vendas B2B</strong></p>
+        </div>
+        <div class="page-actions">
+          <button class="btn-ghost" id="importBtn">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M10 13.5V4M6.3 7.7L10 4l3.7 3.7"/><path d="M4 15.5h12"/></svg>
+            Importar
+          </button>
+          <button class="btn-ghost" id="exportBtn">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M10 4v9.5M6.3 10.2L10 13.9l3.7-3.7"/><path d="M4 15.5h12"/></svg>
+            Exportar
+          </button>
+          <button class="btn-primary" id="newDealBtn">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 4v12M4 10h12"/></svg>
+            Novo negócio
+          </button>
+        </div>
+      </div>
+
+      <div class="filters-bar">
+        <div class="search">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="8.8" cy="8.8" r="5.8"/><path d="M17 17l-3.6-3.6"/></svg>
+          <input type="text" id="searchInput" placeholder="Buscar negócio ou empresa" />
+        </div>
+        <div class="filter-select-wrap">
+          <select class="filter-select" id="respFilter">
+            <option value="">Todos os responsáveis</option>
+            <option value="FN">Felipe Nogueira</option>
+            <option value="MD">Marina Duarte</option>
+            <option value="CR">Camila Rezende</option>
+          </select>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l5 5 5-5"/></svg>
+        </div>
+        <div class="filter-select-wrap">
+          <select class="filter-select" id="pipelineFilter">
+            <option value="b2b">Pipeline: Vendas B2B (padrão)</option>
+          </select>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l5 5 5-5"/></svg>
+        </div>
+        <span class="result-count" id="resultCount"></span>
+
+        <div class="segmented" role="tablist" aria-label="Alternar visualização">
+          <button class="active" id="viewKanbanBtn" role="tab" aria-selected="true">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2.5" y="3" width="4.4" height="14" rx="1"/><rect x="7.8" y="3" width="4.4" height="9.5" rx="1"/><rect x="13.1" y="3" width="4.4" height="6" rx="1"/></svg>
+            Kanban
+          </button>
+          <button id="viewListBtn" role="tab" aria-selected="false">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h13"/></svg>
+            Lista
+          </button>
+        </div>
+      </div>
+
+      <!-- ===================== KANBAN VIEW ===================== -->
+      <div id="viewKanban">
+        <div class="kanban-scroll">
+          <div class="kanban" id="kanbanBoard"></div>
+        </div>
+      </div>
+
+      <!-- ===================== LIST VIEW ===================== -->
+      <div id="viewList" style="display:none;">
+        <div class="card">
+          <div class="table-scroll">
+            <table class="data">
+              <thead>
+                <tr id="headRow">
+                  <th class="sortable sort-active" data-sort="nome">Negócio <span class="sort-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 12l4-4 4 4"/></svg></span></th>
+                  <th>Empresa</th>
+                  <th class="sortable" data-sort="stage">Etapa <span class="sort-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 8l4 4 4-4"/></svg></span></th>
+                  <th class="sortable" data-sort="valor" style="text-align:right;">Valor <span class="sort-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 8l4 4 4-4"/></svg></span></th>
+                  <th>Responsável</th>
+                  <th class="sortable" data-sort="prev">Prev. fechamento <span class="sort-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 8l4 4 4-4"/></svg></span></th>
+                </tr>
+              </thead>
+              <tbody id="listBody"></tbody>
+            </table>
+          </div>
+          <div class="table-empty" id="listEmpty" style="display:none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <h3>Nenhum negócio encontrado</h3>
+            <p>Ajuste a busca ou o filtro de responsável.</p>
+          </div>
+          <div class="pagination">
+            <span class="info" id="paginationInfo">mostrando 0–0 de 0</span>
+            <div class="controls">
+              <button class="page-btn" id="prevPageBtn" title="Anterior"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5l-5 5 5 5"/></svg></button>
+              <button class="page-btn" id="nextPageBtn" title="Próxima"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 5l5 5-5 5"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div>
+      <h2 id="drawerTitle">Novo negócio</h2>
+      <p id="drawerSub">Preencha os dados do negócio</p>
+    </div>
+    <button class="drawer-close" id="drawerClose"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5L5 15M5 5l10 10"/></svg></button>
+  </div>
+  <div class="drawer-body">
+    <div class="f-group">
+      <label class="f-label">Nome do negócio <span class="req">*</span></label>
+      <input class="f-input" id="fldNome" placeholder="Ex.: Expansão de frota — filial SP" />
+      <span class="f-err" id="errNome">Informe o nome do negócio.</span>
+    </div>
+
+    <div class="f-group combo" id="companyCombo">
+      <label class="f-label">Empresa <span class="req">*</span></label>
+      <input class="f-input" id="fldCompanyInput" placeholder="Buscar empresa…" autocomplete="off" />
+      <input type="hidden" id="fldCompanyId" />
+      <div class="combo-list" id="companyList"></div>
+      <span class="f-err" id="errCompany">Selecione a empresa do negócio.</span>
+    </div>
+
+    <div class="f-group">
+      <label class="f-label">Contato <span class="opt">opcional</span></label>
+      <select class="f-select" id="fldContato" disabled><option value="">Selecione uma empresa primeiro</option></select>
+    </div>
+
+    <div class="f-row">
+      <div class="f-group">
+        <label class="f-label">Responsável <span class="req">*</span></label>
+        <select class="f-select" id="fldResp">
+          <option value="FN">Felipe Nogueira</option>
+          <option value="MD">Marina Duarte</option>
+          <option value="CR">Camila Rezende</option>
+        </select>
+      </div>
+      <div class="f-group">
+        <label class="f-label">Etapa <span class="req">*</span></label>
+        <select class="f-select" id="fldStage"></select>
+      </div>
+    </div>
+
+    <div class="f-row">
+      <div class="f-group">
+        <label class="f-label">Valor previsto (R$) <span class="opt">opcional</span></label>
+        <input class="f-input" id="fldValor" inputmode="numeric" placeholder="0,00" />
+      </div>
+      <div class="f-group">
+        <label class="f-label">Probabilidade (%) <span class="opt">opcional</span></label>
+        <input class="f-input" id="fldProb" type="number" min="0" max="100" placeholder="0" />
+      </div>
+    </div>
+
+    <div class="f-row">
+      <div class="f-group">
+        <label class="f-label">Previsão de fechamento <span class="opt">opcional</span></label>
+        <input class="f-input" type="date" id="fldData" />
+      </div>
+      <div class="f-group">
+        <label class="f-label">Origem <span class="opt">opcional</span></label>
+        <select class="f-select" id="fldOrigem">
+          <option value="">Selecione…</option>
+          <option>Indicação</option>
+          <option>Site institucional</option>
+          <option>Formulário do site</option>
+          <option>Prospecção ativa</option>
+          <option>Cadência de e-mail</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="drawer-foot">
+    <button class="btn-ghost" id="drawerCancel">Cancelar</button>
+    <button class="btn-primary" id="drawerSave">Salvar negócio</button>
+  </div>
+</div>
+
+<div class="scrim" id="importScrim"></div>
+<div class="drawer" id="importDrawer">
+  <div class="drawer-head">
+    <div>
+      <h2>Importar negócios</h2>
+      <p>Envie um .csv — validação linha a linha, igual ao worker de import do backend</p>
+    </div>
+    <button class="drawer-close" id="importClose"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5L5 15M5 5l10 10"/></svg></button>
+  </div>
+  <div class="drawer-body">
+    <div class="import-cols">
+      Colunas esperadas: <code>nome*</code> <code>empresa*</code> <code>etapa*</code> <code>responsavel</code> <code>valor</code> <code>probabilidade</code> <code>previsao_fechamento</code> <code>origem</code>
+      <br />"empresa" precisa existir em Empresas; "etapa" precisa bater com uma etapa aberta do pipeline (Lead captado, Primeiro contato, Diagnóstico, Proposta, Negociação).
+    </div>
+
+    <div class="drop-zone" id="dropZone">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
+      <div class="dz-title">Arraste um arquivo .csv aqui ou clique para escolher</div>
+      <div class="dz-sub">.xlsx também é aceito no upload, mas a prévia neste protótipo só processa .csv</div>
+      <input type="file" id="fileInput" accept=".csv,.xlsx" />
+    </div>
+
+    <div id="xlsxWarning" class="xlsx-warning" style="display:none;">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M10 8v4M10 14.6h.01"/></svg>
+      <span>Prévia de planilhas <strong>.xlsx</strong> ainda não foi implementada neste protótipo. Exporte a planilha como <strong>.csv</strong> e envie de novo pra ver o fluxo completo.</span>
+    </div>
+
+    <div id="importResultsWrap" style="display:none; flex-direction:column; gap:14px;">
+      <div class="import-summary">
+        <div class="summary-tile"><div class="v" id="sumTotal">0</div><div class="t">Linhas</div></div>
+        <div class="summary-tile ok"><div class="v" id="sumOk">0</div><div class="t">Válidas</div></div>
+        <div class="summary-tile erro"><div class="v" id="sumErro">0</div><div class="t">Com erro</div></div>
+      </div>
+      <div class="import-results" id="importResults"></div>
+    </div>
+  </div>
+  <div class="drawer-foot">
+    <button class="btn-ghost" id="importCancel">Cancelar</button>
+    <button class="btn-primary" id="importConfirm" disabled>Confirmar importação (0)</button>
+  </div>
+</div>
+
+<div class="modal-scrim" id="lostScrim"></div>
+<div class="modal-box" id="lostModal">
+  <h3>Marcar como perdido</h3>
+  <p class="sub">Negócio <strong id="lostDealName">—</strong>. Registrar o motivo ajuda a entender padrões de perda.</p>
+  <div class="f-group">
+    <label class="f-label">Motivo da perda <span class="req">*</span></label>
+    <select class="f-select" id="lostMotivo">
+      <option value="">Selecione…</option>
+      <option>Preço</option>
+      <option>Concorrência</option>
+      <option>Não é o momento</option>
+      <option>Sem orçamento</option>
+      <option>Perda de contato</option>
+      <option>Outro</option>
+    </select>
+    <span class="f-err" id="errMotivo">Selecione um motivo.</span>
+  </div>
+  <div class="row">
+    <button class="btn-ghost" id="lostCancel">Cancelar</button>
+    <button class="btn-danger" id="lostConfirm">Confirmar perda</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var toastEl = document.getElementById('toast');
+  var toastTimer;
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 3400);
+  }
+  document.querySelectorAll('[data-page]').forEach(function (el) {
+    el.addEventListener('click', function (e) { e.preventDefault(); showToast('Tela "' + el.getAttribute('data-page') + '" ainda não foi prototipada.'); });
+  });
+  var EXPORT_HEADERS = ['nome', 'empresa', 'etapa', 'responsavel', 'valor', 'probabilidade', 'previsao_fechamento', 'origem'];
+  function csvEscape(v) {
+    v = (v === undefined || v === null) ? '' : String(v);
+    if (v.indexOf(',') !== -1 || v.indexOf('"') !== -1 || v.indexOf('\n') !== -1) { return '"' + v.replace(/"/g, '""') + '"'; }
+    return v;
+  }
+  function downloadCsv(list, filename) {
+    var lines = [EXPORT_HEADERS.join(',')];
+    list.forEach(function (d) {
+      var stage = stageById(d.stage);
+      lines.push([d.nome, d.empresa, stage ? stage.nome : d.stage, REP_NAMES[d.resp], d.valor, d.prob, d.prev, d.origem].map(csvEscape).join(','));
+    });
+    var blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+  document.getElementById('exportBtn').addEventListener('click', function () {
+    var rows = DEALS.filter(passesFilter);
+    downloadCsv(rows, 'negocios.csv');
+    showToast(rows.length + ' negócios exportados para negocios.csv.');
+  });
+
+  var COMPANY_PROFILE_URL = 'https://claude.ai/code/artifact/3599deda-92ca-456e-871a-0d16a10f940f';
+  var DEAL_DETAIL_URL = 'https://claude.ai/code/artifact/8d1a1934-2745-4f7b-9a26-ec65015e522e';
+
+  var STAGES = [
+    { id: 'lead',       nome: 'Lead captado',     tint: 'var(--seq-1)', probDefault: 10, sla: 72 },
+    { id: 'contato',    nome: 'Primeiro contato', tint: 'var(--seq-2)', probDefault: 25, sla: 96 },
+    { id: 'diag',       nome: 'Diagnóstico',      tint: 'var(--seq-3)', probDefault: 45, sla: 120 },
+    { id: 'proposta',   nome: 'Proposta',         tint: 'var(--seq-4)', probDefault: 60, sla: 96 },
+    { id: 'negociacao', nome: 'Negociação',       tint: 'var(--seq-5)', probDefault: 75, sla: 72 }
+  ];
+  var STAGE_TOTALS = { lead: 62, contato: 46, diag: 38, proposta: 24, negociacao: 14 };
+
+  var COMPANIES = [
+    'Grupo Andrade', 'Distribuidora Rio Verde', 'Metalúrgica Bragança', 'Agroindustrial Cerrado',
+    'Distribuidora Norte Mix', 'Papelaria Litoral Sul', 'Transportadora Vale Rio', 'Comércio Ferreira Ltda',
+    'Auto Peças Bandeirantes', 'Transportes Cavalcante', 'Comercial Estrela Azul', 'Indústria Rocha Ltda',
+    'Frigorífico Bom Sabor', 'Química Delta Sul'
+  ];
+  var CONTACTS_BY_COMPANY = {
+    'Grupo Andrade': ['Marcos Vinícius Ferreira', 'Renata Souza Lima'],
+    'Metalúrgica Bragança': ['João Paulo Andrade', 'Camila Rodrigues Neto'],
+    'Transportadora Vale Rio': ['Eduardo Pinheiro Junior'],
+    'Distribuidora Norte Mix': ['Simone Barbosa Cunha', 'André Luiz Monteiro']
+  };
+
+  var REP_NAMES = { FN: 'Felipe Nogueira', MD: 'Marina Duarte', CR: 'Camila Rezende' };
+
+  var seq = 200;
+  var DEALS = [
+    { id: 'd1', nome: 'Piloto rota MG', empresa: 'Agroindustrial Cerrado', stage: 'lead', resp: 'FN', valor: 61000, prob: 20, prev: '2026-09-10', origem: 'Cadência de e-mail' },
+    { id: 'd2', nome: 'Diagnóstico inicial frota', empresa: 'Auto Peças Bandeirantes', stage: 'lead', resp: 'MD', valor: 28500, prob: 15, prev: '2026-09-05', origem: 'Indicação' },
+    { id: 'd3', nome: 'Levantamento de rotas SC', empresa: 'Papelaria Litoral Sul', stage: 'lead', resp: 'CR', valor: 15200, prob: 10, prev: '2026-09-20', origem: 'Formulário do site' },
+
+    { id: 'd4', nome: 'Renovação frete dedicado', empresa: 'Distribuidora Norte Mix', stage: 'contato', resp: 'CR', valor: 98200, prob: 30, prev: '2026-08-15', origem: 'Indicação', diasParado: 4 },
+    { id: 'd5', nome: 'Expansão de frota — filial RJ', empresa: 'Transportes Cavalcante', stage: 'contato', resp: 'CR', valor: 36000, prob: 25, prev: '2026-08-28', origem: 'Prospecção ativa' },
+    { id: 'd6', nome: 'Contrato pontual pico de safra', empresa: 'Comércio Ferreira Ltda', stage: 'contato', resp: 'FN', valor: 19800, prob: 20, prev: '2026-08-22', origem: 'Indicação' },
+
+    { id: 'd7', nome: 'Onboarding CD Sul', empresa: 'Metalúrgica Bragança', stage: 'diag', resp: 'MD', valor: 42500, prob: 45, prev: '2026-08-10', origem: 'Indicação' },
+    { id: 'd8', nome: 'Diagnóstico logístico completo', empresa: 'Comercial Estrela Azul', stage: 'diag', resp: 'FN', valor: 22000, prob: 40, prev: '2026-08-18', origem: 'Indicação' },
+    { id: 'd9', nome: 'Mapeamento de corredores', empresa: 'Química Delta Sul', stage: 'diag', resp: 'CR', valor: 31400, prob: 42, prev: '2026-08-25', origem: 'Indicação' },
+
+    { id: 'd10', nome: 'Expansão frota SP', empresa: 'Transportadora Vale Rio', stage: 'proposta', resp: 'MD', valor: 84000, prob: 65, prev: '2026-08-05', origem: 'Indicação' },
+    { id: 'd11', nome: 'Proposta contrato anual', empresa: 'Distribuidora Rio Verde', stage: 'proposta', resp: 'FN', valor: 54000, prob: 60, prev: '2026-08-12', origem: 'Site institucional' },
+    { id: 'd12', nome: 'Revisão de tabela de frete', empresa: 'Frigorífico Bom Sabor', stage: 'proposta', resp: 'CR', valor: 29900, prob: 55, prev: '2026-08-08', origem: 'Prospecção ativa' },
+
+    { id: 'd13', nome: 'Contrato anual logística', empresa: 'Grupo Andrade', stage: 'negociacao', resp: 'FN', valor: 156000, prob: 80, prev: '2026-08-03', origem: 'Indicação' },
+    { id: 'd14', nome: 'Renegociação de SLA', empresa: 'Indústria Rocha Ltda', stage: 'negociacao', resp: 'MD', valor: 47000, prob: 75, prev: '2026-08-06', origem: 'Indicação' },
+    { id: 'd15', nome: 'Ampliação de contrato — CD Norte', empresa: 'Química Delta Sul', stage: 'negociacao', resp: 'CR', valor: 38500, prob: 70, prev: '2026-08-14', origem: 'Indicação' }
+  ];
+
+  var respFilter = '';
+  var searchQ = '';
+  var sortKey = 'nome';
+  var sortDir = 1;
+  var listPage = 1;
+  var listPageSize = 8;
+
+  function money(n) { return 'R$ ' + Number(n).toLocaleString('pt-BR'); }
+  function fmtDateBR(iso) { var p = iso.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
+  function stageById(id) { return STAGES.filter(function (s) { return s.id === id; })[0]; }
+  function escapeHtml(s) { return (s || '').replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+
+  var fldStage = document.getElementById('fldStage');
+  fldStage.innerHTML = STAGES.map(function (s) { return '<option value="' + s.id + '">' + s.nome + '</option>'; }).join('');
+
+  function passesFilter(d) {
+    if (respFilter && d.resp !== respFilter) return false;
+    if (searchQ) {
+      var hay = (d.nome + ' ' + d.empresa).toLowerCase();
+      if (hay.indexOf(searchQ) === -1) return false;
+    }
+    return true;
+  }
+
+  function recalcHeader() {
+    var openTotal = STAGES.reduce(function (sum, s) { return sum + STAGE_TOTALS[s.id]; }, 0);
+    document.getElementById('headCount').textContent = openTotal;
+    document.getElementById('sbDealsChip').textContent = openTotal;
+  }
+
+  /* ---------------- Kanban render ---------------- */
+  function renderKanban() {
+    var board = document.getElementById('kanbanBoard');
+    var filtered = DEALS.filter(passesFilter);
+    var count = filtered.length;
+    document.getElementById('resultCount').textContent = respFilter || searchQ ? count + ' de ' + DEALS.length + ' negócios visíveis correspondem ao filtro' : '';
+
+    board.innerHTML = STAGES.map(function (stage) {
+      var stageDeals = filtered.filter(function (d) { return d.stage === stage.id; });
+      var total = stageDeals.reduce(function (sum, d) { return sum + d.valor; }, 0);
+      var shown = stageDeals.slice(0, 6);
+      var extraKnown = stageDeals.length - shown.length;
+      var extraTotal = (respFilter || searchQ) ? extraKnown : Math.max(0, STAGE_TOTALS[stage.id] - shown.length);
+      var countLabel = (respFilter || searchQ) ? stageDeals.length : STAGE_TOTALS[stage.id];
+
+      var cardsHtml = shown.map(function (d) { return dealCardHtml(d); }).join('');
+      var moreHtml = extraTotal > 0
+        ? '<button class="kb-col-more" data-more="' + stage.id + '">+' + extraTotal + ' mais</button>'
+        : '';
+
+      return '' +
+        '<div class="kb-col">' +
+          '<div class="kb-col-head">' +
+            '<div class="kb-col-title"><span class="d" style="background:' + stage.tint + ';"></span><span class="name">' + stage.nome + '</span></div>' +
+            '<span class="kb-col-count">' + countLabel + '</span>' +
+          '</div>' +
+          '<div class="kb-col-value">' + money(total) + (extraTotal > 0 ? ' nesta amostra' : '') + '</div>' +
+          '<div class="kb-col-body" data-stage="' + stage.id + '">' + cardsHtml + moreHtml + '</div>' +
+        '</div>';
+    }).join('');
+
+    board.querySelectorAll('.kb-card').forEach(wireCardDrag);
+    board.querySelectorAll('.kb-col-body').forEach(wireColumnDrop);
+    board.querySelectorAll('[data-more]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        showToast('Filtre por responsável ou busque para ver os demais negócios desta etapa.');
+      });
+    });
+    board.querySelectorAll('[data-act]').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var id = btn.closest('.kb-card').getAttribute('data-id');
+        if (btn.getAttribute('data-act') === 'won') markWon(id);
+        if (btn.getAttribute('data-act') === 'lost') openLostModal(id);
+      });
+    });
+    board.querySelectorAll('.kb-card-company').forEach(function (el) {
+      el.addEventListener('click', function (e) { e.stopPropagation(); window.open(COMPANY_PROFILE_URL, '_blank', 'noopener'); });
+    });
+    board.querySelectorAll('.kb-card-name').forEach(function (el) {
+      el.style.cursor = 'pointer';
+      el.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var id = el.closest('.kb-card').getAttribute('data-id');
+        if (id === 'd13') window.open(DEAL_DETAIL_URL, '_blank', 'noopener');
+        else showToast('Detalhe deste negócio ainda não foi prototipado — veja o exemplo em "Contrato anual logística".');
+      });
+    });
+  }
+
+  function dealCardHtml(d) {
+    var stall = d.diasParado ? '<div class="kb-card-stall"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10" cy="10" r="7.2"/><path d="M10 6v4l2.6 2.6"/></svg>' + d.diasParado + ' dias sem atividade</div>' : '';
+    return '' +
+      '<div class="kb-card' + (d.diasParado ? ' stalled' : '') + '" draggable="true" data-id="' + d.id + '" tabindex="0">' +
+        '<div class="kb-card-name">' + escapeHtml(d.nome) + '</div>' +
+        '<div class="kb-card-company">' + escapeHtml(d.empresa) + '</div>' +
+        '<div class="kb-card-value">' + money(d.valor) + '</div>' +
+        '<div class="kb-card-meta"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2.5" y="3.5" width="15" height="14" rx="1.8"/><path d="M2.5 8h15M6 2.5v3M14 2.5v3"/></svg>Fechamento previsto ' + fmtDateBR(d.prev) + '</div>' +
+        stall +
+        '<div class="kb-card-foot">' +
+          '<span class="avatar" title="' + REP_NAMES[d.resp] + '">' + d.resp + '</span>' +
+          '<span class="kb-card-prob">' + d.prob + '%</span>' +
+          '<div class="kb-card-tools">' +
+            '<button class="won" data-act="won" title="Marcar como ganho"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4.5 10.2l3.4 3.4L15.5 6"/></svg></button>' +
+            '<button class="lost" data-act="lost" title="Marcar como perdido"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l8 8M14 6l-8 8"/></svg></button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  var draggingId = null;
+  function wireCardDrag(card) {
+    card.addEventListener('dragstart', function (e) {
+      draggingId = card.getAttribute('data-id');
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', draggingId);
+    });
+    card.addEventListener('dragend', function () { card.classList.remove('dragging'); draggingId = null; });
+  }
+  function wireColumnDrop(col) {
+    col.addEventListener('dragover', function (e) { e.preventDefault(); col.classList.add('drag-over'); });
+    col.addEventListener('dragleave', function () { col.classList.remove('drag-over'); });
+    col.addEventListener('drop', function (e) {
+      e.preventDefault();
+      col.classList.remove('drag-over');
+      var id = draggingId || e.dataTransfer.getData('text/plain');
+      var newStageId = col.getAttribute('data-stage');
+      moveDealToStage(id, newStageId);
+    });
+  }
+  function moveDealToStage(id, newStageId) {
+    var deal = DEALS.filter(function (d) { return d.id === id; })[0];
+    if (!deal || deal.stage === newStageId) return;
+    var oldStage = stageById(deal.stage);
+    var newStage = stageById(newStageId);
+    STAGE_TOTALS[oldStage.id] = Math.max(0, STAGE_TOTALS[oldStage.id] - 1);
+    STAGE_TOTALS[newStage.id] = STAGE_TOTALS[newStage.id] + 1;
+    deal.stage = newStageId;
+    deal.prob = newStage.probDefault;
+    delete deal.diasParado;
+    renderKanban();
+    showToast('"' + deal.nome + '" movido para ' + newStage.nome + ' · probabilidade atualizada para ' + newStage.probDefault + '%.');
+  }
+
+  function markWon(id) {
+    var deal = DEALS.filter(function (d) { return d.id === id; })[0];
+    if (!deal) return;
+    var card = document.querySelector('.kb-card[data-id="' + id + '"]');
+    if (card) card.classList.add('leaving');
+    STAGE_TOTALS[deal.stage] = Math.max(0, STAGE_TOTALS[deal.stage] - 1);
+    setTimeout(function () {
+      DEALS = DEALS.filter(function (d) { return d.id !== id; });
+      renderKanban();
+      renderList();
+      recalcHeader();
+    }, 160);
+    showToast('Negócio "' + deal.nome + '" marcado como ganho.');
+  }
+
+  var lostDealId = null;
+  function openLostModal(id) {
+    var deal = DEALS.filter(function (d) { return d.id === id; })[0];
+    if (!deal) return;
+    lostDealId = id;
+    document.getElementById('lostDealName').textContent = deal.nome;
+    document.getElementById('lostMotivo').value = '';
+    document.getElementById('errMotivo').classList.remove('show');
+    document.getElementById('lostMotivo').classList.remove('err');
+    document.getElementById('lostScrim').classList.add('show');
+    document.getElementById('lostModal').classList.add('show');
+  }
+  function closeLostModal() {
+    document.getElementById('lostScrim').classList.remove('show');
+    document.getElementById('lostModal').classList.remove('show');
+    lostDealId = null;
+  }
+  document.getElementById('lostCancel').addEventListener('click', closeLostModal);
+  document.getElementById('lostScrim').addEventListener('click', closeLostModal);
+  document.getElementById('lostConfirm').addEventListener('click', function () {
+    var motivo = document.getElementById('lostMotivo').value;
+    if (!motivo) {
+      document.getElementById('errMotivo').classList.add('show');
+      document.getElementById('lostMotivo').classList.add('err');
+      return;
+    }
+    var deal = DEALS.filter(function (d) { return d.id === lostDealId; })[0];
+    if (deal) {
+      STAGE_TOTALS[deal.stage] = Math.max(0, STAGE_TOTALS[deal.stage] - 1);
+      DEALS = DEALS.filter(function (d) { return d.id !== lostDealId; });
+      showToast('Negócio "' + deal.nome + '" marcado como perdido — motivo: ' + motivo + '.');
+    }
+    closeLostModal();
+    renderKanban();
+    renderList();
+    recalcHeader();
+  });
+
+  /* ---------------- List render ---------------- */
+  function renderList() {
+    var filtered = DEALS.filter(passesFilter);
+    filtered.sort(function (a, b) {
+      var av, bv;
+      if (sortKey === 'nome') { av = a.nome; bv = b.nome; }
+      else if (sortKey === 'valor') { av = a.valor; bv = b.valor; }
+      else if (sortKey === 'prev') { av = a.prev; bv = b.prev; }
+      else if (sortKey === 'stage') { av = STAGES.map(function(s){return s.id;}).indexOf(a.stage); bv = STAGES.map(function(s){return s.id;}).indexOf(b.stage); }
+      else { av = a.nome; bv = b.nome; }
+      if (av < bv) return -1 * sortDir;
+      if (av > bv) return 1 * sortDir;
+      return 0;
+    });
+
+    var total = filtered.length;
+    var totalPages = Math.max(1, Math.ceil(total / listPageSize));
+    if (listPage > totalPages) listPage = totalPages;
+    var start = (listPage - 1) * listPageSize;
+    var pageItems = filtered.slice(start, start + listPageSize);
+
+    var tbody = document.getElementById('listBody');
+    document.getElementById('listEmpty').style.display = pageItems.length === 0 ? 'block' : 'none';
+    tbody.innerHTML = pageItems.map(function (d) {
+      var stage = stageById(d.stage);
+      return '' +
+        '<tr>' +
+          '<td><div class="row-title" data-deal="' + d.id + '" style="cursor:pointer;">' + escapeHtml(d.nome) + '</div></td>' +
+          '<td><span class="row-sub" data-company>' + escapeHtml(d.empresa) + '</span></td>' +
+          '<td><span class="stage-pill"><span class="stage-dot" style="background:' + stage.tint + ';"></span>' + stage.nome + '</span></td>' +
+          '<td class="cell-value">' + money(d.valor) + '</td>' +
+          '<td><span class="row-resp"><span class="avatar">' + d.resp + '</span>' + REP_NAMES[d.resp] + '</span></td>' +
+          '<td class="updated">' + fmtDateBR(d.prev) + '</td>' +
+        '</tr>';
+    }).join('');
+    tbody.querySelectorAll('[data-company]').forEach(function (el) {
+      el.addEventListener('click', function () { window.open(COMPANY_PROFILE_URL, '_blank', 'noopener'); });
+    });
+    tbody.querySelectorAll('[data-deal]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        if (el.getAttribute('data-deal') === 'd13') window.open(DEAL_DETAIL_URL, '_blank', 'noopener');
+        else showToast('Detalhe deste negócio ainda não foi prototipado — veja o exemplo em "Contrato anual logística".');
+      });
+    });
+
+    document.getElementById('paginationInfo').textContent = total === 0
+      ? 'mostrando 0–0 de 0'
+      : 'mostrando ' + (start + 1) + '–' + Math.min(start + listPageSize, total) + ' de ' + total;
+    document.getElementById('prevPageBtn').disabled = listPage <= 1;
+    document.getElementById('nextPageBtn').disabled = listPage >= totalPages;
+  }
+
+  document.querySelectorAll('th.sortable').forEach(function (th) {
+    th.addEventListener('click', function () {
+      var key = th.getAttribute('data-sort');
+      if (sortKey === key) { sortDir *= -1; } else { sortKey = key; sortDir = 1; }
+      document.querySelectorAll('th.sortable').forEach(function (t) { t.classList.remove('sort-active'); });
+      th.classList.add('sort-active');
+      renderList();
+    });
+  });
+  document.getElementById('prevPageBtn').addEventListener('click', function () { if (listPage > 1) { listPage--; renderList(); } });
+  document.getElementById('nextPageBtn').addEventListener('click', function () { listPage++; renderList(); });
+
+  /* ---------------- Filters / view toggle ---------------- */
+  document.getElementById('searchInput').addEventListener('input', function (e) {
+    searchQ = e.target.value.trim().toLowerCase();
+    listPage = 1;
+    renderKanban(); renderList();
+  });
+  document.getElementById('respFilter').addEventListener('change', function (e) {
+    respFilter = e.target.value;
+    listPage = 1;
+    renderKanban(); renderList();
+  });
+
+  var viewKanbanBtn = document.getElementById('viewKanbanBtn');
+  var viewListBtn = document.getElementById('viewListBtn');
+  viewKanbanBtn.addEventListener('click', function () {
+    viewKanbanBtn.classList.add('active'); viewKanbanBtn.setAttribute('aria-selected', 'true');
+    viewListBtn.classList.remove('active'); viewListBtn.setAttribute('aria-selected', 'false');
+    document.getElementById('viewKanban').style.display = '';
+    document.getElementById('viewList').style.display = 'none';
+  });
+  viewListBtn.addEventListener('click', function () {
+    viewListBtn.classList.add('active'); viewListBtn.setAttribute('aria-selected', 'true');
+    viewKanbanBtn.classList.remove('active'); viewKanbanBtn.setAttribute('aria-selected', 'false');
+    document.getElementById('viewList').style.display = '';
+    document.getElementById('viewKanban').style.display = 'none';
+  });
+
+  /* ---------------- Drawer (create deal) ---------------- */
+  var drawer = document.getElementById('drawer'), scrim = document.getElementById('scrim');
+  var companyInput = document.getElementById('fldCompanyInput'), companyList = document.getElementById('companyList'), companyIdField = document.getElementById('fldCompanyId');
+
+  function renderCompanyList(filterText) {
+    var f = (filterText || '').toLowerCase();
+    var matches = COMPANIES.filter(function (c) { return c.toLowerCase().indexOf(f) !== -1; });
+    companyList.innerHTML = matches.length === 0
+      ? '<div class="combo-empty">Nenhuma empresa encontrada</div>'
+      : matches.map(function (c) { return '<div class="combo-opt" data-name="' + escapeHtml(c) + '">' + escapeHtml(c) + '</div>'; }).join('');
+    companyList.classList.add('show');
+  }
+  companyInput.addEventListener('focus', function () { renderCompanyList(companyInput.value); });
+  companyInput.addEventListener('input', function () { companyIdField.value = ''; updateContactSelect(''); renderCompanyList(companyInput.value); });
+  companyList.addEventListener('mousedown', function (e) {
+    var opt = e.target.closest('.combo-opt');
+    if (!opt) return;
+    var name = opt.getAttribute('data-name');
+    companyInput.value = name;
+    companyIdField.value = name;
+    companyList.classList.remove('show');
+    setFieldError('Company', false);
+    updateContactSelect(name);
+  });
+  document.addEventListener('click', function (e) {
+    if (!document.getElementById('companyCombo').contains(e.target)) companyList.classList.remove('show');
+  });
+
+  function updateContactSelect(companyName) {
+    var sel = document.getElementById('fldContato');
+    var contacts = CONTACTS_BY_COMPANY[companyName] || [];
+    if (!companyName) {
+      sel.innerHTML = '<option value="">Selecione uma empresa primeiro</option>';
+      sel.disabled = true;
+    } else if (contacts.length === 0) {
+      sel.innerHTML = '<option value="">Nenhum contato cadastrado nesta empresa</option>';
+      sel.disabled = true;
+    } else {
+      sel.innerHTML = '<option value="">Sem contato principal</option>' + contacts.map(function (c) { return '<option>' + escapeHtml(c) + '</option>'; }).join('');
+      sel.disabled = false;
+    }
+  }
+
+  function setFieldError(name, has) {
+    var input = name === 'Company' ? companyInput : document.getElementById('fld' + name);
+    var err = document.getElementById('err' + name);
+    if (input) input.classList.toggle('err', !!has);
+    if (err) err.classList.toggle('show', !!has);
+  }
+
+  function openDrawer() {
+    document.getElementById('drawerTitle').textContent = 'Novo negócio';
+    document.getElementById('drawerSub').textContent = 'Preencha os dados do negócio';
+    document.getElementById('fldNome').value = '';
+    companyInput.value = ''; companyIdField.value = '';
+    updateContactSelect('');
+    document.getElementById('fldResp').value = 'FN';
+    document.getElementById('fldStage').value = 'lead';
+    document.getElementById('fldValor').value = '';
+    document.getElementById('fldProb').value = '';
+    document.getElementById('fldData').value = '';
+    document.getElementById('fldOrigem').value = '';
+    setFieldError('Company', false); setFieldError('Nome', false);
+    drawer.classList.add('show'); scrim.classList.add('show');
+    setTimeout(function () { document.getElementById('fldNome').focus(); }, 220);
+  }
+  function closeDrawer() { drawer.classList.remove('show'); scrim.classList.remove('show'); }
+  document.getElementById('newDealBtn').addEventListener('click', openDrawer);
+  document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+  document.getElementById('drawerCancel').addEventListener('click', closeDrawer);
+  scrim.addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeDrawer(); closeLostModal(); closeImportDrawer(); } });
+
+  document.getElementById('drawerSave').addEventListener('click', function () {
+    var nome = document.getElementById('fldNome').value.trim();
+    var empresa = companyIdField.value;
+    var okNome = !!nome, okCompany = !!empresa;
+    setFieldError('Nome', !okNome);
+    setFieldError('Company', !okCompany);
+    if (!okNome || !okCompany) return;
+
+    var stageId = document.getElementById('fldStage').value;
+    var stage = stageById(stageId);
+    var rawValor = document.getElementById('fldValor').value.replace(/\./g, '').replace(',', '.');
+    var valor = parseFloat(rawValor) || 0;
+    var prob = parseInt(document.getElementById('fldProb').value, 10);
+    if (isNaN(prob)) prob = stage.probDefault;
+
+    seq++;
+    DEALS.unshift({
+      id: 'd' + seq,
+      nome: nome,
+      empresa: empresa,
+      stage: stageId,
+      resp: document.getElementById('fldResp').value,
+      valor: valor,
+      prob: prob,
+      prev: document.getElementById('fldData').value || '2026-09-30',
+      origem: document.getElementById('fldOrigem').value
+    });
+    STAGE_TOTALS[stageId] = STAGE_TOTALS[stageId] + 1;
+
+    closeDrawer();
+    renderKanban(); renderList(); recalcHeader();
+    showToast('Negócio "' + nome + '" criado em ' + stage.nome + '.');
+  });
+
+  /* ==================== IMPORT (.csv) ==================== */
+  var importScrim = document.getElementById('importScrim');
+  var importDrawer = document.getElementById('importDrawer');
+  var dropZone = document.getElementById('dropZone');
+  var fileInput = document.getElementById('fileInput');
+  var xlsxWarning = document.getElementById('xlsxWarning');
+  var importResultsWrap = document.getElementById('importResultsWrap');
+  var importResults = document.getElementById('importResults');
+  var importConfirmBtn = document.getElementById('importConfirm');
+  var parsedValidRows = [];
+
+  function openImportDrawer() {
+    xlsxWarning.style.display = 'none';
+    importResultsWrap.style.display = 'none';
+    importConfirmBtn.disabled = true;
+    importConfirmBtn.textContent = 'Confirmar importação (0)';
+    parsedValidRows = [];
+    fileInput.value = '';
+    importDrawer.classList.add('show'); importScrim.classList.add('show');
+  }
+  function closeImportDrawer() { importDrawer.classList.remove('show'); importScrim.classList.remove('show'); }
+  document.getElementById('importBtn').addEventListener('click', openImportDrawer);
+  document.getElementById('importClose').addEventListener('click', closeImportDrawer);
+  document.getElementById('importCancel').addEventListener('click', closeImportDrawer);
+  importScrim.addEventListener('click', closeImportDrawer);
+
+  dropZone.addEventListener('click', function () { fileInput.click(); });
+  dropZone.addEventListener('dragover', function (e) { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', function () { dropZone.classList.remove('drag-over'); });
+  dropZone.addEventListener('drop', function (e) {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener('change', function (e) { if (e.target.files.length) handleFile(e.target.files[0]); });
+
+  function handleFile(file) {
+    var isCsv = /\.csv$/i.test(file.name);
+    if (!isCsv) {
+      xlsxWarning.style.display = 'flex';
+      importResultsWrap.style.display = 'none';
+      importConfirmBtn.disabled = true;
+      importConfirmBtn.textContent = 'Confirmar importação (0)';
+      return;
+    }
+    xlsxWarning.style.display = 'none';
+    var reader = new FileReader();
+    reader.onload = function (e) { processCsv(String(e.target.result)); };
+    reader.readAsText(file);
+  }
+
+  function parseCsvText(text) {
+    var lines = text.split(/\r?\n/).filter(function (l) { return l.trim() !== ''; });
+    if (lines.length === 0) return { headers: [], rows: [] };
+    var headers = lines[0].split(',').map(function (h) { return h.trim().toLowerCase().replace(/^"|"$/g, ''); });
+    var rows = lines.slice(1).map(function (line) {
+      var cells = line.split(',').map(function (c) { return c.trim().replace(/^"|"$/g, ''); });
+      var obj = {};
+      headers.forEach(function (h, i) { obj[h] = cells[i] !== undefined ? cells[i] : ''; });
+      return obj;
+    });
+    return { headers: headers, rows: rows };
+  }
+
+  var STAGE_BY_NAME = {};
+  STAGES.forEach(function (s) { STAGE_BY_NAME[s.nome.toLowerCase()] = s; });
+
+  function processCsv(text) {
+    var parsed = parseCsvText(text);
+    var results = [];
+    var validCount = 0;
+
+    parsed.rows.forEach(function (row, idx) {
+      var nome = row['nome'] || '';
+      var empresaNome = row['empresa'] || '';
+      var etapaNome = row['etapa'] || '';
+      var empresaMatch = COMPANIES.filter(function (c) { return c.toLowerCase() === empresaNome.trim().toLowerCase(); })[0];
+      var stage = STAGE_BY_NAME[etapaNome.trim().toLowerCase()];
+      var errors = [];
+
+      if (!nome) errors.push('nome é obrigatório');
+      if (!empresaNome) errors.push('empresa é obrigatória');
+      else if (!empresaMatch) errors.push('empresa "' + empresaNome + '" não encontrada em Empresas');
+      if (!etapaNome) errors.push('etapa é obrigatória');
+      else if (!stage) errors.push('etapa "' + etapaNome + '" não é uma etapa aberta válida');
+
+      if (errors.length === 0) {
+        validCount++;
+        var valor = parseFloat((row['valor'] || '0').replace(/\./g, '').replace(',', '.')) || 0;
+        var prob = parseInt(row['probabilidade'], 10);
+        results.push({ linha: idx + 2, ok: true, nome: nome, stageId: stage.id, data: {
+          id: 'd' + (++seq), nome: nome, empresa: empresaMatch, stage: stage.id,
+          resp: (row['responsavel'] || '').trim() || 'FN', valor: valor,
+          prob: isNaN(prob) ? stage.probDefault : prob,
+          prev: row['previsao_fechamento'] || '2026-09-30', origem: row['origem'] || 'Importação em massa'
+        }});
+      } else {
+        results.push({ linha: idx + 2, ok: false, nome: nome || '(sem nome)', motivo: errors.join('; ') });
+      }
+    });
+
+    renderImportResults(results, validCount);
+  }
+
+  function renderImportResults(results, validCount) {
+    importResultsWrap.style.display = 'flex';
+    document.getElementById('sumTotal').textContent = results.length;
+    document.getElementById('sumOk').textContent = validCount;
+    document.getElementById('sumErro').textContent = results.length - validCount;
+    importResults.innerHTML = results.map(function (r) {
+      return '<div class="import-row">' +
+        '<span class="ln">' + r.linha + '</span>' +
+        '<span class="import-pill ' + (r.ok ? 'ok' : 'erro') + '">' + (r.ok ? 'OK' : 'Erro') + '</span>' +
+        '<span style="flex:1;min-width:0;"><span class="nome">' + escapeHtml(r.nome) + '</span>' + (r.ok ? '' : '<div class="motivo">' + escapeHtml(r.motivo) + '</div>') + '</span>' +
+      '</div>';
+    }).join('');
+    parsedValidRows = results.filter(function (r) { return r.ok; });
+    importConfirmBtn.disabled = parsedValidRows.length === 0;
+    importConfirmBtn.textContent = 'Confirmar importação (' + parsedValidRows.length + ')';
+  }
+
+  importConfirmBtn.addEventListener('click', function () {
+    var n = parsedValidRows.length;
+    parsedValidRows.forEach(function (r) {
+      DEALS.push(r.data);
+      STAGE_TOTALS[r.stageId] = (STAGE_TOTALS[r.stageId] || 0) + 1;
+    });
+    closeImportDrawer();
+    renderKanban(); renderList(); recalcHeader();
+    showToast(n + ' negócio' + (n === 1 ? '' : 's') + ' importado' + (n === 1 ? '' : 's') + ' com sucesso.');
+  });
+
+  recalcHeader();
+  renderKanban();
+  renderList();
+})();
+</script>

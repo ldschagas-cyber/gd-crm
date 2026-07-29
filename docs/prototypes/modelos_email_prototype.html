@@ -1,0 +1,621 @@
+<title>Modelos de e-mail — GD Conecta CRM</title>
+<style>
+  /* Font note: real product should self-host IBM Plex Sans/Mono; CDN fonts are blocked
+     in this artifact sandbox, so a close system-grotesque stack stands in here. */
+  :root {
+    --font-display: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Cascadia Code", "SFMono-Regular", "Consolas", ui-monospace, monospace;
+
+    --indigo: #2D3561;
+    --indigo-600: #3B4478;
+    --amber: #C9A84C;
+    --azul: #0077A8;
+    --marfim: #F5F1EB;
+
+    --paper: var(--marfim);
+    --panel: var(--indigo);
+    --panel-fg: #F1EEE6;
+    --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12);
+    --panel-active-bg: rgba(201, 168, 76, 0.14);
+
+    --ink: #22243A;
+    --ink-dim: #5B5E78;
+    --ink-faint: #8B8EA6;
+    --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF;
+    --accent: var(--amber);
+    --link: var(--azul);
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+
+    --good: #0ca30c;
+    --warning: #fab219;
+    --serious: #ec835a;
+    --critical: #d03b3b;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+      --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+      --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+      --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+    --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+    --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+    --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+  }
+  :root[data-theme="light"] {
+    --paper: #F5F1EB; --panel: #2D3561; --panel-fg: #F1EEE6; --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12); --panel-active-bg: rgba(201, 168, 76, 0.14);
+    --ink: #22243A; --ink-dim: #5B5E78; --ink-faint: #8B8EA6; --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF; --amber: #C9A84C; --azul: #0077A8; --link: #0077A8;
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; font-family: var(--font-display); color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; }
+  button, input, select, textarea { font-family: inherit; }
+  a { color: inherit; }
+  ::selection { background: rgba(201,168,76,.3); }
+  :focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; border-radius: 4px; }
+
+  .shell { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+
+  /* ---------------- Sidebar ---------------- */
+  .sidebar { background: var(--panel); color: var(--panel-fg); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+  .sb-brand { display: flex; align-items: center; gap: 10px; padding: 20px 18px 16px; }
+  .monogram { width: 34px; height: 34px; border-radius: 9px; flex: none; background: var(--amber); color: var(--indigo); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+  .sb-brand strong { display: block; font-size: 14.5px; font-weight: 650; line-height: 1.2; }
+  .sb-brand span { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--panel-fg-dim); margin-top: 2px; }
+  .sb-nav { flex: 1; overflow-y: auto; padding: 10px 12px; }
+  .sb-group + .sb-group { margin-top: 18px; }
+  .sb-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--panel-fg-dim); padding: 0 10px; margin-bottom: 6px; }
+  .sb-item { display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: 8px; margin-bottom: 2px; font-size: 13.6px; font-weight: 500; color: var(--panel-fg-dim); text-decoration: none; cursor: pointer; border: 1px solid transparent; position: relative; }
+  .sb-item svg { width: 17px; height: 17px; flex: none; opacity: 0.9; }
+  .sb-item:hover { background: rgba(241, 238, 230, 0.06); color: var(--panel-fg); }
+  .sb-item.active { background: var(--panel-active-bg); color: var(--panel-fg); font-weight: 650; }
+  .sb-item.active::before { content: ""; position: absolute; left: -12px; top: 6px; bottom: 6px; width: 3px; background: var(--amber); border-radius: 2px; }
+  .sb-item .chip { margin-left: auto; font-family: var(--font-mono); font-size: 10px; background: rgba(241,238,230,0.12); color: var(--panel-fg-dim); padding: 1px 6px; border-radius: 100px; }
+  .sb-item .badge-soon { margin-left: auto; font-family: var(--font-mono); font-size: 9px; letter-spacing: .03em; background: rgba(217,184,94,0.16); color: var(--amber); padding: 1px 6px; border-radius: 100px; }
+  .sb-user { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-top: 1px solid var(--panel-border); }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; flex: none; background: rgba(201,168,76,0.18); color: var(--amber); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; border: 1px solid rgba(201,168,76,0.3); }
+  .sb-user-meta { min-width: 0; flex: 1; }
+  .sb-user-meta strong { display: block; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-user-meta span { display: block; font-size: 11px; color: var(--panel-fg-dim); }
+
+  /* ---------------- Main column ---------------- */
+  .main-col { display: flex; flex-direction: column; min-width: 0; }
+  .content { padding: 22px 28px 48px; display: flex; flex-direction: column; gap: 16px; }
+
+  .page-head { display: flex; align-items: flex-start; gap: 16px; }
+  .page-head h1 { margin: 0; font-size: 20px; font-weight: 650; letter-spacing: -0.01em; }
+  .page-head p { margin: 3px 0 0; font-size: 12.5px; color: var(--ink-dim); }
+  .page-head p .mono { font-family: var(--font-mono); color: var(--ink); font-weight: 500; }
+  .page-actions { margin-left: auto; display: flex; gap: 8px; flex: none; }
+
+  .btn-primary { display: flex; align-items: center; gap: 7px; background: var(--indigo); color: var(--panel-fg); border: 1px solid var(--indigo); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-primary:hover { background: var(--indigo-600); }
+  .btn-primary:disabled { opacity: .45; cursor: not-allowed; }
+  .btn-primary svg { width: 14px; height: 14px; }
+  .btn-ghost { display: flex; align-items: center; gap: 7px; background: var(--card-bg); color: var(--ink); border: 1px solid var(--border); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-ghost:hover { border-color: var(--ink-faint); }
+  .btn-danger { display: flex; align-items: center; gap: 7px; background: var(--critical); color: #fff; border: 1px solid var(--critical); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-danger:hover { filter: brightness(0.94); }
+
+  .help-card { display: flex; gap: 11px; padding: 14px 16px; background: color-mix(in srgb, var(--azul) 6%, var(--card-bg)); border: 1px solid var(--border); border-radius: 12px; }
+  .help-card svg { width: 17px; height: 17px; color: var(--azul); flex: none; margin-top: 1px; }
+  .help-card p { margin: 0; font-size: 12.5px; color: var(--ink-dim); line-height: 1.5; }
+  .help-card p strong { color: var(--ink); }
+  .help-card code { font-family: var(--font-mono); font-size: 11px; background: var(--paper); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; }
+
+  .stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
+  .stat-tile { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; box-shadow: var(--shadow); }
+  .stat-tile .t { font-size: 11px; color: var(--ink-faint); font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+  .stat-tile .v { font-size: 19px; font-weight: 700; margin-top: 4px; font-family: var(--font-mono); }
+
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+  .table-scroll { overflow-x: auto; }
+  table.data { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 820px; }
+  table.data th { text-align: left; font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); font-weight: 600; padding: 10px 16px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  table.data td { padding: 11px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  table.data tbody tr:last-child td { border-bottom: none; }
+  table.data tbody tr:hover { background: color-mix(in srgb, var(--paper) 55%, transparent); }
+  .row-title { font-weight: 600; color: var(--ink); cursor: pointer; }
+  .row-title:hover { color: var(--link); }
+  .row-sub { font-size: 11.5px; color: var(--ink-faint); margin-top: 1px; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .var-chip { display: inline-flex; font-family: var(--font-mono); font-size: 10.5px; background: var(--paper); border: 1px solid var(--border); color: var(--ink-dim); padding: 2px 6px; border-radius: 5px; margin: 1px 3px 1px 0; }
+  .usage-badge { font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 100px; white-space: nowrap; }
+  .usage-badge.used { background: rgba(0,119,168,0.12); color: var(--azul); }
+  .usage-badge.unused { background: var(--paper); color: var(--ink-faint); border: 1px solid var(--border); }
+
+  .row-actions { display: flex; gap: 2px; justify-content: flex-end; }
+  .icon-btn { width: 26px; height: 26px; border-radius: 7px; border: none; background: transparent; color: var(--ink-faint); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .icon-btn:hover { background: var(--paper); color: var(--ink); }
+  .icon-btn.danger:hover { background: rgba(208,59,59,0.1); color: var(--critical); }
+  .icon-btn svg { width: 14px; height: 14px; }
+
+  /* ---------------- Drawer ---------------- */
+  .scrim { position: fixed; inset: 0; background: rgba(20,23,43,.4); opacity: 0; pointer-events: none; transition: opacity .18s ease; z-index: 40; }
+  .scrim.show { opacity: 1; pointer-events: auto; }
+  .drawer { position: fixed; top: 0; right: 0; height: 100%; width: min(600px, 100vw); background: var(--card-bg); box-shadow: -8px 0 40px rgba(20,23,43,.25); z-index: 41; display: flex; flex-direction: column; transform: translateX(100%); transition: transform .22s cubic-bezier(.4,0,.2,1); }
+  .drawer.show { transform: translateX(0); }
+  .drawer-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 24px 16px; border-bottom: 1px solid var(--border); }
+  .drawer-head h2 { margin: 0 0 3px; font-size: 16.5px; font-weight: 700; }
+  .drawer-head p { margin: 0; font-size: 12.5px; color: var(--ink-dim); }
+  .drawer-close { width: 30px; height: 30px; border-radius: 8px; border: none; background: transparent; color: var(--ink-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; flex: none; }
+  .drawer-close:hover { background: var(--paper); color: var(--ink); }
+  .drawer-close svg { width: 16px; height: 16px; }
+  .drawer-body { flex: 1; overflow-y: auto; padding: 18px 24px 24px; display: flex; flex-direction: column; gap: 16px; }
+  .drawer-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 24px; border-top: 1px solid var(--border); }
+
+  .f-group { display: flex; flex-direction: column; gap: 6px; }
+  .f-label { font-size: 12.5px; font-weight: 600; color: var(--ink-dim); display: flex; justify-content: space-between; }
+  .f-label .req { color: var(--critical); }
+  .f-input, .f-textarea { border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; background: var(--card-bg); color: var(--ink); width: 100%; outline: none; font-size: 13px; transition: border-color .12s ease, box-shadow .12s ease; }
+  .f-input:focus, .f-textarea:focus { border-color: var(--azul); box-shadow: 0 0 0 3px rgba(0,119,168,.14); }
+  .f-input.err, .f-textarea.err { border-color: var(--critical); }
+  .f-err { font-size: 11.5px; color: var(--critical); display: none; }
+  .f-err.show { display: block; }
+  .f-textarea { resize: vertical; min-height: 120px; font-family: inherit; line-height: 1.55; }
+
+  .var-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
+  .var-btn { font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--azul); background: rgba(0,119,168,0.08); border: 1px solid rgba(0,119,168,0.25); border-radius: 100px; padding: 4px 10px; cursor: pointer; }
+  .var-btn:hover { background: rgba(0,119,168,0.16); }
+
+  .preview-card { background: var(--paper); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .preview-label { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-faint); font-weight: 700; margin-bottom: 8px; }
+  .preview-subject { font-size: 13.3px; font-weight: 650; color: var(--ink); }
+  .preview-body { font-size: 12.5px; color: var(--ink-dim); margin-top: 8px; line-height: 1.6; white-space: pre-wrap; }
+  .preview-note { font-size: 10.5px; color: var(--ink-faint); margin-top: 10px; }
+  .var-fill { color: var(--azul); font-weight: 600; }
+
+  .modal-scrim { position: fixed; inset: 0; background: rgba(20,23,43,.46); opacity: 0; pointer-events: none; transition: opacity .16s ease; z-index: 50; }
+  .modal-scrim.show { opacity: 1; pointer-events: auto; }
+  .modal-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-46%); width: 400px; max-width: calc(100vw - 32px); background: var(--card-bg); border-radius: 14px; box-shadow: var(--shadow); z-index: 51; padding: 22px; opacity: 0; pointer-events: none; transition: opacity .16s ease, transform .16s ease; }
+  .modal-box.show { opacity: 1; pointer-events: auto; transform: translate(-50%,-50%); }
+  .modal-box h3 { margin: 0 0 8px; font-size: 15.5px; display: flex; align-items: center; gap: 8px; }
+  .modal-box h3 svg { width: 17px; height: 17px; color: var(--serious); flex: none; }
+  .modal-box .sub { margin: 0 0 16px; font-size: 12.5px; color: var(--ink-dim); line-height: 1.5; }
+  .modal-box .sub strong { color: var(--ink); }
+  .modal-box .row { display: flex; justify-content: flex-end; gap: 10px; }
+  .usage-list { margin: 0 0 16px; padding-left: 18px; font-size: 12px; color: var(--ink-dim); }
+
+  .toast { position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 12px); background: var(--ink); color: var(--paper); font-size: 13.5px; padding: 10px 16px; border-radius: 8px; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: opacity 180ms ease, transform 180ms ease; z-index: 60; max-width: 88vw; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar { position: relative; height: auto; }
+    .sb-nav, .sb-user { display: none; }
+    .page-head { flex-wrap: wrap; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .toast, .drawer, .scrim, .modal-box, .modal-scrim { transition: none; }
+  }
+</style>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="monogram">GD</div>
+      <div><strong>Conecta CRM</strong><span>Gestão comercial</span></div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-group">
+        <a class="sb-item" href="#" data-page="Dashboard">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="2.5" width="6.2" height="6.2" rx="1.3"/><rect x="11.3" y="2.5" width="6.2" height="4.4" rx="1.3"/><rect x="11.3" y="9.4" width="6.2" height="8.1" rx="1.3"/><rect x="2.5" y="11.2" width="6.2" height="6.3" rx="1.3"/></svg>
+          Dashboard
+        </a>
+        <a class="sb-item" href="#" data-page="Pesquisa de Leads">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7"/><circle cx="10" cy="10" r="3.2"/><path d="M10 3v2.4M10 14.6V17M17 10h-2.4M5.4 10H3"/></svg>
+          Pesquisa de Leads
+        </a>
+        <a class="sb-item" href="#" data-page="Empresas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17.5V3.8a.8.8 0 01.8-.8h6.4a.8.8 0 01.8.8v13.7"/><path d="M13 17.5V8.3a.8.8 0 01.8-.8h3.4a.8.8 0 01.8.8v9.2"/><path d="M5.4 6h1.6M5.4 9h1.6M5.4 12h1.6M15 10.6h1M15 13.4h1"/></svg>
+          Empresas
+          <span class="chip">3.402</span>
+        </a>
+        <a class="sb-item" href="#" data-page="Contatos">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="6.6" r="3.1"/><path d="M3.6 17c.7-3.4 3.2-5.2 6.4-5.2s5.7 1.8 6.4 5.2"/></svg>
+          Contatos
+        </a>
+        <a class="sb-item" href="#" data-page="Negócios">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 10.3l3-4.6a1 1 0 01.85-.47h7.3a1 1 0 01.85.47l3 4.6"/><path d="M2.5 10.3v5.2a1 1 0 001 1h13a1 1 0 001-1v-5.2"/><path d="M7.3 10.3a2.7 2.7 0 005.4 0"/></svg>
+          Negócios
+          <span class="chip">184</span>
+        </a>
+        <a class="sb-item" href="#" data-page="Pipeline">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="3" width="4.2" height="14" rx="1"/><rect x="7.9" y="3" width="4.2" height="9.5" rx="1"/><rect x="13.3" y="3" width="4.2" height="6" rx="1"/></svg>
+          Pipeline
+        </a>
+        <a class="sb-item" href="#" data-page="Tarefas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2.2"/><path d="M6.6 10.2l2 2 4.6-4.9"/></svg>
+          Tarefas
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Automação · Fase 2</div>
+        <a class="sb-item" href="#" data-page="Sequências">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4h5.5l1.5 2h5v10H4z"/><path d="M8 9h4M8 12h6"/></svg>
+          Sequências
+        </a>
+        <a class="sb-item" href="#" data-page="Cadências">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="4" width="15" height="12" rx="1.8"/><path d="M3 5l7 5.5L17 5"/></svg>
+          Cadências
+        </a>
+        <a class="sb-item" href="#" data-page="Workflows">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="5" cy="5" r="2.2"/><circle cx="15" cy="5" r="2.2"/><circle cx="10" cy="15" r="2.2"/><path d="M6.8 6.4L9 13.2M13.2 6.4L11 13.2"/></svg>
+          Workflows
+        </a>
+        <div class="sb-item active">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="1.8"/><path d="M6 7h8M6 10h8M6 13h5"/></svg>
+          Modelos de e-mail
+          <span class="chip" id="sbTplChip">4</span>
+        </div>
+        <a class="sb-item" href="#" data-page="Snippets">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 4L3 10l4 6M13 4l4 6-4 6"/></svg>
+          Snippets
+          <span class="badge-soon">em breve</span>
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Marketing</div>
+        <a class="sb-item" href="#" data-page="Formulários">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="2.5" width="14" height="15" rx="1.8"/><path d="M6.3 6.6h7.4M6.3 9.6h7.4M6.3 12.6h4.4"/></svg>
+          Formulários
+        </a>
+        <a class="sb-item" href="#" data-page="Rastreio do site">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7.3"/><path d="M10 5.6v4.4l3 1.8"/></svg>
+          Rastreio do site
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Administração</div>
+        <a class="sb-item" href="#" data-page="Usuários">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="6.4" r="2.8"/><path d="M2.6 16.4c.6-3 2.7-4.6 5.4-4.6s4.8 1.6 5.4 4.6"/><path d="M13.6 4.6c1.3.3 2.2 1.4 2.2 2.9 0 1.3-.7 2.3-1.8 2.8M15.6 11.9c1.4.6 2.3 1.9 2.7 3.9"/></svg>
+          Usuários
+        </a>
+        <a class="sb-item" href="#" data-page="Configurações">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="2.6"/><path d="M10 2.8v2M10 15.2v2M17.2 10h-2M4.8 10h-2M15.1 4.9l-1.4 1.4M6.3 13.7l-1.4 1.4M15.1 15.1l-1.4-1.4M6.3 6.3L4.9 4.9"/></svg>
+          Configurações
+        </a>
+      </div>
+    </nav>
+
+    <div class="sb-user">
+      <div class="avatar">AD</div>
+      <div class="sb-user-meta"><strong>Administrador</strong><span>Admin · GD Conecta</span></div>
+    </div>
+  </aside>
+
+  <div class="main-col">
+    <div class="content">
+      <div class="page-head">
+        <div>
+          <h1>Modelos de e-mail</h1>
+          <p><span class="mono" id="headTotal">4</span> modelos · <span class="mono" id="headUsados">3</span> em uso por Sequências/Cadências</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn-primary" id="newTplBtn">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 4v12M4 10h12"/></svg>
+            Novo modelo
+          </button>
+        </div>
+      </div>
+
+      <div class="help-card">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="7.3"/><path d="M10 9v4.2M10 6.6h.01"/></svg>
+        <p>Variáveis disponíveis: <code>{{nome}}</code> <code>{{empresa}}</code> <code>{{cargo}}</code> <code>{{responsavel}}</code> — substituídas pelos dados reais no momento do envio, dentro de Sequências e Cadências. Um modelo em uso não pode ser excluído.</p>
+      </div>
+
+      <div class="stat-strip">
+        <div class="stat-tile"><div class="t">Modelos</div><div class="v" id="statTotal">4</div></div>
+        <div class="stat-tile"><div class="t">Em uso</div><div class="v" id="statUsados">3</div></div>
+        <div class="stat-tile"><div class="t">Sem uso</div><div class="v" id="statNaoUsados">1</div></div>
+      </div>
+
+      <div class="card">
+        <div class="table-scroll">
+          <table class="data">
+            <thead>
+              <tr>
+                <th>Modelo</th>
+                <th>Variáveis</th>
+                <th>Usado em</th>
+                <th style="text-align:right;">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="listBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div>
+      <h2 id="drawerTitle">Novo modelo</h2>
+      <p id="drawerSub">Assunto e corpo, com variáveis dinâmicas</p>
+    </div>
+    <button class="drawer-close" id="drawerClose"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5L5 15M5 5l10 10"/></svg></button>
+  </div>
+  <div class="drawer-body">
+    <div class="f-group">
+      <label class="f-label">Nome do modelo <span class="req">*</span></label>
+      <input class="f-input" id="fldNome" placeholder="Ex.: Apresentação institucional" />
+      <span class="f-err" id="errNome">Informe o nome do modelo.</span>
+    </div>
+
+    <div class="var-buttons" id="varButtons"></div>
+
+    <div class="f-group">
+      <label class="f-label">Assunto <span class="req">*</span></label>
+      <input class="f-input" id="fldAssunto" placeholder="Ex.: Olá {{nome}}, tudo bem?" />
+      <span class="f-err" id="errAssunto">Informe o assunto do e-mail.</span>
+    </div>
+
+    <div class="f-group">
+      <label class="f-label">Corpo <span class="req">*</span></label>
+      <textarea class="f-textarea" id="fldCorpo" placeholder="Escreva o corpo do e-mail — use os botões acima para inserir variáveis."></textarea>
+      <span class="f-err" id="errCorpo">Informe o corpo do e-mail.</span>
+    </div>
+
+    <div class="preview-card">
+      <div class="preview-label">Prévia com dados de exemplo</div>
+      <div class="preview-subject" id="pvAssunto"></div>
+      <div class="preview-body" id="pvCorpo"></div>
+      <div class="preview-note">Exemplo: Ana Beatriz Souza · Distribuidora Rio Verde · Gerente de Compras · responsável Felipe Nogueira. Na hora do envio, os dados reais do contato substituem esses.</div>
+    </div>
+  </div>
+  <div class="drawer-foot">
+    <button class="btn-ghost" id="drawerCancel">Cancelar</button>
+    <button class="btn-primary" id="drawerSave">Salvar modelo</button>
+  </div>
+</div>
+
+<div class="modal-scrim" id="blockScrim"></div>
+<div class="modal-box" id="blockModal">
+  <h3><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M10 8v4M10 14.6h.01"/></svg>Não é possível excluir</h3>
+  <p class="sub">O modelo <strong id="blockTplName"></strong> está em uso em:</p>
+  <ul class="usage-list" id="blockUsageList"></ul>
+  <p class="sub" style="margin-bottom:0;">Remova o modelo das etapas acima antes de excluí-lo.</p>
+  <div class="row"><button class="btn-ghost" id="blockOk">Entendi</button></div>
+</div>
+
+<div class="modal-scrim" id="delScrim"></div>
+<div class="modal-box" id="delModal">
+  <h3>Excluir modelo</h3>
+  <p class="sub">Tem certeza que deseja excluir <strong id="delTplName">este modelo</strong>? Essa ação não pode ser desfeita.</p>
+  <div class="row">
+    <button class="btn-ghost" id="delCancel">Cancelar</button>
+    <button class="btn-danger" id="delConfirm">Excluir</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var toastEl = document.getElementById('toast');
+  var toastTimer;
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 3600);
+  }
+  document.querySelectorAll('[data-page]').forEach(function (el) {
+    el.addEventListener('click', function (e) {
+      e.preventDefault();
+      var page = el.getAttribute('data-page');
+      var soon = el.querySelector('.badge-soon');
+      showToast(soon ? '"' + page + '" está planejado, mas ainda não foi prototipado.' : 'Tela "' + page + '" ainda não foi prototipada.');
+    });
+  });
+
+  function escapeHtml(s) { return (s || '').replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+
+  var VARS = ['nome', 'empresa', 'cargo', 'responsavel'];
+  var PREVIEW_SAMPLE = { nome: 'Ana Beatriz Souza', empresa: 'Distribuidora Rio Verde', cargo: 'Gerente de Compras', responsavel: 'Felipe Nogueira' };
+  function mergeVars(text) {
+    return escapeHtml(text).replace(/\{\{(\w+)\}\}/g, function (m, key) {
+      return '<span class="var-fill">' + escapeHtml(PREVIEW_SAMPLE[key] || m) + '</span>';
+    });
+  }
+  function extractVars(assunto, corpo) {
+    var found = {};
+    (assunto + ' ' + corpo).replace(/\{\{(\w+)\}\}/g, function (m, key) { found[key] = true; });
+    return Object.keys(found);
+  }
+
+  var seq = 10;
+  var TEMPLATES = [
+    {
+      id: 'tpl1', nome: 'Apresentação institucional',
+      assunto: 'Olá {{nome}}, tudo bem?',
+      corpo: 'Sou {{responsavel}} da GD Conecta. Notei que a {{empresa}} pode se beneficiar de uma gestão de frete mais eficiente. Podemos conversar 15 minutos essa semana?',
+      usos: ['Sequência "Prospecção fria — Indústria" (etapa 2)', 'Cadência "Cadência de reativação — leads frios" (e-mail 1)', 'Cadência "Nutrição pós-formulário do site" (e-mail 1)']
+    },
+    {
+      id: 'tpl2', nome: 'Reforço de proposta',
+      assunto: 'Sobre a proposta que enviamos à {{empresa}}',
+      corpo: 'Oi {{nome}}, só reforçando o contato sobre a proposta. Como {{cargo}}, você deve ter visibilidade se faz sentido avançar. Fico à disposição.',
+      usos: ['Cadência "Cadência de reativação — leads frios" (e-mail 2)', 'Cadência "Cadência para clientes inativos" (e-mail 1)']
+    },
+    {
+      id: 'tpl3', nome: 'Convite para diagnóstico gratuito',
+      assunto: 'Diagnóstico gratuito de frete para a {{empresa}}',
+      corpo: 'Olá {{nome}}, gostaríamos de oferecer um diagnóstico gratuito da operação de frete da {{empresa}}. Tem 20 minutos essa semana?',
+      usos: ['Cadência "Nutrição pós-formulário do site" (e-mail 2)', 'Cadência "Cadência para clientes inativos" (e-mail 2)']
+    },
+    {
+      id: 'tpl4', nome: 'Follow-up sem resposta',
+      assunto: 'Ainda faz sentido conversar, {{nome}}?',
+      corpo: 'Oi {{nome}}, não tivemos retorno sobre nosso contato anterior. Se não for o momento certo pra {{empresa}}, sem problema — só me avisa.\n\nUm abraço,\n{{responsavel}}',
+      usos: []
+    }
+  ];
+
+  function countUsados() { return TEMPLATES.filter(function (t) { return t.usos.length > 0; }).length; }
+
+  function recalcStats() {
+    document.getElementById('headTotal').textContent = TEMPLATES.length;
+    document.getElementById('headUsados').textContent = countUsados();
+    document.getElementById('sbTplChip').textContent = TEMPLATES.length;
+    document.getElementById('statTotal').textContent = TEMPLATES.length;
+    document.getElementById('statUsados').textContent = countUsados();
+    document.getElementById('statNaoUsados').textContent = TEMPLATES.length - countUsados();
+  }
+
+  function rowHtml(t) {
+    var vars = extractVars(t.assunto, t.corpo);
+    return '' +
+      '<tr data-id="' + t.id + '">' +
+        '<td><div class="row-title" data-act="edit">' + escapeHtml(t.nome) + '</div><div class="row-sub">' + escapeHtml(t.assunto) + '</div></td>' +
+        '<td>' + vars.map(function (v) { return '<span class="var-chip">{{' + v + '}}</span>'; }).join('') + '</td>' +
+        '<td><span class="usage-badge ' + (t.usos.length ? 'used' : 'unused') + '">' + (t.usos.length ? t.usos.length + ' local' + (t.usos.length === 1 ? '' : 'is') : 'sem uso') + '</span></td>' +
+        '<td><div class="row-actions">' +
+          '<button class="icon-btn" data-act="edit" title="Editar"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M11 4.5L15.5 9 6 18.5H1.5V14z"/></svg></button>' +
+          '<button class="icon-btn danger" data-act="del" title="Excluir"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 6h12"/><path d="M7.5 6V4.6a1 1 0 011-1h3a1 1 0 011 1V6"/><path d="M6 6l.7 9.4a1 1 0 001 .9h4.6a1 1 0 001-.9L14 6"/></svg></button>' +
+        '</div></td>' +
+      '</tr>';
+  }
+
+  function renderList() {
+    var tbody = document.getElementById('listBody');
+    tbody.innerHTML = TEMPLATES.map(rowHtml).join('');
+    tbody.querySelectorAll('[data-act="edit"]').forEach(function (el) { el.addEventListener('click', function () { openDrawer(el.closest('tr').getAttribute('data-id')); }); });
+    tbody.querySelectorAll('[data-act="del"]').forEach(function (el) { el.addEventListener('click', function () { attemptDelete(el.closest('tr').getAttribute('data-id')); }); });
+  }
+
+  /* ---------------- drawer ---------------- */
+  var drawer = document.getElementById('drawer'), scrim = document.getElementById('scrim');
+  var editingId = null;
+  var lastFocused = null;
+
+  var varButtonsEl = document.getElementById('varButtons');
+  varButtonsEl.innerHTML = VARS.map(function (v) { return '<button type="button" class="var-btn" data-var="' + v + '">{{' + v + '}}</button>'; }).join('');
+  var fldAssunto = document.getElementById('fldAssunto'), fldCorpo = document.getElementById('fldCorpo');
+  fldAssunto.addEventListener('focus', function () { lastFocused = fldAssunto; });
+  fldCorpo.addEventListener('focus', function () { lastFocused = fldCorpo; });
+  varButtonsEl.querySelectorAll('.var-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var target = lastFocused || fldCorpo;
+      var token = '{{' + btn.getAttribute('data-var') + '}}';
+      var start = target.selectionStart || target.value.length;
+      var end = target.selectionEnd || target.value.length;
+      target.value = target.value.slice(0, start) + token + target.value.slice(end);
+      target.focus();
+      target.selectionStart = target.selectionEnd = start + token.length;
+      updatePreview();
+    });
+  });
+
+  function updatePreview() {
+    document.getElementById('pvAssunto').innerHTML = mergeVars(fldAssunto.value);
+    document.getElementById('pvCorpo').innerHTML = mergeVars(fldCorpo.value);
+  }
+  fldAssunto.addEventListener('input', updatePreview);
+  fldCorpo.addEventListener('input', updatePreview);
+
+  function openDrawer(id) {
+    editingId = id || null;
+    var t = id ? TEMPLATES.filter(function (x) { return x.id === id; })[0] : null;
+    document.getElementById('drawerTitle').textContent = t ? 'Editar modelo' : 'Novo modelo';
+    document.getElementById('drawerSub').textContent = t ? 'Atualize o conteúdo de "' + t.nome + '"' : 'Assunto e corpo, com variáveis dinâmicas';
+    ['Nome', 'Assunto', 'Corpo'].forEach(function (f) {
+      document.getElementById('err' + f).classList.remove('show');
+      document.getElementById('fld' + f).classList.remove('err');
+    });
+    document.getElementById('fldNome').value = t ? t.nome : '';
+    fldAssunto.value = t ? t.assunto : '';
+    fldCorpo.value = t ? t.corpo : '';
+    updatePreview();
+    drawer.classList.add('show'); scrim.classList.add('show');
+    setTimeout(function () { document.getElementById('fldNome').focus(); }, 220);
+  }
+  function closeDrawer() { drawer.classList.remove('show'); scrim.classList.remove('show'); }
+  document.getElementById('newTplBtn').addEventListener('click', function () { openDrawer(null); });
+  document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+  document.getElementById('drawerCancel').addEventListener('click', closeDrawer);
+  scrim.addEventListener('click', closeDrawer);
+
+  document.getElementById('drawerSave').addEventListener('click', function () {
+    var nome = document.getElementById('fldNome').value.trim();
+    var assunto = fldAssunto.value.trim();
+    var corpo = fldCorpo.value.trim();
+    var okNome = !!nome, okAssunto = !!assunto, okCorpo = !!corpo;
+    document.getElementById('fldNome').classList.toggle('err', !okNome);
+    document.getElementById('errNome').classList.toggle('show', !okNome);
+    fldAssunto.classList.toggle('err', !okAssunto);
+    document.getElementById('errAssunto').classList.toggle('show', !okAssunto);
+    fldCorpo.classList.toggle('err', !okCorpo);
+    document.getElementById('errCorpo').classList.toggle('show', !okCorpo);
+    if (!okNome || !okAssunto || !okCorpo) return;
+
+    if (editingId) {
+      var idx = TEMPLATES.findIndex(function (x) { return x.id === editingId; });
+      TEMPLATES[idx] = Object.assign({}, TEMPLATES[idx], { nome: nome, assunto: assunto, corpo: corpo });
+      showToast('Modelo "' + nome + '" atualizado.');
+    } else {
+      seq++;
+      TEMPLATES.push({ id: 'tpl' + seq, nome: nome, assunto: assunto, corpo: corpo, usos: [] });
+      showToast('Modelo "' + nome + '" criado.');
+    }
+    closeDrawer();
+    renderList(); recalcStats();
+  });
+
+  /* ---------------- delete / usage guard ---------------- */
+  var blockModal = document.getElementById('blockModal'), blockScrim = document.getElementById('blockScrim');
+  var delModal = document.getElementById('delModal'), delScrim = document.getElementById('delScrim');
+  var deletingId = null;
+
+  function attemptDelete(id) {
+    var t = TEMPLATES.filter(function (x) { return x.id === id; })[0];
+    if (!t) return;
+    if (t.usos.length > 0) {
+      document.getElementById('blockTplName').textContent = t.nome;
+      document.getElementById('blockUsageList').innerHTML = t.usos.map(function (u) { return '<li>' + escapeHtml(u) + '</li>'; }).join('');
+      blockModal.classList.add('show'); blockScrim.classList.add('show');
+      return;
+    }
+    deletingId = id;
+    document.getElementById('delTplName').textContent = t.nome;
+    delModal.classList.add('show'); delScrim.classList.add('show');
+  }
+  function closeBlockModal() { blockModal.classList.remove('show'); blockScrim.classList.remove('show'); }
+  document.getElementById('blockOk').addEventListener('click', closeBlockModal);
+  blockScrim.addEventListener('click', closeBlockModal);
+
+  function closeDelModal() { delModal.classList.remove('show'); delScrim.classList.remove('show'); deletingId = null; }
+  document.getElementById('delCancel').addEventListener('click', closeDelModal);
+  delScrim.addEventListener('click', closeDelModal);
+  document.getElementById('delConfirm').addEventListener('click', function () {
+    var t = TEMPLATES.filter(function (x) { return x.id === deletingId; })[0];
+    TEMPLATES = TEMPLATES.filter(function (x) { return x.id !== deletingId; });
+    closeDelModal();
+    renderList(); recalcStats();
+    if (t) showToast('Modelo "' + t.nome + '" excluído.');
+  });
+
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeDrawer(); closeDelModal(); closeBlockModal(); } });
+
+  recalcStats();
+  renderList();
+})();
+</script>

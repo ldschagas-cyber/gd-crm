@@ -1,0 +1,470 @@
+<title>Preferências — GD Conecta CRM</title>
+<style>
+  /* Font note: real product should self-host IBM Plex Sans/Mono; CDN fonts are blocked
+     in this artifact sandbox, so a close system-grotesque stack stands in here. */
+  :root {
+    --font-display: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Cascadia Code", "SFMono-Regular", "Consolas", ui-monospace, monospace;
+
+    --indigo: #2D3561;
+    --indigo-600: #3B4478;
+    --amber: #C9A84C;
+    --azul: #0077A8;
+    --marfim: #F5F1EB;
+
+    --paper: var(--marfim);
+    --panel: var(--indigo);
+    --panel-fg: #F1EEE6;
+    --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12);
+    --panel-active-bg: rgba(201, 168, 76, 0.14);
+
+    --ink: #22243A;
+    --ink-dim: #5B5E78;
+    --ink-faint: #8B8EA6;
+    --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF;
+    --accent: var(--amber);
+    --link: var(--azul);
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+
+    --good: #0ca30c;
+    --warning: #fab219;
+    --serious: #ec835a;
+    --critical: #d03b3b;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+      --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+      --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+      --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+    --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+    --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+    --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+  }
+  :root[data-theme="light"] {
+    --paper: #F5F1EB; --panel: #2D3561; --panel-fg: #F1EEE6; --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12); --panel-active-bg: rgba(201, 168, 76, 0.14);
+    --ink: #22243A; --ink-dim: #5B5E78; --ink-faint: #8B8EA6; --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF; --amber: #C9A84C; --azul: #0077A8; --link: #0077A8;
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; font-family: var(--font-display); color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; }
+  button, input, select, textarea { font-family: inherit; }
+  a { color: inherit; }
+  ::selection { background: rgba(201,168,76,.3); }
+  :focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; border-radius: 4px; }
+
+  .shell { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+
+  /* ---------------- Sidebar ---------------- */
+  .sidebar { background: var(--panel); color: var(--panel-fg); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+  .sb-brand { display: flex; align-items: center; gap: 10px; padding: 20px 18px 16px; }
+  .monogram { width: 34px; height: 34px; border-radius: 9px; flex: none; background: var(--amber); color: var(--indigo); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+  .sb-brand strong { display: block; font-size: 14.5px; font-weight: 650; line-height: 1.2; }
+  .sb-brand span { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--panel-fg-dim); margin-top: 2px; }
+  .sb-nav { flex: 1; overflow-y: auto; padding: 10px 12px; }
+  .sb-group + .sb-group { margin-top: 18px; }
+  .sb-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--panel-fg-dim); padding: 0 10px; margin-bottom: 6px; }
+  .sb-item { display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: 8px; margin-bottom: 2px; font-size: 13.6px; font-weight: 500; color: var(--panel-fg-dim); text-decoration: none; cursor: pointer; border: 1px solid transparent; position: relative; }
+  .sb-item svg { width: 17px; height: 17px; flex: none; opacity: 0.9; }
+  .sb-item:hover { background: rgba(241, 238, 230, 0.06); color: var(--panel-fg); }
+  .sb-item.active { background: var(--panel-active-bg); color: var(--panel-fg); font-weight: 650; }
+  .sb-item.active::before { content: ""; position: absolute; left: -12px; top: 6px; bottom: 6px; width: 3px; background: var(--amber); border-radius: 2px; }
+  .sb-item .chip { margin-left: auto; font-family: var(--font-mono); font-size: 10px; background: rgba(241,238,230,0.12); color: var(--panel-fg-dim); padding: 1px 6px; border-radius: 100px; }
+  .sb-user { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-top: 1px solid var(--panel-border); cursor: pointer; position: relative; }
+  .sb-user.active { background: var(--panel-active-bg); }
+  .sb-user.active::before { content: ""; position: absolute; left: 0; top: 6px; bottom: 6px; width: 3px; background: var(--amber); border-radius: 0 2px 2px 0; }
+  .sb-user:hover { background: rgba(241, 238, 230, 0.06); }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; flex: none; background: rgba(201,168,76,0.18); color: var(--amber); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; border: 1px solid rgba(201,168,76,0.3); }
+  .sb-user-meta { min-width: 0; flex: 1; }
+  .sb-user-meta strong { display: block; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-user-meta span { display: block; font-size: 11px; color: var(--panel-fg-dim); }
+
+  /* ---------------- Main column ---------------- */
+  .main-col { display: flex; flex-direction: column; min-width: 0; }
+  .content { padding: 22px 28px 48px; display: flex; flex-direction: column; gap: 16px; max-width: 760px; }
+
+  .page-head h1 { margin: 0; font-size: 20px; font-weight: 650; letter-spacing: -0.01em; }
+  .page-head p { margin: 3px 0 0; font-size: 12.5px; color: var(--ink-dim); }
+
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); overflow-x: auto; }
+  .tab-btn { border: none; background: transparent; padding: 10px 14px; font-size: 13.3px; font-weight: 600; color: var(--ink-faint); cursor: pointer; white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { color: var(--ink); border-bottom-color: var(--amber); }
+
+  .tab-panel { display: none; flex-direction: column; gap: 16px; }
+  .tab-panel.active { display: flex; }
+
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+  .card-head { padding: 16px 20px 12px; border-bottom: 1px solid var(--border); }
+  .card-head h2 { margin: 0; font-size: 14.5px; font-weight: 700; }
+  .card-head p { margin: 3px 0 0; font-size: 12px; color: var(--ink-dim); }
+  .card-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
+
+  .f-group { display: flex; flex-direction: column; gap: 6px; }
+  .f-row { display: flex; gap: 12px; }
+  .f-row .f-group { flex: 1; min-width: 0; }
+  .f-label { font-size: 12.5px; font-weight: 600; color: var(--ink-dim); display: flex; justify-content: space-between; }
+  .f-label .opt { font-weight: 400; color: var(--ink-faint); }
+  .f-input, .f-select { border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; background: var(--card-bg); color: var(--ink); width: 100%; outline: none; transition: border-color .12s ease, box-shadow .12s ease; }
+  .f-input:focus, .f-select:focus { border-color: var(--azul); box-shadow: 0 0 0 3px rgba(0,119,168,.14); }
+  .f-input:disabled { background: var(--paper); color: var(--ink-faint); cursor: not-allowed; }
+  .f-hint { font-size: 11.5px; color: var(--ink-faint); }
+
+  .avatar-row { display: flex; align-items: center; gap: 14px; }
+  .avatar-lg { width: 58px; height: 58px; border-radius: 50%; background: var(--panel); color: var(--amber); display: flex; align-items: center; justify-content: center; font-size: 19px; font-weight: 700; flex: none; }
+
+  .btn-primary { display: flex; align-items: center; gap: 7px; background: var(--indigo); color: var(--panel-fg); border: 1px solid var(--indigo); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; width: fit-content; }
+  .btn-primary:hover { background: var(--indigo-600); }
+  .btn-primary:disabled { opacity: .45; cursor: not-allowed; }
+  .btn-ghost { display: flex; align-items: center; gap: 7px; background: var(--card-bg); color: var(--ink); border: 1px solid var(--border); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; width: fit-content; }
+  .btn-ghost:hover { border-color: var(--ink-faint); }
+  .btn-ghost.sm { padding: 6px 11px; font-size: 12px; border-radius: 7px; }
+  .btn-danger-outline { display: flex; align-items: center; gap: 7px; background: var(--card-bg); color: var(--critical); border: 1px solid rgba(208,59,59,.35); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; width: fit-content; }
+  .btn-danger-outline:hover { background: rgba(208,59,59,.06); }
+
+  .connection-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; }
+  .connection-row .icon { width: 36px; height: 36px; border-radius: 8px; background: var(--paper); display: flex; align-items: center; justify-content: center; flex: none; color: var(--azul); }
+  .connection-row .icon svg { width: 18px; height: 18px; }
+  .connection-body { flex: 1; min-width: 0; }
+  .connection-title { font-size: 13.3px; font-weight: 650; }
+  .connection-sub { font-size: 11.5px; color: var(--ink-faint); margin-top: 1px; }
+  .conn-status { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 650; padding: 3px 10px; border-radius: 100px; background: rgba(12,163,12,0.12); color: var(--good); white-space: nowrap; }
+  .conn-status .d { width: 6px; height: 6px; border-radius: 50%; background: var(--good); }
+
+  .switch { position: relative; width: 34px; height: 19px; flex: none; }
+  .switch input { opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+  .switch .track { position: absolute; inset: 0; background: var(--border); border-radius: 100px; transition: background 150ms ease; pointer-events: none; }
+  .switch .knob { position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.25); transition: transform 150ms ease; pointer-events: none; }
+  .switch input:checked + .track { background: var(--good); }
+  .switch input:checked ~ .knob { transform: translateX(15px); }
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .toggle-row .t { font-size: 13px; color: var(--ink); }
+  .toggle-row .sub { font-size: 11.5px; color: var(--ink-faint); margin-top: 1px; }
+
+  .roadmap-card { border: 1px dashed var(--border); border-radius: 10px; padding: 16px; opacity: .68; }
+  .roadmap-badge { display: inline-flex; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-faint); background: var(--paper); padding: 3px 9px; border-radius: 100px; margin-bottom: 10px; }
+  .gauge-track { height: 8px; border-radius: 100px; background: var(--paper); overflow: hidden; margin-top: 6px; }
+  .gauge-fill { height: 100%; border-radius: 100px; background: var(--ink-faint); }
+
+  .info-card { display: flex; gap: 11px; padding: 14px 16px; background: color-mix(in srgb, var(--azul) 6%, var(--card-bg)); border: 1px solid var(--border); border-radius: 12px; }
+  .info-card svg { width: 17px; height: 17px; color: var(--azul); flex: none; margin-top: 1px; }
+  .info-card p { margin: 0; font-size: 12.5px; color: var(--ink-dim); line-height: 1.5; }
+  .info-card p strong { color: var(--ink); }
+
+  .session-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .session-row:last-child { border-bottom: none; }
+  .session-row .icon { width: 32px; height: 32px; border-radius: 8px; background: var(--paper); display: flex; align-items: center; justify-content: center; flex: none; color: var(--ink-dim); }
+  .session-row .icon svg { width: 16px; height: 16px; }
+  .session-body { flex: 1; min-width: 0; font-size: 12.8px; }
+  .session-body .t { font-weight: 600; color: var(--ink); }
+  .session-body .sub { font-size: 11.5px; color: var(--ink-faint); }
+  .session-current { font-size: 10.5px; font-weight: 700; color: var(--good); background: rgba(12,163,12,0.12); padding: 2px 8px; border-radius: 100px; flex: none; }
+
+  .toast { position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 12px); background: var(--ink); color: var(--paper); font-size: 13.5px; padding: 10px 16px; border-radius: 8px; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: opacity 180ms ease, transform 180ms ease; z-index: 60; max-width: 88vw; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar { position: relative; height: auto; }
+    .sb-nav { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+</style>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="monogram">GD</div>
+      <div><strong>Conecta CRM</strong><span>Gestão comercial</span></div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-group">
+        <a class="sb-item" href="#" data-page="Dashboard">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="2.5" width="6.2" height="6.2" rx="1.3"/><rect x="11.3" y="2.5" width="6.2" height="4.4" rx="1.3"/><rect x="11.3" y="9.4" width="6.2" height="8.1" rx="1.3"/><rect x="2.5" y="11.2" width="6.2" height="6.3" rx="1.3"/></svg>
+          Dashboard
+        </a>
+        <a class="sb-item" href="#" data-page="Pesquisa de Leads">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7"/><circle cx="10" cy="10" r="3.2"/><path d="M10 3v2.4M10 14.6V17M17 10h-2.4M5.4 10H3"/></svg>
+          Pesquisa de Leads
+        </a>
+        <a class="sb-item" href="#" data-page="Empresas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17.5V3.8a.8.8 0 01.8-.8h6.4a.8.8 0 01.8.8v13.7"/><path d="M13 17.5V8.3a.8.8 0 01.8-.8h3.4a.8.8 0 01.8.8v9.2"/><path d="M5.4 6h1.6M5.4 9h1.6M5.4 12h1.6M15 10.6h1M15 13.4h1"/></svg>
+          Empresas
+          <span class="chip">3.402</span>
+        </a>
+        <a class="sb-item" href="#" data-page="Contatos">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="6.6" r="3.1"/><path d="M3.6 17c.7-3.4 3.2-5.2 6.4-5.2s5.7 1.8 6.4 5.2"/></svg>
+          Contatos
+        </a>
+        <a class="sb-item" href="#" data-page="Negócios">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 10.3l3-4.6a1 1 0 01.85-.47h7.3a1 1 0 01.85.47l3 4.6"/><path d="M2.5 10.3v5.2a1 1 0 001 1h13a1 1 0 001-1v-5.2"/><path d="M7.3 10.3a2.7 2.7 0 005.4 0"/></svg>
+          Negócios
+          <span class="chip">184</span>
+        </a>
+        <a class="sb-item" href="#" data-page="Pipeline">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="3" width="4.2" height="14" rx="1"/><rect x="7.9" y="3" width="4.2" height="9.5" rx="1"/><rect x="13.3" y="3" width="4.2" height="6" rx="1"/></svg>
+          Pipeline
+        </a>
+        <a class="sb-item" href="#" data-page="Tarefas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2.2"/><path d="M6.6 10.2l2 2 4.6-4.9"/></svg>
+          Tarefas
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Marketing</div>
+        <a class="sb-item" href="#" data-page="Formulários">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="2.5" width="14" height="15" rx="1.8"/><path d="M6.3 6.6h7.4M6.3 9.6h7.4M6.3 12.6h4.4"/></svg>
+          Formulários
+        </a>
+        <a class="sb-item" href="#" data-page="Rastreio do site">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7.3"/><path d="M10 5.6v4.4l3 1.8"/></svg>
+          Rastreio do site
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Administração</div>
+        <a class="sb-item" href="#" data-page="Usuários">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="6.4" r="2.8"/><path d="M2.6 16.4c.6-3 2.7-4.6 5.4-4.6s4.8 1.6 5.4 4.6"/><path d="M13.6 4.6c1.3.3 2.2 1.4 2.2 2.9 0 1.3-.7 2.3-1.8 2.8M15.6 11.9c1.4.6 2.3 1.9 2.7 3.9"/></svg>
+          Usuários
+        </a>
+        <a class="sb-item" href="#" data-page="Configurações">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="2.6"/><path d="M10 2.8v2M10 15.2v2M17.2 10h-2M4.8 10h-2M15.1 4.9l-1.4 1.4M6.3 13.7l-1.4 1.4M15.1 15.1l-1.4-1.4M6.3 6.3L4.9 4.9"/></svg>
+          Configurações
+        </a>
+      </div>
+    </nav>
+
+    <div class="sb-user active" id="sbUserBtn">
+      <div class="avatar">DC</div>
+      <div class="sb-user-meta"><strong>Daniel Chagas</strong><span>Preferências pessoais</span></div>
+    </div>
+  </aside>
+
+  <div class="main-col">
+    <div class="content">
+      <div class="page-head">
+        <h1>Preferências</h1>
+        <p>Essas configurações se aplicam só à sua conta — para dados do tenant, veja Configurações.</p>
+      </div>
+
+      <div class="tabs" role="tablist">
+        <button class="tab-btn active" data-tab="perfil">Perfil</button>
+        <button class="tab-btn" data-tab="email">E-mail</button>
+        <button class="tab-btn" data-tab="calendario">Calendário</button>
+        <button class="tab-btn" data-tab="chamadas">Chamadas</button>
+        <button class="tab-btn" data-tab="seguranca">Segurança</button>
+      </div>
+
+      <!-- ===================== PERFIL ===================== -->
+      <div class="tab-panel active" data-panel="perfil">
+        <div class="card">
+          <div class="card-head"><h2>Perfil</h2><p>Como seu nome aparece para o resto da equipe</p></div>
+          <div class="card-body">
+            <div class="avatar-row">
+              <div class="avatar-lg">DC</div>
+              <button class="btn-ghost sm">Alterar foto</button>
+            </div>
+            <div class="f-group">
+              <label class="f-label">Nome</label>
+              <input class="f-input" value="Daniel Chagas" />
+            </div>
+            <div class="f-row">
+              <div class="f-group">
+                <label class="f-label">Telefone <span class="opt">opcional</span></label>
+                <input class="f-input" value="(11) 98812-4471" />
+              </div>
+              <div class="f-group">
+                <label class="f-label">Cargo <span class="opt">opcional</span></label>
+                <input class="f-input" value="Diretor de Operações" />
+              </div>
+            </div>
+            <div class="f-row">
+              <div class="f-group">
+                <label class="f-label">Idioma</label>
+                <input class="f-input" value="Português (Brasil)" disabled />
+              </div>
+              <div class="f-group">
+                <label class="f-label">Formato de data e hora</label>
+                <input class="f-input" value="dd/mm/aaaa · 24h" disabled />
+                <span class="f-hint">Definido pelo administrador em Configurações.</span>
+              </div>
+            </div>
+            <button class="btn-primary" id="saveProfileBtn">Salvar alterações</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== E-MAIL ===================== -->
+      <div class="tab-panel" data-panel="email">
+        <div class="card">
+          <div class="card-head"><h2>E-mail</h2><p>Conecte sua conta corporativa para registrar e-mails automaticamente no CRM</p></div>
+          <div class="card-body">
+            <div class="connection-row">
+              <span class="icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2" y="4" width="16" height="12" rx="1.8"/><path d="M2.5 5l7.5 5.5L17.5 5"/></svg></span>
+              <div class="connection-body">
+                <div class="connection-title">daniel.chagas@gdconecta.com.br</div>
+                <div class="connection-sub">Microsoft 365 / Outlook · conectado via Microsoft Graph</div>
+              </div>
+              <span class="conn-status"><span class="d"></span>Conectado</span>
+            </div>
+            <div class="toggle-row">
+              <div><div class="t">Registrar e-mails automaticamente</div><div class="sub">E-mails trocados com contatos do CRM entram na timeline da empresa</div></div>
+              <label class="switch"><input type="checkbox" checked /><span class="track"></span><span class="knob"></span></label>
+            </div>
+            <button class="btn-danger-outline" id="disconnectEmailBtn">Desconectar e-mail</button>
+          </div>
+        </div>
+        <div class="info-card">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="7.3"/><path d="M10 9v4.2M10 6.6h.01"/></svg>
+          <p>A GD Conecta usa <strong>Microsoft 365</strong> — por isso essa integração usa a Microsoft Graph API, não um genérico IMAP/SMTP.</p>
+        </div>
+      </div>
+
+      <!-- ===================== CALENDÁRIO ===================== -->
+      <div class="tab-panel" data-panel="calendario">
+        <div class="card">
+          <div class="card-head"><h2>Calendário</h2><p>Sincronize reuniões e disponibilidade com o CRM</p></div>
+          <div class="card-body">
+            <div class="connection-row">
+              <span class="icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2.5" y="3.5" width="15" height="13.5" rx="1.8"/><path d="M2.5 8h15M6.3 2.5v3M13.7 2.5v3"/></svg></span>
+              <div class="connection-body">
+                <div class="connection-title">daniel.chagas@gdconecta.com.br</div>
+                <div class="connection-sub">Microsoft 365 / Outlook Calendar</div>
+              </div>
+              <span class="conn-status"><span class="d"></span>Conectado</span>
+            </div>
+            <div class="toggle-row">
+              <div><div class="t">Sincronizar reuniões</div><div class="sub">Reuniões marcadas no Outlook aparecem na timeline dos contatos convidados</div></div>
+              <label class="switch"><input type="checkbox" checked /><span class="track"></span><span class="knob"></span></label>
+            </div>
+            <div class="f-group">
+              <label class="f-label">Sua página de agendamento</label>
+              <input class="f-input mono" value="gdconecta.crm/agendar/daniel-chagas" disabled />
+              <span class="f-hint">Compartilhe esse link para que um lead marque uma reunião direto na sua disponibilidade.</span>
+            </div>
+            <button class="btn-danger-outline" id="disconnectCalBtn">Desconectar calendário</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== CHAMADAS ===================== -->
+      <div class="tab-panel" data-panel="chamadas">
+        <div class="info-card">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="7.3"/><path d="M10 9v4.2M10 6.6h.01"/></svg>
+          <p><strong>Hoje:</strong> ligue pelo app de telefone do seu computador ou celular usando o ícone de telefone em Empresas/Contatos, e registre a chamada como uma Tarefa ou nota na timeline. Ainda não há discador embutido no navegador.</p>
+        </div>
+        <div class="card roadmap-card">
+          <span class="roadmap-badge">Em avaliação — ainda não disponível</span>
+          <div class="card-body" style="padding:0;">
+            <div class="connection-row" style="border-style:dashed;">
+              <span class="icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 3.5c1.6 5.6 6.4 10.4 12 12l1.8-2.6a1 1 0 00-.5-1.5l-3-1.1a1 1 0 00-1.1.3l-1 1.2a10 10 0 01-5.5-5.5l1.2-1a1 1 0 00.3-1.1l-1.1-3a1 1 0 00-1.5-.5L4 3.5z"/></svg></span>
+              <div class="connection-body">
+                <div class="connection-title">Discador integrado (WebRTC)</div>
+                <div class="connection-sub">Chamada direto do navegador, com registro automático na timeline</div>
+              </div>
+            </div>
+            <div class="f-group" style="margin-top:14px;">
+              <label class="f-label">Consumo de minutos este mês <span class="opt">ilustrativo</span></label>
+              <div class="gauge-track"><div class="gauge-fill" style="width:0%;"></div></div>
+              <span class="f-hint">0 de N minutos — painel de custo interno da GD Conecta, não é cobrança a terceiros.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== SEGURANÇA ===================== -->
+      <div class="tab-panel" data-panel="seguranca">
+        <div class="card">
+          <div class="card-head"><h2>Senha</h2><p>Sua senha de acesso ao CRM</p></div>
+          <div class="card-body">
+            <div class="f-group">
+              <label class="f-label">Senha atual</label>
+              <input class="f-input" type="password" placeholder="••••••••" />
+            </div>
+            <div class="f-row">
+              <div class="f-group">
+                <label class="f-label">Nova senha</label>
+                <input class="f-input" type="password" placeholder="mínimo 8 caracteres" />
+              </div>
+              <div class="f-group">
+                <label class="f-label">Confirmar nova senha</label>
+                <input class="f-input" type="password" placeholder="repita a nova senha" />
+              </div>
+            </div>
+            <button class="btn-primary" id="changePwdBtn">Alterar senha</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2>Sessões ativas</h2><p>Dispositivos conectados à sua conta</p></div>
+          <div class="card-body">
+            <div class="session-row">
+              <span class="icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2.5" y="3.5" width="15" height="10" rx="1.6"/><path d="M7 17h6M10 13.5V17"/></svg></span>
+              <div class="session-body"><div class="t">Windows · Chrome</div><div class="sub">São Paulo, SP · ativa agora</div></div>
+              <span class="session-current">Este dispositivo</span>
+            </div>
+            <div class="session-row">
+              <span class="icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="6" y="2.5" width="8" height="15" rx="1.8"/><path d="M9 15h2"/></svg></span>
+              <div class="session-body"><div class="t">iPhone · Safari</div><div class="sub">São Paulo, SP · há 2h</div></div>
+              <button class="btn-ghost sm" data-act="revoke">Encerrar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var toastEl = document.getElementById('toast');
+  var toastTimer;
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 3400);
+  }
+  document.querySelectorAll('[data-page]').forEach(function (el) {
+    el.addEventListener('click', function (e) { e.preventDefault(); showToast('Tela "' + el.getAttribute('data-page') + '" ainda não foi prototipada.'); });
+  });
+
+  document.querySelectorAll('.tab-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.remove('active'); });
+      btn.classList.add('active');
+      document.querySelector('[data-panel="' + btn.getAttribute('data-tab') + '"]').classList.add('active');
+    });
+  });
+
+  document.getElementById('saveProfileBtn').addEventListener('click', function () { showToast('Perfil atualizado.'); });
+  document.getElementById('disconnectEmailBtn').addEventListener('click', function () { showToast('E-mail desconectado — o registro automático foi desativado.'); });
+  document.getElementById('disconnectCalBtn').addEventListener('click', function () { showToast('Calendário desconectado — reuniões deixam de sincronizar.'); });
+  document.getElementById('changePwdBtn').addEventListener('click', function () { showToast('Senha alterada.'); });
+  document.querySelectorAll('[data-act="revoke"]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      btn.closest('.session-row').remove();
+      showToast('Sessão encerrada.');
+    });
+  });
+})();
+</script>

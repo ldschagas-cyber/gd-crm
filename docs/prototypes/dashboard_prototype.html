@@ -1,0 +1,846 @@
+<title>Dashboard — GD Conecta CRM</title>
+<style>
+  /* Font note: real product should self-host IBM Plex Sans/Mono; CDN fonts are blocked
+     in this artifact sandbox, so a close system-grotesque stack stands in here. */
+  :root {
+    --font-display: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Cascadia Code", "SFMono-Regular", "Consolas", ui-monospace, monospace;
+
+    --indigo: #2D3561;
+    --indigo-600: #3B4478;
+    --amber: #C9A84C;
+    --azul: #0077A8;
+    --marfim: #F5F1EB;
+
+    --paper: var(--marfim);
+    --panel: var(--indigo);
+    --panel-fg: #F1EEE6;
+    --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12);
+    --panel-active-bg: rgba(201, 168, 76, 0.14);
+
+    --ink: #22243A;
+    --ink-dim: #5B5E78;
+    --ink-faint: #8B8EA6;
+    --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF;
+    --accent: var(--amber);
+    --link: var(--azul);
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+
+    /* status — fixed, mode-invariant, always paired with icon + label */
+    --good: #0ca30c;
+    --warning: #fab219;
+    --serious: #ec835a;
+    --critical: #d03b3b;
+
+    /* funnel — single-hue sequential ramp (ordinal), light surface */
+    --seq-1: #86b6ef;
+    --seq-2: #5598e7;
+    --seq-3: #2a78d6;
+    --seq-4: #1c5cab;
+    --seq-5: #104281;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14172A;
+      --panel: #10121F;
+      --panel-fg: #F1EEE6;
+      --panel-fg-dim: #9AA0C0;
+      --panel-border: rgba(241, 238, 230, 0.10);
+      --panel-active-bg: rgba(217, 184, 94, 0.14);
+      --ink: #EDEAE2;
+      --ink-dim: #A6A9C2;
+      --ink-faint: #767A98;
+      --border: rgba(241, 238, 230, 0.12);
+      --card-bg: #1B1E33;
+      --amber: #D9B85E;
+      --azul: #4CB2DE;
+      --link: #4CB2DE;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+      --seq-1: #9ec5f4; --seq-2: #6da7ec; --seq-3: #3987e5; --seq-4: #256abf; --seq-5: #184f95;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+    --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+    --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+    --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+    --seq-1: #9ec5f4; --seq-2: #6da7ec; --seq-3: #3987e5; --seq-4: #256abf; --seq-5: #184f95;
+  }
+  :root[data-theme="light"] {
+    --paper: #F5F1EB; --panel: #2D3561; --panel-fg: #F1EEE6; --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12); --panel-active-bg: rgba(201, 168, 76, 0.14);
+    --ink: #22243A; --ink-dim: #5B5E78; --ink-faint: #8B8EA6; --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF; --amber: #C9A84C; --azul: #0077A8; --link: #0077A8;
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+    --seq-1: #86b6ef; --seq-2: #5598e7; --seq-3: #2a78d6; --seq-4: #1c5cab; --seq-5: #104281;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-family: var(--font-display);
+    color: var(--ink);
+    background: var(--paper);
+    -webkit-font-smoothing: antialiased;
+    font-variant-numeric: tabular-nums;
+  }
+  button { font-family: inherit; }
+  a { color: inherit; }
+
+  .shell { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+
+  /* ---------------- Sidebar ---------------- */
+  .sidebar {
+    background: var(--panel); color: var(--panel-fg);
+    display: flex; flex-direction: column;
+    position: sticky; top: 0; height: 100vh;
+  }
+  .sb-brand { display: flex; align-items: center; gap: 10px; padding: 20px 18px 16px; }
+  .monogram {
+    width: 34px; height: 34px; border-radius: 9px; flex: none;
+    background: var(--amber); color: var(--indigo);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px;
+  }
+  .sb-brand strong { display: block; font-size: 14.5px; font-weight: 650; line-height: 1.2; }
+  .sb-brand span {
+    display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.07em;
+    text-transform: uppercase; color: var(--panel-fg-dim); margin-top: 2px;
+  }
+
+  .sb-nav { flex: 1; overflow-y: auto; padding: 10px 12px; }
+  .sb-group + .sb-group { margin-top: 18px; }
+  .sb-label {
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--panel-fg-dim); padding: 0 10px; margin-bottom: 6px;
+  }
+  .sb-item {
+    display: flex; align-items: center; gap: 11px;
+    padding: 9px 10px; border-radius: 8px; margin-bottom: 2px;
+    font-size: 13.6px; font-weight: 500; color: var(--panel-fg-dim);
+    text-decoration: none; cursor: pointer; border: 1px solid transparent;
+    position: relative;
+  }
+  .sb-item svg { width: 17px; height: 17px; flex: none; opacity: 0.9; }
+  .sb-item:hover { background: rgba(241, 238, 230, 0.06); color: var(--panel-fg); }
+  .sb-item:focus-visible { outline: 2px solid var(--amber); outline-offset: -2px; }
+  .sb-item.active {
+    background: var(--panel-active-bg); color: var(--panel-fg);
+    font-weight: 650;
+  }
+  .sb-item.active::before {
+    content: ""; position: absolute; left: -12px; top: 6px; bottom: 6px; width: 3px;
+    background: var(--amber); border-radius: 2px;
+  }
+  .sb-item .chip {
+    margin-left: auto; font-family: var(--font-mono); font-size: 10px;
+    background: rgba(241,238,230,0.12); color: var(--panel-fg-dim);
+    padding: 1px 6px; border-radius: 100px;
+  }
+
+  .sb-user {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 16px; border-top: 1px solid var(--panel-border);
+  }
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%; flex: none;
+    background: rgba(201,168,76,0.18); color: var(--amber);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; border: 1px solid rgba(201,168,76,0.3);
+  }
+  .sb-user-meta { min-width: 0; flex: 1; }
+  .sb-user-meta strong { display: block; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-user-meta span { display: block; font-size: 11px; color: var(--panel-fg-dim); }
+  .logout-btn {
+    background: transparent; border: none; color: var(--panel-fg-dim); cursor: pointer;
+    width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center;
+    flex: none;
+  }
+  .logout-btn:hover { background: rgba(241,238,230,0.08); color: var(--panel-fg); }
+  .logout-btn svg { width: 16px; height: 16px; }
+
+  /* ---------------- Main column ---------------- */
+  .main-col { display: flex; flex-direction: column; min-width: 0; }
+
+  .topbar {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; align-items: center; gap: 20px;
+    padding: 16px 28px; background: var(--paper);
+    border-bottom: 1px solid var(--border);
+  }
+  .topbar-title h1 { font-size: 19px; font-weight: 650; letter-spacing: -0.01em; margin: 0; }
+  .topbar-title p { margin: 2px 0 0; font-size: 12.5px; color: var(--ink-dim); }
+
+  .search {
+    flex: 1; max-width: 380px;
+    display: flex; align-items: center; gap: 8px;
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 9px;
+    padding: 8px 12px; color: var(--ink-faint);
+  }
+  .search svg { width: 16px; height: 16px; flex: none; }
+  .search input {
+    border: none; outline: none; background: transparent; font: inherit; font-size: 13.5px;
+    color: var(--ink); width: 100%;
+  }
+  .search input::placeholder { color: var(--ink-faint); }
+
+  .topbar-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+
+  .period-pill {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 500; color: var(--ink);
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 100px; padding: 7px 12px; cursor: pointer;
+  }
+  .period-pill svg { width: 13px; height: 13px; color: var(--ink-faint); }
+
+  .icon-btn {
+    position: relative;
+    width: 34px; height: 34px; border-radius: 9px;
+    background: var(--card-bg); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ink-dim);
+  }
+  .icon-btn:hover { color: var(--ink); }
+  .icon-btn svg { width: 16px; height: 16px; }
+  .icon-btn .dot {
+    position: absolute; top: 6px; right: 7px; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--critical); border: 1.5px solid var(--paper);
+  }
+
+  .btn-primary {
+    display: flex; align-items: center; gap: 7px;
+    background: var(--indigo); color: var(--panel-fg); border: 1px solid var(--indigo);
+    font-size: 13.5px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer;
+  }
+  .btn-primary:hover { background: var(--indigo-600); }
+  .btn-primary svg { width: 15px; height: 15px; }
+
+  .content { padding: 24px 28px 48px; display: flex; flex-direction: column; gap: 22px; }
+
+  /* ---------------- KPI row ---------------- */
+  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .kpi-card {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px 18px; box-shadow: var(--shadow);
+  }
+  .kpi-card .label {
+    font-size: 12.5px; color: var(--ink-dim); font-weight: 500; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .kpi-card .value { font-size: 25px; font-weight: 650; letter-spacing: -0.01em; }
+  .kpi-card .delta {
+    display: inline-flex; align-items: center; gap: 4px; margin-top: 8px;
+    font-size: 12px; font-weight: 600;
+  }
+  .kpi-card .delta svg { width: 11px; height: 11px; }
+  .delta.up { color: var(--good); }
+  .delta.down { color: var(--critical); }
+  .delta .vs { color: var(--ink-faint); font-weight: 400; margin-left: 2px; }
+
+  .kpi-strip {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+  }
+  .kpi-mini {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
+    padding: 13px 16px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .kpi-mini .t { font-size: 12.5px; color: var(--ink-dim); }
+  .kpi-mini .v { font-size: 17px; font-weight: 650; }
+
+  /* ---------------- Two-column layout ---------------- */
+  .grid-main { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+  .col { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+
+  .card {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
+    box-shadow: var(--shadow); overflow: hidden;
+  }
+  .card-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding: 16px 18px 12px;
+  }
+  .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 650; }
+  .card-head p { margin: 2px 0 0; font-size: 12px; color: var(--ink-dim); }
+  .card-head .link-action { font-size: 12.5px; font-weight: 600; color: var(--link); text-decoration: none; }
+  .card-head .link-action:hover { text-decoration: underline; }
+
+  /* funnel */
+  .funnel { padding: 4px 18px 18px; display: flex; flex-direction: column; }
+  .funnel-row { display: flex; align-items: center; gap: 12px; padding: 7px 0; }
+  .funnel-name { width: 108px; flex: none; font-size: 12.5px; color: var(--ink-dim); font-weight: 500; }
+  .funnel-track { flex: 1; height: 22px; background: var(--paper); border-radius: 5px; overflow: hidden; }
+  .funnel-fill { height: 100%; border-radius: 5px; transition: width 500ms ease; }
+  .funnel-count { width: 46px; flex: none; text-align: right; font-size: 13px; font-weight: 650; }
+  .funnel-conv {
+    width: 68px; flex: none; text-align: right; font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-faint);
+  }
+  .funnel-row.won .funnel-name { color: var(--ink); font-weight: 650; }
+  .funnel-row.won .funnel-count { color: var(--good); }
+
+  /* table */
+  table.deals { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.deals th {
+    text-align: left; font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 600; padding: 8px 18px; border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  table.deals td { padding: 11px 18px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  table.deals tbody tr:last-child td { border-bottom: none; }
+  table.deals tbody tr:hover { background: color-mix(in srgb, var(--paper) 55%, transparent); }
+  .deal-name { font-weight: 600; color: var(--ink); }
+  .deal-sub { font-size: 11.5px; color: var(--ink-faint); margin-top: 1px; }
+  .cell-value { font-weight: 650; text-align: right; }
+  .stage-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--ink); white-space: nowrap;
+  }
+  .stage-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+  .updated { color: var(--ink-faint); font-size: 12px; white-space: nowrap; }
+
+  /* tasks */
+  .tasks-progress {
+    display: flex; align-items: center; gap: 10px; padding: 0 18px 12px; margin-top: -6px;
+  }
+  .progress-track { flex: 1; height: 6px; background: var(--paper); border-radius: 100px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--azul); border-radius: 100px; transition: width 300ms ease; }
+  .progress-label { font-size: 11.5px; color: var(--ink-dim); white-space: nowrap; font-family: var(--font-mono); }
+
+  .task-list { display: flex; flex-direction: column; padding: 0 10px 10px; }
+  .task-item {
+    display: flex; align-items: flex-start; gap: 10px; padding: 9px 8px; border-radius: 9px;
+  }
+  .task-item:hover { background: color-mix(in srgb, var(--paper) 55%, transparent); }
+  .task-check {
+    width: 19px; height: 19px; border-radius: 50%; border: 1.6px solid var(--border);
+    background: var(--card-bg); flex: none; margin-top: 1px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; color: transparent;
+  }
+  .task-check svg { width: 11px; height: 11px; }
+  .task-item.done .task-check { background: var(--good); border-color: var(--good); color: #fff; }
+  .task-item.done .task-title { text-decoration: line-through; color: var(--ink-faint); }
+  .task-body { flex: 1; min-width: 0; }
+  .task-title { font-size: 13.2px; font-weight: 550; color: var(--ink); }
+  .task-meta { display: flex; align-items: center; gap: 7px; margin-top: 3px; font-size: 11.5px; color: var(--ink-faint); }
+  .task-type-icon { width: 13px; height: 13px; color: var(--ink-faint); flex: none; }
+  .prio { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; }
+  .prio-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .prio.alta { color: var(--critical); }
+  .prio.media { color: color-mix(in srgb, var(--warning) 65%, var(--ink-dim)); }
+  .prio.baixa { color: var(--ink-faint); }
+
+  /* activity */
+  .activity-list { display: flex; flex-direction: column; padding: 2px 18px 16px; }
+  .activity-item { display: flex; gap: 10px; padding: 9px 0; }
+  .activity-item + .activity-item { border-top: 1px dashed var(--border); }
+  .activity-avatar {
+    width: 26px; height: 26px; border-radius: 50%; flex: none;
+    background: color-mix(in srgb, var(--azul) 16%, transparent); color: var(--azul);
+    display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 700;
+  }
+  .activity-text { font-size: 12.8px; color: var(--ink); line-height: 1.45; }
+  .activity-text b { font-weight: 600; }
+  .activity-time { font-size: 11px; color: var(--ink-faint); margin-top: 2px; font-family: var(--font-mono); }
+
+  .popover {
+    position: absolute; top: calc(100% + 8px); right: 0; width: 300px;
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
+    box-shadow: var(--shadow); padding: 6px; display: none; z-index: 10;
+  }
+  .popover.show { display: block; }
+  .popover-head { font-size: 12px; font-weight: 650; padding: 8px 10px; color: var(--ink-dim); }
+  .popover-item { display: flex; gap: 9px; padding: 9px 10px; border-radius: 8px; }
+  .popover-item:hover { background: var(--paper); }
+  .popover-item .n-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--azul); margin-top: 5px; flex: none; }
+  .popover-item p { margin: 0; font-size: 12.5px; color: var(--ink); line-height: 1.4; }
+  .popover-item span { display: block; font-size: 11px; color: var(--ink-faint); margin-top: 2px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 12px);
+    background: var(--ink); color: var(--paper);
+    font-size: 13.5px; padding: 10px 16px; border-radius: 8px;
+    box-shadow: var(--shadow); opacity: 0; pointer-events: none;
+    transition: opacity 180ms ease, transform 180ms ease; z-index: 30; max-width: 88vw;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+
+  @media (max-width: 1180px) {
+    .kpi-row { grid-template-columns: repeat(2, 1fr); }
+    .grid-main { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar { position: relative; height: auto; flex-direction: row; align-items: center; padding: 10px 14px; }
+    .sb-nav, .sb-user { display: none; }
+    .kpi-row, .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+    .search { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .funnel-fill, .progress-fill, .toast { transition: none; }
+  }
+</style>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="monogram">GD</div>
+      <div>
+        <strong>Conecta CRM</strong>
+        <span>Gestão comercial</span>
+      </div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-group">
+        <div class="sb-item active" data-page="Dashboard">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="2.5" width="6.2" height="6.2" rx="1.3"/><rect x="11.3" y="2.5" width="6.2" height="4.4" rx="1.3"/><rect x="11.3" y="9.4" width="6.2" height="8.1" rx="1.3"/><rect x="2.5" y="11.2" width="6.2" height="6.3" rx="1.3"/></svg>
+          Dashboard
+        </div>
+        <a class="sb-item" href="#" data-page="Empresas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17.5V3.8a.8.8 0 01.8-.8h6.4a.8.8 0 01.8.8v13.7"/><path d="M13 17.5V8.3a.8.8 0 01.8-.8h3.4a.8.8 0 01.8.8v9.2"/><path d="M5.4 6h1.6M5.4 9h1.6M5.4 12h1.6M15 10.6h1M15 13.4h1"/></svg>
+          Empresas
+          <span class="chip">3.402</span>
+        </a>
+        <a class="sb-item" href="#" data-page="Contatos">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="6.6" r="3.1"/><path d="M3.6 17c.7-3.4 3.2-5.2 6.4-5.2s5.7 1.8 6.4 5.2"/></svg>
+          Contatos
+        </a>
+        <a class="sb-item" href="#" data-page="Negócios">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 10.3l3-4.6a1 1 0 01.85-.47h7.3a1 1 0 01.85.47l3 4.6"/><path d="M2.5 10.3v5.2a1 1 0 001 1h13a1 1 0 001-1v-5.2"/><path d="M7.3 10.3a2.7 2.7 0 005.4 0"/></svg>
+          Negócios
+          <span class="chip">184</span>
+        </a>
+        <a class="sb-item" href="#" data-page="Pipeline">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="3" width="4.2" height="14" rx="1"/><rect x="7.9" y="3" width="4.2" height="9.5" rx="1"/><rect x="13.3" y="3" width="4.2" height="6" rx="1"/></svg>
+          Pipeline
+        </a>
+        <a class="sb-item" href="#" data-page="Tarefas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2.2"/><path d="M6.6 10.2l2 2 4.6-4.9"/></svg>
+          Tarefas
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Administração</div>
+        <a class="sb-item" href="#" data-page="Usuários">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="6.4" r="2.8"/><path d="M2.6 16.4c.6-3 2.7-4.6 5.4-4.6s4.8 1.6 5.4 4.6"/><path d="M13.6 4.6c1.3.3 2.2 1.4 2.2 2.9 0 1.3-.7 2.3-1.8 2.8M15.6 11.9c1.4.6 2.3 1.9 2.7 3.9"/></svg>
+          Usuários
+        </a>
+        <a class="sb-item" href="#" data-page="Configurações">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="2.6"/><path d="M10 2.8v2M10 15.2v2M17.2 10h-2M4.8 10h-2M15.1 4.9l-1.4 1.4M6.3 13.7l-1.4 1.4M15.1 15.1l-1.4-1.4M6.3 6.3L4.9 4.9"/></svg>
+          Configurações
+        </a>
+      </div>
+    </nav>
+
+    <div class="sb-user">
+      <div class="avatar">AD</div>
+      <div class="sb-user-meta">
+        <strong>Administrador</strong>
+        <span>Admin · GD Conecta</span>
+      </div>
+      <button class="logout-btn" id="logoutBtn" aria-label="Sair" title="Sair">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M8 17.5H4.3a1 1 0 01-1-1v-13a1 1 0 011-1H8"/><path d="M12.8 14l4-4-4-4M16.6 10H7.5"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <div class="main-col">
+    <header class="topbar">
+      <div class="topbar-title">
+        <h1>Dashboard comercial</h1>
+        <p>Visão geral do funil e da carteira &middot; hoje, 26 de julho</p>
+      </div>
+
+      <div class="search">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="8.8" cy="8.8" r="5.8"/><path d="M17 17l-3.6-3.6"/></svg>
+        <input type="text" id="searchInput" placeholder="Buscar empresa, contato ou negócio" />
+      </div>
+
+      <div class="topbar-actions">
+        <div class="period-pill">
+          Este mês
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l5 5 5-5"/></svg>
+        </div>
+
+        <div style="position:relative;">
+          <button class="icon-btn" id="notifBtn" aria-haspopup="true" aria-expanded="false" aria-label="Notificações">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 8a5 5 0 0110 0c0 3.6 1.1 4.7 1.5 5.2H3.5C3.9 12.7 5 11.6 5 8z"/><path d="M8.3 16a1.8 1.8 0 003.4 0"/></svg>
+            <span class="dot"></span>
+          </button>
+          <div class="popover" id="notifPopover" role="menu">
+            <div class="popover-head">Notificações</div>
+            <div class="popover-item"><span class="n-dot"></span><div><p><b>Negócio parado</b> — "Renovação frete dedicado" sem atividade há 4 dias.</p><span>há 12min</span></div></div>
+            <div class="popover-item"><span class="n-dot"></span><div><p>Importação de 84 empresas concluída com 3 erros.</p><span>há 1h</span></div></div>
+            <div class="popover-item"><span class="n-dot"></span><div><p>Tarefa "Kickoff CD Sul" começa em 30 minutos.</p><span>há 2h</span></div></div>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="newDealBtn">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 4v12M4 10h12"/></svg>
+          Novo negócio
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+      <section class="kpi-row" aria-label="Indicadores principais">
+        <div class="kpi-card">
+          <div class="label">Negócios ativos</div>
+          <div class="value">184</div>
+          <div class="delta up">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 4l6 8H4z"/></svg>
+            +12 <span class="vs">vs. mês anterior</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="label">Receita prevista</div>
+          <div class="value">R$ 1.842.300</div>
+          <div class="delta up">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 4l6 8H4z"/></svg>
+            +8,4% <span class="vs">vs. mês anterior</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="label">Receita ganha (mês)</div>
+          <div class="value">R$ 312.450</div>
+          <div class="delta up">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 4l6 8H4z"/></svg>
+            +21% <span class="vs">vs. mês anterior</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="label">Taxa de conversão</div>
+          <div class="value">24%</div>
+          <div class="delta down">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 16l6-8H4z"/></svg>
+            -1,3pp <span class="vs">vs. mês anterior</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="kpi-strip" aria-label="Indicadores secundários">
+        <div class="kpi-mini"><span class="t">Total de leads</span><span class="v">1.128</span></div>
+        <div class="kpi-mini"><span class="t">Empresas qualificadas</span><span class="v">396</span></div>
+        <div class="kpi-mini"><span class="t">Ticket médio</span><span class="v">R$ 18.640</span></div>
+      </section>
+
+      <section class="grid-main">
+        <div class="col">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3>Funil do pipeline padrão</h3>
+                <p>Vendas B2B &middot; conversão entre etapas</p>
+              </div>
+              <a class="link-action" href="#" data-page="Pipeline">Ver board</a>
+            </div>
+            <div class="funnel" id="funnel">
+              <div class="funnel-row" data-count="420">
+                <div class="funnel-name">Lead captado</div>
+                <div class="funnel-track"><div class="funnel-fill" style="width:100%; background:var(--seq-1);"></div></div>
+                <div class="funnel-count">420</div>
+                <div class="funnel-conv">&nbsp;</div>
+              </div>
+              <div class="funnel-row" data-count="210">
+                <div class="funnel-name">Primeiro contato</div>
+                <div class="funnel-track"><div class="funnel-fill" style="width:50%; background:var(--seq-2);"></div></div>
+                <div class="funnel-count">210</div>
+                <div class="funnel-conv">50% ↓</div>
+              </div>
+              <div class="funnel-row" data-count="96">
+                <div class="funnel-name">Diagnóstico</div>
+                <div class="funnel-track"><div class="funnel-fill" style="width:22.9%; background:var(--seq-3);"></div></div>
+                <div class="funnel-count">96</div>
+                <div class="funnel-conv">46% ↓</div>
+              </div>
+              <div class="funnel-row" data-count="54">
+                <div class="funnel-name">Proposta</div>
+                <div class="funnel-track"><div class="funnel-fill" style="width:12.9%; background:var(--seq-4);"></div></div>
+                <div class="funnel-count">54</div>
+                <div class="funnel-conv">56% ↓</div>
+              </div>
+              <div class="funnel-row" data-count="28">
+                <div class="funnel-name">Negociação</div>
+                <div class="funnel-track"><div class="funnel-fill" style="width:6.7%; background:var(--seq-5);"></div></div>
+                <div class="funnel-count">28</div>
+                <div class="funnel-conv">52% ↓</div>
+              </div>
+              <div class="funnel-row won" data-count="17">
+                <div class="funnel-name">Fechado ganho</div>
+                <div class="funnel-track"><div class="funnel-fill" style="width:4%; background:var(--good);"></div></div>
+                <div class="funnel-count">17</div>
+                <div class="funnel-conv">61% ↓</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3>Negócios recentes</h3>
+                <p>Últimas movimentações na sua carteira</p>
+              </div>
+              <a class="link-action" href="#" data-page="Negócios">Ver todos</a>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="deals">
+                <thead>
+                  <tr><th>Negócio</th><th>Responsável</th><th>Etapa</th><th style="text-align:right;">Valor</th><th>Atualizado</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><div class="deal-name">Contrato anual logística</div><div class="deal-sub">Grupo Andrade</div></td>
+                    <td>Felipe Nogueira</td>
+                    <td><span class="stage-pill"><span class="stage-dot" style="background:var(--seq-4);"></span>Negociação</span></td>
+                    <td class="cell-value">R$ 156.000</td>
+                    <td class="updated">há 5h</td>
+                  </tr>
+                  <tr>
+                    <td><div class="deal-name">Expansão frota SP</div><div class="deal-sub">Transportadora Vale Rio</div></td>
+                    <td>Marina Duarte</td>
+                    <td><span class="stage-pill"><span class="stage-dot" style="background:var(--seq-3);"></span>Proposta</span></td>
+                    <td class="cell-value">R$ 84.000</td>
+                    <td class="updated">há 2h</td>
+                  </tr>
+                  <tr>
+                    <td><div class="deal-name">Onboarding CD Sul</div><div class="deal-sub">Metalúrgica Bragança</div></td>
+                    <td>Marina Duarte</td>
+                    <td><span class="stage-pill"><span class="stage-dot" style="background:var(--seq-3);"></span>Diagnóstico</span></td>
+                    <td class="cell-value">R$ 42.500</td>
+                    <td class="updated">há 1d</td>
+                  </tr>
+                  <tr>
+                    <td><div class="deal-name">Renovação frete dedicado</div><div class="deal-sub">Distribuidora Norte Mix</div></td>
+                    <td>Camila Rezende</td>
+                    <td><span class="stage-pill"><span class="stage-dot" style="background:var(--seq-2);"></span>Primeiro contato</span></td>
+                    <td class="cell-value">R$ 98.200</td>
+                    <td class="updated">há 1d</td>
+                  </tr>
+                  <tr>
+                    <td><div class="deal-name">Piloto rota MG</div><div class="deal-sub">Agroindustrial Cerrado</div></td>
+                    <td>Felipe Nogueira</td>
+                    <td><span class="stage-pill"><span class="stage-dot" style="background:var(--seq-1);"></span>Lead captado</span></td>
+                    <td class="cell-value">R$ 61.000</td>
+                    <td class="updated">há 2d</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3>Tarefas de hoje</h3>
+                <p id="taskSubtitle">3 de 8 concluídas</p>
+              </div>
+              <a class="link-action" href="#" data-page="Tarefas">Ver agenda</a>
+            </div>
+            <div class="tasks-progress">
+              <div class="progress-track"><div class="progress-fill" id="taskProgressFill" style="width:37.5%;"></div></div>
+              <div class="progress-label" id="taskProgressLabel">37%</div>
+            </div>
+            <div class="task-list" id="taskList">
+              <div class="task-item done">
+                <div class="task-check" role="checkbox" aria-checked="true" tabindex="0">
+                  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4.5 10l3.5 3.5L15.5 6"/></svg>
+                </div>
+                <div class="task-body">
+                  <div class="task-title">Confirmar proposta com Grupo Andrade</div>
+                  <div class="task-meta">
+                    <svg class="task-type-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 3.5c1.6 5.6 6.4 10.4 12 12l1.8-2.6a1 1 0 00-.5-1.5l-3-1.1a1 1 0 00-1.1.3l-1 1.2a10 10 0 01-5.5-5.5l1.2-1a1 1 0 00.3-1.1l-1.1-3a1 1 0 00-1.5-.5L4 3.5z"/></svg>
+                    09:00 &middot; <span class="prio alta"><span class="prio-dot" style="background:var(--critical);"></span>Alta</span>
+                  </div>
+                </div>
+              </div>
+              <div class="task-item done">
+                <div class="task-check" role="checkbox" aria-checked="true" tabindex="0">
+                  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4.5 10l3.5 3.5L15.5 6"/></svg>
+                </div>
+                <div class="task-body">
+                  <div class="task-title">Enviar diagnóstico para Metalúrgica Bragança</div>
+                  <div class="task-meta">
+                    <svg class="task-type-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="4" width="15" height="12" rx="1.8"/><path d="M3 5l7 5.5L17 5"/></svg>
+                    10:15 &middot; <span class="prio media"><span class="prio-dot" style="background:var(--warning);"></span>Média</span>
+                  </div>
+                </div>
+              </div>
+              <div class="task-item done">
+                <div class="task-check" role="checkbox" aria-checked="true" tabindex="0">
+                  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4.5 10l3.5 3.5L15.5 6"/></svg>
+                </div>
+                <div class="task-body">
+                  <div class="task-title">Atualizar cadastro — Agroindustrial Cerrado</div>
+                  <div class="task-meta">11:00 &middot; <span class="prio baixa"><span class="prio-dot" style="background:var(--ink-faint);"></span>Baixa</span></div>
+                </div>
+              </div>
+              <div class="task-item">
+                <div class="task-check" role="checkbox" aria-checked="false" tabindex="0">
+                  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4.5 10l3.5 3.5L15.5 6"/></svg>
+                </div>
+                <div class="task-body">
+                  <div class="task-title">Kickoff CD Sul</div>
+                  <div class="task-meta">
+                    <svg class="task-type-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="4" width="15" height="13" rx="1.8"/><path d="M2.5 8h15M6 2.5v3M14 2.5v3"/></svg>
+                    14:00 &middot; <span class="prio alta"><span class="prio-dot" style="background:var(--critical);"></span>Alta</span>
+                  </div>
+                </div>
+              </div>
+              <div class="task-item">
+                <div class="task-check" role="checkbox" aria-checked="false" tabindex="0">
+                  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4.5 10l3.5 3.5L15.5 6"/></svg>
+                </div>
+                <div class="task-body">
+                  <div class="task-title">Follow-up Distribuidora Norte Mix</div>
+                  <div class="task-meta">
+                    <svg class="task-type-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 10a7 7 0 11-2.3-5.2M17 3v4.5h-4.5"/></svg>
+                    16:00 &middot; <span class="prio baixa"><span class="prio-dot" style="background:var(--ink-faint);"></span>Baixa</span>
+                  </div>
+                </div>
+              </div>
+              <div class="task-item">
+                <div class="task-check" role="checkbox" aria-checked="false" tabindex="0">
+                  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4.5 10l3.5 3.5L15.5 6"/></svg>
+                </div>
+                <div class="task-body">
+                  <div class="task-title">Retomar contato — Agroindustrial Cerrado</div>
+                  <div class="task-meta">17:30 &middot; <span class="prio media"><span class="prio-dot" style="background:var(--warning);"></span>Média</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3>Atividade recente</h3>
+                <p>Toda a equipe</p>
+              </div>
+            </div>
+            <div class="activity-list">
+              <div class="activity-item">
+                <div class="activity-avatar">FN</div>
+                <div>
+                  <div class="activity-text"><b>Felipe Nogueira</b> moveu "Contrato anual logística" para Negociação</div>
+                  <div class="activity-time">há 22min</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-avatar">IM</div>
+                <div>
+                  <div class="activity-text">Importação criou o lead <b>Distribuidora Rio Verde</b> via planilha</div>
+                  <div class="activity-time">há 1h</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-avatar">MD</div>
+                <div>
+                  <div class="activity-text"><b>Marina Duarte</b> registrou uma ligação com Metalúrgica Bragança</div>
+                  <div class="activity-time">há 3h</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-avatar">CR</div>
+                <div>
+                  <div class="activity-text"><b>Camila Rezende</b> fechou "Piloto SC" como ganho — R$ 27.400</div>
+                  <div class="activity-time">há 6h</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  (function () {
+    var toastEl = document.getElementById('toast');
+    var toastTimer;
+    function showToast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 3000);
+    }
+
+    document.querySelectorAll('.sb-item[data-page]:not(.active)').forEach(function (el) {
+      el.addEventListener('click', function (e) {
+        e.preventDefault();
+        showToast('Tela "' + el.getAttribute('data-page') + '" ainda não foi prototipada.');
+      });
+    });
+    document.querySelectorAll('.link-action[data-page]').forEach(function (el) {
+      el.addEventListener('click', function (e) {
+        e.preventDefault();
+        showToast('Tela "' + el.getAttribute('data-page') + '" ainda não foi prototipada.');
+      });
+    });
+
+    document.getElementById('newDealBtn').addEventListener('click', function () {
+      showToast('Formulário de novo negócio será prototipado em seguida.');
+    });
+    document.getElementById('logoutBtn').addEventListener('click', function () {
+      showToast('Encerraria a sessão e voltaria para a tela de login.');
+    });
+    document.getElementById('searchInput').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        showToast('Busca ainda não conectada à API.');
+      }
+    });
+
+    var notifBtn = document.getElementById('notifBtn');
+    var notifPopover = document.getElementById('notifPopover');
+    notifBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var open = notifPopover.classList.toggle('show');
+      notifBtn.setAttribute('aria-expanded', String(open));
+    });
+    document.addEventListener('click', function (e) {
+      if (!notifPopover.contains(e.target) && e.target !== notifBtn) {
+        notifPopover.classList.remove('show');
+        notifBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    var items = Array.prototype.slice.call(document.querySelectorAll('.task-item'));
+    var total = items.length;
+    var fill = document.getElementById('taskProgressFill');
+    var label = document.getElementById('taskProgressLabel');
+    var subtitle = document.getElementById('taskSubtitle');
+
+    function updateProgress() {
+      var done = document.querySelectorAll('.task-item.done').length;
+      var pct = Math.round((done / total) * 100);
+      fill.style.width = pct + '%';
+      label.textContent = pct + '%';
+      subtitle.textContent = done + ' de ' + total + ' concluídas';
+    }
+
+    items.forEach(function (item) {
+      var check = item.querySelector('.task-check');
+      function toggle() {
+        item.classList.toggle('done');
+        var checked = item.classList.contains('done');
+        check.setAttribute('aria-checked', String(checked));
+        updateProgress();
+      }
+      check.addEventListener('click', toggle);
+      check.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+      });
+    });
+  })();
+</script>
+

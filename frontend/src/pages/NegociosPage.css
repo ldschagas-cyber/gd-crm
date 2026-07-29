@@ -1,0 +1,71 @@
+.pipeline-switcher-wrap { position: relative; margin-top: 4px; }
+.pipeline-switcher-btn {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-dim);
+  background: none; border: none; padding: 0; cursor: pointer;
+}
+.pipeline-switcher-btn strong { color: var(--ink); font-weight: 650; }
+.pipeline-switcher-btn svg { width: 12px; height: 12px; }
+.pipeline-switcher-btn:hover { color: var(--ink); }
+.pipeline-switcher-menu {
+  position: absolute; top: calc(100% + 8px); left: 0; min-width: 220px; z-index: 40;
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
+  box-shadow: var(--shadow); padding: 6px;
+}
+.pipeline-switcher-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%;
+  text-align: left; padding: 8px 12px; border-radius: 8px; border: none; background: none;
+  font-size: 13px; color: var(--ink); cursor: pointer; text-decoration: none; box-sizing: border-box;
+}
+.pipeline-switcher-item:hover { background: var(--paper); }
+.pipeline-switcher-item.active { color: var(--azul); font-weight: 650; }
+.pipeline-switcher-divider { height: 1px; background: var(--border); margin: 6px 4px; }
+
+.kanban-scroll { overflow-x: auto; padding-bottom: 6px; }
+.kanban { display: flex; gap: 14px; align-items: flex-start; min-width: min-content; }
+.kb-col {
+  width: 260px; flex: none; background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: 12px; box-shadow: var(--shadow); display: flex; flex-direction: column;
+  max-height: calc(100vh - 220px);
+}
+.kb-col-head { display: flex; align-items: center; gap: 8px; padding: 12px 13px; border-bottom: 1px solid var(--border); }
+.kb-col-title { font-size: 13px; font-weight: 650; flex: 1; min-width: 0; }
+.kb-col-count {
+  font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; color: var(--ink-dim);
+  background: var(--paper); border: 1px solid var(--border); border-radius: 100px;
+  min-width: 19px; height: 19px; padding: 0 5px; display: flex; align-items: center; justify-content: center; flex: none;
+}
+.kb-col-body {
+  padding: 10px; overflow-y: auto; flex: 1; display: flex; flex-direction: column;
+  gap: 8px; min-height: 60px; transition: background-color 100ms ease;
+}
+.kb-col-body.drag-over { background: rgba(0, 119, 168, 0.06); }
+
+.kb-col-foot { padding: 9px 13px; border-top: 1px solid var(--border); flex: none; }
+.kb-col-foot-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-family: var(--font-mono); font-size: 12px; font-weight: 650; color: var(--ink); }
+.kb-col-foot-row + .kb-col-foot-row { margin-top: 3px; }
+.kb-col-foot-label { font-family: var(--font-display); font-size: 10.5px; font-weight: 500; color: var(--ink-faint); white-space: nowrap; }
+.kb-col-foot-pct { color: var(--ink-faint); font-weight: 500; }
+
+.kb-card {
+  background: var(--paper); border: 1px solid var(--border); border-radius: 9px; padding: 10px 11px; cursor: grab;
+}
+.kb-card:active { cursor: grabbing; }
+.kb-card-name { font-size: 12.8px; font-weight: 650; color: var(--ink); }
+.kb-card-company { font-size: 11px; color: var(--link); margin-top: 2px; }
+.kb-card-value { font-family: var(--font-mono); font-size: 13px; font-weight: 650; color: var(--ink); margin-top: 7px; }
+.stalled-tag {
+  display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; font-size: 10.5px; font-weight: 700;
+  color: var(--warning); background: rgba(250, 178, 25, 0.16); padding: 2px 8px; border-radius: 100px; white-space: nowrap;
+}
+.kb-card .stalled-tag { display: flex; width: fit-content; }
+td .stalled-tag { margin-top: 3px; margin-left: 4px; }
+.kb-card-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 9px; padding-top: 8px; border-top: 1px solid var(--border); }
+.kb-card-prob { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-dim); }
+.kb-card-tools { display: flex; gap: 2px; }
+.kb-card-tools button {
+  width: 22px; height: 22px; border-radius: 6px; border: none; background: transparent; color: var(--ink-faint);
+  display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px;
+}
+.kb-card-tools button:hover { background: var(--card-bg); color: var(--ink); }
+.kb-card-tools button.won:hover { color: var(--good); }
+.kb-card-tools button.lost:hover { color: var(--critical); }
