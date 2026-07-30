@@ -66,6 +66,10 @@ services:
     environment:
       DEBUG: "false"
       ENVIRONMENT: production
+    # secrets/ fica fora do Git (.gitignore) — precisa ser copiado
+    # manualmente pro servidor (scp) e montado aqui, não fica na imagem.
+    volumes:
+      - ./secrets:/app/secrets:ro
     # Porta NÃO exposta diretamente — tráfego via frontend/nginx.
     expose:
       - "8000"
