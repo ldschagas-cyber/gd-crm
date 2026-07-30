@@ -14,6 +14,7 @@ const NAV_GROUPS = [
       { to: '/', label: 'Dashboard', end: true, icon: IconDashboard },
       { to: '/pesquisa-leads', label: 'Pesquisa de Leads', end: true, icon: IconRadar },
       { to: '/pesquisa-leads/desempenho', label: 'Desempenho de Pesquisa', icon: IconChart },
+      { to: '/buscar-empresas', label: 'Buscar Empresas', icon: IconSearch },
       { to: '/empresas', label: 'Empresas', icon: IconBuilding },
       { to: '/contatos', label: 'Contatos', icon: IconContact },
       { to: '/negocios', label: 'Negócios', icon: IconDeal },
@@ -162,6 +163,15 @@ function IconRadar() {
     </svg>
   )
 }
+function IconSearch() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <circle cx="8.8" cy="8.8" r="5.3" />
+      <path d="M16.5 16.5l-3.8-3.8" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 function IconChart() {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">

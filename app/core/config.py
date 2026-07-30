@@ -61,6 +61,12 @@ class Settings(BaseSettings):
     UPLOAD_DIR: str = "uploads"
     MAX_AVATAR_MB: int = 5
 
+    # Buscar Empresas: API pública hospedada do projeto minha-receita (dados
+    # abertos de CNPJ da Receita Federal). Sem chave/autenticação, sem SLA
+    # documentado — serviço best-effort mantido por 1 pessoa.
+    MINHA_RECEITA_BASE_URL: str = "https://minhareceita.org"
+    MINHA_RECEITA_TIMEOUT_SECONDS: float = 8.0
+
 
 @lru_cache
 def get_settings() -> Settings:

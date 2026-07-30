@@ -23,11 +23,12 @@ class LeadProspect(Base, TenantMixin, TimestampMixin):
 
     id: Mapped[uuid.UUID] = uuid_pk()
     empresa: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    cnpj: Mapped[str | None] = mapped_column(String(14), index=True)
     setor: Mapped[str | None] = mapped_column(String(80))
     segmento: Mapped[str | None] = mapped_column(String(120))
     uf: Mapped[str | None] = mapped_column(String(2))
     regiao: Mapped[str | None] = mapped_column(String(20))
-    faixa_funcionarios: Mapped[str | None] = mapped_column(String(20))
+    faixa_funcionarios: Mapped[str | None] = mapped_column(String(50))
     faturamento: Mapped[float | None] = mapped_column(Numeric(15, 2))
     site: Mapped[str | None] = mapped_column(String(255))
     telefone: Mapped[str | None] = mapped_column(String(20))

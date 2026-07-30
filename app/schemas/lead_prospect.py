@@ -9,6 +9,7 @@ from app.models.lead_prospect import LeadStatus
 
 class LeadProspectCreate(BaseModel):
     empresa: str = Field(min_length=1, max_length=255)
+    cnpj: str | None = Field(default=None, max_length=14)
     setor: str | None = None
     segmento: str | None = None
     uf: str | None = Field(default=None, max_length=2)
@@ -26,6 +27,7 @@ class LeadProspectCreate(BaseModel):
 
 class LeadProspectUpdate(BaseModel):
     empresa: str | None = Field(default=None, min_length=1, max_length=255)
+    cnpj: str | None = Field(default=None, max_length=14)
     setor: str | None = None
     segmento: str | None = None
     uf: str | None = Field(default=None, max_length=2)
@@ -44,6 +46,7 @@ class LeadProspectUpdate(BaseModel):
 class LeadProspectRead(BaseModel):
     id: UUID
     empresa: str
+    cnpj: str | None
     setor: str | None
     segmento: str | None
     uf: str | None

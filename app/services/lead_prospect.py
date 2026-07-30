@@ -113,7 +113,7 @@ class LeadProspectService:
         recebe_bonus = lead.status == LeadStatus.PROMOVIDO.value and gamificacao > 70
         bonus_valor = rules["bonus_valor"] if recebe_bonus else 0.0
         return LeadProspectRead(
-            id=lead.id, empresa=lead.empresa, setor=lead.setor, segmento=lead.segmento, uf=lead.uf,
+            id=lead.id, empresa=lead.empresa, cnpj=lead.cnpj, setor=lead.setor, segmento=lead.segmento, uf=lead.uf,
             regiao=lead.regiao,
             faixa_funcionarios=lead.faixa_funcionarios,
             faturamento=float(lead.faturamento) if lead.faturamento is not None else None,
@@ -184,7 +184,7 @@ class LeadProspectService:
         if lead.promoted_company_id:
             raise ConflictError("Esta pesquisa já foi promovida a empresa")
         company = Company(
-            razao_social=lead.empresa, segmento=lead.segmento, uf=lead.uf, site=lead.site,
+            razao_social=lead.empresa, cnpj=lead.cnpj, segmento=lead.segmento, uf=lead.uf, site=lead.site,
             telefone=lead.telefone, porte=lead.faixa_funcionarios, faturamento_estimado=lead.faturamento,
             status=CompanyStatus.LEAD.value, origem="Pesquisa de Leads",
         )

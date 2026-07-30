@@ -236,8 +236,8 @@
     <li><strong>Volume do piloto: 10 empresas/semana</strong>, somando os dois processos, executadas pessoalmente por você. Ajuste o ritmo depois de medir taxa de resposta/reunião nas primeiras 2-3 semanas — não abra mais volume até validar a taxa de conversão de cada etapa.</li>
   </ul>
 
-  <div class="callout">
-    <strong>Limitação atual do CRM que muda como você deve operar isso:</strong> conferi o código do módulo de Automação — hoje, tanto <strong>Sequência de Tarefas</strong> quanto <strong>Cadência de E-mails</strong> <u>não enviam e-mail nenhum sozinhas</u>. A cada passo vencido, o CRM cria uma <strong>Tarefa</strong> ("E-mail — [nome do modelo]") atribuída a você, e o envio real é manual — copiar o modelo, preencher as variáveis <span class="var">{{...}}</span> à mão e mandar pelo seu e-mail. Isso porque a camada de envio (SMTP/Microsoft 365) ainda não foi construída. Por isso este playbook usa <strong>Sequência de Tarefas</strong> para os dois processos (ela mistura ligação/e-mail/WhatsApp/follow-up no mesmo fluxo) em vez de Cadência (só e-mail) — o comportamento prático é o mesmo hoje, mas Sequência já fica pronta para quando a automação de fato existir.
+  <div class="callout ok">
+    <strong>Atualização (2026-07-30):</strong> a camada de envio automático de e-mail foi construída — <strong>Sequência de Tarefas</strong> e <strong>Cadência de E-mails</strong> agora enviam e-mail de verdade pela sua conta Microsoft 365 conectada (Preferências → E-mail), com as variáveis <span class="var">{{...}}</span> já substituídas automaticamente pelo CRM. A criação de <strong>Tarefa</strong> manual só acontece como <em>fallback</em>: contato sem e-mail cadastrado, integração Microsoft 365 não conectada, ou Graph indisponível no momento. O CRM também detecta resposta do contato e pausa o fluxo sozinho. Este playbook continua usando <strong>Sequência de Tarefas</strong> para os dois processos (por misturar ligação/e-mail/WhatsApp/follow-up no mesmo fluxo, o que Cadência não faz) — não mais porque o comportamento fosse idêntico ao de Cadência.
   </div>
 
   <h2 id="processo-a"><span class="n">§1</span>Processo A — Prospecção fria (leads novos)</h2>
@@ -400,7 +400,7 @@ GD Conecta</div>
       <td>Script "Ligação — reativação" (§2.2)</td>
     </tr>
   </table>
-  <p class="muted">Esta é a única sequência em que faz sentido rodar mais de uma pessoa por semana em paralelo, já que o toque inicial (dia 0) é praticamente manual mesmo — a sequência serve mais como <em>lembrete de follow-up</em> do que como automação de verdade.</p>
+  <p class="muted">Esta é a única sequência em que faz sentido rodar mais de uma pessoa por semana em paralelo, já que os toques de WhatsApp e a ligação de fechamento continuam gerando Tarefa manual para você executar — só o e-mail do dia 0 sai sozinho pelo Graph quando vence.</p>
 
   <h3>2.1 Modelo de e-mail</h3>
   <div class="card">
@@ -463,8 +463,8 @@ GD Conecta — Inteligência Logística
     <li>Cole o <strong>Assunto</strong> e o <strong>Corpo</strong> de cada modelo (§1.1 e §2.1). Digite as variáveis exatamente como <code>{{nome}}</code> e <code>{{empresa}}</code> — o CRM reconhece qualquer texto entre chaves duplas automaticamente, não precisa cadastrar a variável em separado.</li>
     <li>Repita para os 6 modelos (3 do Processo A + 1 do Processo B — os demais toques são ligação/WhatsApp/LinkedIn e não usam modelo de e-mail).</li>
   </ol>
-  <div class="callout">
-    <strong>Lembrete:</strong> como o envio ainda é manual (ver §0), ao executar a tarefa de e-mail você mesmo precisa trocar <code>{{nome}}</code>/<code>{{empresa}}</code> pelos dados reais antes de mandar — o CRM não faz essa substituição sozinho hoje.
+  <div class="callout ok">
+    <strong>Lembrete:</strong> desde que a integração Microsoft 365 esteja conectada (ver §0), o CRM substitui <code>{{nome}}</code>/<code>{{empresa}}</code> pelos dados reais e envia o e-mail sozinho quando o passo vence — você só precisa revisar/preencher as variáveis à mão se a integração cair ou o contato não tiver e-mail cadastrado, caso em que o passo vira Tarefa manual.
   </div>
 
   <h3>4.2 Cadastrar os Snippets (<code>/snippets</code>)</h3>
@@ -492,8 +492,8 @@ GD Conecta — Inteligência Logística
   <ol class="steps">
     <li>Para leads novos: em <code>/pesquisa-leads</code>, promova os prospects qualificados (status <code>qualificado</code>) para virarem <code>Company</code> — só depois disso dá para inscrever em sequência.</li>
     <li>Abra a <strong>Empresa</strong> (ou o <strong>Negócio</strong>, se já existir) na tela de detalhe → botão <strong>"Inscrever em automação"</strong>.</li>
-    <li>No modal, escolha <strong>Sequência</strong> (não Cadência) e selecione <code>Prospecção — GD Diagnóstico (novos)</code> ou <code>Reativação — base legada</code>, conforme o caso.</li>
-    <li>A partir daí, o Celery Beat do CRM varre diariamente as inscrições ativas e cria as Tarefas na sua agenda (<code>/tarefas</code>) conforme os dias vencem — é lá que você vai executar cada toque.</li>
+    <li>No modal, escolha <strong>Sequência</strong> (não Cadência — ver §0 sobre o motivo) e selecione <code>Prospecção — GD Diagnóstico (novos)</code> ou <code>Reativação — base legada</code>, conforme o caso.</li>
+    <li>A partir daí, o Celery Beat do CRM varre diariamente as inscrições ativas: passos de e-mail são enviados sozinhos pelo Graph, e os demais (ligação/WhatsApp/follow-up) viram Tarefa na sua agenda (<code>/tarefas</code>) para você executar.</li>
   </ol>
   <div class="callout ok">
     <strong>Dica para o piloto:</strong> comece só com o Processo A (5-6 empresas) e o Processo B (4-5 clientes) na primeira semana. Acompanhe em <code>/tarefas</code> se as tarefas estão sendo criadas nos dias certos antes de inscrever mais gente — é a forma mais rápida de pegar qualquer ajuste de configuração da sequência.
@@ -507,7 +507,7 @@ GD Conecta — Inteligência Logística
     <tr><td>Calls de 20 min agendadas</td><td>Negócios criados/etapa avançada</td><td>É a métrica de sucesso real do processo — meta mínima do piloto</td></tr>
     <tr><td>Negócios abertos a partir da sequência</td><td><code>/negocios</code>, origem = sequência</td><td>Confirma que a sequência está gerando pipeline, não só atividade</td></tr>
   </table>
-  <p class="muted">Só depois de validar essas taxas com as 10 empresas iniciais vale considerar subir o volume semanal ou migrar para Cadência de E-mails automática (quando a integração Microsoft 365 estiver pronta).</p>
+  <p class="muted">Só depois de validar essas taxas com as 10 empresas iniciais vale considerar subir o volume semanal.</p>
 
   <footer>Playbook de Vendas Outbound — GD Diagnóstico · v1 · <span id="gendate"></span></footer>
 </div>
