@@ -14,9 +14,20 @@ function emptyStep(lastDia) {
   return { dia_offset: lastDia + 3, tipo: 'ligacao', template_id: null, instrucoes: '' }
 }
 
+function IconInfo() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <circle cx="10" cy="10" r="7.3" />
+      <path d="M10 9v4.2" strokeLinecap="round" />
+      <circle cx="10" cy="6.8" r=".9" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
 export default function SequenciasPage() {
   const queryClient = useQueryClient()
   const [drawerSequence, setDrawerSequence] = useState(undefined) // undefined = fechado, null = nova, obj = editar
+  const [helpOpen, setHelpOpen] = useState(false)
 
   const listQuery = useQuery({ queryKey: ['sequences', 'list'], queryFn: () => listSequences({ size: 100 }) })
   const items = listQuery.data?.items ?? []
@@ -44,12 +55,9 @@ export default function SequenciasPage() {
       </header>
 
       <div className="content">
-        <div className="help-card">
-          Uma sequência dispara tarefas automaticamente conforme dias decorridos (ligação, e-mail, WhatsApp,
-          follow-up) para quem está inscrito. <b>Pausar quando houver resposta</b> depende da integração de
-          e-mail em Preferências (Microsoft 365/Graph) — sem isso conectado, a sequência não sabe se alguém
-          respondeu, então essa opção hoje não pausa automaticamente nada.
-        </div>
+        <button className="info-trigger" onClick={() => setHelpOpen(true)}>
+          <IconInfo /> Como funciona a pausa automática
+        </button>
 
         <div className="card">
           {listQuery.isLoading && <p className="state-msg">Carregando sequências…</p>}
@@ -114,6 +122,21 @@ export default function SequenciasPage() {
           submitting={createMutation.isPending || updateMutation.isPending}
           error={createMutation.error || updateMutation.error}
         />
+      )}
+
+      {helpOpen && (
+        <div className="scrim show" onClick={() => setHelpOpen(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <h3><IconInfo />Como funciona a pausa automática</h3>
+            <p className="sub">
+              Uma sequência dispara tarefas automaticamente conforme dias decorridos (ligação, e-mail, WhatsApp,
+              follow-up) para quem está inscrito. <b>Pausar quando houver resposta</b> depende da integração de
+              e-mail em Preferências (Microsoft 365/Graph) — sem isso conectado, a sequência não sabe se alguém
+              respondeu, então essa opção hoje não pausa automaticamente nada.
+            </p>
+            <div className="row"><button className="btn-ghost" onClick={() => setHelpOpen(false)}>Fechar</button></div>
+          </div>
+        </div>
       )}
     </>
   )

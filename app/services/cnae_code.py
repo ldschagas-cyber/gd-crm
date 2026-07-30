@@ -14,9 +14,15 @@ class CnaeCodeService:
 
     def search(self, busca: str, limit: int = 20) -> list[CnaeCode]:
         termo = f"%{busca}%"
+        # CNAE costuma ser digitado/colado no formato oficial com máscara
+        # (ex.: "29.49-2/99"); a coluna codigo guarda só dígitos ("2949299").
+        so_digitos = "".join(c for c in busca if c.isdigit())
+        condicoes = [CnaeCode.descricao.ilike(termo), CnaeCode.codigo.like(f"{busca}%")]
+        if so_digitos and so_digitos != busca:
+            condicoes.append(CnaeCode.codigo.like(f"{so_digitos}%"))
         stmt = (
             select(CnaeCode)
-            .where(or_(CnaeCode.descricao.ilike(termo), CnaeCode.codigo.like(f"{busca}%")))
+            .where(or_(*condicoes))
             .order_by(CnaeCode.descricao)
             .limit(limit)
         )

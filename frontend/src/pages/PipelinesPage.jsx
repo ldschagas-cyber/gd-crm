@@ -20,6 +20,16 @@ function isTerminal(stage) {
   return stage.tipo === 'ganho' || stage.tipo === 'perdido'
 }
 
+function IconInfo() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <circle cx="10" cy="10" r="7.3" />
+      <path d="M10 9v4.2" strokeLinecap="round" />
+      <circle cx="10" cy="6.8" r=".9" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
 export default function PipelinesPage() {
   const queryClient = useQueryClient()
   const [selectedId, setSelectedId] = useState(null)
@@ -27,6 +37,7 @@ export default function PipelinesPage() {
   const [showNewPipeline, setShowNewPipeline] = useState(false)
   const [blockedMsg, setBlockedMsg] = useState(null)
   const [confirmDeleteStage, setConfirmDeleteStage] = useState(null)
+  const [helpOpen, setHelpOpen] = useState(false)
 
   const pipelinesQuery = useQuery({ queryKey: ['pipelines'], queryFn: () => listPipelines({ size: 100 }) })
   const pipelines = pipelinesQuery.data?.items ?? []
@@ -187,9 +198,9 @@ export default function PipelinesPage() {
 
         {pipeline ? (
           <>
-            <div className="help-card">
-              <strong>SLA por etapa</strong> define quanto tempo um negócio pode ficar parado antes de gerar um alerta de atenção. Arraste as etapas abertas para reordenar o funil — as etapas terminais (Ganho/Perdido) ficam sempre no fim.
-            </div>
+            <button className="info-trigger" onClick={() => setHelpOpen(true)}>
+              <IconInfo /> Como funciona o SLA por etapa
+            </button>
 
             <div className="card color-mode-card">
               <h3 className="section-title">Defina as cores de exibição do pipeline</h3>
@@ -319,6 +330,20 @@ export default function PipelinesPage() {
                 Excluir
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {helpOpen && (
+        <div className="scrim show" onClick={() => setHelpOpen(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <h3><IconInfo />Como funciona o SLA por etapa</h3>
+            <p className="sub">
+              <strong>SLA por etapa</strong> define quanto tempo um negócio pode ficar parado antes de gerar um
+              alerta de atenção. Arraste as etapas abertas para reordenar o funil — as etapas terminais
+              (Ganho/Perdido) ficam sempre no fim.
+            </p>
+            <div className="row"><button className="btn-ghost" onClick={() => setHelpOpen(false)}>Fechar</button></div>
           </div>
         </div>
       )}

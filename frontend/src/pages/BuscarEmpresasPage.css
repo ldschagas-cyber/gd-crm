@@ -12,5 +12,3 @@
   max-height: 200px; overflow-y: auto; border: 1px solid var(--border); border-radius: 10px; padding: 4px;
 }
 .cnae-checklist .col-option .mono { font-family: var(--font-mono); color: var(--ink-faint); margin-right: 6px; }
-
-.chip-row { display: flex; flex-wrap: wrap; gap: 10px 16px; }

@@ -34,6 +34,36 @@
 .kpi-mini .t { color: var(--ink-dim); }
 .kpi-mini .v { font-weight: 650; }
 
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; margin-top: 16px; }
+@media (max-width: 1100px) { .grid-2 { grid-template-columns: 1fr; } }
+
+.funnel { padding: 4px 18px 18px; display: flex; flex-direction: column; }
+.funnel-row { display: flex; align-items: center; gap: 12px; padding: 7px 0; }
+.funnel-name { width: 128px; flex: none; font-size: 12.5px; color: var(--ink-dim); font-weight: 500; }
+.funnel-track { flex: 1; height: 20px; background: var(--paper); border-radius: 5px; overflow: hidden; }
+.funnel-fill { height: 100%; border-radius: 5px; background: var(--azul); transition: width 300ms ease; }
+.funnel-count { width: 34px; flex: none; text-align: right; font-size: 13px; font-weight: 650; }
+.funnel-sla { width: 150px; flex: none; text-align: right; font-family: var(--font-mono, monospace); font-size: 10.5px; }
+.funnel-sla.ok { color: var(--ink-faint); }
+.funnel-sla.late { color: var(--danger); font-weight: 700; }
+
+.alert-list { display: flex; flex-direction: column; padding: 2px 10px 12px; }
+.alert-item { display: flex; align-items: center; gap: 10px; padding: 9px 8px; border-radius: 9px; }
+.alert-item:hover { background: var(--paper); }
+.alert-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); flex: none; }
+.alert-body { flex: 1; min-width: 0; }
+.alert-title { font-size: 13px; font-weight: 600; color: var(--ink); }
+.alert-sub { font-size: 11.5px; color: var(--ink-faint); margin-top: 1px; }
+.alert-days { font-family: var(--font-mono, monospace); font-size: 11.5px; font-weight: 700; color: var(--danger); flex: none; }
+
+.exec-list { display: flex; flex-direction: column; gap: 16px; padding: 16px 18px; }
+.exec-row .exec-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; gap: 10px; }
+.exec-row .exec-name { font-size: 13px; font-weight: 600; }
+.exec-row .exec-total { font-size: 11px; color: var(--ink-faint); font-family: var(--font-mono, monospace); flex: none; }
+.exec-stack { display: flex; height: 10px; border-radius: 100px; overflow: hidden; background: var(--paper); }
+.exec-stack span { height: 100%; }
+.exec-legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 6px; font-size: 11px; color: var(--ink-dim); }
+
 .meetings-widget { margin-top: 16px; max-width: 460px; }
 .meetings-list { padding: 4px 0; }
 .meeting-row { display: flex; gap: 12px; padding: 10px 18px; border-top: 1px solid var(--border); align-items: center; }

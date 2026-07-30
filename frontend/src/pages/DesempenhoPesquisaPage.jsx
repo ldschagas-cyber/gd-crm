@@ -47,7 +47,18 @@ function exportCsv(mes, rows) {
   URL.revokeObjectURL(url)
 }
 
+function IconInfo() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <circle cx="10" cy="10" r="7.3" />
+      <path d="M10 9v4.2" strokeLinecap="round" />
+      <circle cx="10" cy="6.8" r=".9" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
 export default function DesempenhoPesquisaPage() {
+  const [helpOpen, setHelpOpen] = useState(false)
   const options = useMemo(mesOptions, [])
   const [mes, setMes] = useState(options[0].value)
 
@@ -99,10 +110,9 @@ export default function DesempenhoPesquisaPage() {
           </select>
         </div>
 
-        <div className="help-card">
-          Bônus só é <strong>válido</strong> quando a pesquisa vira empresa de verdade (status &quot;Promovido&quot; em Pesquisa de Leads) —
-          completar os campos não basta. Esse relatório é só consulta; não existe módulo de folha de pagamento aqui.
-        </div>
+        <button className="info-trigger" onClick={() => setHelpOpen(true)}>
+          <IconInfo /> Como funciona o bônus
+        </button>
 
         {reportQuery.isLoading && <p className="state-msg">Carregando relatório…</p>}
 
@@ -196,6 +206,20 @@ export default function DesempenhoPesquisaPage() {
           </>
         )}
       </div>
+
+      {helpOpen && (
+        <div className="scrim show" onClick={() => setHelpOpen(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <h3><IconInfo />Como funciona o bônus</h3>
+            <p className="sub">
+              Bônus só é <strong>válido</strong> quando a pesquisa vira empresa de verdade (status
+              &quot;Promovido&quot; em Pesquisa de Leads) — completar os campos não basta. Esse relatório é só
+              consulta; não existe módulo de folha de pagamento aqui.
+            </p>
+            <div className="row"><button className="btn-ghost" onClick={() => setHelpOpen(false)}>Fechar</button></div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

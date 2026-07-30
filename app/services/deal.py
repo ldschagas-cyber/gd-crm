@@ -2,12 +2,16 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
+from sqlalchemy import delete as sa_delete, update as sa_update
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import NotFoundError
+from app.models.cadence import CadenceEnrollment
 from app.models.deal import Deal, DealStatus
 from app.models.pipeline import StageType
-from app.models.timeline import TimelineType
+from app.models.sequence import SequenceEnrollment
+from app.models.task import Task
+from app.models.timeline import TimelineEvent, TimelineType
 from app.repositories.company import CompanyRepository
 from app.repositories.deal import DealRepository
 from app.repositories.pipeline import PipelineRepository, StageRepository
@@ -127,3 +131,14 @@ class DealService:
         self.timeline.registrar(deal.company_id, TimelineType.PIPELINE.value,
                                 f"Negócio {deal.status}", deal.motivo_perda, deal_id=deal.id)
         return deal
+
+    def delete(self, deal_id: UUID) -> None:
+        deal = self.get(deal_id)
+        # Sem FK ondelete configurado em nenhuma dessas tabelas — apaga o histórico
+        # (só existe em função do negócio) e desvincula o resto (tarefas/inscrições
+        # continuam existindo, só perdem a referência ao negócio excluído).
+        self.db.execute(sa_delete(TimelineEvent).where(TimelineEvent.deal_id == deal.id))
+        self.db.execute(sa_update(Task).where(Task.deal_id == deal.id).values(deal_id=None))
+        self.db.execute(sa_update(CadenceEnrollment).where(CadenceEnrollment.deal_id == deal.id).values(deal_id=None))
+        self.db.execute(sa_update(SequenceEnrollment).where(SequenceEnrollment.deal_id == deal.id).values(deal_id=None))
+        self.repo.delete(deal)

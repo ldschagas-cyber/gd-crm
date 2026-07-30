@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
-  closeDeal, createDeal, listDeals, moveDealStage, updateDeal,
+  closeDeal, createDeal, deleteDeal, listDeals, moveDealStage, updateDeal,
 } from '../api/deals'
 import { getBoard, listPipelines } from '../api/pipelines'
 import { listCompanies } from '../api/companies'
@@ -336,6 +336,7 @@ function DealsList({ query, page, setPage, companiesById, usersById, stages, col
   const items = query.data?.items ?? []
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
+  const queryClient = useQueryClient()
   const [selected, setSelected] = useState({})
   const [showBulkEnroll, setShowBulkEnroll] = useState(false)
   const selectedIds = Object.keys(selected).filter((id) => selected[id])
@@ -349,6 +350,12 @@ function DealsList({ query, page, setPage, companiesById, usersById, stages, col
     if (!allSelected) items.forEach((d) => { next[d.id] = true })
     setSelected(next)
   }
+  async function handleBulkDelete() {
+    if (!confirm(`Excluir ${selectedIds.length} negócio(s) selecionado(s)?`)) return
+    await Promise.all(selectedIds.map((id) => deleteDeal(id)))
+    setSelected({})
+    queryClient.invalidateQueries({ queryKey: ['deals'] })
+  }
 
   return (
     <div className="card">
@@ -357,6 +364,7 @@ function DealsList({ query, page, setPage, companiesById, usersById, stages, col
           <span><b>{selectedIds.length}</b> selecionados</span>
           <div className="link-btn">
             <a onClick={() => setShowBulkEnroll(true)}>Inscrever</a>
+            <a onClick={handleBulkDelete}>Excluir</a>
           </div>
         </div>
       )}

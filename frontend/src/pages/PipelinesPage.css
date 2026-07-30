@@ -75,13 +75,6 @@ input.stage-name-input:focus { border-color: var(--azul); outline: none; box-sha
 .stage-count.zero { color: var(--ink-faint); }
 .stage-actions-cell { display: flex; justify-content: flex-end; }
 
-.icon-btn {
-  width: 26px; height: 26px; border-radius: 7px; border: none; background: transparent; color: var(--ink-faint);
-  display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px;
-}
-.icon-btn:hover { background: var(--paper); color: var(--ink); }
-.icon-btn.danger:hover { background: rgba(208, 59, 59, 0.1); color: var(--critical); }
-
 .terminal-divider {
   padding: 9px 20px; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em;
   color: var(--ink-faint); font-weight: 650; background: color-mix(in srgb, var(--paper) 55%, transparent);

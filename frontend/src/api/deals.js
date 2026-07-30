@@ -30,3 +30,7 @@ export function moveDealStage(id, stageId) {
 export function closeDeal(id, data) {
   return api.patch(`/deals/${id}/close`, data).then((res) => res.data)
 }
+
+export function deleteDeal(id) {
+  return api.delete(`/deals/${id}`)
+}

@@ -18,9 +18,20 @@ function totalDias(steps) {
   return steps.reduce((sum, s) => sum + (Number(s.dias_espera) || 0), 0)
 }
 
+function IconInfo() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <circle cx="10" cy="10" r="7.3" />
+      <path d="M10 9v4.2" strokeLinecap="round" />
+      <circle cx="10" cy="6.8" r=".9" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
 export default function CadenciasPage() {
   const queryClient = useQueryClient()
   const [drawerCadence, setDrawerCadence] = useState(undefined) // undefined = fechado, null = nova, obj = editar
+  const [helpOpen, setHelpOpen] = useState(false)
 
   const listQuery = useQuery({ queryKey: ['cadences', 'list'], queryFn: () => listCadences({ size: 100 }) })
   const items = listQuery.data?.items ?? []
@@ -48,13 +59,9 @@ export default function CadenciasPage() {
       </header>
 
       <div className="content">
-        <div className="help-card">
-          Cadência é uma sequência restrita a <b>e-mail</b>: cada etapa espera N dias após a anterior e envia um
-          modelo, com <code>{'{{nome}}'}</code> <code>{'{{empresa}}'}</code> <code>{'{{cargo}}'}</code>{' '}
-          <code>{'{{responsavel}}'}</code> substituídos no momento do envio. Sem uma camada de envio de e-mail
-          configurada ainda (SMTP/Microsoft 365), cada etapa vencida hoje gera uma <b>tarefa de e-mail</b> para o
-          responsável enviar manualmente pelo modelo indicado — não é um disparo automático de verdade.
-        </div>
+        <button className="info-trigger" onClick={() => setHelpOpen(true)}>
+          <IconInfo /> Como funcionam as cadências de e-mail
+        </button>
 
         <div className="card">
           {listQuery.isLoading && <p className="state-msg">Carregando cadências…</p>}
@@ -118,6 +125,22 @@ export default function CadenciasPage() {
           submitting={createMutation.isPending || updateMutation.isPending}
           error={createMutation.error || updateMutation.error}
         />
+      )}
+
+      {helpOpen && (
+        <div className="scrim show" onClick={() => setHelpOpen(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <h3><IconInfo />Como funcionam as cadências de e-mail</h3>
+            <p className="sub">
+              Cadência é uma sequência restrita a <b>e-mail</b>: cada etapa espera N dias após a anterior e envia
+              um modelo, com <code>{'{{nome}}'}</code> <code>{'{{empresa}}'}</code> <code>{'{{cargo}}'}</code>{' '}
+              <code>{'{{responsavel}}'}</code> substituídos no momento do envio. Sem uma camada de envio de e-mail
+              configurada ainda (SMTP/Microsoft 365), cada etapa vencida hoje gera uma <b>tarefa de e-mail</b> para
+              o responsável enviar manualmente pelo modelo indicado — não é um disparo automático de verdade.
+            </p>
+            <div className="row"><button className="btn-ghost" onClick={() => setHelpOpen(false)}>Fechar</button></div>
+          </div>
+        </div>
       )}
     </>
   )

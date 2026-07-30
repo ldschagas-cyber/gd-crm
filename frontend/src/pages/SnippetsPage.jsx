@@ -27,9 +27,20 @@ function mergeVarsSegments(text) {
   return parts
 }
 
+function IconInfo() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <circle cx="10" cy="10" r="7.3" />
+      <path d="M10 9v4.2" strokeLinecap="round" />
+      <circle cx="10" cy="6.8" r=".9" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
 export default function SnippetsPage() {
   const queryClient = useQueryClient()
   const [drawerSnippet, setDrawerSnippet] = useState(undefined) // undefined = fechado, null = novo, obj = editar
+  const [helpOpen, setHelpOpen] = useState(false)
   const demoRef = useRef(null)
 
   const listQuery = useQuery({
@@ -74,11 +85,9 @@ export default function SnippetsPage() {
       </header>
 
       <div className="content">
-        <div className="help-card">
-          Snippet é um texto curto que você digita uma vez e reusa com um atalho — diferente de Modelos de e-mail
-          (e-mails inteiros usados por Sequências/Cadências), um snippet serve pra inserir rápido em <b>notas,
-          tarefas ou qualquer campo de texto</b> do CRM. Digite <code>#atalho</code> seguido de espaço para expandir.
-        </div>
+        <button className="info-trigger" onClick={() => setHelpOpen(true)}>
+          <IconInfo /> O que é um snippet
+        </button>
 
         <div className="card">
           <div className="card-head">
@@ -152,6 +161,21 @@ export default function SnippetsPage() {
           submitting={createMutation.isPending || updateMutation.isPending}
           error={createMutation.error || updateMutation.error}
         />
+      )}
+
+      {helpOpen && (
+        <div className="scrim show" onClick={() => setHelpOpen(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <h3><IconInfo />O que é um snippet</h3>
+            <p className="sub">
+              Snippet é um texto curto que você digita uma vez e reusa com um atalho — diferente de Modelos de
+              e-mail (e-mails inteiros usados por Sequências/Cadências), um snippet serve pra inserir rápido em
+              <b> notas, tarefas ou qualquer campo de texto</b> do CRM. Digite <code>#atalho</code> seguido de
+              espaço para expandir.
+            </p>
+            <div className="row"><button className="btn-ghost" onClick={() => setHelpOpen(false)}>Fechar</button></div>
+          </div>
+        </div>
       )}
     </>
   )

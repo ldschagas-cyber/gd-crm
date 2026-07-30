@@ -41,9 +41,20 @@ function defaultParams(tipo) {
   return {}
 }
 
+function IconInfo() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <circle cx="10" cy="10" r="7.3" />
+      <path d="M10 9v4.2" strokeLinecap="round" />
+      <circle cx="10" cy="6.8" r=".9" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
 export default function WorkflowsPage() {
   const queryClient = useQueryClient()
   const [drawerWorkflow, setDrawerWorkflow] = useState(undefined) // undefined = fechado, null = novo, obj = editar
+  const [helpOpen, setHelpOpen] = useState(false)
 
   const listQuery = useQuery({ queryKey: ['workflows', 'list'], queryFn: () => listWorkflows({ size: 100 }) })
   const items = listQuery.data?.items ?? []
@@ -69,12 +80,9 @@ export default function WorkflowsPage() {
       </header>
 
       <div className="content">
-        <div className="help-card">
-          Motor evento → condição → ação: quando um gatilho acontece (empresa criada, negócio criado, mudança de
-          etapa, resposta recebida…), o workflow verifica as condições e dispara as ações em cadeia. A ação{' '}
-          <b>Executar enriquecimento</b> depende do módulo de IA (Fase 3, ainda não construído) — o workflow pode
-          ser salvo, mas essa ação registra erro até lá.
-        </div>
+        <button className="info-trigger" onClick={() => setHelpOpen(true)}>
+          <IconInfo /> Como funcionam os workflows
+        </button>
 
         <div className="card">
           {listQuery.isLoading && <p className="state-msg">Carregando workflows…</p>}
@@ -133,6 +141,21 @@ export default function WorkflowsPage() {
           submitting={createMutation.isPending || updateMutation.isPending}
           error={createMutation.error || updateMutation.error}
         />
+      )}
+
+      {helpOpen && (
+        <div className="scrim show" onClick={() => setHelpOpen(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <h3><IconInfo />Como funcionam os workflows</h3>
+            <p className="sub">
+              Motor evento → condição → ação: quando um gatilho acontece (empresa criada, negócio criado, mudança
+              de etapa, resposta recebida…), o workflow verifica as condições e dispara as ações em cadeia. A ação{' '}
+              <b>Executar enriquecimento</b> depende do módulo de IA (Fase 3, ainda não construído) — o workflow
+              pode ser salvo, mas essa ação registra erro até lá.
+            </p>
+            <div className="row"><button className="btn-ghost" onClick={() => setHelpOpen(false)}>Fechar</button></div>
+          </div>
+        </div>
       )}
     </>
   )

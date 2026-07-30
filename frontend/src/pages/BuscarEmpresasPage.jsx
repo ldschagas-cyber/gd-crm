@@ -22,7 +22,18 @@ const NIVEIS = [
 ]
 const PORTES = ['MICRO EMPRESA', 'EMPRESA DE PEQUENO PORTE', 'DEMAIS']
 
+function IconInfo() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <circle cx="10" cy="10" r="7.3" />
+      <path d="M10 9v4.2" strokeLinecap="round" />
+      <circle cx="10" cy="6.8" r=".9" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
 export default function BuscarEmpresasPage() {
+  const [helpOpen, setHelpOpen] = useState(false)
   const [cnaeBusca, setCnaeBusca] = useState('')
   const [cnaeOpcoes, setCnaeOpcoes] = useState([])
   const [cnaeAlvo, setCnaeAlvo] = useState(null)
@@ -30,8 +41,8 @@ export default function BuscarEmpresasPage() {
   const [similares, setSimilares] = useState([])
   const [incluidos, setIncluidos] = useState({})
 
-  const [regioes, setRegioes] = useState([])
-  const [ufs, setUfs] = useState([])
+  const [regiao, setRegiao] = useState('')
+  const [uf, setUf] = useState('')
   const [porte, setPorte] = useState('')
 
   const [resultados, setResultados] = useState([])
@@ -41,6 +52,7 @@ export default function BuscarEmpresasPage() {
   const [error, setError] = useState(null)
   const [selecionados, setSelecionados] = useState({})
   const [addStatus, setAddStatus] = useState(null)
+  const [ocultarCadastradas, setOcultarCadastradas] = useState(false)
 
   useEffect(() => {
     if (cnaeBusca.trim().length < 2) { setCnaeOpcoes([]); return }
@@ -68,28 +80,29 @@ export default function BuscarEmpresasPage() {
     setIncluidos((s) => ({ ...s, [codigo]: !s[codigo] }))
   }
 
-  function toggleRegiao(r) {
-    setRegioes((s) => (s.includes(r) ? s.filter((x) => x !== r) : [...s, r]))
-  }
-
-  function toggleUf(u) {
-    setUfs((s) => (s.includes(u) ? s.filter((x) => x !== u) : [...s, u]))
+  function handleRegiaoChange(r) {
+    setRegiao(r)
+    if (r && uf && UF_REGIAO[uf] !== r) setUf('')
   }
 
   const ufsDisponiveis = Object.keys(UF_REGIAO)
-    .filter((u) => regioes.length === 0 || regioes.includes(UF_REGIAO[u]))
+    .filter((u) => !regiao || UF_REGIAO[u] === regiao)
     .sort()
 
   const cnaeSelecionados = similares.filter((c) => incluidos[c.codigo]).map((c) => c.codigo)
 
   async function buscar(cursorAtual = null) {
-    if (cnaeSelecionados.length === 0) return
+    if (cnaeSelecionados.length === 0) {
+      setError('Selecione um CNAE de referência antes de buscar — a busca não funciona só com UF/região/porte.')
+      return
+    }
     setLoading(true)
     setError(null)
     setAddStatus(null)
     try {
       const resp = await searchPublicCompanies({
-        cnae: cnaeSelecionados, regiao: regioes, uf: ufs, porte: porte || undefined, cursor: cursorAtual,
+        cnae: cnaeSelecionados, regiao: regiao ? [regiao] : [], uf: uf ? [uf] : [],
+        porte: porte || undefined, cursor: cursorAtual,
       })
       setResultados((prev) => (cursorAtual ? [...prev, ...resp.data] : resp.data))
       setCursor(resp.cursor)
@@ -106,6 +119,8 @@ export default function BuscarEmpresasPage() {
   }
 
   const selecionadosIds = Object.keys(selecionados).filter((id) => selecionados[id])
+  const qtdJaCadastradas = resultados.filter((r) => r.ja_cadastrado).length
+  const resultadosVisiveis = ocultarCadastradas ? resultados.filter((r) => !r.ja_cadastrado) : resultados
 
   async function adicionarSelecionados() {
     const empresas = resultados
@@ -135,100 +150,73 @@ export default function BuscarEmpresasPage() {
       </header>
 
       <div className="content">
-        <div className="help-card">
-          <span>
-            Busca sobre a base pública de CNPJ (minha-receita.org, dados da Receita Federal). Escolha um CNAE de
-            referência e o nível de semelhança — os códigos incluídos aparecem abaixo, editáveis. Sem busca por
-            nome de empresa: os filtros disponíveis são CNAE, região/UF e porte.
-          </span>
+        <button className="info-trigger" onClick={() => setHelpOpen(true)}>
+          <IconInfo /> Como funciona a busca
+        </button>
+
+        <div className="filters-bar">
+          <div className="search cnae-picker">
+            <input
+              type="text" placeholder="CNAE por código ou descrição (ex.: supermercado)"
+              value={cnaeBusca}
+              onChange={(e) => { setCnaeBusca(e.target.value); setCnaeAlvo(null) }}
+            />
+            {cnaeOpcoes.length > 0 && (
+              <div className="cnae-options">
+                {cnaeOpcoes.map((c) => (
+                  <div key={c.codigo} className="cnae-option" onClick={() => escolherCnae(c)}>
+                    <span className="mono">{c.codigo}</span> {c.descricao}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <select className="filter-select" value={regiao} onChange={(e) => handleRegiaoChange(e.target.value)}>
+            <option value="">Toda região</option>
+            {REGIOES.map((r) => <option key={r} value={r}>{r}</option>)}
+          </select>
+          <select className="filter-select" value={uf} onChange={(e) => setUf(e.target.value)}>
+            <option value="">Toda UF</option>
+            {ufsDisponiveis.map((u) => <option key={u} value={u}>{u}</option>)}
+          </select>
+          <select className="filter-select" value={porte} onChange={(e) => setPorte(e.target.value)}>
+            <option value="">Todos os portes</option>
+            {PORTES.map((p) => <option key={p} value={p}>{p}</option>)}
+          </select>
         </div>
 
-        <div className="card" style={{ padding: 18, marginTop: 16 }}>
-          <div className="f-group">
-            <div className="f-label">CNAE de referência</div>
-            <div className="cnae-picker">
-              <input
-                className="f-input" type="text" placeholder="Buscar por código ou descrição (ex.: supermercado)"
-                value={cnaeBusca}
-                onChange={(e) => { setCnaeBusca(e.target.value); setCnaeAlvo(null) }}
-              />
-              {cnaeOpcoes.length > 0 && (
-                <div className="cnae-options">
-                  {cnaeOpcoes.map((c) => (
-                    <div key={c.codigo} className="cnae-option" onClick={() => escolherCnae(c)}>
-                      <span className="mono">{c.codigo}</span> {c.descricao}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {cnaeAlvo && (
-            <>
-              <div className="f-group">
-                <div className="f-label">Nível de semelhança</div>
-                <div className="segmented" style={{ marginLeft: 0 }}>
-                  {NIVEIS.map((n) => (
-                    <button key={n.v} className={nivel === n.v ? 'active' : ''} onClick={() => setNivel(n.v)}>{n.l}</button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="f-group">
-                <div className="f-label">CNAEs incluídos na busca ({cnaeSelecionados.length} de {similares.length})</div>
-                <div className="cnae-checklist">
-                  {similares.map((c) => (
-                    <label key={c.codigo} className="col-option">
-                      <input type="checkbox" checked={!!incluidos[c.codigo]} onChange={() => toggleIncluido(c.codigo)} />
-                      <span className="mono">{c.codigo}</span> {c.descricao}
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-
-          <div className="f-row">
+        {cnaeAlvo && (
+          <div className="card" style={{ padding: 18, marginTop: 16 }}>
             <div className="f-group">
-              <div className="f-label">Região</div>
-              <div className="chip-row">
-                {REGIOES.map((r) => (
-                  <label key={r} className="chip-toggle">
-                    <input type="checkbox" checked={regioes.includes(r)} onChange={() => toggleRegiao(r)} />
-                    {r}
+              <div className="f-label">Nível de semelhança</div>
+              <div className="segmented" style={{ marginLeft: 0 }}>
+                {NIVEIS.map((n) => (
+                  <button key={n.v} className={nivel === n.v ? 'active' : ''} onClick={() => setNivel(n.v)}>{n.l}</button>
+                ))}
+              </div>
+            </div>
+
+            <div className="f-group" style={{ marginBottom: 0 }}>
+              <div className="f-label">CNAEs incluídos na busca ({cnaeSelecionados.length} de {similares.length})</div>
+              <div className="cnae-checklist">
+                {similares.map((c) => (
+                  <label key={c.codigo} className="col-option">
+                    <input type="checkbox" checked={!!incluidos[c.codigo]} onChange={() => toggleIncluido(c.codigo)} />
+                    <span className="mono">{c.codigo}</span> {c.descricao}
                   </label>
                 ))}
               </div>
             </div>
-            <div className="f-group">
-              <div className="f-label">Porte <span className="opt">opcional</span></div>
-              <select className="f-select" value={porte} onChange={(e) => setPorte(e.target.value)}>
-                <option value="">Todos os portes</option>
-                {PORTES.map((p) => <option key={p} value={p}>{p}</option>)}
-              </select>
-            </div>
           </div>
+        )}
 
-          <div className="f-group">
-            <div className="f-label">UF <span className="opt">refinamento opcional dentro da região</span></div>
-            <div className="chip-row">
-              {ufsDisponiveis.map((u) => (
-                <label key={u} className="chip-toggle">
-                  <input type="checkbox" checked={ufs.includes(u)} onChange={() => toggleUf(u)} />
-                  {u}
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <button
-            className="btn-primary" disabled={cnaeSelecionados.length === 0 || loading}
-            onClick={() => buscar(null)}
-          >
-            {loading && !buscou ? 'Buscando…' : 'Buscar'}
-          </button>
-        </div>
+        <button
+          className="btn-primary" style={{ marginTop: 16 }}
+          disabled={loading}
+          onClick={() => buscar(null)}
+        >
+          {loading && !buscou ? 'Buscando…' : 'Buscar'}
+        </button>
 
         {error && <p className="state-msg error">{error}</p>}
 
@@ -244,9 +232,25 @@ export default function BuscarEmpresasPage() {
             )}
             {addStatus && addStatus !== 'loading' && <p className="state-msg">{addStatus}</p>}
 
-            {resultados.length === 0 && !loading && <p className="empty-cell">Nenhuma empresa encontrada com esses filtros.</p>}
+            {resultados.length > 0 && qtdJaCadastradas > 0 && (
+              <label className="col-option" style={{ marginBottom: 12 }}>
+                <input
+                  type="checkbox" checked={ocultarCadastradas}
+                  onChange={(e) => setOcultarCadastradas(e.target.checked)}
+                />
+                Ocultar já cadastradas ({qtdJaCadastradas})
+              </label>
+            )}
 
-            {resultados.length > 0 && (
+            {resultadosVisiveis.length === 0 && !loading && (
+              <p className="empty-cell">
+                {resultados.length === 0
+                  ? 'Nenhuma empresa encontrada com esses filtros.'
+                  : 'Todas as empresas encontradas já estão cadastradas.'}
+              </p>
+            )}
+
+            {resultadosVisiveis.length > 0 && (
               <div className="table-scroll">
                 <table className="data">
                   <thead>
@@ -259,7 +263,7 @@ export default function BuscarEmpresasPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {resultados.map((r) => (
+                    {resultadosVisiveis.map((r) => (
                       <tr key={r.cnpj} className={selecionados[r.cnpj] ? 'row-selected' : ''}>
                         <td className="checkbox-col">
                           <input
@@ -292,6 +296,20 @@ export default function BuscarEmpresasPage() {
           </div>
         )}
       </div>
+
+      {helpOpen && (
+        <div className="scrim show" onClick={() => setHelpOpen(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <h3><IconInfo />Como funciona a busca</h3>
+            <p className="sub">
+              Busca sobre a base pública de CNPJ (minha-receita.org, dados da Receita Federal). Escolha um CNAE
+              de referência e o nível de semelhança — os códigos incluídos aparecem abaixo, editáveis. Sem busca
+              por nome de empresa: os filtros disponíveis são CNAE, região/UF e porte.
+            </p>
+            <div className="row"><button className="btn-ghost" onClick={() => setHelpOpen(false)}>Fechar</button></div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

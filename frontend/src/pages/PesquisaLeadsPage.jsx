@@ -519,9 +519,13 @@ function LeadDrawer({ lead, users, onClose, onSubmit, submitting, error }) {
               <input className="f-input" value={form.empresa} onChange={set('empresa')} placeholder="Razão social ou nome comercial" required />
             </div>
 
+            <p className="f-hint" style={{ marginTop: -6, marginBottom: 10 }}>
+              Campos em <b style={{ color: 'var(--azul)' }}>azul</b> definem o Score ICP.
+            </p>
+
             <div className="f-row">
               <div className="f-group">
-                <label className="f-label">Setor <span className="opt">define o Score ICP</span></label>
+                <label className="f-label icp-field">Setor</label>
                 <select className="f-select" value={form.setor} onChange={set('setor')}>
                   <option value="">Selecione…</option>
                   {SETORES.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -535,16 +539,16 @@ function LeadDrawer({ lead, users, onClose, onSubmit, submitting, error }) {
 
             <div className="f-row">
               <div className="f-group">
-                <label className="f-label">UF <span className="opt">opcional, se souber o estado</span></label>
+                <label className="f-label icp-field">UF</label>
                 <select className="f-select" value={form.uf} onChange={set('uf')}>
                   <option value="">Selecione…</option>
-                  {UFS.map((uf) => <option key={uf} value={uf}>{uf} — {UF_REGIAO[uf]}</option>)}
+                  {UFS.map((uf) => <option key={uf} value={uf}>{uf}</option>)}
                 </select>
               </div>
               <div className="f-group">
-                <label className="f-label">Região <span className="opt">define o Score ICP se a UF não for informada</span></label>
+                <label className="f-label icp-field">Região</label>
                 <select className="f-select" value={form.regiao} onChange={set('regiao')}>
-                  <option value="">{form.uf ? `Derivada da UF: ${UF_REGIAO[form.uf]}` : 'Selecione…'}</option>
+                  <option value="">{form.uf ? UF_REGIAO[form.uf] : 'Selecione…'}</option>
                   {REGIOES.map((r) => <option key={r} value={r}>{r}</option>)}
                 </select>
               </div>
@@ -552,41 +556,41 @@ function LeadDrawer({ lead, users, onClose, onSubmit, submitting, error }) {
 
             <div className="f-row">
               <div className="f-group">
-                <label className="f-label">Faixa de funcionários</label>
+                <label className="f-label icp-field">Faixa de funcionários</label>
                 <select className="f-select" value={form.faixa_funcionarios} onChange={set('faixa_funcionarios')}>
                   <option value="">Selecione…</option>
                   {FAIXAS.map((f) => <option key={f} value={f}>{f}</option>)}
                 </select>
               </div>
               <div className="f-group">
-                <label className="f-label">Faturamento estimado <span className="opt">opcional</span></label>
+                <label className="f-label">Faturamento estimado</label>
                 <input className="f-input" type="number" step="0.01" value={form.faturamento} onChange={set('faturamento')} placeholder="Ex.: 20000000" />
               </div>
             </div>
 
             <div className="f-row">
               <div className="f-group">
-                <label className="f-label">Telefone <span className="opt">opcional</span></label>
+                <label className="f-label">Telefone</label>
                 <input className="f-input" value={form.telefone} onChange={set('telefone')} placeholder="(00) 0000-0000" />
               </div>
               <div className="f-group">
-                <label className="f-label">Site <span className="opt">opcional</span></label>
+                <label className="f-label">Site</label>
                 <input className="f-input" value={form.site} onChange={set('site')} placeholder="empresa.com.br" />
               </div>
             </div>
 
             <div className="f-group">
-              <label className="f-label">LinkedIn <span className="opt">opcional</span></label>
+              <label className="f-label">LinkedIn</label>
               <input className="f-input" value={form.linkedin} onChange={set('linkedin')} placeholder="linkedin.com/company/…" />
             </div>
 
             <div className="f-group">
-              <label className="f-label">Contato sugerido <span className="opt">opcional</span></label>
+              <label className="f-label">Contato sugerido</label>
               <input className="f-input" value={form.contato_sugerido} onChange={set('contato_sugerido')} placeholder="Ex.: Ana Paula — Gerente de Compras" />
             </div>
 
             <div className="f-group">
-              <label className="f-label">Dor sugerida <span className="opt">opcional</span></label>
+              <label className="f-label">Dor sugerida</label>
               <textarea className="f-textarea" value={form.dor_sugerida} onChange={set('dor_sugerida')} placeholder="Hipótese de dor levantada na pesquisa" />
             </div>
 

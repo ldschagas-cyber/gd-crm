@@ -127,6 +127,30 @@
   .avatar-menu-item:hover:not(.active) { background: var(--paper); }
   .avatar-menu-divider { height: 1px; background: var(--border); margin: 6px 4px; }
 
+  /* painel de edição de metas — inline nesta própria tela */
+  .overlay { position: fixed; inset: 0; background: rgba(20, 20, 30, 0.32); opacity: 0; pointer-events: none; transition: opacity 160ms ease; z-index: 45; }
+  .overlay.show { opacity: 1; pointer-events: auto; }
+  .metas-panel { position: fixed; top: 0; right: 0; height: 100vh; width: 380px; max-width: 92vw; background: var(--card-bg); border-left: 1px solid var(--border); box-shadow: var(--shadow); transform: translateX(100%); transition: transform 220ms ease; z-index: 46; display: flex; flex-direction: column; }
+  .metas-panel.show { transform: translateX(0); }
+  .mp-head { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .mp-head h3 { margin: 0; font-size: 15.5px; font-weight: 650; }
+  .mp-head p { margin: 4px 0 0; font-size: 12px; color: var(--ink-dim); }
+  .mp-close { border: none; background: transparent; color: var(--ink-dim); cursor: pointer; width: 28px; height: 28px; border-radius: 7px; flex: none; display: flex; align-items: center; justify-content: center; }
+  .mp-close:hover { background: var(--paper); color: var(--ink); }
+  .mp-close svg { width: 15px; height: 15px; }
+  .mp-body { flex: 1; overflow-y: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 16px; }
+  .mp-group-label { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 2px; }
+  .mp-field { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .mp-field label { font-size: 13px; color: var(--ink); }
+  .mp-field .mp-input-wrap { display: flex; align-items: center; gap: 6px; }
+  .mp-field input { width: 92px; font: inherit; font-size: 13px; padding: 7px 9px; border: 1px solid var(--border); border-radius: 8px; background: var(--paper); color: var(--ink); text-align: right; }
+  .mp-field input:focus { outline: none; border-color: var(--azul); box-shadow: 0 0 0 3px rgba(0,119,168,0.15); }
+  .mp-field .mp-prefix { font-size: 12px; color: var(--ink-faint); }
+  .mp-hint { font-size: 11.5px; color: var(--ink-faint); line-height: 1.5; }
+  .mp-foot { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; }
+  .mp-foot .btn-primary { flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; background: var(--indigo); color: var(--panel-fg); border: 1px solid var(--indigo); font-size: 13.5px; font-weight: 600; border-radius: 9px; padding: 9px 14px; cursor: pointer; }
+  .mp-foot .btn-primary:hover { background: var(--indigo-600); }
+
   .content { padding: 22px 28px 48px; display: flex; flex-direction: column; gap: 20px; }
 
   .note-box { display: flex; gap: 10px; align-items: flex-start; background: color-mix(in srgb, var(--amber) 14%, var(--card-bg)); border: 1px dashed color-mix(in srgb, var(--amber) 55%, var(--border)); border-radius: 10px; padding: 11px 14px; font-size: 12.6px; color: var(--ink-dim); }
@@ -265,6 +289,10 @@
           <p>Protótipo &middot; acompanhamento de atividade comercial e metas por período</p>
         </div>
         <div class="topbar-actions">
+          <button class="btn-ghost-sm" id="gearBtn">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="2.6"/><path d="M10 2.8v2M10 15.2v2M17.2 10h-2M4.8 10h-2M15.1 4.9l-1.4 1.4M6.3 13.7l-1.4 1.4M15.1 15.1l-1.4-1.4M6.3 6.3L4.9 4.9"/></svg>
+            Editar metas
+          </button>
           <div class="avatar-menu-wrap">
             <button class="topbar-avatar" id="topbarAvatarBtn">DC</button>
             <div class="menu-scrim" id="menuScrim" style="display:none;"></div>
@@ -275,7 +303,6 @@
                 <span class="perfil-tag">Gestor</span>
               </div>
               <a class="avatar-menu-item" href="#" data-page="Preferências">Preferências</a>
-              <a class="avatar-menu-item" href="#" data-page="Metas">Metas</a>
               <div class="avatar-menu-divider"></div>
               <button class="avatar-menu-item" id="logoutMenuBtn">Sair</button>
             </div>
@@ -308,7 +335,7 @@
           </div>
         </div>
         <div id="goalsContent"></div>
-        <p style="font-size:11.5px; color:var(--ink-faint); margin:10px 2px 0;">Meta padrão configurada em <b style="color:var(--ink-dim);">Metas</b> — menu do avatar, logo abaixo de Preferências (Admin/Gestor).</p>
+        <p style="font-size:11.5px; color:var(--ink-faint); margin:10px 2px 0;">Meta padrão da equipe — editável em <b style="color:var(--ink-dim);">Editar metas</b>, no topo desta tela (Admin/Gestor).</p>
       </section>
 
       <section id="processSection" style="display:none;">
@@ -360,6 +387,39 @@
     </div>
   </div>
 </div>
+
+<div class="overlay" id="overlay"></div>
+<aside class="metas-panel" id="metasPanel" aria-label="Editar metas">
+  <div class="mp-head">
+    <div>
+      <h3>Editar metas</h3>
+      <p>Meta padrão da equipe. Override por vendedor fica fora deste protótipo.</p>
+    </div>
+    <button class="mp-close" id="mpClose" aria-label="Fechar"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
+  </div>
+  <div class="mp-body">
+    <div>
+      <div class="mp-group-label">Metas diárias</div>
+      <div style="display:flex; flex-direction:column; gap:12px; margin-top:10px;">
+        <div class="mp-field"><label for="mDia_ligacoes">Ligações</label><div class="mp-input-wrap"><input type="number" min="0" id="mDia_ligacoes" /></div></div>
+        <div class="mp-field"><label for="mDia_emails">E-mails enviados</label><div class="mp-input-wrap"><input type="number" min="0" id="mDia_emails" /></div></div>
+        <div class="mp-field"><label for="mDia_reunioes">Reuniões</label><div class="mp-input-wrap"><input type="number" min="0" id="mDia_reunioes" /></div></div>
+        <div class="mp-field"><label for="mDia_cadastros">Novas empresas cadastradas</label><div class="mp-input-wrap"><input type="number" min="0" id="mDia_cadastros" /></div></div>
+      </div>
+    </div>
+    <div>
+      <div class="mp-group-label">Metas mensais</div>
+      <div style="display:flex; flex-direction:column; gap:12px; margin-top:10px;">
+        <div class="mp-field"><label for="mMes_negocios_criados">Negócios criados</label><div class="mp-input-wrap"><input type="number" min="0" id="mMes_negocios_criados" /></div></div>
+        <div class="mp-field"><label for="mMes_receita_ganha">Receita ganha</label><div class="mp-input-wrap"><span class="mp-prefix">R$</span><input type="number" min="0" step="100" id="mMes_receita_ganha" /></div></div>
+      </div>
+    </div>
+    <p class="mp-hint">Receita e negócios fechados não têm meta diária de propósito — ciclo de venda B2B torna esse número ruído no dia a dia; o acompanhamento diário fica só em contadores de atividade que o vendedor controla diretamente.</p>
+  </div>
+  <div class="mp-foot">
+    <button class="btn-primary" id="mpSave">Salvar metas</button>
+  </div>
+</aside>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -523,6 +583,36 @@
   document.getElementById('logoutMenuBtn').addEventListener('click', function () {
     showToast('Encerraria a sessão e voltaria para a tela de login.');
     closeMenu();
+  });
+
+  var overlay = document.getElementById('overlay');
+  var metasPanel = document.getElementById('metasPanel');
+  function openMetasPanel() {
+    document.getElementById('mDia_ligacoes').value = metas.dia.ligacoes;
+    document.getElementById('mDia_emails').value = metas.dia.emails;
+    document.getElementById('mDia_reunioes').value = metas.dia.reunioes;
+    document.getElementById('mDia_cadastros').value = metas.dia.cadastros;
+    document.getElementById('mMes_negocios_criados').value = metas.mes.negocios_criados;
+    document.getElementById('mMes_receita_ganha').value = metas.mes.receita_ganha;
+    overlay.classList.add('show');
+    metasPanel.classList.add('show');
+  }
+  function closeMetasPanel() { overlay.classList.remove('show'); metasPanel.classList.remove('show'); }
+
+  document.getElementById('gearBtn').addEventListener('click', openMetasPanel);
+  document.getElementById('mpClose').addEventListener('click', closeMetasPanel);
+  overlay.addEventListener('click', closeMetasPanel);
+
+  document.getElementById('mpSave').addEventListener('click', function () {
+    metas.dia.ligacoes = Number(document.getElementById('mDia_ligacoes').value) || 0;
+    metas.dia.emails = Number(document.getElementById('mDia_emails').value) || 0;
+    metas.dia.reunioes = Number(document.getElementById('mDia_reunioes').value) || 0;
+    metas.dia.cadastros = Number(document.getElementById('mDia_cadastros').value) || 0;
+    metas.mes.negocios_criados = Number(document.getElementById('mMes_negocios_criados').value) || 0;
+    metas.mes.receita_ganha = Number(document.getElementById('mMes_receita_ganha').value) || 0;
+    closeMetasPanel();
+    render();
+    showToast('Metas atualizadas — protótipo, ainda não persiste no backend.');
   });
 
   render();

@@ -170,7 +170,6 @@ export default function ContatosPage() {
               <span><b>{selectedIds.length}</b> selecionados</span>
               <div className="link-btn">
                 <a onClick={() => setShowBulkEnroll(true)}>Inscrever</a>
-                <a onClick={() => exportContacts(filters)}>Exportar</a>
                 <a onClick={handleBulkDelete}>Excluir</a>
               </div>
             </div>

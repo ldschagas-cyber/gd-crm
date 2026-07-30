@@ -63,6 +63,12 @@ def close_deal(deal_id: UUID, data: DealClose, _: User = Depends(get_current_use
     return DealService(db).close(deal_id, data)
 
 
+@router.delete("/{deal_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_deal(deal_id: UUID, _: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    DealService(db).delete(deal_id)
+    return None
+
+
 @router.get("/{deal_id}/timeline", response_model=Page[TimelineEventRead])
 def get_deal_timeline(deal_id: UUID, params: PageParams = Depends(),
                       _: User = Depends(get_current_user), db: Session = Depends(get_db)):

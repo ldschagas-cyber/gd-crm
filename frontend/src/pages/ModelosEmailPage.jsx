@@ -23,9 +23,20 @@ function mergeVarsSegments(text) {
   return parts
 }
 
+function IconInfo() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <circle cx="10" cy="10" r="7.3" />
+      <path d="M10 9v4.2" strokeLinecap="round" />
+      <circle cx="10" cy="6.8" r=".9" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
 export default function ModelosEmailPage() {
   const queryClient = useQueryClient()
   const [drawerTemplate, setDrawerTemplate] = useState(undefined) // undefined = fechado, null = novo, obj = editar
+  const [helpOpen, setHelpOpen] = useState(false)
 
   const listQuery = useQuery({
     queryKey: ['email-templates', 'list'],
@@ -52,11 +63,9 @@ export default function ModelosEmailPage() {
       </header>
 
       <div className="content">
-        <div className="help-card">
-          Variáveis disponíveis: <code>{'{{nome}}'}</code> <code>{'{{empresa}}'}</code> <code>{'{{cargo}}'}</code>{' '}
-          <code>{'{{responsavel}}'}</code> — substituídas pelos dados reais no momento do envio, dentro de
-          Sequências e Cadências.
-        </div>
+        <button className="info-trigger" onClick={() => setHelpOpen(true)}>
+          <IconInfo /> Variáveis disponíveis
+        </button>
 
         <div className="card">
           {listQuery.isLoading && <p className="state-msg">Carregando modelos…</p>}
@@ -113,6 +122,20 @@ export default function ModelosEmailPage() {
           submitting={createMutation.isPending || updateMutation.isPending}
           error={createMutation.error || updateMutation.error}
         />
+      )}
+
+      {helpOpen && (
+        <div className="scrim show" onClick={() => setHelpOpen(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <h3><IconInfo />Variáveis disponíveis</h3>
+            <p className="sub">
+              <code>{'{{nome}}'}</code> <code>{'{{empresa}}'}</code> <code>{'{{cargo}}'}</code>{' '}
+              <code>{'{{responsavel}}'}</code> — substituídas pelos dados reais no momento do envio, dentro de
+              Sequências e Cadências.
+            </p>
+            <div className="row"><button className="btn-ghost" onClick={() => setHelpOpen(false)}>Fechar</button></div>
+          </div>
+        </div>
       )}
     </>
   )
