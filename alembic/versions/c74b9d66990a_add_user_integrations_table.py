@@ -1,7 +1,7 @@
 """add user_integrations table
 
 Revision ID: c74b9d66990a
-Revises: d224b580a440
+Revises: 0001_initial
 Create Date: 2026-07-28 16:22:31.276450
 """
 from typing import Sequence, Union
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 
 revision: str = 'c74b9d66990a'
-down_revision: Union[str, None] = 'd224b580a440'
+down_revision: Union[str, None] = '0001_initial'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
