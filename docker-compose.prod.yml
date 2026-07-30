@@ -3,9 +3,16 @@
 # ============================================================
 # Uso:
 #   cp .env.example .env.prod  # ajuste SECRET_KEY, senhas
+#   docker network create gd_conecta_network   # uma única vez no servidor
 #   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
 #
-# Aplicação disponível em: https://crm.gdconecta.com.br (porta 80/443 via Nginx)
+# Este servidor hospeda mais de uma aplicação (GD Diagnóstico + GD CRM).
+# Por isso o frontend NÃO expõe as portas 80/443 diretamente — quem faz
+# isso é o Nginx central em /opt (nginx-proxy.conf), que termina o TLS
+# para os dois domínios e encaminha para cada app por dentro da rede
+# Docker compartilhada 'gd_conecta_network'.
+#
+# Aplicação disponível em: https://crm.gdconecta.com.br
 # ============================================================
 
 services:
@@ -28,7 +35,7 @@ services:
       timeout: 5s
       retries: 10
     networks:
-      - internal
+      - gd_conecta_network
 
   # ---- Redis (Celery) -------------------------------------------
   redis:
@@ -40,7 +47,7 @@ services:
       - gd_crm_redis_prod_data:/data
     # Porta NÃO exposta externamente em produção.
     networks:
-      - internal
+      - gd_conecta_network
 
   # ---- Backend (API) -------------------------------------------
   api:
@@ -68,7 +75,7 @@ services:
         uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2
       "
     networks:
-      - internal
+      - gd_conecta_network
 
   # ---- Celery Worker -------------------------------------------
   worker:
@@ -87,7 +94,7 @@ services:
       ENVIRONMENT: production
     command: ["celery", "-A", "app.core.celery_app.celery_app", "worker", "-Q", "default", "--loglevel=info", "--concurrency=4"]
     networks:
-      - internal
+      - gd_conecta_network
 
   # ---- Celery Beat (Scheduler) --------------------------------
   beat:
@@ -106,9 +113,11 @@ services:
       ENVIRONMENT: production
     command: ["celery", "-A", "app.core.celery_app.celery_app", "beat", "--loglevel=info"]
     networks:
-      - internal
+      - gd_conecta_network
 
   # ---- Frontend (Nginx) ----------------------------------------
+  # HTTP puro na porta 80, apenas dentro da rede Docker. Quem expõe
+  # 80/443 ao mundo é o Nginx central (fora deste projeto).
   frontend:
     build:
       context: ./frontend
@@ -116,20 +125,17 @@ services:
         VITE_API_URL: /api/v1   # proxy reverso: /api/v1 → api:8000/api/v1
     container_name: gd_crm_frontend
     restart: always
-    ports:
-      - "80:80"
-      - "443:443"           # TLS termina aqui, com certificado Let's Encrypt
-    volumes:
-      - /etc/letsencrypt:/etc/letsencrypt:ro
+    expose:
+      - "80"
     depends_on:
       - api
     networks:
-      - internal
+      - gd_conecta_network
 
 volumes:
   gd_crm_pg_prod_data:
   gd_crm_redis_prod_data:
 
 networks:
-  internal:
-    driver: bridge
+  gd_conecta_network:
+    external: true
