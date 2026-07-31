@@ -11,9 +11,10 @@ from app.models.user import User, UserRole
 from app.schemas.common import Page
 from app.schemas.import_job import ImportJobRead
 from app.schemas.lead_prospect import (
-    LeadEnrichmentSuggestion, LeadProspectCreate, LeadProspectPageParams, LeadProspectRead, LeadProspectUpdate,
-    PerformanceReportResponse,
+    CommercialIntelligenceResponse, LeadEnrichmentSuggestion, LeadProspectCreate, LeadProspectPageParams,
+    LeadProspectRead, LeadProspectUpdate, PerformanceReportResponse,
 )
+from app.services.commercial_intelligence import CommercialIntelligenceService
 from app.services.import_job import ImportJobService
 from app.services.lead_enrichment import LeadEnrichmentService
 from app.services.lead_prospect import LeadProspectService
@@ -103,3 +104,11 @@ def enrich_lead(lead_id: UUID, _: User = Depends(get_current_user), db: Session 
     decide se aceita (via PUT normal em /lead-prospects/{id})."""
     lead = LeadProspectService(db).get_orm(lead_id)
     return LeadEnrichmentService().enrich(lead)
+
+
+@router.post("/{lead_id}/inteligencia-comercial", response_model=CommercialIntelligenceResponse)
+def gerar_inteligencia_comercial(lead_id: UUID, _: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Cruza o perfil pesquisado do lead com o Benchmark Logístico do Diagnóstico
+    para montar um argumento comercial. Só sugere — nada é gravado."""
+    lead = LeadProspectService(db).get_orm(lead_id)
+    return CommercialIntelligenceService().gerar(lead)

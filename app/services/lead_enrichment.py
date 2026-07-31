@@ -4,13 +4,11 @@ Nunca escreve no banco: só monta a sugestão. A gravação de fato acontece
 via `LeadProspectService.update()` normal, quando o usuário revisa e aceita
 as sugestões no frontend — o enriquecimento é só uma fonte de preenchimento
 mais rápida do formulário, não um passo automático."""
-import json
-import re
-
 from app.core.config import settings
 from app.core.exceptions import ConflictError
 from app.models.lead_prospect import LeadProspect
 from app.schemas.lead_prospect import LeadEnrichmentSuggestion
+from app.services._ai_json import extract_json
 
 SETORES_CONHECIDOS = [
     "Farma", "Alimentos", "Autopeças", "Etiquetas", "Plástico", "Máquinas e Equipamentos",
@@ -41,13 +39,6 @@ responda SOMENTE com um objeto JSON (sem texto antes ou depois, sem markdown), c
 }}
 
 Se não encontrar informação confiável para um campo, use null nele — não invente dados, especialmente contato_sugerido."""
-
-
-def _extract_json(text: str) -> dict:
-    match = re.search(r"\{.*\}", text, re.DOTALL)
-    if not match:
-        raise ConflictError("A IA não retornou uma sugestão em formato válido. Tente novamente.")
-    return json.loads(match.group(0))
 
 
 class LeadEnrichmentService:
@@ -81,5 +72,5 @@ class LeadEnrichmentService:
         if not text_blocks:
             raise ConflictError("A IA não retornou uma resposta de texto. Tente novamente.")
 
-        data = _extract_json(text_blocks[-1])
+        data = extract_json(text_blocks[-1])
         return LeadEnrichmentSuggestion(**{k: v for k, v in data.items() if k in LeadEnrichmentSuggestion.model_fields})

@@ -48,6 +48,10 @@ export function enrichLeadProspect(id) {
   return api.post(`/lead-prospects/${id}/enrich`).then((res) => res.data)
 }
 
+export function gerarInteligenciaComercial(id) {
+  return api.post(`/lead-prospects/${id}/inteligencia-comercial`).then((res) => res.data)
+}
+
 export function getPerformanceReport(mes) {
   return api.get('/lead-prospects/performance-report', { params: { mes } }).then((res) => res.data)
 }

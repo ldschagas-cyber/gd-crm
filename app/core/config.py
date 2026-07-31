@@ -67,6 +67,15 @@ class Settings(BaseSettings):
     MINHA_RECEITA_BASE_URL: str = "https://minhareceita.org"
     MINHA_RECEITA_TIMEOUT_SECONDS: float = 8.0
 
+    # Inteligência Comercial (Pesquisa de Leads): consulta o Benchmark Setorial
+    # do GD Diagnóstico via endpoint interno /internal, serviço-a-serviço — não
+    # é JWT de usuário. DIAGNOSTICO_INTERNAL_API_KEY precisa ser o MESMO valor
+    # configurado como INTERNAL_API_KEY no .env do Diagnóstico. Em produção, os
+    # dois containers estão no mesmo Docker network e a URL aponta direto pro
+    # nome do serviço (ex.: http://gd_frete_backend:8000), sem passar pelo nginx.
+    DIAGNOSTICO_INTERNAL_URL: str | None = None
+    DIAGNOSTICO_INTERNAL_API_KEY: str | None = None
+
 
 @lru_cache
 def get_settings() -> Settings:

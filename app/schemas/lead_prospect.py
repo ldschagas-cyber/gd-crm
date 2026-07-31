@@ -98,6 +98,36 @@ class LeadEnrichmentSuggestion(BaseModel):
     observacoes: str | None = None
 
 
+class CommercialIntelligencePerfil(BaseModel):
+    """Perfil pesquisado na web — mesma natureza do LeadEnrichmentSuggestion:
+    pode conter imprecisões, é sempre exibido com a fonte à vista (pesquisa)."""
+    erp: str | None = None
+    porte_estimado: str | None = None
+    atuacao: str | None = None
+    operacao_transporte: str | None = None
+
+
+class CommercialIntelligenceBenchmark(BaseModel):
+    """Referência de mercado do Benchmark Setorial (Diagnóstico) — NUNCA uma
+    medição desta empresa específica, que ainda não é cliente e não tem CT-e
+    no sistema. `disponivel=False` cobre tanto "setor sem mapeamento" quanto
+    "Diagnóstico não respondeu" — o relatório segue sem travar nesses casos."""
+    disponivel: bool
+    segmento_pesquisado: str | None = None
+    segmento_diagnostico: str | None = None
+    frete_kg_medio: float | None = None
+    motivo_indisponivel: str | None = None
+
+
+class CommercialIntelligenceResponse(BaseModel):
+    """Sugestão gerada por IA — nunca salva automaticamente. Item 'Inteligência
+    Comercial' da Pesquisa de Leads: cruza o perfil pesquisado da empresa com o
+    Benchmark Logístico do GD Diagnóstico para montar um argumento comercial."""
+    perfil: CommercialIntelligencePerfil
+    benchmark: CommercialIntelligenceBenchmark
+    argumento: str
+
+
 class PerformanceReportRow(BaseModel):
     """Uma linha agregada por pesquisador dentro do mês do relatório (§9.7)."""
     pesquisador_id: UUID
