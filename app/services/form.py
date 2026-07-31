@@ -17,6 +17,8 @@ from app.schemas.common import PageParams
 from app.schemas.form import (
     FormCreate, FormKpis, FormRead, FormSubmissionRead, FormUpdate, PublicFormSubmit,
 )
+from app.services.timeline import TimelineService
+from app.models.timeline import TimelineType
 
 
 class FormService:
@@ -159,13 +161,42 @@ class FormService:
                 except ValueError:
                     nascimento = None
 
-            contact = ContactRepository(self.db).add(Contact(
-                company_id=company.id, nome=data.nome, email=data.email,
-                cargo=data.valores.get("cargo"), telefone=data.valores.get("telefone"),
-                whatsapp=data.valores.get("whatsapp"), linkedin=data.valores.get("linkedin"),
-                data_nascimento=nascimento,
-            ))
+            contacts = ContactRepository(self.db)
+            contato_existente = None
+            if data.email:
+                achados, _ = contacts.list(
+                    contacts.model.company_id == company.id,
+                    contacts.model.email.ilike(data.email.strip()),
+                    offset=0, limit=1,
+                )
+                contato_existente = achados[0] if achados else None
+
+            novos_valores = {
+                "cargo": data.valores.get("cargo"), "telefone": data.valores.get("telefone"),
+                "whatsapp": data.valores.get("whatsapp"), "linkedin": data.valores.get("linkedin"),
+                "data_nascimento": nascimento,
+            }
+            if contato_existente is not None:
+                # Mesma pessoa (e-mail) já cadastrada nesta empresa — reaproveita o
+                # contato em vez de duplicar; só preenche campos que ainda estavam
+                # vazios, sem sobrescrever dado já existente no CRM.
+                for campo, valor in novos_valores.items():
+                    if valor and not getattr(contato_existente, campo):
+                        setattr(contato_existente, campo, valor)
+                contact = contacts.save(contato_existente)
+            else:
+                contact = contacts.add(Contact(
+                    company_id=company.id, nome=data.nome, email=data.email, **novos_valores,
+                ))
             contact_id = contact.id
+
+            TimelineService(self.db).registrar(
+                company.id, TimelineType.CADASTRO.value,
+                "Formulário respondido novamente" if contato_existente else "Contato cadastrado via formulário",
+                f'{data.nome} ({data.email or "sem e-mail"}) enviou o formulário "{form.nome}"',
+                contact_id=contact.id,
+                meta={"form_id": str(form.id)},
+            )
 
         submission = self.submissions.add(FormSubmission(
             form_id=form.id, nome=data.nome, email=data.email, valores=data.valores,
