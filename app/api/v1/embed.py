@@ -80,6 +80,35 @@ FORM_WIDGET_JS = """
     return e;
   }
 
+  // Injeta o CSS uma única vez por página, mesmo com vários formulários embutidos.
+  // font-family: inherit deliberadamente — o widget herda a tipografia do site
+  // hospedeiro em vez de trazer a própria (mantém "sem dependências").
+  if (!document.getElementById('gdc-form-styles')) {
+    var style = document.createElement('style');
+    style.id = 'gdc-form-styles';
+    style.textContent = ''
+      + '.gdc-form{font-family:inherit;}'
+      + '.gdc-form .gdc-field{margin-bottom:16px;}'
+      + '.gdc-form label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:inherit;}'
+      + '.gdc-form input,.gdc-form select,.gdc-form textarea{'
+      +   'width:100%;padding:10px 12px;border:1px solid #d7d7e0;border-radius:8px;'
+      +   'box-sizing:border-box;font:inherit;font-size:14px;color:inherit;background:#fff;'
+      +   'transition:border-color .15s ease,box-shadow .15s ease;}'
+      + '.gdc-form textarea{min-height:88px;resize:vertical;}'
+      + '.gdc-form input:focus,.gdc-form select:focus,.gdc-form textarea:focus{'
+      +   'outline:none;border-color:#2D3561;box-shadow:0 0 0 3px rgba(45,53,97,0.15);}'
+      + '.gdc-form-submit{'
+      +   'width:100%;background:#2D3561;color:#fff;border:none;padding:12px 20px;'
+      +   'border-radius:8px;cursor:pointer;font:inherit;font-size:14px;font-weight:600;'
+      +   'transition:background-color .15s ease;}'
+      + '.gdc-form-submit:hover{background:#232a4d;}'
+      + '.gdc-form-submit:disabled{opacity:.6;cursor:default;}'
+      + '.gdc-form-msg{display:none;margin-top:14px;padding:10px 14px;border-radius:8px;font-size:13px;}'
+      + '.gdc-form-msg.ok{display:block;background:rgba(12,163,12,0.1);color:#0ca30c;}'
+      + '.gdc-form-msg.err{display:block;background:rgba(208,59,59,0.1);color:#d03b3b;}';
+    document.head.appendChild(style);
+  }
+
   fetch(base + '/embed/forms/' + formId + '/config').then(function (r) {
     if (!r.ok) throw new Error('form indisponível');
     return r.json();
@@ -88,12 +117,11 @@ FORM_WIDGET_JS = """
     form.className = 'gdc-form';
 
     function field(name, label, tipo) {
-      var wrap = el('div', { style: 'margin-bottom:12px;' });
-      wrap.appendChild(el('label', { style: 'display:block;font-size:13px;font-weight:600;margin-bottom:4px;' }, [document.createTextNode(label)]));
-      var inputStyle = 'width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;box-sizing:border-box;';
+      var wrap = el('div', { class: 'gdc-field' });
+      wrap.appendChild(el('label', {}, [document.createTextNode(label)]));
       var input;
       if (tipo === 'boolean') {
-        input = el('select', { name: name, style: inputStyle });
+        input = el('select', { name: name });
         [['', 'Selecione'], ['Sim', 'Sim'], ['Não', 'Não']].forEach(function (pair) {
           var opt = document.createElement('option');
           opt.value = pair[0];
@@ -101,7 +129,7 @@ FORM_WIDGET_JS = """
           input.appendChild(opt);
         });
       } else {
-        input = el(tipo === 'textarea' ? 'textarea' : 'input', { name: name, style: inputStyle });
+        input = el(tipo === 'textarea' ? 'textarea' : 'input', { name: name });
         if (tipo && tipo !== 'textarea') input.setAttribute('type', tipo);
       }
       wrap.appendChild(input);
@@ -114,10 +142,10 @@ FORM_WIDGET_JS = """
       form.appendChild(field(c.key, c.label, c.tipo || 'text'));
     });
 
-    var submitBtn = el('button', { type: 'submit', style: 'background:#2D3561;color:#fff;border:none;padding:10px 18px;border-radius:6px;cursor:pointer;font-weight:600;' }, [document.createTextNode('Enviar')]);
+    var submitBtn = el('button', { type: 'submit', class: 'gdc-form-submit' }, [document.createTextNode('Enviar')]);
     form.appendChild(submitBtn);
 
-    var msg = el('p', { style: 'display:none;margin-top:10px;font-size:13px;' });
+    var msg = el('p', { class: 'gdc-form-msg' });
     form.appendChild(msg);
 
     form.addEventListener('submit', function (e) {
@@ -126,22 +154,23 @@ FORM_WIDGET_JS = """
       var nome = data.get('nome'), email = data.get('email');
       var valores = {};
       config.campos.forEach(function (c) { var v = data.get(c.key); if (v) valores[c.key] = v; });
+      submitBtn.disabled = true;
       fetch(base + '/public/forms/' + formId + '/submit', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nome: nome, email: email, valores: valores }),
       }).then(function (r) {
-        msg.style.display = 'block';
+        submitBtn.disabled = false;
         if (r.ok) {
-          msg.style.color = '#0ca30c';
+          msg.className = 'gdc-form-msg ok';
           msg.textContent = 'Obrigado! Entraremos em contato em breve.';
           form.reset();
         } else {
-          msg.style.color = '#d03b3b';
+          msg.className = 'gdc-form-msg err';
           msg.textContent = 'Não foi possível enviar. Tente novamente.';
         }
       }).catch(function () {
-        msg.style.display = 'block';
-        msg.style.color = '#d03b3b';
+        submitBtn.disabled = false;
+        msg.className = 'gdc-form-msg err';
         msg.textContent = 'Não foi possível enviar. Tente novamente.';
       });
     });
