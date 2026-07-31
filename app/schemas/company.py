@@ -19,6 +19,7 @@ class CompanyBase(BaseModel):
     cidade: str | None = None
     uf: str | None = Field(default=None, max_length=2)
     segmento: str | None = None
+    setor: str | None = None
     porte: str | None = None
     num_funcionarios: int | None = None
     faturamento_estimado: float | None = None
@@ -40,11 +41,21 @@ class CompanyUpdate(BaseModel):
     cidade: str | None = None
     uf: str | None = None
     segmento: str | None = None
+    setor: str | None = None
     porte: str | None = None
     num_funcionarios: int | None = None
     faturamento_estimado: float | None = None
     origem: str | None = None
     responsavel_id: UUID | None = None
+
+
+class CompanyDossierUpdate(BaseModel):
+    """Campos do Dossiê Comercial preenchidos manualmente pelo vendedor."""
+    transportadoras: str | None = None
+    erp: str | None = None
+    tms: str | None = None
+    problemas_encontrados: str | None = None
+    hipoteses: str | None = None
 
 
 class CompanyStatusUpdate(BaseModel):
@@ -72,6 +83,7 @@ class CompanyRead(ORMModel):
     cidade: str | None
     uf: str | None
     segmento: str | None
+    setor: str | None
     porte: str | None
     num_funcionarios: int | None
     faturamento_estimado: float | None
@@ -79,3 +91,32 @@ class CompanyRead(ORMModel):
     origem: str | None
     responsavel_id: UUID | None
     created_at: datetime
+    resumo_executivo: str | None
+    proxima_acao_sugerida: str | None
+    resumo_executivo_atualizado_em: datetime | None
+    transportadoras: str | None
+    erp: str | None
+    tms: str | None
+    problemas_encontrados: str | None
+    hipoteses: str | None
+
+
+class IcpBreakdownItemRead(BaseModel):
+    criterio: str
+    valor: str
+    pontos: int
+
+
+class CompanyIcpRead(BaseModel):
+    score: int
+    fit: str
+    breakdown: list[IcpBreakdownItemRead]
+
+
+class CompanyAskRequest(BaseModel):
+    pergunta: str = Field(min_length=1, max_length=500)
+
+
+class CompanyAskResponse(BaseModel):
+    resposta: str
+    fontes: list[str]

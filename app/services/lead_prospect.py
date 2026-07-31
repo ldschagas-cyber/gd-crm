@@ -15,35 +15,8 @@ from app.schemas.lead_prospect import (
     IcpScoringRules, LeadProspectCreate, LeadProspectPageParams, LeadProspectRead, LeadProspectUpdate,
     PerformanceReportResponse, PerformanceReportRow,
 )
+from app.services.icp_scoring import DEFAULT_ICP_RULES, calcular_icp
 from app.services.tenant import TenantService
-
-DEFAULT_ICP_RULES = {
-    "setor": {
-        "Farma": 40, "Alimentos": 40, "Autopeças": 40, "Etiquetas": 40,
-        "Plástico": 30, "Máquinas e Equipamentos": 30, "Química": 30, "Cosmético": 30,
-    },
-    "setor_fallback": 10,
-    "regiao": {"Sudeste": 30, "Sul": 30, "Nordeste": 30, "Norte": 0, "Centro-Oeste": 0},
-    "faixa_funcionarios": {
-        "1-50": 0, "51-200": 30, "201-500": 30, "501-1.000": 30,
-        "1.001-5.000": 40, "5.001-10.000": 50, "+ de 10.001": 0,
-    },
-    "corte_a": 80, "corte_b": 70, "corte_c": 40,
-    "bonus_valor": 1.00,
-}
-
-# Fallback para leads que só têm UF (sem região informada diretamente, ex.: pesquisa
-# manual ou enriquecimento por IA, que só resolve estado). Quando `lead.regiao` vem
-# preenchido (ex.: importação de fontes que só têm a macrorregião, sem UF), ele tem
-# prioridade — ver `_regiao`.
-UF_REGIAO = {
-    "AC": "Norte", "AP": "Norte", "AM": "Norte", "PA": "Norte", "RO": "Norte", "RR": "Norte", "TO": "Norte",
-    "AL": "Nordeste", "BA": "Nordeste", "CE": "Nordeste", "MA": "Nordeste", "PB": "Nordeste",
-    "PE": "Nordeste", "PI": "Nordeste", "RN": "Nordeste", "SE": "Nordeste",
-    "DF": "Centro-Oeste", "GO": "Centro-Oeste", "MT": "Centro-Oeste", "MS": "Centro-Oeste",
-    "ES": "Sudeste", "MG": "Sudeste", "RJ": "Sudeste", "SP": "Sudeste",
-    "PR": "Sul", "RS": "Sul", "SC": "Sul",
-}
 
 
 class LeadProspectService:
@@ -67,28 +40,6 @@ class LeadProspectService:
         return config["icp_scoring_rules"]
 
     # ---- cálculo (nunca persistido, exceto regiao/uf que agora são colunas) ----
-    def _regiao(self, lead: LeadProspect) -> str | None:
-        """Região informada diretamente tem prioridade; se ausente, deriva da UF."""
-        return lead.regiao or (UF_REGIAO.get(lead.uf) if lead.uf else None)
-
-    def _score(self, lead: LeadProspect, rules: dict) -> int:
-        setor_pts = rules["setor"].get(lead.setor, rules["setor_fallback"]) if lead.setor else 0
-        regiao = self._regiao(lead)
-        regiao_pts = rules["regiao"].get(regiao, 0) if regiao else 0
-        faixa_pts = rules["faixa_funcionarios"].get(lead.faixa_funcionarios, 0) if lead.faixa_funcionarios else 0
-        return min(100, setor_pts + regiao_pts + faixa_pts)
-
-    def _fit(self, lead: LeadProspect, rules: dict, score: int) -> str:
-        if score == 0 and not lead.setor and not lead.uf and not lead.regiao and not lead.faixa_funcionarios:
-            return "Não avaliado"
-        if score >= rules["corte_a"]:
-            return "A"
-        if score >= rules["corte_b"]:
-            return "B"
-        if score >= rules["corte_c"]:
-            return "C"
-        return "Sem Perfil"
-
     def _gamificacao(self, lead: LeadProspect, fit: str) -> int:
         if fit in ("C", "Sem Perfil", "Não avaliado") or lead.status == LeadStatus.DESCARTADO.value:
             return 0
@@ -107,8 +58,11 @@ class LeadProspectService:
 
     def to_read(self, lead: LeadProspect, rules: dict | None = None) -> LeadProspectRead:
         rules = rules or self.get_rules()
-        score = self._score(lead, rules)
-        fit = self._fit(lead, rules, score)
+        icp = calcular_icp(
+            setor=lead.setor, regiao=lead.regiao, uf=lead.uf,
+            faixa_funcionarios=lead.faixa_funcionarios, rules=rules,
+        )
+        score, fit = icp.score, icp.fit
         gamificacao = self._gamificacao(lead, fit)
         recebe_bonus = lead.status == LeadStatus.PROMOVIDO.value and gamificacao > 70
         bonus_valor = rules["bonus_valor"] if recebe_bonus else 0.0
@@ -184,8 +138,9 @@ class LeadProspectService:
         if lead.promoted_company_id:
             raise ConflictError("Esta pesquisa já foi promovida a empresa")
         company = Company(
-            razao_social=lead.empresa, cnpj=lead.cnpj, segmento=lead.segmento, uf=lead.uf, site=lead.site,
-            telefone=lead.telefone, porte=lead.faixa_funcionarios, faturamento_estimado=lead.faturamento,
+            razao_social=lead.empresa, cnpj=lead.cnpj, segmento=lead.segmento, setor=lead.setor, uf=lead.uf,
+            site=lead.site, telefone=lead.telefone, porte=lead.faixa_funcionarios,
+            faturamento_estimado=lead.faturamento,
             status=CompanyStatus.LEAD.value, origem="Pesquisa de Leads",
         )
         company = CompanyRepository(self.db).add(company)

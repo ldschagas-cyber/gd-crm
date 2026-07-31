@@ -6,6 +6,7 @@ import DesempenhoPesquisaPage from './pages/DesempenhoPesquisaPage.jsx'
 import BuscarEmpresasPage from './pages/BuscarEmpresasPage.jsx'
 import EmpresasPage from './pages/EmpresasPage.jsx'
 import CompanyDetailPage from './pages/CompanyDetailPage.jsx'
+import CompanyDossierPage from './pages/CompanyDossierPage.jsx'
 import ContatosPage from './pages/ContatosPage.jsx'
 import PipelinesPage from './pages/PipelinesPage.jsx'
 import NegociosPage from './pages/NegociosPage.jsx'
@@ -42,6 +43,7 @@ export default function App() {
         <Route path="/buscar-empresas" element={<BuscarEmpresasPage />} />
         <Route path="/empresas" element={<EmpresasPage />} />
         <Route path="/empresas/:id" element={<CompanyDetailPage />} />
+        <Route path="/empresas/:id/dossie" element={<CompanyDossierPage />} />
         <Route path="/contatos" element={<ContatosPage />} />
         <Route path="/negocios" element={<NegociosPage />} />
         <Route path="/negocios/:id" element={<DealDetailPage />} />

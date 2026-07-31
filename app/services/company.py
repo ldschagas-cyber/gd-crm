@@ -10,7 +10,11 @@ from app.models.company import Company, CompanyStatus
 from app.models.timeline import TimelineType
 from app.repositories.company import CompanyRepository
 from app.schemas.common import PageParams
-from app.schemas.company import CompanyCreate, CompanyFilterOptions, CompanyStatusUpdate, CompanyUpdate
+from app.schemas.company import (
+    CompanyCreate, CompanyDossierUpdate, CompanyFilterOptions, CompanyIcpRead, CompanyStatusUpdate, CompanyUpdate,
+)
+from app.services.icp_scoring import DEFAULT_ICP_RULES, calcular_icp, faixa_de_num_funcionarios
+from app.services.tenant import TenantService
 from app.services.timeline import TimelineService
 from app.services.workflow_events import publish_event
 
@@ -109,3 +113,35 @@ class CompanyService:
         company.deleted_at = datetime.now(timezone.utc)
         company.status = CompanyStatus.INATIVO.value
         self.repo.save(company)
+
+    # ---- Dossiê Comercial ---------------------------------------------------
+    def get_icp(self, company_id: UUID) -> CompanyIcpRead:
+        company = self.get(company_id)
+        tenant = TenantService(self.db).get_current()
+        stored = (tenant.config or {}).get("icp_scoring_rules") if tenant.config else None
+        rules = {**DEFAULT_ICP_RULES, **(stored or {})}
+
+        # `porte` já guarda a faixa exata quando a empresa veio de uma promoção de
+        # lead (ver LeadProspectService.promote); senão, deriva do número de
+        # funcionários cadastrado manualmente.
+        faixa = company.porte if company.porte in rules["faixa_funcionarios"] else (
+            faixa_de_num_funcionarios(company.num_funcionarios)
+        )
+        icp = calcular_icp(
+            setor=company.setor, regiao=None, uf=company.uf,
+            faixa_funcionarios=faixa, rules=rules,
+        )
+        return CompanyIcpRead(score=icp.score, fit=icp.fit, breakdown=[
+            {"criterio": b.criterio, "valor": b.valor, "pontos": b.pontos} for b in icp.breakdown
+        ])
+
+    def update_dossier(self, company_id: UUID, data: CompanyDossierUpdate) -> Company:
+        company = self.get(company_id)
+        for field, value in data.model_dump(exclude_unset=True).items():
+            setattr(company, field, value)
+        company = self.repo.save(company)
+        self.timeline.registrar(company.id, TimelineType.CADASTRO.value,
+                                "Dados do Dossiê Comercial atualizados")
+        from app.services.company_ai import schedule_resumo_regeneration
+        schedule_resumo_regeneration(self.db, company.id)
+        return company

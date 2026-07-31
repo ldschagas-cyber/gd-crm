@@ -48,6 +48,22 @@ export function getImportJob(jobId) {
   return api.get(`/companies/import/${jobId}`).then((res) => res.data)
 }
 
+export function getCompanyIcp(id) {
+  return api.get(`/companies/${id}/icp`).then((res) => res.data)
+}
+
+export function updateCompanyDossier(id, data) {
+  return api.put(`/companies/${id}/dossie`, data).then((res) => res.data)
+}
+
+export function regenerateCompanyResumo(id) {
+  return api.post(`/companies/${id}/dossie/resumo/atualizar`).then((res) => res.data)
+}
+
+export function askCompanyAi(id, pergunta) {
+  return api.post(`/companies/${id}/dossie/perguntar`, { pergunta }).then((res) => res.data)
+}
+
 export async function exportCompanies({
   status, uf, busca, responsavelId, segmento, porte, origem,
 } = {}) {

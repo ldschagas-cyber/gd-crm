@@ -12,6 +12,7 @@ import { CompanyModal } from './EmpresasPage.jsx'
 import { ContactModal } from './ContatosPage.jsx'
 import EnrollModal from '../components/EnrollModal.jsx'
 import TimelineComposer from '../components/TimelineComposer.jsx'
+import CompanyTabs from '../components/CompanyTabs.jsx'
 import '../styles/dataTable.css'
 import '../styles/detailPage.css'
 import './CompanyDetailPage.css'
@@ -108,6 +109,8 @@ export default function CompanyDetailPage() {
       </header>
 
       <div className="content">
+        <CompanyTabs companyId={id} />
+
         <section className="card co-header">
           <div className="co-header-top">
             <div className="co-logo">{initials(company.razao_social)}</div>

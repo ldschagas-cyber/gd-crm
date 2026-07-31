@@ -35,7 +35,12 @@ class TimelineService:
             evento_meta=meta,
             user_id=get_current_user_id(),
         )
-        return self.repo.add(evento)
+        evento = self.repo.add(evento)
+
+        from app.services.company_ai import schedule_if_relevant
+        schedule_if_relevant(self.db, evento)
+
+        return evento
 
     def registrar_from_schema(
         self, company_id: UUID, data: TimelineNoteCreate, deal_id: UUID | None = None,

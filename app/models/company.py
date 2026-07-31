@@ -1,8 +1,9 @@
 """Company — empresas (leads e clientes) do tenant."""
 import enum
 import uuid
+from datetime import datetime
 
-from sqlalchemy import ForeignKey, Integer, Numeric, String, UniqueConstraint
+from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -41,3 +42,23 @@ class Company(Base, TenantMixin, TimestampMixin, SoftDeleteMixin):
     origem: Mapped[str | None] = mapped_column(String(80))
     responsavel_id: Mapped[uuid.UUID | None] = mapped_column(PGUUID(as_uuid=True), ForeignKey("users.id"))
     created_by: Mapped[uuid.UUID | None] = mapped_column(PGUUID(as_uuid=True), ForeignKey("users.id"))
+
+    # Setor — taxonomia do motor de Score ICP (app/services/icp_scoring.py), distinta
+    # de `segmento` (texto livre). Preenchida na promoção de um LeadProspect ou
+    # manualmente, pra empresa poder ter score/fit calculado no Dossiê Comercial.
+    setor: Mapped[str | None] = mapped_column(String(80))
+
+    # Dossiê Comercial — resumo executivo gerado por IA, regenerado automaticamente
+    # a cada evento relevante na timeline (ver app/services/company_ai.py).
+    resumo_executivo: Mapped[str | None] = mapped_column(Text)
+    proxima_acao_sugerida: Mapped[str | None] = mapped_column(Text)
+    resumo_executivo_atualizado_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    # Dossiê Comercial — stack operacional, preenchimento manual do vendedor na descoberta.
+    transportadoras: Mapped[str | None] = mapped_column(Text)
+    erp: Mapped[str | None] = mapped_column(String(120))
+    tms: Mapped[str | None] = mapped_column(String(120))
+
+    # Dossiê Comercial — descoberta, texto livre.
+    problemas_encontrados: Mapped[str | None] = mapped_column(Text)
+    hipoteses: Mapped[str | None] = mapped_column(Text)

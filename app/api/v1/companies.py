@@ -13,11 +13,13 @@ from app.models.import_job import ImportType
 from app.models.user import User
 from app.schemas.common import Page, PageParams
 from app.schemas.company import (
-    CompanyCreate, CompanyFilterOptions, CompanyRead, CompanyStatusUpdate, CompanyUpdate,
+    CompanyAskRequest, CompanyAskResponse, CompanyCreate, CompanyDossierUpdate, CompanyFilterOptions,
+    CompanyIcpRead, CompanyRead, CompanyStatusUpdate, CompanyUpdate,
 )
 from app.schemas.import_job import ImportJobRead
 from app.schemas.timeline import TimelineEventRead, TimelineNoteCreate
 from app.services.company import CompanyService
+from app.services.company_ai import CompanyAiService
 from app.services.import_job import ImportJobService
 from app.services.timeline import TimelineService
 from app.repositories.timeline import TimelineRepository
@@ -154,3 +156,32 @@ def add_note(company_id: UUID, data: TimelineNoteCreate, _: User = Depends(get_c
              db: Session = Depends(get_db)):
     CompanyService(db).get(company_id)
     return TimelineService(db).registrar_from_schema(company_id, data)
+
+
+# ---- Dossiê Comercial -------------------------------------------------------
+
+@router.get("/{company_id}/icp", response_model=CompanyIcpRead)
+def get_company_icp(company_id: UUID, _: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    return CompanyService(db).get_icp(company_id)
+
+
+@router.put("/{company_id}/dossie", response_model=CompanyRead)
+def update_company_dossier(company_id: UUID, data: CompanyDossierUpdate,
+                           _: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    return CompanyService(db).update_dossier(company_id, data)
+
+
+@router.post("/{company_id}/dossie/resumo/atualizar", response_model=CompanyRead,
+             status_code=status.HTTP_200_OK)
+def regenerate_company_resumo(company_id: UUID, _: User = Depends(get_current_user),
+                              db: Session = Depends(get_db)):
+    """Gatilho manual ("Atualizar agora") — a regra padrão é automática em background
+    a cada evento relevante da timeline, isso aqui é só uma rede de segurança síncrona."""
+    CompanyAiService(db).regenerate_resumo(company_id)
+    return CompanyService(db).get(company_id)
+
+
+@router.post("/{company_id}/dossie/perguntar", response_model=CompanyAskResponse)
+def ask_company_ai(company_id: UUID, data: CompanyAskRequest, _: User = Depends(get_current_user),
+                   db: Session = Depends(get_db)):
+    return CompanyAiService(db).perguntar(company_id, data.pergunta)

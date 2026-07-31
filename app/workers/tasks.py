@@ -590,3 +590,20 @@ def dispatch_workflow_event(tenant_id: str, gatilho: str, entidade_ref: str, pay
         return {"workflows_avaliados": len(workflows)}
     finally:
         db.close()
+
+
+@celery_app.task(name="app.workers.tasks.regenerate_company_summary")
+def regenerate_company_summary(tenant_id: str, company_id: str):
+    """Disparado por `app/services/company_ai.py.schedule_resumo_regeneration()` depois que
+    um evento relevante da timeline (ou uma edição do Dossiê) já foi commitado."""
+    set_current_tenant(UUID(tenant_id))
+    db = SessionLocal()
+    try:
+        from app.services.company_ai import CompanyAiService
+        CompanyAiService(db).regenerate_resumo(UUID(company_id))
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()
