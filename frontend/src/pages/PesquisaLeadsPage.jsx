@@ -9,6 +9,7 @@ import { getIcpScoringRules, updateIcpScoringRules } from '../api/tenant'
 import { listUsers } from '../api/users'
 import '../styles/dataTable.css'
 import './PesquisaLeadsPage.css'
+import DesempenhoPesquisaTab from './DesempenhoPesquisaPage.jsx'
 
 const STATUS_LABEL = {
   novo: 'Novo', enriquecer: 'Enriquecer', triagem: 'Triagem', qualificado: 'Qualificado',
@@ -56,6 +57,11 @@ function IconImport() {
 }
 
 export default function PesquisaLeadsPage() {
+  const [tab, setTab] = useState('leads')
+  return tab === 'leads' ? <LeadsTab setTab={setTab} /> : <DesempenhoPesquisaTab setTab={setTab} />
+}
+
+function LeadsTab({ setTab }) {
   const { user } = useAuth()
   const isAdmin = user?.perfil === 'admin'
   const queryClient = useQueryClient()
@@ -179,6 +185,13 @@ export default function PesquisaLeadsPage() {
       </header>
 
       <div className="content">
+        <div className="tabs-row">
+          <div className="segmented">
+            <button className="active">Pesquisa de Leads</button>
+            <button onClick={() => setTab('desempenho')}>Desempenho</button>
+          </div>
+        </div>
+
         <div className="stat-strip">
           <div className="stat-tile"><div className="t">Total</div><div className="v">{stats.total}</div></div>
           <div className="stat-tile fit-A"><div className="t">ICP A</div><div className="v">{stats.A}</div></div>

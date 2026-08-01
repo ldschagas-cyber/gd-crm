@@ -2,7 +2,6 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import LoginPage from './pages/LoginPage.jsx'
 import DashboardPage from './pages/DashboardPage.jsx'
 import PesquisaLeadsPage from './pages/PesquisaLeadsPage.jsx'
-import DesempenhoPesquisaPage from './pages/DesempenhoPesquisaPage.jsx'
 import BuscarEmpresasPage from './pages/BuscarEmpresasPage.jsx'
 import EmpresasPage from './pages/EmpresasPage.jsx'
 import CompanyDetailPage from './pages/CompanyDetailPage.jsx'
@@ -39,7 +38,6 @@ export default function App() {
       >
         <Route path="/" element={<DashboardPage />} />
         <Route path="/pesquisa-leads" element={<PesquisaLeadsPage />} />
-        <Route path="/pesquisa-leads/desempenho" element={<DesempenhoPesquisaPage />} />
         <Route path="/buscar-empresas" element={<BuscarEmpresasPage />} />
         <Route path="/empresas" element={<EmpresasPage />} />
         <Route path="/empresas/:id" element={<CompanyDetailPage />} />

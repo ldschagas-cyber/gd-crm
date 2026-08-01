@@ -42,6 +42,7 @@
 .col-option:hover { background: var(--paper); }
 .col-option input { width: 15px; height: 15px; accent-color: var(--indigo); cursor: pointer; }
 
+.tabs-row { margin-bottom: 18px; }
 .segmented {
   display: inline-flex; gap: 3px; padding: 3px; background: var(--card-bg);
   border: 1px solid var(--border); border-radius: 10px; margin-left: auto; flex: none;

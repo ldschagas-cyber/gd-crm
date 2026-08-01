@@ -12,9 +12,18 @@ const NAV_GROUPS = [
     label: null,
     items: [
       { to: '/', label: 'Dashboard', end: true, icon: IconDashboard },
-      { to: '/pesquisa-leads', label: 'Pesquisa de Leads', end: true, icon: IconRadar },
-      { to: '/pesquisa-leads/desempenho', label: 'Desempenho de Pesquisa', icon: IconChart },
+    ],
+  },
+  {
+    label: 'Inteligência Comercial',
+    items: [
       { to: '/buscar-empresas', label: 'Buscar Empresas', icon: IconSearch },
+      { to: '/pesquisa-leads', label: 'Pesquisa de Leads', icon: IconRadar },
+    ],
+  },
+  {
+    label: 'CRM',
+    items: [
       { to: '/empresas', label: 'Empresas', icon: IconBuilding },
       { to: '/contatos', label: 'Contatos', icon: IconContact },
       { to: '/negocios', label: 'Negócios', icon: IconDeal },
@@ -22,18 +31,13 @@ const NAV_GROUPS = [
     ],
   },
   {
-    label: null,
+    label: 'Automação',
     items: [
       { to: '/sequencias', label: 'Sequências', icon: IconSequence },
       { to: '/cadencias', label: 'Cadências', icon: IconCadence },
       { to: '/workflows', label: 'Workflows', icon: IconWorkflow },
       { to: '/modelos-email', label: 'Modelos de e-mail', icon: IconEmailTemplate },
       { to: '/snippets', label: 'Snippets', icon: IconSnippet },
-    ],
-  },
-  {
-    label: null,
-    items: [
       { to: '/formularios', label: 'Formulários', icon: IconForm },
     ],
   },
@@ -172,14 +176,6 @@ function IconSearch() {
   )
 }
 
-function IconChart() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
-      <path d="M3 17V3M3 17h14" />
-      <path d="M6.5 14V10M10.5 14V7M14.5 14v-5" />
-    </svg>
-  )
-}
 function IconContact() {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">

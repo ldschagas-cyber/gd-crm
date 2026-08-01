@@ -57,7 +57,7 @@ function IconInfo() {
   )
 }
 
-export default function DesempenhoPesquisaPage() {
+export default function DesempenhoPesquisaTab({ setTab }) {
   const [helpOpen, setHelpOpen] = useState(false)
   const options = useMemo(mesOptions, [])
   const [mes, setMes] = useState(options[0].value)
@@ -104,6 +104,13 @@ export default function DesempenhoPesquisaPage() {
       </header>
 
       <div className="content">
+        <div className="tabs-row">
+          <div className="segmented">
+            <button onClick={() => setTab('leads')}>Pesquisa de Leads</button>
+            <button className="active">Desempenho</button>
+          </div>
+        </div>
+
         <div className="filters-bar">
           <select className="filter-select" value={mes} onChange={(e) => setMes(e.target.value)}>
             {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
