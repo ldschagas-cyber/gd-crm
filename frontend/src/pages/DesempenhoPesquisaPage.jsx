@@ -168,13 +168,13 @@ export default function DesempenhoPesquisaPage() {
                       <thead>
                         <tr>
                           <th>Pesquisador</th>
-                          <th className="cell-num">Pesquisas</th>
-                          <th className="cell-num">ICP A</th>
-                          <th className="cell-num">ICP B</th>
-                          <th className="cell-num">ICP C</th>
-                          <th className="cell-num">Sem perfil/Não aval.</th>
+                          <th style={{ textAlign: 'right' }}>Pesquisas</th>
+                          <th style={{ textAlign: 'right' }}>ICP A</th>
+                          <th style={{ textAlign: 'right' }}>ICP B</th>
+                          <th style={{ textAlign: 'right' }}>ICP C</th>
+                          <th style={{ textAlign: 'right' }}>Sem perfil/Não aval.</th>
                           <th style={{ textAlign: 'right' }}>Taxa qualif.</th>
-                          <th className="cell-num">Promovidos</th>
+                          <th style={{ textAlign: 'right' }}>Promovidos</th>
                           <th style={{ textAlign: 'right' }}>Bônus válido</th>
                         </tr>
                       </thead>
