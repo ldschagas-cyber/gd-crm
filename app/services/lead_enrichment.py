@@ -59,7 +59,7 @@ class LeadEnrichmentService:
 
         response = client.messages.create(
             model=settings.ANTHROPIC_MODEL,
-            max_tokens=1024,
+            max_tokens=4096,
             system=SYSTEM_PROMPT,
             tools=[{"type": "web_search_20250305", "name": "web_search"}],
             messages=[{
