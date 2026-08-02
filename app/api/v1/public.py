@@ -135,11 +135,18 @@ async def twilio_inbound_voice(request: Request, db: Session = Depends(get_db)):
 async def twilio_status_callback(request: Request, db: Session = Depends(get_db)):
     """statusCallback de ambas as direções — só atualiza a Call já criada em
     /twilio/voice ou /twilio/inbound-voice (busca sem tenant no contexto
-    ainda, resolvido a partir da própria Call por `call_sid`)."""
+    ainda, resolvido a partir da própria Call por `call_sid`).
+
+    É o statusCallback do <Dial>, não de uma Call isolada: os campos com
+    status/duração reais da perna discada vêm como DialCallStatus/
+    DialCallDuration -- CallStatus/CallDuration (mantidos como fallback)
+    descrevem a chamada original, que costuma ainda estar "in-progress"
+    neste ponto."""
     form = await _twilio_form(request)
-    duration = form.get("CallDuration")
+    call_status = form.get("DialCallStatus") or form.get("CallStatus", "")
+    duration = form.get("DialCallDuration") or form.get("CallDuration")
     record_call_status(
-        db, call_sid=form.get("CallSid", ""), status=form.get("CallStatus", ""),
+        db, call_sid=form.get("CallSid", ""), status=call_status,
         duracao_segundos=int(duration) if duration and duration.isdigit() else None,
     )
     return Response(status_code=status.HTTP_204_NO_CONTENT)

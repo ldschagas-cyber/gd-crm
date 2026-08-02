@@ -87,12 +87,18 @@ def resolve_caller(db: Session, tenant_id: UUID, numero: str) -> dict:
 
 
 def build_outbound_twiml(to_number: str, status_callback_url: str) -> str:
+    """`statusCallback` fica no <Dial> (não no <Number>): assim o `CallSid`
+    recebido em /twilio/status é o da chamada original (a mesma salva em
+    record_call_started), igual já acontece em build_inbound_twiml. Com o
+    callback no <Number>, o CallSid é o da perna de saída (outro SID) e o
+    status nunca batia com a Call já criada."""
     response = VoiceResponse()
-    dial = Dial(caller_id=settings.TWILIO_PHONE_NUMBER)
-    dial.append(Number(
-        to_number, status_callback=status_callback_url,
+    dial = Dial(
+        caller_id=settings.TWILIO_PHONE_NUMBER,
+        status_callback=status_callback_url,
         status_callback_event="completed", status_callback_method="POST",
-    ))
+    )
+    dial.append(Number(to_number))
     response.append(dial)
     return str(response)
 

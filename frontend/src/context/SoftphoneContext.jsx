@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
-import { Device } from '@twilio/voice-sdk'
+import { Call, Device } from '@twilio/voice-sdk'
 import { useQuery } from '@tanstack/react-query'
 import { getCallConfig, getCallToken } from '../api/calls'
 
@@ -57,7 +57,15 @@ export function SoftphoneProvider({ children }) {
 
     getCallToken().then(({ token }) => {
       if (cancelled) return
-      const device = new Device(token, { logLevel: 'error' })
+      const device = new Device(token, {
+        logLevel: 'error',
+        // Ashburn (padrão global) fica longe do Brasil e soma latência/jitter
+        // audíveis; "sao-paulo" é a borda Twilio mais próxima do número BR.
+        edge: 'sao-paulo',
+        // Opus tem qualidade bem melhor que PCMU (padrão) numa banda mais
+        // baixa e mais tolerante a rede ruim; PCMU some junto como fallback.
+        codecPreferences: [Call.Codec.Opus, Call.Codec.PCMU],
+      })
       deviceRef.current = device
 
       device.on('tokenWillExpire', async () => {
