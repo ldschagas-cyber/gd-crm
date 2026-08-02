@@ -5,6 +5,17 @@ import { getCallConfig, getCallToken } from '../api/calls'
 
 const SoftphoneContext = createContext(null)
 
+// Números no cadastro são salvos sem DDI (ex.: "12996597214"). Sem o "+55",
+// a Twilio interpreta como NANP (EUA) e a chamada falha na hora, sem tocar.
+function toE164BR(numero) {
+  const raw = String(numero || '').trim()
+  if (!raw) return ''
+  if (raw.startsWith('+')) return `+${raw.replace(/\D/g, '')}`
+  const digits = raw.replace(/\D/g, '')
+  if (digits.startsWith('55') && digits.length >= 12) return `+${digits}`
+  return `+55${digits}`
+}
+
 // idle | dialing | ringing | in-call | incoming
 export function SoftphoneProvider({ children }) {
   const configQuery = useQuery({ queryKey: ['calls', 'config'], queryFn: getCallConfig, staleTime: 5 * 60 * 1000 })
@@ -88,7 +99,7 @@ export function SoftphoneProvider({ children }) {
     try {
       const conn = await deviceRef.current.connect({
         params: {
-          To: numero,
+          To: toE164BR(numero),
           ...(companyId ? { CompanyId: companyId } : {}),
           ...(contactId ? { ContactId: contactId } : {}),
           ...(dealId ? { DealId: dealId } : {}),
