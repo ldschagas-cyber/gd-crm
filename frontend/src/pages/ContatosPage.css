@@ -1,10 +1,11 @@
 .quick-contact { display: flex; gap: 6px; }
-.quick-contact a, .quick-contact .qc-empty {
+.quick-contact a, .quick-contact .qc-empty, .quick-contact .qc-call-btn {
   width: 26px; height: 26px; border-radius: 6px;
   display: flex; align-items: center; justify-content: center;
   color: var(--ink-dim);
 }
-.quick-contact a { cursor: pointer; }
-.quick-contact a:hover { background: var(--paper); color: var(--azul); }
+.quick-contact a, .quick-contact .qc-call-btn { cursor: pointer; }
+.quick-contact .qc-call-btn { border: none; background: none; padding: 0; }
+.quick-contact a:hover, .quick-contact .qc-call-btn:hover { background: var(--paper); color: var(--azul); }
 .quick-contact .qc-empty { color: var(--ink-faint); opacity: 0.35; }
 .quick-contact svg { width: 15px; height: 15px; }

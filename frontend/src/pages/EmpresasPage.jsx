@@ -18,6 +18,8 @@ const STATUS_LABEL = {
   inativo: 'Inativo',
 }
 const STATUS_ORDER = ['lead', 'qualificado', 'cliente', 'perdido', 'inativo']
+const SETORES = ['Farma', 'Alimentos', 'Autopeças', 'Etiquetas', 'Plástico', 'Máquinas e Equipamentos',
+  'Química', 'Cosmético', 'Serviços', 'Tecnologia', 'Varejo', 'Outro']
 
 const COLUMN_DEFS = [
   { key: 'segmento', label: 'Segmento', default: true },
@@ -470,6 +472,10 @@ export function CompanyModal({ company, users, usersError, onClose, onSubmit, su
     cidade: company?.cidade ?? '',
     uf: company?.uf ?? '',
     segmento: company?.segmento ?? '',
+    setor: company?.setor ?? '',
+    site: company?.site ?? '',
+    num_funcionarios: company?.num_funcionarios ?? '',
+    faturamento_estimado: company?.faturamento_estimado ?? '',
     telefone: company?.telefone ?? '',
     email: company?.email ?? '',
     responsavel_id: company?.responsavel_id ?? '',
@@ -484,6 +490,8 @@ export function CompanyModal({ company, users, usersError, onClose, onSubmit, su
     const payload = Object.fromEntries(
       Object.entries(form).map(([k, v]) => [k, typeof v === 'string' && v.trim() === '' ? null : v]),
     )
+    if (payload.num_funcionarios != null) payload.num_funcionarios = parseInt(payload.num_funcionarios, 10)
+    if (payload.faturamento_estimado != null) payload.faturamento_estimado = Number(payload.faturamento_estimado)
     if (isEdit) delete payload.status
     else payload.status = company === null ? 'lead' : undefined
     onSubmit(payload)
@@ -510,12 +518,35 @@ export function CompanyModal({ company, users, usersError, onClose, onSubmit, su
           </div>
           <div className="field-row">
             <div className="field">
+              <label htmlFor="setor">Setor <span className="hint-text">(define o Score ICP)</span></label>
+              <select id="setor" value={form.setor} onChange={set('setor')}>
+                <option value="">Selecione…</option>
+                {SETORES.map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            <div className="field">
+              <label htmlFor="site">Site</label>
+              <input id="site" value={form.site} onChange={set('site')} placeholder="https://..." />
+            </div>
+          </div>
+          <div className="field-row">
+            <div className="field">
               <label htmlFor="cidade">Cidade</label>
               <input id="cidade" value={form.cidade} onChange={set('cidade')} />
             </div>
             <div className="field field-small">
               <label htmlFor="uf">UF</label>
               <input id="uf" maxLength={2} value={form.uf} onChange={(e) => setForm((f) => ({ ...f, uf: e.target.value.toUpperCase() }))} />
+            </div>
+          </div>
+          <div className="field-row">
+            <div className="field">
+              <label htmlFor="num_funcionarios">Funcionários</label>
+              <input id="num_funcionarios" type="number" min="0" value={form.num_funcionarios} onChange={set('num_funcionarios')} />
+            </div>
+            <div className="field">
+              <label htmlFor="faturamento_estimado">Faturamento estimado</label>
+              <input id="faturamento_estimado" type="number" min="0" step="0.01" value={form.faturamento_estimado} onChange={set('faturamento_estimado')} />
             </div>
           </div>
           <div className="field-row">

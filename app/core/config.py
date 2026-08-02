@@ -76,6 +76,24 @@ class Settings(BaseSettings):
     DIAGNOSTICO_INTERNAL_URL: str | None = None
     DIAGNOSTICO_INTERNAL_API_KEY: str | None = None
 
+    # Chamadas (Twilio Voice, Preferências pessoais — aba Chamadas). Credencial
+    # global da plataforma (mesmo padrão de Microsoft/Anthropic/IPinfo — não é
+    # por tenant). API Key/Secret (Account → API keys & tokens) é diferente do
+    # Account SID/Auth Token, usado só pra emitir Access Token do Voice SDK.
+    # TWILIO_TENANT_ID: simplificação do MVP — hoje só existe 1 número Twilio
+    # configurado, então o tenant dono dele é fixo (não há roteamento por
+    # número ainda). TWILIO_VOICE_WEBHOOK_BASE_URL é a origem pública da API
+    # (ex.: https://crm.gdconecta.com.br) usada pra montar a URL absoluta do
+    # statusCallback que o TwiML de saída devolve ao Twilio.
+    TWILIO_ACCOUNT_SID: str | None = None
+    TWILIO_AUTH_TOKEN: str | None = None
+    TWILIO_API_KEY_SID: str | None = None
+    TWILIO_API_KEY_SECRET: str | None = None
+    TWILIO_TWIML_APP_SID: str | None = None
+    TWILIO_PHONE_NUMBER: str | None = None
+    TWILIO_TENANT_ID: str | None = None
+    TWILIO_VOICE_WEBHOOK_BASE_URL: str | None = None
+
 
 @lru_cache
 def get_settings() -> Settings:

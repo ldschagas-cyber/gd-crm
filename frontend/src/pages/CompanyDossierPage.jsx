@@ -7,6 +7,7 @@ import {
 import { listContacts } from '../api/contacts'
 import { listTimeline } from '../api/timeline'
 import CompanyTabs from '../components/CompanyTabs.jsx'
+import { useSoftphone } from '../context/SoftphoneContext.jsx'
 import '../styles/detailPage.css'
 import './CompanyDetailPage.css'
 import './CompanyDossierPage.css'
@@ -67,6 +68,7 @@ function ManualField({ label, value, placeholder, onSave, saving }) {
 export default function CompanyDossierPage() {
   const { id } = useParams()
   const queryClient = useQueryClient()
+  const { conectado: chamadasConectadas, call: ligar } = useSoftphone()
   const [timelineFilter, setTimelineFilter] = useState('all')
   const [pergunta, setPergunta] = useState('')
   const [conversa, setConversa] = useState([])
@@ -268,7 +270,20 @@ export default function CompanyDossierPage() {
                     <div className="contact-role">{contatoPrincipal.cargo ?? '—'}</div>
                     <div className="contact-links">
                       {contatoPrincipal.email && <a href={`mailto:${contatoPrincipal.email}`}>{contatoPrincipal.email}</a>}
-                      {contatoPrincipal.telefone && <a href={`tel:${contatoPrincipal.telefone}`}>{contatoPrincipal.telefone}</a>}
+                      {contatoPrincipal.telefone && (
+                        chamadasConectadas ? (
+                          <button
+                            type="button" className="call-inline-btn"
+                            onClick={() => ligar(contatoPrincipal.telefone, {
+                              label: contatoPrincipal.nome, contactId: contatoPrincipal.id, companyId: contatoPrincipal.company_id,
+                            })}
+                          >
+                            {contatoPrincipal.telefone}
+                          </button>
+                        ) : (
+                          <a href={`tel:${contatoPrincipal.telefone}`}>{contatoPrincipal.telefone}</a>
+                        )
+                      )}
                     </div>
                   </div>
                 </>

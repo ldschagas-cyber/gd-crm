@@ -13,6 +13,7 @@ import { ContactModal } from './ContatosPage.jsx'
 import EnrollModal from '../components/EnrollModal.jsx'
 import TimelineComposer from '../components/TimelineComposer.jsx'
 import CompanyTabs from '../components/CompanyTabs.jsx'
+import { useSoftphone } from '../context/SoftphoneContext.jsx'
 import '../styles/dataTable.css'
 import '../styles/detailPage.css'
 import './CompanyDetailPage.css'
@@ -40,6 +41,7 @@ export default function CompanyDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const { conectado: chamadasConectadas, call: ligar } = useSoftphone()
   const [showEditModal, setShowEditModal] = useState(false)
   const [showNewContact, setShowNewContact] = useState(false)
   const [showEnrollModal, setShowEnrollModal] = useState(false)
@@ -145,7 +147,20 @@ export default function CompanyDetailPage() {
           <dl className="key-facts">
             <div className="fact"><dt>CNPJ</dt><dd>{company.cnpj ?? '—'}</dd></div>
             <div className="fact"><dt>Site</dt><dd>{company.site ? <a href={company.site.startsWith('http') ? company.site : `https://${company.site}`} target="_blank" rel="noopener noreferrer">{company.site}</a> : '—'}</dd></div>
-            <div className="fact"><dt>Telefone</dt><dd>{company.telefone ?? '—'}</dd></div>
+            <div className="fact">
+              <dt>Telefone</dt>
+              <dd>
+                {company.telefone ?? '—'}
+                {company.telefone && chamadasConectadas && (
+                  <button
+                    type="button" className="link-action call-inline-btn"
+                    onClick={() => ligar(company.telefone, { label: company.razao_social, companyId: company.id })}
+                  >
+                    Ligar
+                  </button>
+                )}
+              </dd>
+            </div>
             <div className="fact"><dt>E-mail</dt><dd>{company.email ?? '—'}</dd></div>
             <div className="fact"><dt>Localização</dt><dd>{company.cidade ? `${company.cidade}, ${company.uf ?? ''}` : '—'}</dd></div>
             <div className="fact"><dt>Funcionários</dt><dd>{company.num_funcionarios?.toLocaleString('pt-BR') ?? '—'}</dd></div>

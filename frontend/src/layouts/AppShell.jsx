@@ -2,9 +2,11 @@ import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../context/AuthContext.jsx'
+import { SoftphoneProvider } from '../context/SoftphoneContext.jsx'
 import { getTenant } from '../api/tenant'
 import { avatarUrl } from '../api/me'
 import { initials } from '../utils/avatar'
+import Softphone from '../components/Softphone.jsx'
 import './AppShell.css'
 
 const NAV_GROUPS = [
@@ -61,6 +63,7 @@ export default function AppShell() {
   }
 
   return (
+    <SoftphoneProvider>
     <div className="shell">
       <aside className="sidebar">
         <div className="sb-brand">
@@ -135,7 +138,10 @@ export default function AppShell() {
 
         <Outlet />
       </div>
+
+      <Softphone />
     </div>
+    </SoftphoneProvider>
   )
 }
 

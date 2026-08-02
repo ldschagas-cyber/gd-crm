@@ -10,6 +10,7 @@ import { listTasks, completeTask } from '../api/tasks'
 import { listDealTimeline, addDealTimelineNote } from '../api/timeline'
 import EnrollModal from '../components/EnrollModal.jsx'
 import TimelineComposer from '../components/TimelineComposer.jsx'
+import { useSoftphone } from '../context/SoftphoneContext.jsx'
 import '../styles/dataTable.css'
 import '../styles/detailPage.css'
 import './DealDetailPage.css'
@@ -34,6 +35,7 @@ export default function DealDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const { conectado: chamadasConectadas, call: ligar } = useSoftphone()
   const [showLostModal, setShowLostModal] = useState(false)
   const [showEnrollModal, setShowEnrollModal] = useState(false)
 
@@ -284,7 +286,18 @@ export default function DealDetailPage() {
                   </div>
                   <div className="quick-icons">
                     {contact.email && <a href={`mailto:${contact.email}`} title="E-mail">✉️</a>}
-                    {contact.telefone && <a href={`tel:${contact.telefone}`} title="Telefone">📞</a>}
+                    {contact.telefone && (
+                      chamadasConectadas ? (
+                        <button
+                          type="button" className="quick-icons-btn" title="Ligar"
+                          onClick={() => ligar(contact.telefone, { label: contact.nome, contactId: contact.id, companyId: deal.company_id, dealId: deal.id })}
+                        >
+                          📞
+                        </button>
+                      ) : (
+                        <a href={`tel:${contact.telefone}`} title="Telefone">📞</a>
+                      )
+                    )}
                     {contact.tem_whatsapp && contact.telefone && (
                       <a href={`https://wa.me/55${contact.telefone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" title="WhatsApp">💬</a>
                     )}

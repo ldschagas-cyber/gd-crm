@@ -45,3 +45,9 @@
 .email-lookup-subj { font-size: 12.5px; font-weight: 600; color: var(--ink); }
 .email-lookup-snip { font-size: 11.5px; color: var(--ink-dim); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .email-lookup-when { font-size: 10.5px; color: var(--ink-faint); flex: none; padding-top: 2px; }
+
+.call-inline-btn {
+  border: none; background: none; padding: 0; margin-left: 8px;
+  font-size: 12px; font-weight: 600; color: var(--link); cursor: pointer;
+}
+.call-inline-btn:hover { text-decoration: underline; }

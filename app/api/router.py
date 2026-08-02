@@ -2,7 +2,7 @@
 from fastapi import APIRouter
 
 from app.api.v1 import (
-    auth, cadences, cnae_codes, companies, contacts, dashboards, deals, email_templates, embed, forms,
+    auth, cadences, calls, cnae_codes, companies, contacts, dashboards, deals, email_templates, embed, forms,
     import_jobs, lead_prospects, me, pipelines, public, public_companies, sequences, site_visits, snippets,
     tasks, tenant, users, workflows,
 )
@@ -10,6 +10,7 @@ from app.api.v1 import (
 api_router = APIRouter()
 api_router.include_router(auth.router)
 api_router.include_router(me.router)
+api_router.include_router(calls.router)
 api_router.include_router(tenant.router)
 api_router.include_router(users.router)
 api_router.include_router(companies.router)

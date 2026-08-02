@@ -31,5 +31,6 @@
 .mini-facts { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
 .mini-fact { font-size: 12px; color: var(--ink-dim); }
 .quick-icons { display: flex; gap: 5px; margin-top: 10px; }
-.quick-icons a { width: 30px; height: 30px; border-radius: 8px; background: var(--paper); display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 14px; }
-.quick-icons a:hover { filter: brightness(0.96); }
+.quick-icons a, .quick-icons-btn { width: 30px; height: 30px; border-radius: 8px; background: var(--paper); display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 14px; }
+.quick-icons-btn { border: none; cursor: pointer; }
+.quick-icons a:hover, .quick-icons-btn:hover { filter: brightness(0.96); }

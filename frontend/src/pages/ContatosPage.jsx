@@ -7,6 +7,7 @@ import {
 } from '../api/contacts'
 import { listCompanies } from '../api/companies'
 import EnrollModal from '../components/EnrollModal.jsx'
+import { useSoftphone } from '../context/SoftphoneContext.jsx'
 import '../styles/dataTable.css'
 import './ContatosPage.css'
 
@@ -208,7 +209,7 @@ export default function ContatosPage() {
                         <div className="row-title">{c.nome}</div>
                         {c.email && <div className="row-sub">{c.email}</div>}
                       </td>
-                      <td><QuickContact contact={c} /></td>
+                      <td><QuickContact contact={c} companyName={companiesById[c.company_id]} /></td>
                       {COLUMN_DEFS.filter((col) => visibleColumns[col.key]).map((col) => (
                         <td key={col.key}>{renderCell(c, col.key, companiesById)}</td>
                       ))}
@@ -284,13 +285,25 @@ function onlyDigits(v) {
   return (v || '').replace(/\D/g, '')
 }
 
-function QuickContact({ contact }) {
+function QuickContact({ contact, companyName }) {
+  const { conectado, call } = useSoftphone()
+  const label = companyName ? `${contact.nome} — ${companyName}` : contact.nome
+
   return (
     <div className="quick-contact">
       {contact.telefone ? (
-        <a href={`tel:${onlyDigits(contact.telefone)}`} title={`Ligar: ${contact.telefone}`} onClick={(e) => e.stopPropagation()}>
-          <IconPhone />
-        </a>
+        conectado ? (
+          <button
+            className="qc-call-btn" title={`Ligar: ${contact.telefone}`}
+            onClick={(e) => { e.stopPropagation(); call(contact.telefone, { label, contactId: contact.id, companyId: contact.company_id }) }}
+          >
+            <IconPhone />
+          </button>
+        ) : (
+          <a href={`tel:${onlyDigits(contact.telefone)}`} title={`Ligar: ${contact.telefone}`} onClick={(e) => e.stopPropagation()}>
+            <IconPhone />
+          </a>
+        )
       ) : <span className="qc-empty"><IconPhone /></span>}
       {contact.whatsapp ? (
         <a href={`https://wa.me/55${onlyDigits(contact.whatsapp)}`} target="_blank" rel="noopener noreferrer"

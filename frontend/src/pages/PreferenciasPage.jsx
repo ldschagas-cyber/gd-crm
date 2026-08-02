@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../context/AuthContext.jsx'
+import { useSoftphone } from '../context/SoftphoneContext.jsx'
 import {
   avatarUrl, changeMyPassword, connectIntegration, disconnectIntegration, getIntegration,
   removeAvatar, updateMe, uploadAvatar,
@@ -230,33 +231,37 @@ function IntegrationTab({ tipo, title, description }) {
 }
 
 function ChamadasTab() {
+  const { conectado, error } = useSoftphone()
   return (
     <div className="card section-card">
-      <div className="card-head"><h2>Chamadas</h2><p>Como o CRM lida com ligações hoje — e avaliação do Twilio Voice</p></div>
+      <div className="card-head"><h2>Chamadas</h2><p>Ligações direto do CRM via Twilio Voice — saída e entrada</p></div>
       <div className="section-body">
-        <p className="pref-info">
-          Hoje o CRM não tem discador embutido: ligações são feitas pelo link <code>tel:</code> já disponível em
-          Contatos e no detalhe da Empresa, e ficam registradas manualmente na timeline ou como uma tarefa do tipo
-          "Ligação".
-        </p>
-        <p className="pref-info">
-          <strong>Avaliação — Twilio Voice:</strong> tecnicamente viável via <em>Voice JS SDK</em> (WebRTC no
-          navegador): o backend emite um Access Token de curta duração, o frontend abre um <code>Twilio.Device</code>
-          e o áudio trafega direto do navegador — sem instalar nada. Dá pra começar só com clique-para-ligar
-          (saída), que é bem mais simples que atender chamada recebida (isso exige tela de "chamada entrando",
-          fila, etc.).
-        </p>
-        <p className="pref-info">
-          <strong>Custo:</strong> sem mensalidade fixa de plataforma — é por uso. Precisa de 1 número brasileiro
-          alugado (poucos dólares/mês) + tarifa por minuto (na faixa de US$ 0,01-0,02/min nos EUA; Brasil tem
-          página de preço própria e vale conferir ao decidir, pois varia por tipo de chamada/operadora). Custo
-          real = número de ligações × duração média da equipe — baixo para testar, escala com uso.
-        </p>
-        <p className="pref-info">
-          <strong>Recomendação:</strong> não é mais só "não vale a pena" — é barato o bastante para um piloto
-          pequeno (1 número, só saída, 1 vendedor por 1-2 semanas) antes de decidir se vira feature de verdade
-          pra equipe toda. Decisão de fazer o piloto é sua.
-        </p>
+        <div className="integration-row">
+          <div className="integration-status">
+            <span className={`status-dot${conectado ? ' on' : ''}`} />
+            {conectado ? 'Chamadas conectadas (Twilio Voice)' : 'Chamadas ainda não configuradas'}
+          </div>
+        </div>
+        {conectado ? (
+          <>
+            <p className="pref-info">
+              Ligar direto de um contato, empresa ou negócio já usa o discador embutido (botão "Ligar" no lugar
+              do link <code>tel:</code>). Chamadas recebidas no número da empresa tocam aqui no navegador — fica
+              um aviso no canto da tela pra atender ou recusar.
+            </p>
+            <p className="pref-info">
+              Toda ligação (feita ou recebida) fica registrada automaticamente na timeline da empresa, com
+              duração e horário.
+            </p>
+          </>
+        ) : (
+          <p className="pref-info">
+            Peça ao administrador do CRM para configurar as credenciais do Twilio (Account SID, API Key,
+            TwiML App e o número de telefone) no servidor. Enquanto isso, os botões de telefone continuam
+            usando o link <code>tel:</code> do seu dispositivo, como hoje.
+          </p>
+        )}
+        {error && <p className="state-msg error">{error}</p>}
       </div>
     </div>
   )
