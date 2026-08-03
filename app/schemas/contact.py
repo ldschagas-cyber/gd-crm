@@ -17,6 +17,7 @@ class ContactCreate(BaseModel):
     linkedin: str | None = None
     data_nascimento: date | None = None
     observacoes: str | None = None
+    contexto_pessoal: str | None = None
 
 
 class ContactUpdate(BaseModel):
@@ -28,6 +29,7 @@ class ContactUpdate(BaseModel):
     linkedin: str | None = None
     data_nascimento: date | None = None
     observacoes: str | None = None
+    contexto_pessoal: str | None = None
 
 
 class ContactRead(ORMModel):
@@ -41,6 +43,7 @@ class ContactRead(ORMModel):
     linkedin: str | None
     data_nascimento: date | None
     observacoes: str | None
+    contexto_pessoal: str | None
     created_at: datetime
 
 

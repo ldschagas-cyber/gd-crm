@@ -43,6 +43,11 @@ class Company(Base, TenantMixin, TimestampMixin, SoftDeleteMixin):
     responsavel_id: Mapped[uuid.UUID | None] = mapped_column(PGUUID(as_uuid=True), ForeignKey("users.id"))
     created_by: Mapped[uuid.UUID | None] = mapped_column(PGUUID(as_uuid=True), ForeignKey("users.id"))
 
+    # Nota curta de personalização, usada em {{contexto_rapido}} nos e-mails automáticos
+    # (ver app/services/sequence_dispatch.py:render_template) — equivalente, em nível de
+    # empresa, ao contexto_pessoal do Contato.
+    contexto_rapido: Mapped[str | None] = mapped_column(Text)
+
     # Setor — taxonomia do motor de Score ICP (app/services/icp_scoring.py), distinta
     # de `segmento` (texto livre). Preenchida na promoção de um LeadProspect ou
     # manualmente, pra empresa poder ter score/fit calculado no Dossiê Comercial.

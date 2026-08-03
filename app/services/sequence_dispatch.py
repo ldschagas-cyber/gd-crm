@@ -54,6 +54,8 @@ def render_template(template: EmailTemplate, contact: Contact, company: Company 
         "empresa": (company.nome_fantasia or company.razao_social) if company else "",
         "cargo": contact.cargo or "",
         "responsavel": responsavel.nome if responsavel else "",
+        "contexto_pessoal": contact.contexto_pessoal or "",
+        "contexto_rapido": (company.contexto_rapido or "") if company else "",
     }
 
     def _sub(texto: str) -> str:

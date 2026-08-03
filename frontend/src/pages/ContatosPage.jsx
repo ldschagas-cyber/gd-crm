@@ -17,6 +17,7 @@ const COLUMN_DEFS = [
   { key: 'data_nascimento', label: 'Aniversário', default: true },
   { key: 'email', label: 'E-mail', default: false },
   { key: 'observacoes', label: 'Observações', default: false },
+  { key: 'contexto_pessoal', label: 'Contexto pessoal', default: false },
 ]
 
 const PAGE_SIZE = 20
@@ -339,6 +340,7 @@ export function ContactModal({ contact, companies, onClose, onSubmit, submitting
     linkedin: contact?.linkedin ?? '',
     data_nascimento: contact?.data_nascimento ?? '',
     observacoes: contact?.observacoes ?? '',
+    contexto_pessoal: contact?.contexto_pessoal ?? '',
   })
 
   function set(field) {
@@ -405,6 +407,13 @@ export function ContactModal({ contact, companies, onClose, onSubmit, submitting
           <div className="field">
             <label htmlFor="observacoes">Observações</label>
             <textarea id="observacoes" rows={3} value={form.observacoes} onChange={set('observacoes')} />
+          </div>
+          <div className="field">
+            <label htmlFor="contexto_pessoal">Contexto pessoal</label>
+            <textarea
+              id="contexto_pessoal" rows={2} value={form.contexto_pessoal} onChange={set('contexto_pessoal')}
+              placeholder="1 frase sobre a relação com esse contato — usada em {{contexto_pessoal}} nos e-mails automáticos"
+            />
           </div>
 
           {error && <p className="state-msg error">Não foi possível salvar. Confira os dados e tente de novo.</p>}

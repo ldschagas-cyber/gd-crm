@@ -25,6 +25,7 @@ class CompanyBase(BaseModel):
     faturamento_estimado: float | None = None
     origem: str | None = None
     responsavel_id: UUID | None = None
+    contexto_rapido: str | None = None
 
 
 class CompanyCreate(CompanyBase):
@@ -47,6 +48,7 @@ class CompanyUpdate(BaseModel):
     faturamento_estimado: float | None = None
     origem: str | None = None
     responsavel_id: UUID | None = None
+    contexto_rapido: str | None = None
 
 
 class CompanyDossierUpdate(BaseModel):
@@ -90,6 +92,7 @@ class CompanyRead(ORMModel):
     status: str
     origem: str | None
     responsavel_id: UUID | None
+    contexto_rapido: str | None
     created_at: datetime
     resumo_executivo: str | None
     proxima_acao_sugerida: str | None

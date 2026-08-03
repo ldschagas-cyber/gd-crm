@@ -24,3 +24,4 @@ class Contact(Base, TenantMixin, TimestampMixin):
     linkedin: Mapped[str | None] = mapped_column(String(255))
     data_nascimento: Mapped[date | None] = mapped_column(Date)
     observacoes: Mapped[str | None] = mapped_column(Text)
+    contexto_pessoal: Mapped[str | None] = mapped_column(Text)

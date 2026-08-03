@@ -479,6 +479,7 @@ export function CompanyModal({ company, users, usersError, onClose, onSubmit, su
     telefone: company?.telefone ?? '',
     email: company?.email ?? '',
     responsavel_id: company?.responsavel_id ?? '',
+    contexto_rapido: company?.contexto_rapido ?? '',
   })
 
   function set(field) {
@@ -571,6 +572,13 @@ export function CompanyModal({ company, users, usersError, onClose, onSubmit, su
                 ))}
               </select>
             )}
+          </div>
+          <div className="field">
+            <label htmlFor="contexto_rapido">Contexto rápido</label>
+            <textarea
+              id="contexto_rapido" rows={2} value={form.contexto_rapido} onChange={set('contexto_rapido')}
+              placeholder="1 frase sobre a empresa — usada em {{contexto_rapido}} nos e-mails automáticos"
+            />
           </div>
 
           {error && <p className="state-msg error">Não foi possível salvar. Confira os dados e tente de novo.</p>}
