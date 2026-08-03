@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createWorkflow, deleteWorkflow, listWorkflowLogs, listWorkflows, updateWorkflow } from '../api/workflows'
 import { listEmailTemplates } from '../api/emailTemplates'
 import { listPipelines } from '../api/pipelines'
+import { TIPO_LABEL as TIPO_TAREFA_LABEL } from '../components/TaskTypeIcon'
 import '../styles/dataTable.css'
 import './WorkflowsPage.css'
 
@@ -29,7 +30,6 @@ const TIPO_ACAO_LABEL = {
   criar_tarefa: 'Criar tarefa', enviar_email: 'Enviar e-mail', alterar_pipeline: 'Alterar etapa',
   notificar_usuario: 'Notificar usuário', executar_enriquecimento: 'Executar enriquecimento (IA)',
 }
-const TIPO_TAREFA = ['ligacao', 'email', 'whatsapp', 'reuniao', 'followup']
 const DESTINATARIOS = ['Responsável pelo registro', 'Gestor comercial', 'Administrador']
 const RESULTADO_LABEL = { sucesso: '✓', erro: '✕' }
 
@@ -362,7 +362,7 @@ function ActionParams({ tipo, parametros, templates, stageOptions, onChange }) {
         <input value={parametros.titulo ?? ''} onChange={(e) => onChange('titulo', e.target.value)} placeholder="Título da tarefa" />
         <div className="f-row-mini">
           <select value={parametros.tipo_tarefa ?? 'followup'} onChange={(e) => onChange('tipo_tarefa', e.target.value)}>
-            {TIPO_TAREFA.map((t) => <option key={t} value={t}>{t}</option>)}
+            {Object.entries(TIPO_TAREFA_LABEL).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
           <input type="number" min="0" value={parametros.dias_apos ?? 0} onChange={(e) => onChange('dias_apos', Number(e.target.value) || 0)} placeholder="dias após" />
           <select value={parametros.destinatario ?? DESTINATARIOS[0]} onChange={(e) => onChange('destinatario', e.target.value)}>

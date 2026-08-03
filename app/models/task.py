@@ -15,6 +15,8 @@ class TaskType(str, enum.Enum):
     EMAIL = "email"
     WHATSAPP = "whatsapp"
     REUNIAO = "reuniao"
+    LINKEDIN_CONEXAO = "linkedin_conexao"
+    LINKEDIN_MENSAGEM = "linkedin_mensagem"
     FOLLOWUP = "followup"
 
 

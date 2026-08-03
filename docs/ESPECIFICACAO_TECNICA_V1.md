@@ -228,7 +228,7 @@ Todas as tabelas abaixo (exceto `tenants`) têm `tenant_id UUID NOT NULL` (mixin
 | id | UUID (PK) | |
 | tenant_id | UUID (FK) | índice `(tenant_id, responsavel_id, status)` |
 | titulo | String(255) NOT NULL | |
-| tipo | String(20) NOT NULL | enum: ligacao/email/whatsapp/reuniao/followup |
+| tipo | String(20) NOT NULL | enum: ligacao/email/whatsapp/reuniao/linkedin_conexao/linkedin_mensagem/followup |
 | responsavel_id | UUID (FK users) NOT NULL, index | |
 | company_id, contact_id, deal_id | UUID (FK) nullable | vínculo opcional |
 | data | Date NOT NULL, index | |
@@ -295,9 +295,9 @@ Todas as tabelas abaixo (exceto `tenants`) têm `tenant_id UUID NOT NULL` (mixin
 | sequence_id | UUID (FK sequences), index | |
 | ordem | Integer NOT NULL | |
 | dia_offset | Integer NOT NULL | dias a partir do início (0, 3, 7, 14…) |
-| tipo | String(20) NOT NULL | ligacao/email/whatsapp/followup |
+| tipo | String(20) NOT NULL | ligacao/email/whatsapp/linkedin_conexao/linkedin_mensagem/followup |
 | template_id | UUID (FK email_templates) nullable | quando tipo = email |
-| instrucoes | Text nullable | roteiro para ligação/whatsapp |
+| instrucoes | Text nullable | roteiro para ligação/whatsapp/linkedin_conexao/linkedin_mensagem |
 
 #### `sequence_enrollments`
 | Campo | Tipo | Notas |

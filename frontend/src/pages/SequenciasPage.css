@@ -27,8 +27,9 @@
 .step-day { display: flex; align-items: baseline; gap: 4px; flex: none; }
 .step-day input { width: 46px; border: 1px solid var(--border); border-radius: 6px; padding: 5px 6px; font-family: var(--font-mono); font-size: 12.5px; text-align: right; background: var(--card-bg); color: var(--ink); }
 .step-day .suffix { font-size: 11px; color: var(--ink-faint); white-space: nowrap; }
-.step-tipo { flex: none; width: 132px; }
-.step-tipo select { width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; font-size: 12.3px; background: var(--card-bg); color: var(--ink); }
+.step-tipo { flex: none; width: 178px; display: flex; align-items: center; gap: 6px; }
+.step-tipo .tipo-icon { color: var(--ink-faint); }
+.step-tipo select { flex: 1; min-width: 0; border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; font-size: 12.3px; background: var(--card-bg); color: var(--ink); }
 .step-del { margin-left: auto; }
 .step-detail { margin-top: 8px; }
 .step-detail select, .step-detail input { width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 6px 9px; font-size: 12.5px; background: var(--card-bg); color: var(--ink); }

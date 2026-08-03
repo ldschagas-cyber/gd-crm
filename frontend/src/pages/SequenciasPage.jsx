@@ -4,10 +4,10 @@ import {
   cloneSequence, createSequence, deleteSequence, listSequenceEnrollments, listSequences, updateSequence,
 } from '../api/sequences'
 import { listEmailTemplates } from '../api/emailTemplates'
+import { TIPO_LABEL, TaskTypeIcon } from '../components/TaskTypeIcon'
 import '../styles/dataTable.css'
 import './SequenciasPage.css'
 
-const TIPO_LABEL = { ligacao: 'Ligação', email: 'E-mail', whatsapp: 'WhatsApp', followup: 'Follow-up' }
 const ENROLL_STATUS_LABEL = { ativa: 'ativa', pausada: 'pausada', concluida: 'concluída', cancelada: 'cancelada' }
 
 function emptyStep(lastDia) {
@@ -130,7 +130,7 @@ export default function SequenciasPage() {
             <h3><IconInfo />Como funciona a pausa automática</h3>
             <p className="sub">
               Uma sequência dispara tarefas automaticamente conforme dias decorridos (ligação, e-mail, WhatsApp,
-              follow-up) para quem está inscrito. <b>Pausar quando houver resposta</b> depende da integração de
+              LinkedIn, follow-up) para quem está inscrito. <b>Pausar quando houver resposta</b> depende da integração de
               e-mail em Preferências (Microsoft 365/Graph) — sem isso conectado, a sequência não sabe se alguém
               respondeu, então essa opção hoje não pausa automaticamente nada.
             </p>
@@ -251,6 +251,7 @@ function SequenceDrawer({ sequence, onClose, onSubmit, submitting, error }) {
                       <input type="number" min="0" value={step.dia_offset} onChange={(e) => updateStep(idx, { dia_offset: e.target.value })} />
                     </div>
                     <div className="step-tipo">
+                      <TaskTypeIcon tipo={step.tipo} />
                       <select value={step.tipo} onChange={(e) => updateStep(idx, { tipo: e.target.value })}>
                         {Object.entries(TIPO_LABEL).map(([k, label]) => <option key={k} value={k}>{label}</option>)}
                       </select>

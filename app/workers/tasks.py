@@ -227,7 +227,10 @@ def import_lead_prospects_task(job_id: str, tenant_id: str, user_id: str, conten
         db.close()
 
 
-SEQUENCE_STEP_LABEL = {"ligacao": "Ligação", "email": "E-mail", "whatsapp": "WhatsApp", "followup": "Follow-up"}
+SEQUENCE_STEP_LABEL = {
+    "ligacao": "Ligação", "email": "E-mail", "whatsapp": "WhatsApp",
+    "linkedin_conexao": "LinkedIn (conexão)", "linkedin_mensagem": "LinkedIn (mensagem)", "followup": "Follow-up",
+}
 
 
 def _resolve_responsavel(db, enrollment, owner) -> UUID:

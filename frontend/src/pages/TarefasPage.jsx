@@ -6,10 +6,10 @@ import {
 import { listCompanies } from '../api/companies'
 import { listContacts } from '../api/contacts'
 import { listUsers } from '../api/users'
+import { TIPO_LABEL, TaskTypeChip } from '../components/TaskTypeIcon'
 import '../styles/dataTable.css'
 import './TarefasPage.css'
 
-const TIPO_LABEL = { ligacao: 'Ligação', email: 'E-mail', whatsapp: 'WhatsApp', reuniao: 'Reunião', followup: 'Follow-up' }
 const PRIO_LABEL = { alta: 'Alta', media: 'Média', baixa: 'Baixa' }
 
 function initials(nome) {
@@ -201,7 +201,7 @@ function TaskRow({ task, companiesById, usersById, onComplete, onEdit, onDelete 
         <div className="task-title">{task.titulo}</div>
         <div className="task-meta-row">
           <span className="task-meta-item mono">{task.hora ? task.hora.slice(0, 5) : 'Dia todo'}</span>
-          <span className="task-meta-item">{TIPO_LABEL[task.tipo] ?? task.tipo}</span>
+          <span className="task-meta-item"><TaskTypeChip tipo={task.tipo} /></span>
           <span className={`prio prio-${task.prioridade}`}><span className="prio-dot" />{PRIO_LABEL[task.prioridade] ?? task.prioridade}</span>
           {overdue && <span className="overdue-pill">Atrasada {Math.abs(dayDiff(task.data))}d</span>}
           {task.company_id && <span className="task-meta-item link-chip">{companiesById[task.company_id] ?? '—'}</span>}
