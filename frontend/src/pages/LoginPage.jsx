@@ -149,10 +149,6 @@ export default function LoginPage() {
             </div>
 
             <div className="row-between">
-              <label className="remember">
-                <input type="checkbox" name="remember" />
-                Lembrar-me
-              </label>
               <button
                 type="button"
                 className="forgot"
