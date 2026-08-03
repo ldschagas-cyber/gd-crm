@@ -13,11 +13,11 @@ from app.models.base import Base, TenantMixin, TimestampMixin, uuid_pk
 class TaskType(str, enum.Enum):
     LIGACAO = "ligacao"
     EMAIL = "email"
-    EMAIL_MANUAL = "email_manual"
     WHATSAPP = "whatsapp"
     REUNIAO = "reuniao"
     LINKEDIN_CONEXAO = "linkedin_conexao"
     LINKEDIN_MENSAGEM = "linkedin_mensagem"
+    TAREFA_MANUAL = "tarefa_manual"
     FOLLOWUP = "followup"
 
 

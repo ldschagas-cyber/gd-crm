@@ -15,7 +15,7 @@ function emptyStep(lastDia) {
 }
 
 function usaTemplate(tipo) {
-  return tipo === 'email' || tipo === 'email_manual'
+  return tipo === 'email'
 }
 
 function IconInfo() {
@@ -265,7 +265,7 @@ function SequenceDrawer({ sequence, onClose, onSubmit, submitting, error }) {
                   <div className="step-detail">
                     {usaTemplate(step.tipo) ? (
                       <select value={step.template_id ?? ''} onChange={(e) => updateStep(idx, { template_id: e.target.value || null })}>
-                        <option value="">{step.tipo === 'email' ? 'Sem modelo (rascunho manual)' : 'Sem modelo (só o lembrete)'}</option>
+                        <option value="">Sem modelo (rascunho manual)</option>
                         {templates.map((t) => <option key={t.id} value={t.id}>{t.nome}</option>)}
                       </select>
                     ) : (

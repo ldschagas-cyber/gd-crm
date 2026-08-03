@@ -39,6 +39,22 @@ def _error_body(code: str, message: str, details: dict | None = None) -> dict:
     return {"error": {"code": code, "message": message, "details": details or {}}}
 
 
+def _sanitize_validation_errors(errors: list[dict]) -> list[dict]:
+    """`RequestValidationError.errors()` não aceita `include_context=False` nesta versão do
+    FastAPI, e por padrão embute em `ctx.error` o próprio objeto ValueError levantado por um
+    `@model_validator` (ex.: SequenceStepIn.valida_tipo) -- não serializável em JSON, derrubava
+    a resposta com 500 em vez de 422. Troca o objeto por sua representação em texto.
+    """
+    sanitized = []
+    for e in errors:
+        e = dict(e)
+        ctx = e.get("ctx")
+        if isinstance(ctx, dict) and isinstance(ctx.get("error"), BaseException):
+            e["ctx"] = {**ctx, "error": str(ctx["error"])}
+        sanitized.append(e)
+    return sanitized
+
+
 def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(AppException)
     async def _app_exc(request: Request, exc: AppException):
@@ -50,5 +66,5 @@ def register_exception_handlers(app: FastAPI) -> None:
         return JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             content=_error_body("validation_error", "Dados inválidos",
-                                {"errors": exc.errors()}),
+                                {"errors": _sanitize_validation_errors(exc.errors())}),
         )
