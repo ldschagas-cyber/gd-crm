@@ -2,13 +2,14 @@ import { api } from './client'
 
 export function listTasks({
   page = 1, size = 20, companyId, responsavelId, status, tipo, prioridade, busca,
-  dataInicio, dataFim, dealId,
+  dataInicio, dataFim, dealId, contactId,
 } = {}) {
   return api
     .get('/tasks', {
       params: {
         page, size, company_id: companyId, responsavel_id: responsavelId,
         status, tipo, prioridade, busca, data_inicio: dataInicio, data_fim: dataFim, deal_id: dealId,
+        contact_id: contactId,
       },
     })
     .then((res) => res.data)

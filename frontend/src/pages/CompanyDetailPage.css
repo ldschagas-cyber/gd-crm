@@ -1,25 +1,6 @@
-.co-header { padding: 20px 22px; }
-.co-header-top { display: flex; align-items: flex-start; gap: 16px; }
-.co-logo {
-  width: 52px; height: 52px; border-radius: 12px; flex: none; background: rgba(0, 119, 168, 0.12);
-  color: var(--azul); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700;
-}
-.co-title-block { flex: 1; min-width: 0; }
-.co-title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.co-title-row h1 { margin: 0; font-size: 21px; font-weight: 650; letter-spacing: -0.01em; }
-.co-sub { margin: 3px 0 0; font-size: 13px; color: var(--ink-dim); }
-.co-tags { display: flex; gap: 7px; margin-top: 10px; flex-wrap: wrap; }
-.tag {
-  font-size: 11.5px; font-weight: 600; color: var(--ink-dim); background: var(--paper);
-  border: 1px solid var(--border); padding: 3px 9px; border-radius: 100px;
-}
-.co-actions { display: flex; gap: 8px; flex: none; margin-left: 12px; }
-
-.key-facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 20px; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--border); }
-.fact dt { font-size: 11px; color: var(--ink-faint); font-weight: 600; letter-spacing: 0.02em; margin-bottom: 3px; }
-.fact dd { margin: 0; font-size: 13.5px; color: var(--ink); font-weight: 500; }
-.fact dd a { color: var(--link); text-decoration: none; }
-.fact dd a:hover { text-decoration: underline; }
+/* Cabeçalho de entidade e fatos-chave (.co-header, .key-facts, ...) foram
+   promovidos pra ../styles/detailPage.css — a tela de Contato passou a
+   precisar do mesmo layout. */
 
 .deal-status-pill {
   display: inline-block; font-size: 11px; font-weight: 650; padding: 2px 8px; border-radius: 100px; margin-top: 2px;
@@ -27,10 +8,6 @@
 .deal-status-aberto { background: rgba(0, 119, 168, 0.12); color: var(--azul); }
 .deal-status-ganho { background: rgba(12, 163, 12, 0.12); color: var(--good); }
 .deal-status-perdido { background: rgba(208, 59, 59, 0.12); color: var(--critical); }
-
-@media (max-width: 1180px) {
-  .key-facts { grid-template-columns: repeat(2, 1fr); }
-}
 
 .email-lookup-list { margin-top: 12px; }
 .email-lookup-row { display: flex; gap: 10px; padding: 9px 0; border-top: 1px solid var(--border); }
@@ -45,9 +22,3 @@
 .email-lookup-subj { font-size: 12.5px; font-weight: 600; color: var(--ink); }
 .email-lookup-snip { font-size: 11.5px; color: var(--ink-dim); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .email-lookup-when { font-size: 10.5px; color: var(--ink-faint); flex: none; padding-top: 2px; }
-
-.call-inline-btn {
-  border: none; background: none; padding: 0; margin-left: 8px;
-  font-size: 12px; font-weight: 600; color: var(--link); cursor: pointer;
-}
-.call-inline-btn:hover { text-decoration: underline; }

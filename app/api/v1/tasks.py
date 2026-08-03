@@ -32,11 +32,13 @@ def list_tasks(
     data_inicio: date | None = None,
     data_fim: date | None = None,
     deal_id: UUID | None = None,
+    contact_id: UUID | None = None,
     _: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     items, total = TaskService(db).list(
         params, responsavel_id, status_, tipo, company_id, prioridade, busca, data_inicio, data_fim, deal_id,
+        contact_id,
     )
     return Page(items=items, total=total, page=params.page, size=params.size)
 

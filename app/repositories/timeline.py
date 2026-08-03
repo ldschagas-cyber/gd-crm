@@ -24,6 +24,14 @@ class TimelineRepository(BaseRepository[TimelineEvent]):
             order_by=TimelineEvent.created_at.desc(),
         )
 
+    def list_by_contact(self, contact_id: UUID, offset: int, limit: int) -> tuple[list[TimelineEvent], int]:
+        return self.list(
+            TimelineEvent.contact_id == contact_id,
+            offset=offset,
+            limit=limit,
+            order_by=TimelineEvent.created_at.desc(),
+        )
+
     def get_by_call_sid(self, call_sid: str) -> TimelineEvent | None:
         """Localiza o evento 'ligacao' já criado por record_call_status (evento_meta
         carrega call_sid) — usado pelo webhook da AssemblyAI pra gravar a transcrição

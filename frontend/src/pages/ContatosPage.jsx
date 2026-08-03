@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   createContact, deleteContact, exportContacts, getContactFilterOptions, getContactImportJob,
@@ -22,6 +22,7 @@ const COLUMN_DEFS = [
 const PAGE_SIZE = 20
 
 export default function ContatosPage() {
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const [page, setPage] = useState(1)
   const [busca, setBusca] = useState('')
@@ -201,19 +202,24 @@ export default function ContatosPage() {
                 </thead>
                 <tbody>
                   {items.map((c) => (
-                    <tr key={c.id} className={selected[c.id] ? 'row-selected' : ''}>
-                      <td className="checkbox-col">
+                    <tr
+                      key={c.id}
+                      className={selected[c.id] ? 'row-selected' : ''}
+                      onClick={() => navigate(`/contatos/${c.id}`)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <td className="checkbox-col" onClick={(e) => e.stopPropagation()}>
                         <input type="checkbox" checked={!!selected[c.id]} onChange={() => toggleSelect(c.id)} />
                       </td>
                       <td>
                         <div className="row-title">{c.nome}</div>
                         {c.email && <div className="row-sub">{c.email}</div>}
                       </td>
-                      <td><QuickContact contact={c} companyName={companiesById[c.company_id]} /></td>
+                      <td onClick={(e) => e.stopPropagation()}><QuickContact contact={c} companyName={companiesById[c.company_id]} /></td>
                       {COLUMN_DEFS.filter((col) => visibleColumns[col.key]).map((col) => (
                         <td key={col.key}>{renderCell(c, col.key, companiesById)}</td>
                       ))}
-                      <td className="actions-col">
+                      <td className="actions-col" onClick={(e) => e.stopPropagation()}>
                         <button className="row-action" title="Editar" onClick={() => setModalContact(c)}>✎</button>
                       </td>
                     </tr>

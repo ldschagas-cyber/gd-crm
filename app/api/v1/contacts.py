@@ -14,12 +14,15 @@ from app.core.exceptions import AppException
 from app.models.import_job import ImportType
 from app.models.user import User
 from app.repositories.company import CompanyRepository
+from app.repositories.timeline import TimelineRepository
 from app.schemas.common import Page, PageParams
 from app.schemas.contact import ContactCreate, ContactEmailRead, ContactFilterOptions, ContactRead, ContactUpdate
 from app.schemas.import_job import ImportJobRead
+from app.schemas.timeline import TimelineEventRead, TimelineNoteCreate
 from app.services.contact import ContactService
 from app.services.graph_client import GraphClient
 from app.services.import_job import ImportJobService
+from app.services.timeline import TimelineService
 
 router = APIRouter(prefix="/contacts", tags=["Contatos"])
 
@@ -133,3 +136,18 @@ def delete_contact(contact_id: UUID, _: User = Depends(get_current_user),
                    db: Session = Depends(get_db)):
     ContactService(db).delete(contact_id)
     return None
+
+
+@router.get("/{contact_id}/timeline", response_model=Page[TimelineEventRead])
+def get_contact_timeline(contact_id: UUID, params: PageParams = Depends(),
+                         _: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    ContactService(db).get(contact_id)  # valida existência/tenant
+    items, total = TimelineRepository(db).list_by_contact(contact_id, params.offset, params.size)
+    return Page(items=items, total=total, page=params.page, size=params.size)
+
+
+@router.post("/{contact_id}/timeline", response_model=TimelineEventRead, status_code=status.HTTP_201_CREATED)
+def add_contact_note(contact_id: UUID, data: TimelineNoteCreate, _: User = Depends(get_current_user),
+                     db: Session = Depends(get_db)):
+    contact = ContactService(db).get(contact_id)
+    return TimelineService(db).registrar_from_schema(contact.company_id, data, contact_id=contact.id)

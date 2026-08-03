@@ -28,10 +28,13 @@ def list_deals(
     responsavel_id: UUID | None = None,
     company_id: UUID | None = None,
     busca: str | None = None,
+    contact_id: UUID | None = None,
     _: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    items, total = DealService(db).list(params, pipeline_id, stage_id, status_, responsavel_id, company_id, busca)
+    items, total = DealService(db).list(
+        params, pipeline_id, stage_id, status_, responsavel_id, company_id, busca, contact_id,
+    )
     return Page(items=items, total=total, page=params.page, size=params.size)
 
 

@@ -19,3 +19,13 @@ export function listDealTimeline(dealId, { page = 1, size = 30 } = {}) {
 export function addDealTimelineNote(dealId, data) {
   return api.post(`/deals/${dealId}/timeline`, data).then((res) => res.data)
 }
+
+export function listContactTimeline(contactId, { page = 1, size = 30 } = {}) {
+  return api
+    .get(`/contacts/${contactId}/timeline`, { params: { page, size } })
+    .then((res) => res.data)
+}
+
+export function addContactTimelineNote(contactId, data) {
+  return api.post(`/contacts/${contactId}/timeline`, data).then((res) => res.data)
+}

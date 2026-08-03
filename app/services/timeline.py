@@ -44,11 +44,16 @@ class TimelineService:
 
     def registrar_from_schema(
         self, company_id: UUID, data: TimelineNoteCreate, deal_id: UUID | None = None,
+        contact_id: UUID | None = None,
     ) -> TimelineEvent:
         """Além de gravar a nota, despacha e-mail de verdade (Mail.Send) ou cria o
         evento de verdade na agenda (com Teams opcional) quando os campos extras
-        da conexão Microsoft 365 vierem preenchidos — ver TimelineNoteCreate."""
+        da conexão Microsoft 365 vierem preenchidos — ver TimelineNoteCreate.
+
+        `deal_id`/`contact_id` explícitos (vindos da rota — ex.: timeline do
+        próprio negócio/contato) têm prioridade sobre o que veio no payload."""
         deal_id = deal_id or data.deal_id
+        contact_id = contact_id or data.contact_id
         meta: dict | None = None
         user_id = get_current_user_id()
 
@@ -68,5 +73,5 @@ class TimelineService:
 
         return self.registrar(
             company_id, data.tipo.value, data.titulo, data.descricao,
-            deal_id=deal_id, contact_id=data.contact_id, meta=meta,
+            deal_id=deal_id, contact_id=contact_id, meta=meta,
         )

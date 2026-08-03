@@ -1,11 +1,13 @@
 import { api } from './client'
 
-export function listDeals({ page = 1, size = 20, pipelineId, stageId, status, responsavelId, companyId, busca } = {}) {
+export function listDeals({
+  page = 1, size = 20, pipelineId, stageId, status, responsavelId, companyId, busca, contactId,
+} = {}) {
   return api
     .get('/deals', {
       params: {
         page, size, pipeline_id: pipelineId, stage_id: stageId, status,
-        responsavel_id: responsavelId, company_id: companyId, busca,
+        responsavel_id: responsavelId, company_id: companyId, busca, contact_id: contactId,
       },
     })
     .then((res) => res.data)

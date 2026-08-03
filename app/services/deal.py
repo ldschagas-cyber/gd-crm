@@ -33,7 +33,7 @@ class DealService:
     def list(self, params: PageParams, pipeline_id: UUID | None = None,
              stage_id: UUID | None = None, status: str | None = None,
              responsavel_id: UUID | None = None, company_id: UUID | None = None,
-             busca: str | None = None) -> tuple[list[Deal], int]:
+             busca: str | None = None, contact_id: UUID | None = None) -> tuple[list[Deal], int]:
         filters = []
         if pipeline_id:
             filters.append(Deal.pipeline_id == pipeline_id)
@@ -45,6 +45,8 @@ class DealService:
             filters.append(Deal.responsavel_id == responsavel_id)
         if company_id:
             filters.append(Deal.company_id == company_id)
+        if contact_id:
+            filters.append(Deal.contact_id == contact_id)
         if busca:
             filters.append(self.repo.search_filter(busca))
         return self.repo.list(*filters, offset=params.offset, limit=params.size,

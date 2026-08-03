@@ -23,9 +23,10 @@ class TaskService:
              status: str | None = None, tipo: str | None = None,
              company_id: UUID | None = None, prioridade: str | None = None,
              busca: str | None = None, data_inicio: date | None = None,
-             data_fim: date | None = None, deal_id: UUID | None = None) -> tuple[list[Task], int]:
+             data_fim: date | None = None, deal_id: UUID | None = None,
+             contact_id: UUID | None = None) -> tuple[list[Task], int]:
         filters = self._filters(responsavel_id, status, tipo, company_id, prioridade, busca,
-                                data_inicio, data_fim, deal_id)
+                                data_inicio, data_fim, deal_id, contact_id)
         return self.repo.list(*filters, offset=params.offset, limit=params.size,
                               order_by=Task.data)
 
@@ -33,15 +34,15 @@ class TaskService:
                         tipo: str | None = None, company_id: UUID | None = None,
                         prioridade: str | None = None, busca: str | None = None,
                         data_inicio: date | None = None, data_fim: date | None = None,
-                        deal_id: UUID | None = None) -> "list[Task]":
+                        deal_id: UUID | None = None, contact_id: UUID | None = None) -> "list[Task]":
         # anotação em string: `list` já é sombreado pelo método list() desta classe
         filters = self._filters(responsavel_id, status, tipo, company_id, prioridade, busca,
-                                data_inicio, data_fim, deal_id)
+                                data_inicio, data_fim, deal_id, contact_id)
         items, _ = self.repo.list(*filters, offset=0, limit=1_000_000, order_by=Task.data)
         return items
 
     def _filters(self, responsavel_id, status, tipo, company_id, prioridade, busca,
-                 data_inicio=None, data_fim=None, deal_id=None):
+                 data_inicio=None, data_fim=None, deal_id=None, contact_id=None):
         filters = []
         if responsavel_id:
             filters.append(Task.responsavel_id == responsavel_id)
@@ -53,6 +54,8 @@ class TaskService:
             filters.append(Task.company_id == company_id)
         if deal_id:
             filters.append(Task.deal_id == deal_id)
+        if contact_id:
+            filters.append(Task.contact_id == contact_id)
         if prioridade:
             filters.append(Task.prioridade == prioridade)
         if busca:
