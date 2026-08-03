@@ -11,6 +11,7 @@ from app.core.celery_app import celery_app
 from app.core.context import set_current_tenant, set_current_user
 from app.core.database import SessionLocal
 from app.models.cadence import Cadence, CadenceEnrollment
+from app.models.call import Call
 from app.models.company import Company
 from app.models.contact import Contact
 from app.models.deal import Deal
@@ -588,6 +589,27 @@ def dispatch_workflow_event(tenant_id: str, gatilho: str, entidade_ref: str, pay
                 _execute_workflow(db, workflow, UUID(entidade_ref), payload)
         db.commit()
         return {"workflows_avaliados": len(workflows)}
+    finally:
+        db.close()
+
+
+@celery_app.task(name="app.workers.tasks.transcribe_call_recording_task")
+def transcribe_call_recording_task(call_id: str, recording_url: str):
+    """Disparado por `app/services/twilio_voice.py:record_recording_completed`
+    depois que a gravação da ligação termina (RecordingStatus == completed)."""
+    db = SessionLocal()
+    try:
+        call = db.get(Call, UUID(call_id))
+        if call is None:
+            return
+        set_current_tenant(call.tenant_id)
+        set_current_user(call.user_id)
+        from app.services.assemblyai_transcription import transcribe_and_submit
+        transcribe_and_submit(db, call, recording_url)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     finally:
         db.close()
 

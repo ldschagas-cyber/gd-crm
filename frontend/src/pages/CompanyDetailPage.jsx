@@ -198,12 +198,19 @@ export default function CompanyDetailPage() {
                         {e.titulo}
                         {e.evento_meta?.enviado && <span className="tl-tag ok">Enviado</span>}
                         {e.evento_meta?.teams_join_url && <span className="tl-tag teams">Teams</span>}
+                        {e.evento_meta?.transcricao_status === 'erro' && <span className="tl-tag err">Transcrição falhou</span>}
                       </div>
                       {e.descricao && <div className="tl-desc">{e.descricao}</div>}
                       {e.evento_meta?.teams_join_url && (
                         <a className="tl-teams-link" href={e.evento_meta.teams_join_url} target="_blank" rel="noopener noreferrer">
                           Entrar na reunião do Teams
                         </a>
+                      )}
+                      {e.evento_meta?.transcricao && (
+                        <details className="tl-transcript">
+                          <summary>Ver transcrição</summary>
+                          <div className="tl-desc">{e.evento_meta.transcricao}</div>
+                        </details>
                       )}
                       <div className="tl-meta">
                         {e.user_id && <span className="who">{usersById[e.user_id] ?? ''}</span>}

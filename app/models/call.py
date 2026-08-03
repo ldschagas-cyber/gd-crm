@@ -35,3 +35,10 @@ class Call(Base, TenantMixin, TimestampMixin):
     company_id: Mapped[uuid.UUID | None] = mapped_column(PGUUID(as_uuid=True), ForeignKey("companies.id"), index=True)
     contact_id: Mapped[uuid.UUID | None] = mapped_column(PGUUID(as_uuid=True), ForeignKey("contacts.id"))
     deal_id: Mapped[uuid.UUID | None] = mapped_column(PGUUID(as_uuid=True), ForeignKey("deals.id"))
+
+    # Transcrição via AssemblyAI (opt-in, ver app/services/assemblyai_transcription.py).
+    # `recording_sid` só fica preenchido enquanto a gravação ainda existe do lado do Twilio —
+    # é apagada (e o campo idealmente seria limpo) assim que a transcrição é confirmada, já
+    # que a decisão de produto foi manter só o texto, nunca o áudio.
+    recording_sid: Mapped[str | None] = mapped_column(String(64))
+    assemblyai_transcript_id: Mapped[str | None] = mapped_column(String(64), unique=True, index=True)

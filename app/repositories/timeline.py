@@ -23,3 +23,13 @@ class TimelineRepository(BaseRepository[TimelineEvent]):
             limit=limit,
             order_by=TimelineEvent.created_at.desc(),
         )
+
+    def get_by_call_sid(self, call_sid: str) -> TimelineEvent | None:
+        """Localiza o evento 'ligacao' já criado por record_call_status (evento_meta
+        carrega call_sid) — usado pelo webhook da AssemblyAI pra gravar a transcrição
+        no mesmo evento, sem precisar de mais uma FK dedicada."""
+        return self.db.execute(
+            self._base_query().where(
+                TimelineEvent.evento_meta["call_sid"].astext == call_sid
+            )
+        ).scalar_one_or_none()

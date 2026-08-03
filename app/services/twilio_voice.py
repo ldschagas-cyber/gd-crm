@@ -11,7 +11,7 @@ número→tenant.
 import re
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import event, select
 from sqlalchemy.orm import Session
 from twilio.jwt.access_token import AccessToken
 from twilio.jwt.access_token.grants import VoiceGrant
@@ -86,24 +86,30 @@ def resolve_caller(db: Session, tenant_id: UUID, numero: str) -> dict:
     return {"label": None, "contact_id": None, "company_id": None}
 
 
-def build_outbound_twiml(to_number: str, status_callback_url: str) -> str:
+def build_outbound_twiml(to_number: str, status_callback_url: str, recording_status_callback_url: str) -> str:
     """`statusCallback` fica no <Dial> (não no <Number>): assim o `CallSid`
     recebido em /twilio/status é o da chamada original (a mesma salva em
     record_call_started), igual já acontece em build_inbound_twiml. Com o
     callback no <Number>, o CallSid é o da perna de saída (outro SID) e o
-    status nunca batia com a Call já criada."""
+    status nunca batia com a Call já criada. Mesmo cuidado vale pro
+    recording_status_callback — mantido no <Dial> por consistência, ainda que
+    a Recording carregue o próprio CallSid como referência."""
     response = VoiceResponse()
     dial = Dial(
         caller_id=settings.TWILIO_PHONE_NUMBER,
         status_callback=status_callback_url,
         status_callback_event="completed", status_callback_method="POST",
+        record="record-from-answer",
+        recording_status_callback=recording_status_callback_url,
+        recording_status_callback_event="completed",
+        recording_status_callback_method="POST",
     )
     dial.append(Number(to_number))
     response.append(dial)
     return str(response)
 
 
-def build_inbound_twiml(identities: list[str], status_callback_url: str) -> str:
+def build_inbound_twiml(identities: list[str], status_callback_url: str, recording_status_callback_url: str) -> str:
     response = VoiceResponse()
     if not identities:
         response.append(Say(language="pt-BR", text="No momento não há ninguém disponível para atender. Tente novamente mais tarde."))
@@ -111,6 +117,10 @@ def build_inbound_twiml(identities: list[str], status_callback_url: str) -> str:
     dial = Dial(
         timeout=20, status_callback=status_callback_url,
         status_callback_event="completed", status_callback_method="POST",
+        record="record-from-answer",
+        recording_status_callback=recording_status_callback_url,
+        recording_status_callback_event="completed",
+        recording_status_callback_method="POST",
     )
     for identity in identities:
         dial.append(Client(identity))
@@ -165,4 +175,25 @@ def record_call_status(db: Session, call_sid: str, status: str, duracao_segundos
             deal_id=call.deal_id, contact_id=call.contact_id,
             meta={"call_sid": call_sid, "direcao": call.direcao, "duracao_segundos": duracao_segundos, "status": status},
         )
+    return call
+
+
+def record_recording_completed(db: Session, call_sid: str, recording_sid: str, recording_url: str) -> Call | None:
+    """Dispara a transcrição (AssemblyAI) assim que o Twilio confirma que a
+    gravação da ligação terminou (RecordingStatus == completed). A tarefa Celery
+    só é agendada depois do commit da transação atual — mesmo raciocínio de
+    app/services/company_ai.py:schedule_resumo_regeneration, já que o worker
+    roda numa conexão separada e não enxergaria o `recording_sid` gravado aqui
+    antes do commit acontecer."""
+    call = CallRepository(db).get_by_sid_any_tenant(call_sid)
+    if call is None:
+        return None
+    call.recording_sid = recording_sid
+    db.flush()
+
+    def _fire(_session):
+        from app.workers.tasks import transcribe_call_recording_task
+        transcribe_call_recording_task.delay(str(call.id), recording_url)
+
+    event.listen(db, "after_commit", _fire, once=True)
     return call

@@ -94,6 +94,15 @@ class Settings(BaseSettings):
     TWILIO_TENANT_ID: str | None = None
     TWILIO_VOICE_WEBHOOK_BASE_URL: str | None = None
 
+    # Transcrição de ligações (AssemblyAI) — gravação fica só transitória: baixada,
+    # transcrita e apagada (do disco local e do lado do Twilio) depois que a
+    # transcrição é confirmada; só o texto é retido na timeline.
+    ASSEMBLYAI_API_KEY: str | None = None
+    ASSEMBLYAI_BASE_URL: str = "https://api.assemblyai.com"
+    # Header/valor conferidos no webhook de conclusão (defesa em profundidade — a
+    # AssemblyAI não assina o payload como o Twilio faz). Se vazio, a checagem é pulada.
+    ASSEMBLYAI_WEBHOOK_SECRET: str | None = None
+
 
 @lru_cache
 def get_settings() -> Settings:

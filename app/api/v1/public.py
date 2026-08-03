@@ -19,9 +19,11 @@ from app.schemas.form import FormSubmissionRead, PublicFormSubmit
 from app.schemas.site_visit import PublicTrackEvent
 from app.services.form import FormService
 from app.services.site_visit import SiteVisitService
+from app.services.assemblyai_transcription import handle_transcript_completed
 from app.services.twilio_voice import (
     active_client_identities, build_inbound_twiml, build_outbound_twiml,
-    is_configured, record_call_started, record_call_status, resolve_caller, validate_signature,
+    is_configured, record_call_started, record_call_status, record_recording_completed,
+    resolve_caller, validate_signature,
 )
 
 router = APIRouter(prefix="/public", tags=["Público (sem autenticação)"])
@@ -71,6 +73,11 @@ def _status_callback_url() -> str:
     return f"{base}{settings.API_V1_PREFIX}/public/twilio/status"
 
 
+def _recording_status_callback_url() -> str:
+    base = (settings.TWILIO_VOICE_WEBHOOK_BASE_URL or "").rstrip("/")
+    return f"{base}{settings.API_V1_PREFIX}/public/twilio/recording-status"
+
+
 @router.post("/twilio/voice", include_in_schema=False)
 async def twilio_voice(request: Request, db: Session = Depends(get_db)):
     """Voice Request URL do TwiML App — chamada de SAÍDA disparada pelo
@@ -102,7 +109,7 @@ async def twilio_voice(request: Request, db: Session = Depends(get_db)):
         contact_id=_uuid_or_none(form.get("ContactId")), company_id=_uuid_or_none(form.get("CompanyId")),
         deal_id=_uuid_or_none(form.get("DealId")),
     )
-    twiml = build_outbound_twiml(to_number, _status_callback_url())
+    twiml = build_outbound_twiml(to_number, _status_callback_url(), _recording_status_callback_url())
     return Response(content=twiml, media_type="application/xml")
 
 
@@ -114,7 +121,10 @@ async def twilio_inbound_voice(request: Request, db: Session = Depends(get_db)):
     simplificação do MVP, ver app/services/twilio_voice.py)."""
     form = await _twilio_form(request)
     if not settings.TWILIO_TENANT_ID:
-        return Response(content=build_inbound_twiml([], _status_callback_url()), media_type="application/xml")
+        return Response(
+            content=build_inbound_twiml([], _status_callback_url(), _recording_status_callback_url()),
+            media_type="application/xml",
+        )
 
     tenant_id = UUID(settings.TWILIO_TENANT_ID)
     set_current_tenant(tenant_id)
@@ -127,7 +137,7 @@ async def twilio_inbound_voice(request: Request, db: Session = Depends(get_db)):
         contact_id=caller["contact_id"], company_id=caller["company_id"],
     )
     identities = active_client_identities(db, tenant_id)
-    twiml = build_inbound_twiml(identities, _status_callback_url())
+    twiml = build_inbound_twiml(identities, _status_callback_url(), _recording_status_callback_url())
     return Response(content=twiml, media_type="application/xml")
 
 
@@ -149,4 +159,33 @@ async def twilio_status_callback(request: Request, db: Session = Depends(get_db)
         db, call_sid=form.get("CallSid", ""), status=call_status,
         duracao_segundos=int(duration) if duration and duration.isdigit() else None,
     )
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/twilio/recording-status", include_in_schema=False)
+async def twilio_recording_status(request: Request, db: Session = Depends(get_db)):
+    """recordingStatusCallback do <Dial> — dispara a transcrição (AssemblyAI)
+    quando a gravação da ligação termina. Ignora estados intermediários
+    (in-progress/absent) e só age em `completed`."""
+    form = await _twilio_form(request)
+    if form.get("RecordingStatus") != "completed":
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    record_recording_completed(
+        db, call_sid=form.get("CallSid", ""),
+        recording_sid=form.get("RecordingSid", ""),
+        recording_url=form.get("RecordingUrl", ""),
+    )
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/assemblyai/transcript-webhook", include_in_schema=False)
+async def assemblyai_transcript_webhook(request: Request, db: Session = Depends(get_db)):
+    """Webhook de conclusão da transcrição — a AssemblyAI não assina o payload
+    como o Twilio faz, então a defesa aqui é um header de segredo compartilhado
+    (opcional, ver ASSEMBLYAI_WEBHOOK_SECRET) em vez de validação de assinatura."""
+    if settings.ASSEMBLYAI_WEBHOOK_SECRET:
+        if request.headers.get("X-Webhook-Secret") != settings.ASSEMBLYAI_WEBHOOK_SECRET:
+            raise HTTPException(status.HTTP_403_FORBIDDEN, "Segredo de webhook inválido.")
+    body = await request.json()
+    handle_transcript_completed(db, transcript_id=body.get("transcript_id", ""), status=body.get("status", ""))
     return Response(status_code=status.HTTP_204_NO_CONTENT)

@@ -20,3 +20,10 @@ class CallRepository(BaseRepository[Call]):
         return self.db.execute(
             select(Call).where(Call.call_sid == call_sid)
         ).scalar_one_or_none()
+
+    def get_by_assemblyai_transcript_id_any_tenant(self, transcript_id: str) -> Call | None:
+        """Sem filtro de tenant — usado no webhook de transcrição da AssemblyAI, que só
+        recebe o transcript_id (nenhum tenant/JWT no contexto ainda)."""
+        return self.db.execute(
+            select(Call).where(Call.assemblyai_transcript_id == transcript_id)
+        ).scalar_one_or_none()
