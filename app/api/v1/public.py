@@ -147,16 +147,18 @@ async def twilio_status_callback(request: Request, db: Session = Depends(get_db)
     /twilio/voice ou /twilio/inbound-voice (busca sem tenant no contexto
     ainda, resolvido a partir da própria Call por `call_sid`).
 
-    É o statusCallback do <Dial>, não de uma Call isolada: os campos com
-    status/duração reais da perna discada vêm como DialCallStatus/
-    DialCallDuration -- CallStatus/CallDuration (mantidos como fallback)
-    descrevem a chamada original, que costuma ainda estar "in-progress"
-    neste ponto."""
+    É o statusCallback do <Number>/<Client> (nó discado dentro do <Dial>, não
+    do <Dial> em si — esse atributo não existe ali, ver build_outbound_twiml/
+    build_inbound_twiml), então o `CallSid` do POST é o da perna discada, não
+    o da chamada original salva em record_call_started. `ParentCallSid` é o
+    campo que o Twilio preenche com o CallSid certo nesse caso — usado
+    preferencialmente, com CallSid como fallback só por precaução."""
     form = await _twilio_form(request)
-    call_status = form.get("DialCallStatus") or form.get("CallStatus", "")
-    duration = form.get("DialCallDuration") or form.get("CallDuration")
+    call_sid = form.get("ParentCallSid") or form.get("CallSid", "")
+    call_status = form.get("CallStatus", "")
+    duration = form.get("CallDuration")
     record_call_status(
-        db, call_sid=form.get("CallSid", ""), status=call_status,
+        db, call_sid=call_sid, status=call_status,
         duracao_segundos=int(duration) if duration and duration.isdigit() else None,
     )
     return Response(status_code=status.HTTP_204_NO_CONTENT)

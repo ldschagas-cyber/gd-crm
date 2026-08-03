@@ -87,24 +87,28 @@ def resolve_caller(db: Session, tenant_id: UUID, numero: str) -> dict:
 
 
 def build_outbound_twiml(to_number: str, status_callback_url: str, recording_status_callback_url: str) -> str:
-    """`statusCallback` fica no <Dial> (não no <Number>): assim o `CallSid`
-    recebido em /twilio/status é o da chamada original (a mesma salva em
-    record_call_started), igual já acontece em build_inbound_twiml. Com o
-    callback no <Number>, o CallSid é o da perna de saída (outro SID) e o
-    status nunca batia com a Call já criada. Mesmo cuidado vale pro
-    recording_status_callback — mantido no <Dial> por consistência, ainda que
-    a Recording carregue o próprio CallSid como referência."""
+    """`statusCallback`/`statusCallbackEvent` NÃO existem como atributo do
+    <Dial> — só de <Number>/<Client> (confirmado na doc do Twilio). Uma versão
+    anterior deste código colocava no <Dial> achando que assim o `CallSid`
+    recebido em /twilio/status bateria com a chamada original; na prática o
+    Twilio simplesmente ignora o atributo ali (sem erro) e o callback nunca
+    dispara. O jeito certo: atributo no <Number>, e o /twilio/status lê
+    `ParentCallSid` (não `CallSid`) do POST — é o campo que o Twilio preenche
+    com o CallSid da chamada original quando o callback é do nó discado.
+    `record`/`recordingStatusCallback` continuam no <Dial> — esses sim são
+    atributos válidos ali."""
     response = VoiceResponse()
     dial = Dial(
         caller_id=settings.TWILIO_PHONE_NUMBER,
-        status_callback=status_callback_url,
-        status_callback_event="completed", status_callback_method="POST",
         record="record-from-answer",
         recording_status_callback=recording_status_callback_url,
         recording_status_callback_event="completed",
         recording_status_callback_method="POST",
     )
-    dial.append(Number(to_number))
+    dial.append(Number(
+        to_number, status_callback=status_callback_url,
+        status_callback_event="completed", status_callback_method="POST",
+    ))
     response.append(dial)
     return str(response)
 
@@ -115,15 +119,17 @@ def build_inbound_twiml(identities: list[str], status_callback_url: str, recordi
         response.append(Say(language="pt-BR", text="No momento não há ninguém disponível para atender. Tente novamente mais tarde."))
         return str(response)
     dial = Dial(
-        timeout=20, status_callback=status_callback_url,
-        status_callback_event="completed", status_callback_method="POST",
+        timeout=20,
         record="record-from-answer",
         recording_status_callback=recording_status_callback_url,
         recording_status_callback_event="completed",
         recording_status_callback_method="POST",
     )
     for identity in identities:
-        dial.append(Client(identity))
+        dial.append(Client(
+            identity, status_callback=status_callback_url,
+            status_callback_event="completed", status_callback_method="POST",
+        ))
     response.append(dial)
     response.append(Say(language="pt-BR", text="Não foi possível atender sua ligação agora. Tente novamente mais tarde."))
     return str(response)
