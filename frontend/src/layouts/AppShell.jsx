@@ -36,7 +36,6 @@ const NAV_GROUPS = [
     label: 'Automação',
     items: [
       { to: '/sequencias', label: 'Sequências', icon: IconSequence },
-      { to: '/cadencias', label: 'Cadências', icon: IconCadence },
       { to: '/workflows', label: 'Workflows', icon: IconWorkflow },
       { to: '/modelos-email', label: 'Modelos de e-mail', icon: IconEmailTemplate },
       { to: '/snippets', label: 'Snippets', icon: IconSnippet },
@@ -53,6 +52,7 @@ export default function AppShell() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const tenantQuery = useQuery({ queryKey: ['tenant'], queryFn: getTenant, staleTime: Infinity })
   const tenantNome = tenantQuery.data?.nome_fantasia || tenantQuery.data?.razao_social
@@ -65,7 +65,8 @@ export default function AppShell() {
   return (
     <SoftphoneProvider>
     <div className="shell">
-      <aside className="sidebar">
+      {sidebarOpen && <div className="sidebar-scrim" onClick={() => setSidebarOpen(false)} />}
+      <aside className={`sidebar${sidebarOpen ? ' open' : ''}`}>
         <div className="sb-brand">
           <div className="monogram">GD</div>
           <div>
@@ -84,6 +85,7 @@ export default function AppShell() {
                   to={item.to}
                   end={item.end}
                   className={({ isActive }) => `sb-item${isActive ? ' active' : ''}`}
+                  onClick={() => setSidebarOpen(false)}
                 >
                   <item.icon />
                   {item.label}
@@ -96,6 +98,10 @@ export default function AppShell() {
 
       <div className="main-col">
         <header className="global-topbar">
+          <button className="sidebar-toggle" onClick={() => setSidebarOpen((v) => !v)} aria-label="Abrir menu">
+            <IconMenu />
+          </button>
+
           <div className="tenant-pill" title="Empresa definida no login. Para trocar, saia e entre novamente.">
             <IconBuilding />
             <span>{tenantNome ?? '—'}</span>
@@ -145,6 +151,13 @@ export default function AppShell() {
   )
 }
 
+function IconMenu() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <path d="M3 5.5h14M3 10h14M3 14.5h14" strokeLinecap="round" />
+    </svg>
+  )
+}
 function IconBuilding() {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
@@ -212,14 +225,6 @@ function IconSequence() {
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
       <path d="M4 4h5.5l1.5 2h5v10H4z" />
       <path d="M8 9h4M8 12h6" />
-    </svg>
-  )
-}
-function IconCadence() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
-      <rect x="2.5" y="4" width="15" height="12" rx="1.8" />
-      <path d="M3 5l7 5.5L17 5" />
     </svg>
   )
 }

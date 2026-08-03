@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createWorkflow, deleteWorkflow, listWorkflowLogs, listWorkflows, updateWorkflow } from '../api/workflows'
 import { listEmailTemplates } from '../api/emailTemplates'
 import { listPipelines } from '../api/pipelines'
+import { listSequences } from '../api/sequences'
 import { TIPO_LABEL as TIPO_TAREFA_LABEL } from '../components/TaskTypeIcon'
 import '../styles/dataTable.css'
 import './WorkflowsPage.css'
@@ -28,7 +29,8 @@ const GATILHO_CAMPOS = {
 const OPERADORES = ['igual a', 'diferente de', 'contém', 'maior que', 'menor que']
 const TIPO_ACAO_LABEL = {
   criar_tarefa: 'Criar tarefa', enviar_email: 'Enviar e-mail', alterar_pipeline: 'Alterar etapa',
-  notificar_usuario: 'Notificar usuário', executar_enriquecimento: 'Executar enriquecimento (IA)',
+  notificar_usuario: 'Notificar usuário', inscrever_em_sequencia: 'Inscrever em Sequência',
+  executar_enriquecimento: 'Executar enriquecimento (IA)',
 }
 const DESTINATARIOS = ['Responsável pelo registro', 'Gestor comercial', 'Administrador']
 const RESULTADO_LABEL = { sucesso: '✓', erro: '✕' }
@@ -38,6 +40,7 @@ function defaultParams(tipo) {
   if (tipo === 'enviar_email') return { template_id: '', dias_apos: 0 }
   if (tipo === 'alterar_pipeline') return { stage_id: '' }
   if (tipo === 'notificar_usuario') return { destinatario: DESTINATARIOS[0], mensagem: '' }
+  if (tipo === 'inscrever_em_sequencia') return { sequence_id: '' }
   return {}
 }
 
@@ -177,6 +180,8 @@ function WorkflowDrawer({ workflow, onClose, onSubmit, submitting, error }) {
   const pipelinesQuery = useQuery({ queryKey: ['pipelines', 'for-workflow'], queryFn: () => listPipelines({ size: 50 }) })
   const pipelines = pipelinesQuery.data?.items ?? []
   const stageOptions = pipelines.flatMap((p) => p.stages.map((s) => ({ id: s.id, label: `${p.nome} / ${s.nome}` })))
+  const sequencesQuery = useQuery({ queryKey: ['sequences', 'for-workflow'], queryFn: () => listSequences({ size: 100 }) })
+  const sequences = sequencesQuery.data?.items ?? []
 
   const logsQuery = useQuery({
     queryKey: ['workflows', workflow?.id, 'logs'],
@@ -307,7 +312,7 @@ function WorkflowDrawer({ workflow, onClose, onSubmit, submitting, error }) {
                     <button type="button" className="icon-btn danger" title="Remover ação" onClick={() => removeAction(idx)}>✕</button>
                   </div>
                   <ActionParams tipo={a.tipo_acao} parametros={a.parametros} templates={templates} stageOptions={stageOptions}
-                                onChange={(campo, valor) => updateActionParam(idx, campo, valor)} />
+                                sequences={sequences} onChange={(campo, valor) => updateActionParam(idx, campo, valor)} />
                 </div>
               ))}
             </div>
@@ -355,7 +360,7 @@ function WorkflowDrawer({ workflow, onClose, onSubmit, submitting, error }) {
   )
 }
 
-function ActionParams({ tipo, parametros, templates, stageOptions, onChange }) {
+function ActionParams({ tipo, parametros, templates, stageOptions, sequences, onChange }) {
   if (tipo === 'criar_tarefa') {
     return (
       <div className="action-params">
@@ -382,6 +387,18 @@ function ActionParams({ tipo, parametros, templates, stageOptions, onChange }) {
           </select>
           <input type="number" min="0" value={parametros.dias_apos ?? 0} onChange={(e) => onChange('dias_apos', Number(e.target.value) || 0)} placeholder="dias após" />
         </div>
+        <span className="f-hint">Enviado na hora, se houver contato com e-mail e integração conectada. "Dias após" só vale se cair para tarefa manual.</span>
+      </div>
+    )
+  }
+  if (tipo === 'inscrever_em_sequencia') {
+    return (
+      <div className="action-params">
+        <select value={parametros.sequence_id ?? ''} onChange={(e) => onChange('sequence_id', e.target.value)}>
+          <option value="" disabled>Selecione uma sequência</option>
+          {sequences.map((s) => <option key={s.id} value={s.id}>{s.nome}</option>)}
+        </select>
+        <span className="f-hint">As etapas e o tempo de cada passo seguem o que estiver configurado na Sequência escolhida.</span>
       </div>
     )
   }

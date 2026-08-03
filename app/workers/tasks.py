@@ -10,7 +10,6 @@ from sqlalchemy import select
 from app.core.celery_app import celery_app
 from app.core.context import set_current_tenant, set_current_user
 from app.core.database import SessionLocal
-from app.models.cadence import Cadence, CadenceEnrollment
 from app.models.call import Call
 from app.models.company import Company
 from app.models.contact import Contact
@@ -235,10 +234,9 @@ SEQUENCE_STEP_LABEL = {
 
 
 def _resolve_responsavel(db, enrollment, owner) -> UUID:
-    """Responsável da tarefa gerada: dono do negócio > dono da empresa > quem criou a sequência/cadência.
+    """Responsável da tarefa gerada: dono do negócio > dono da empresa > quem criou a sequência.
 
-    `enrollment` é um SequenceEnrollment ou CadenceEnrollment e `owner` a Sequence/Cadence
-    correspondente — ambos os pares têm o mesmo formato (company_id/deal_id, created_by).
+    `enrollment` é um SequenceEnrollment e `owner` a Sequence correspondente.
     """
     if enrollment.deal_id:
         deal = db.get(Deal, enrollment.deal_id)
@@ -339,101 +337,6 @@ def process_due_sequence_steps():
     return {"tarefas_criadas": total_criadas}
 
 
-def _titulo_email_cadence(db, cadence: Cadence, step) -> str:
-    template = db.get(EmailTemplate, step.template_id)
-    nome_template = template.nome if template else "(modelo removido)"
-    return f"E-mail — {cadence.nome}: {nome_template}"
-
-
-def _process_tenant_cadence_enrollments(tenant_id: UUID) -> int:
-    """Processa no máximo 1 e-mail por inscrição a cada rodada — diferente de Sequências,
-    uma cadência de e-mail não deve "compensar" dias parados disparando vários e-mails de
-    uma vez no mesmo dia (ruim para quem recebe); ela simplesmente atrasa a cadência inteira.
-
-    Envio real via Microsoft Graph (`sequence_dispatch.send_step_email`) quando o
-    responsável tem a conta Microsoft 365 conectada e há um contato com e-mail
-    resolvível; caso contrário, cai para o comportamento antigo — cria uma Task
-    (tipo=email) para o responsável enviar manualmente pelo modelo indicado.
-    """
-    set_current_tenant(tenant_id)
-    db = SessionLocal()
-    criadas = 0
-    try:
-        hoje = date.today()
-        enrollments = db.execute(
-            select(CadenceEnrollment)
-            .join(Cadence, Cadence.id == CadenceEnrollment.cadence_id)
-            .where(
-                CadenceEnrollment.tenant_id == tenant_id,
-                CadenceEnrollment.status == "ativa",
-                Cadence.ativo.is_(True),
-            )
-        ).scalars().all()
-        for enrollment in enrollments:
-            cadence = enrollment.cadence
-            steps = sorted(cadence.steps, key=lambda s: s.ordem)
-            responsavel_id = _resolve_responsavel(db, enrollment, cadence)
-            contact = resolve_contact(db, enrollment.contact_id, enrollment.deal_id)
-
-            if (
-                cadence.pausar_em_resposta and enrollment.step_atual > 0
-                and contact and contact.email
-                and has_active_email_integration(db, responsavel_id)
-                and has_replied(db, responsavel_id, contact.email, enrollment.atualizado_em)
-            ):
-                enrollment.status = "pausada"
-                enrollment.pausado_motivo = "resposta_recebida"
-                continue
-
-            dias_desde_ultimo = (datetime.now(timezone.utc) - enrollment.atualizado_em).days
-            if enrollment.step_atual < len(steps) and steps[enrollment.step_atual].dias_espera <= dias_desde_ultimo:
-                step = steps[enrollment.step_atual]
-                enviado = False
-                template = db.get(EmailTemplate, step.template_id)
-                company_id = resolve_company_id(db, enrollment.company_id, enrollment.deal_id, contact)
-                if template and contact and contact.email and company_id:
-                    assunto, corpo = render_template(
-                        template, contact, db.get(Company, company_id), db.get(User, responsavel_id),
-                    )
-                    enviado = send_step_email(db, responsavel_id, contact, assunto, corpo)
-                    if enviado:
-                        log_email_sent(db, tenant_id, company_id, contact.id, enrollment.deal_id, assunto, responsavel_id)
-                if not enviado:
-                    db.add(Task(
-                        tenant_id=tenant_id, titulo=_titulo_email_cadence(db, cadence, step), tipo="email",
-                        responsavel_id=responsavel_id,
-                        company_id=enrollment.company_id, contact_id=enrollment.contact_id, deal_id=enrollment.deal_id,
-                        data=hoje,
-                    ))
-                enrollment.step_atual += 1
-                criadas += 1
-            if enrollment.step_atual >= len(steps):
-                if cadence.criar_followup:
-                    db.add(Task(
-                        tenant_id=tenant_id, titulo=cadence.followup_titulo or f"Follow-up — {cadence.nome}",
-                        tipo="followup", responsavel_id=responsavel_id,
-                        company_id=enrollment.company_id, contact_id=enrollment.contact_id, deal_id=enrollment.deal_id,
-                        data=hoje,
-                    ))
-                enrollment.status = "concluida"
-        db.commit()
-    finally:
-        db.close()
-    return criadas
-
-
-@celery_app.task(name="app.workers.tasks.process_due_cadence_steps")
-def process_due_cadence_steps():
-    """Varredura diária (Celery Beat) de cadence_enrollments ativos (RF011, §7.6)."""
-    db = SessionLocal()
-    try:
-        tenant_ids = [t.id for t in db.execute(select(Tenant)).scalars().all()]
-    finally:
-        db.close()
-    total_criadas = sum(_process_tenant_cadence_enrollments(tenant_id) for tenant_id in tenant_ids)
-    return {"tarefas_criadas": total_criadas}
-
-
 def _condicoes_satisfeitas(condicoes: list[dict] | None, payload: dict) -> bool:
     for c in condicoes or []:
         valor_evento = payload.get(c["campo"])
@@ -470,6 +373,16 @@ def _entidade_fk_kwargs(payload: dict, entidade_ref: UUID) -> dict:
         company_id = payload.get("_company_id")
         return {"deal_id": entidade_ref, "company_id": UUID(company_id) if company_id else None}
     return {}
+
+
+def _resolve_workflow_entidades(payload: dict, entidade_ref: UUID) -> tuple[UUID | None, UUID | None, UUID | None]:
+    """Mapeia o UUID genérico do evento pros 3 FKs (company/contact/deal) conforme quem disparou."""
+    tipo = payload.get("_entidade_tipo")
+    company_id_raw = entidade_ref if tipo == "company" else payload.get("_company_id")
+    company_id = UUID(str(company_id_raw)) if company_id_raw else None
+    contact_id = entidade_ref if tipo == "contact" else None
+    deal_id = entidade_ref if tipo == "deal" else None
+    return company_id, contact_id, deal_id
 
 
 def _resolve_workflow_destinatario(db, tenant_id: UUID, destinatario: str | None, entidade_ref: UUID, payload: dict) -> UUID:
@@ -522,13 +435,26 @@ def _execute_workflow_action(db, workflow: Workflow, action, entidade_ref: UUID,
         template_id = p.get("template_id")
         template = db.get(EmailTemplate, UUID(template_id)) if template_id else None
         resp = _resolve_workflow_destinatario(db, tenant_id, "Responsável pelo registro", entidade_ref, payload)
+        company_id, contact_id, deal_id = _resolve_workflow_entidades(payload, entidade_ref)
+        contact = resolve_contact(db, contact_id, deal_id)
+        company_id = resolve_company_id(db, company_id, deal_id, contact)
+        enviado = False
+        if template and contact and contact.email and company_id:
+            assunto, corpo = render_template(template, contact, db.get(Company, company_id), db.get(User, resp))
+            enviado = send_step_email(db, resp, contact, assunto, corpo)
+            if enviado:
+                log_email_sent(db, tenant_id, company_id, contact.id, deal_id, assunto, resp)
+        if enviado:
+            return "E-mail enviado automaticamente"
+        # Fallback (comportamento antigo): sem contato com e-mail, modelo, ou integração
+        # conectada, vira tarefa manual — igual ao que Sequência/Cadência já fazem.
         titulo = f"E-mail — {workflow.nome}" + (f": {template.nome}" if template else "")
         db.add(Task(
             tenant_id=tenant_id, titulo=titulo, tipo="email", responsavel_id=resp,
             data=date.today() + timedelta(days=int(p.get("dias_apos", 0) or 0)),
             **_entidade_fk_kwargs(payload, entidade_ref),
         ))
-        return "E-mail agendado (sem envio automático configurado — vira tarefa)"
+        return "Sem contato/integração disponível — criada tarefa manual"
 
     if action.tipo_acao == "alterar_pipeline":
         stage_id = p.get("stage_id")
@@ -555,6 +481,29 @@ def _execute_workflow_action(db, workflow: Workflow, action, entidade_ref: UUID,
             **_entidade_fk_kwargs(payload, entidade_ref),
         ))
         return "Usuário notificado (sem canal de notificação real — vira tarefa)"
+
+    if action.tipo_acao == "inscrever_em_sequencia":
+        sequence_id = p.get("sequence_id")
+        sequence = db.get(Sequence, UUID(sequence_id)) if sequence_id else None
+        if sequence is None or not sequence.ativo:
+            return "Sequência não configurada ou inativa — ação ignorada"
+        company_id, contact_id, deal_id = _resolve_workflow_entidades(payload, entidade_ref)
+        ja_inscrito = db.execute(
+            select(SequenceEnrollment).where(
+                SequenceEnrollment.sequence_id == sequence.id,
+                SequenceEnrollment.status == "ativa",
+                SequenceEnrollment.company_id == company_id,
+                SequenceEnrollment.contact_id == contact_id,
+                SequenceEnrollment.deal_id == deal_id,
+            )
+        ).scalars().first()
+        if ja_inscrito:
+            return "Já inscrito nesta sequência — ação ignorada"
+        db.add(SequenceEnrollment(
+            tenant_id=tenant_id, sequence_id=sequence.id,
+            company_id=company_id, contact_id=contact_id, deal_id=deal_id,
+        ))
+        return f"Inscrito na sequência \"{sequence.nome}\""
 
     if action.tipo_acao == "executar_enriquecimento":
         raise RuntimeError("Ação 'Executar enriquecimento' depende do módulo de IA (Fase 3), ainda não implementado")

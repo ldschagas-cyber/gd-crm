@@ -26,9 +26,5 @@ celery_app.conf.update(
             "task": "app.workers.tasks.process_due_sequence_steps",
             "schedule": crontab(hour=6, minute=0),
         },
-        "process-due-cadence-steps": {
-            "task": "app.workers.tasks.process_due_cadence_steps",
-            "schedule": crontab(hour=6, minute=15),
-        },
     },
 )

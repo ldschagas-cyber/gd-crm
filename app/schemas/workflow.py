@@ -7,7 +7,10 @@ from pydantic import BaseModel, Field, model_validator
 from app.schemas.common import ORMModel
 
 GATILHOS = {"empresa_criada", "contato_criado", "negocio_criado", "mudanca_etapa", "resposta_recebida"}
-TIPOS_ACAO = {"criar_tarefa", "enviar_email", "alterar_pipeline", "notificar_usuario", "executar_enriquecimento"}
+TIPOS_ACAO = {
+    "criar_tarefa", "enviar_email", "alterar_pipeline", "notificar_usuario",
+    "executar_enriquecimento", "inscrever_em_sequencia",
+}
 
 
 class WorkflowCondition(BaseModel):

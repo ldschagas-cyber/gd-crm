@@ -7,7 +7,6 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.context import get_current_tenant
-from app.models.cadence import Cadence, CadenceEnrollment
 from app.models.company import Company, CompanyStatus
 from app.models.deal import Deal, DealStatus
 from app.models.pipeline import Pipeline, PipelineStage
@@ -156,13 +155,7 @@ class DashboardService:
             .where(Sequence.tenant_id == t, Sequence.ativo.is_(True))
             .group_by(Sequence.id, Sequence.nome, SequenceEnrollment.status)
         ).all()
-        cad_rows = self.db.execute(
-            select(Cadence.id, Cadence.nome, CadenceEnrollment.status, func.count())
-            .join(CadenceEnrollment, CadenceEnrollment.cadence_id == Cadence.id)
-            .where(Cadence.tenant_id == t, Cadence.ativo.is_(True))
-            .group_by(Cadence.id, Cadence.nome, CadenceEnrollment.status)
-        ).all()
-        return self._pivot_execution(seq_rows, "sequence") + self._pivot_execution(cad_rows, "cadence")
+        return self._pivot_execution(seq_rows, "sequence")
 
     @staticmethod
     def _pivot_execution(rows, tipo: str) -> list[SequenceExecutionBreakdown]:

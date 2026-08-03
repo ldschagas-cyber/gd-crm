@@ -212,19 +212,19 @@ function SlaBreachCard({ items }) {
   )
 }
 
-const EXEC_LABEL = { sequence: 'Sequência', cadence: 'Cadência' }
+const EXEC_LABEL = { sequence: 'Sequência' }
 
 function SequenceExecutionCard({ items }) {
   return (
     <div className="card">
       <div className="card-head">
         <div>
-          <h3>Execução de sequências &amp; cadências</h3>
+          <h3>Execução de sequências</h3>
           <p>Como os processos automatizados estão performando</p>
         </div>
       </div>
       {items.length === 0 ? (
-        <p className="state-msg" style={{ padding: '0 18px 18px' }}>Nenhuma sequência ou cadência ativa com inscrições.</p>
+        <p className="state-msg" style={{ padding: '0 18px 18px' }}>Nenhuma sequência ativa com inscrições.</p>
       ) : (
         <div className="exec-list">
           {items.map((it) => (

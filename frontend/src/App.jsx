@@ -13,7 +13,6 @@ import NegociosPage from './pages/NegociosPage.jsx'
 import DealDetailPage from './pages/DealDetailPage.jsx'
 import TarefasPage from './pages/TarefasPage.jsx'
 import SequenciasPage from './pages/SequenciasPage.jsx'
-import CadenciasPage from './pages/CadenciasPage.jsx'
 import WorkflowsPage from './pages/WorkflowsPage.jsx'
 import ModelosEmailPage from './pages/ModelosEmailPage.jsx'
 import SnippetsPage from './pages/SnippetsPage.jsx'
@@ -50,7 +49,6 @@ export default function App() {
         <Route path="/pipeline" element={<PipelinesPage />} />
         <Route path="/tarefas" element={<TarefasPage />} />
         <Route path="/sequencias" element={<SequenciasPage />} />
-        <Route path="/cadencias" element={<CadenciasPage />} />
         <Route path="/workflows" element={<WorkflowsPage />} />
         <Route path="/modelos-email" element={<ModelosEmailPage />} />
         <Route path="/snippets" element={<SnippetsPage />} />
