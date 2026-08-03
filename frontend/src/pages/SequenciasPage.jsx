@@ -14,6 +14,10 @@ function emptyStep(lastDia) {
   return { dia_offset: lastDia + 3, tipo: 'ligacao', template_id: null, instrucoes: '' }
 }
 
+function usaTemplate(tipo) {
+  return tipo === 'email' || tipo === 'email_manual'
+}
+
 function IconInfo() {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
@@ -194,8 +198,8 @@ function SequenceDrawer({ sequence, onClose, onSubmit, submitting, error }) {
       nome: nome.trim(), ativo, pausar_em_resposta: pausarResposta,
       steps: steps.map((s) => ({
         dia_offset: Number(s.dia_offset) || 0, tipo: s.tipo,
-        template_id: s.tipo === 'email' ? (s.template_id || null) : null,
-        instrucoes: s.tipo === 'email' ? null : (s.instrucoes?.trim() || null),
+        template_id: usaTemplate(s.tipo) ? (s.template_id || null) : null,
+        instrucoes: usaTemplate(s.tipo) ? null : (s.instrucoes?.trim() || null),
       })),
     })
   }
@@ -259,9 +263,9 @@ function SequenceDrawer({ sequence, onClose, onSubmit, submitting, error }) {
                     <button type="button" className="icon-btn danger step-del" title="Remover etapa" onClick={() => removeStep(idx)}>✕</button>
                   </div>
                   <div className="step-detail">
-                    {step.tipo === 'email' ? (
+                    {usaTemplate(step.tipo) ? (
                       <select value={step.template_id ?? ''} onChange={(e) => updateStep(idx, { template_id: e.target.value || null })}>
-                        <option value="">Sem modelo (rascunho manual)</option>
+                        <option value="">{step.tipo === 'email' ? 'Sem modelo (rascunho manual)' : 'Sem modelo (só o lembrete)'}</option>
                         {templates.map((t) => <option key={t.id} value={t.id}>{t.nome}</option>)}
                       </select>
                     ) : (

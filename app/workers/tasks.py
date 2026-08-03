@@ -228,7 +228,7 @@ def import_lead_prospects_task(job_id: str, tenant_id: str, user_id: str, conten
 
 
 SEQUENCE_STEP_LABEL = {
-    "ligacao": "Ligação", "email": "E-mail", "whatsapp": "WhatsApp",
+    "ligacao": "Ligação", "email": "E-mail", "email_manual": "E-mail (manual)", "whatsapp": "WhatsApp",
     "linkedin_conexao": "LinkedIn (conexão)", "linkedin_mensagem": "LinkedIn (mensagem)", "followup": "Follow-up",
 }
 

@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, model_validator
 
 from app.schemas.common import ORMModel
 
-TIPOS_STEP = {"ligacao", "email", "whatsapp", "linkedin_conexao", "linkedin_mensagem", "followup"}
+TIPOS_STEP = {"ligacao", "email", "email_manual", "whatsapp", "linkedin_conexao", "linkedin_mensagem", "followup"}
 
 
 class SequenceStepIn(BaseModel):

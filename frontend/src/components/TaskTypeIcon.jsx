@@ -3,6 +3,7 @@
 export const TIPO_LABEL = {
   ligacao: 'Ligação',
   email: 'E-mail',
+  email_manual: 'E-mail (manual)',
   whatsapp: 'WhatsApp',
   reuniao: 'Reunião',
   linkedin_conexao: 'LinkedIn (conexão)',
@@ -22,6 +23,15 @@ function Envelope() {
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
       <rect x="2.5" y="4" width="15" height="12" rx="1.8" />
       <path d="M3 5l7 5.5L17 5" />
+    </svg>
+  )
+}
+function EnvelopeManual() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <rect x="1.8" y="3.5" width="12" height="9.6" rx="1.5" />
+      <path d="M2.4 4.4l5.4 4.3L13.2 4.4" />
+      <path d="M12.6 17.1l.8-3 5-5a1.1 1.1 0 011.5 1.5l-5 5-3 .8z" strokeLinejoin="round" strokeLinecap="round" />
     </svg>
   )
 }
@@ -68,6 +78,7 @@ function Checklist() {
 const ICONS = {
   ligacao: Phone,
   email: Envelope,
+  email_manual: EnvelopeManual,
   whatsapp: Whatsapp,
   reuniao: Calendar,
   linkedin_conexao: LinkedinConnect,
