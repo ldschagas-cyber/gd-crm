@@ -24,6 +24,8 @@ class TaskUpdate(BaseModel):
     titulo: str | None = None
     tipo: TaskType | None = None
     responsavel_id: UUID | None = None
+    company_id: UUID | None = None
+    contact_id: UUID | None = None
     data: date | None = None
     hora: time | None = None
     prioridade: TaskPriority | None = None
