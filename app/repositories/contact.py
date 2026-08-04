@@ -1,4 +1,6 @@
 """Repositório de contatos."""
+from uuid import UUID
+
 from sqlalchemy import or_, select
 
 from app.models.contact import Contact
@@ -7,6 +9,11 @@ from app.repositories.base import BaseRepository
 
 class ContactRepository(BaseRepository[Contact]):
     model = Contact
+
+    def get_by_company_and_email(self, company_id: UUID, email: str) -> Contact | None:
+        return self.db.execute(
+            self._base_query().where(Contact.company_id == company_id, Contact.email == email)
+        ).scalar_one_or_none()
 
     def search_filter(self, termo: str):
         like = f"%{termo}%"

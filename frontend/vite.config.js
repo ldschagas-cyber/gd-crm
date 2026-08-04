@@ -39,4 +39,9 @@ export default defineConfig({
       interval: 300,
     },
   },
+  preview: {
+    // permite acessar o preview via hostname do túnel (trycloudflare/loca.lt),
+    // que muda a cada execução — só usado neste teste local, nunca em produção
+    allowedHosts: true,
+  },
 })
