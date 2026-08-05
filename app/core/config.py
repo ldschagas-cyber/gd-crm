@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     # Aplicação
-    APP_NAME: str = "CRM GD Conecta"
+    APP_NAME: str = "Argos"
     API_V1_PREFIX: str = "/api/v1"
     DEBUG: bool = False
 

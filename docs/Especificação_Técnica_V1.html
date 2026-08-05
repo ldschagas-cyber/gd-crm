@@ -1,4 +1,4 @@
-<title>Especificação Técnica — CRM GD Conecta v1.0</title>
+<title>Especificação Técnica — Argos v1.0</title>
 <style>
   :root {
     --font-display: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
@@ -208,7 +208,7 @@
     </div>
     <nav class="toc" aria-label="Sumário">
       <ul>
-<li><a href="#especificacao-tecnica-crm-gd-conecta">Especificação Técnica — CRM GD Conecta</a><ul>
+<li><a href="#especificacao-tecnica-crm-gd-conecta">Especificação Técnica — Argos</a><ul>
 <li><a href="#0-sumario-executivo-analise-de-viabilidade">0. Sumário Executivo — Análise de Viabilidade</a><ul>
 <li><a href="#01-estado-atual-as-is">0.1 Estado atual (as-is)</a></li>
 <li><a href="#02-gaps-identificados-para-priorizacao">0.2 Gaps identificados (para priorização)</a></li>
@@ -336,7 +336,7 @@
 
   <main class="doc-main">
     <div class="doc-content">
-<h1 id="especificacao-tecnica-crm-gd-conecta">Especificação Técnica — CRM GD Conecta</h1>
+<h1 id="especificacao-tecnica-crm-gd-conecta">Especificação Técnica — Argos</h1>
 <p><strong>Versão:</strong> 1.0 · <strong>Base:</strong> Documento de Requisitos "CRM GD Conecta — Versão 1.0" · <strong>Autor:</strong> Arquitetura (assistida por IA) · <strong>Escopo:</strong> análise de viabilidade + especificação técnica para desenvolvimento. Nenhum requisito de negócio foi alterado; onde a especificação técnica precisa de uma decisão que o documento funcional não define, isso é sinalizado explicitamente como <strong>"a validar com o PO"</strong>.</p>
 <blockquote>
 <p><strong>Nota metodológica:</strong> o repositório <code>C:\gdconecta\crm</code> já contém um backend funcional (não é greenfield). Esta especificação documenta o que <strong>já existe</strong> (para não ser redesenhado sem motivo) e projeta o que <strong>falta construir</strong> para atender integralmente ao documento de requisitos. Diretório ainda não é um repositório Git — recomenda-se <code>git init</code> antes de iniciar qualquer nova frente de trabalho.</p>
@@ -2119,7 +2119,7 @@
 <h2 id="9-modulos-e-decisoes-adicionados-apos-a-especificacao-inicial-2026-07-27">9. Módulos e Decisões Adicionados Após a Especificação Inicial (2026-07-27)</h2>
 <p>Uma rodada de prototipagem de frontend (13 protótipos interativos, todos aprovados pelo usuário) revelou requisitos e decisões de produto que <strong>não estavam</strong> no documento funcional original nem nas seções 1–8 acima. Esta seção é a fonte de verdade para esses itens; onde ela contradiz uma seção anterior (ex.: Gmail/Outlook → Microsoft 365), <strong>esta seção prevalece</strong>.</p>
 <h3 id="90-decisao-fundamental-uso-interno-nao-saas-comercializavel">9.0 Decisão fundamental: uso interno, não SaaS comercializável</h3>
-<p>O GD CRM é para <strong>uso interno da própria GD Conecta</strong> — não será comercializado/revendido a princípio. Isso não muda a arquitetura (multi-tenant + RLS continuam corretos e não devem ser removidos, é o padrão certo independentemente de revenda), mas muda a priorização:</p>
+<p>O Argos é para <strong>uso interno da própria GD Conecta</strong> — não será comercializado/revendido a princípio. Isso não muda a arquitetura (multi-tenant + RLS continuam corretos e não devem ser removidos, é o padrão certo independentemente de revenda), mas muda a priorização:</p>
 <ul>
 <li>O item "SaaS multiempresa self-service" da Fase 3 (onboarding automático de novos tenants) fica <strong>fora de escopo por ora</strong> — GD Conecta é, na prática, o único tenant relevante no curto/médio prazo.</li>
 <li>Não implementar cobrança/revenda de minutos de chamada, planos pagos para outros tenants, ou onboarding self-service <strong>sem pedido explícito</strong> do usuário.</li>
@@ -2275,7 +2275,7 @@
 </tbody>
 </table>
 <h4 id="hubspot">HubSpot</h4>
-<p>O fluxo antigo ("ao enriquecer, integra com o HubSpot") <strong>não existe mais</strong> — confirmado pelo usuário em 2026-07-27 ("não teremos a HubSpot mais"). O CRM GD Conecta (Negócios/Pipeline, e futuramente Cadências) é o único destino depois de "pronto para cadência". Não adicionar campos <code>hubspot_url</code>/<code>hubspot_company_id</code>.</p>
+<p>O fluxo antigo ("ao enriquecer, integra com o HubSpot") <strong>não existe mais</strong> — confirmado pelo usuário em 2026-07-27 ("não teremos a HubSpot mais"). O Argos (Negócios/Pipeline, e futuramente Cadências) é o único destino depois de "pronto para cadência". Não adicionar campos <code>hubspot_url</code>/<code>hubspot_company_id</code>.</p>
 <h3 id="92-preferencias-pessoais-e-integracoes-microsoft-365">9.2 Preferências pessoais e integrações (Microsoft 365)</h3>
 <p>Diferente de <code>/configuracoes</code> (dados do tenant, admin-only), <strong>Preferências</strong> é por usuário — qualquer perfil configura a própria conta. A GD Conecta usa <strong>Microsoft 365/Outlook</strong> corporativamente — por isso a integração de e-mail/calendário é <strong>Microsoft Graph API</strong> (OAuth por usuário), não IMAP/SMTP genérico nem Gmail.</p>
 <h4 id="tabela-user_integrations-nova">Tabela <code>user_integrations</code> (nova)</h4>

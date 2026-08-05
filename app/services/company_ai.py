@@ -26,7 +26,7 @@ from app.services.tenant import TenantService
 # tarefa concluída ou edição de cadastro não mudam o que um vendedor precisa saber.
 TIPOS_RELEVANTES = {"ligacao", "email", "reuniao", "nota", "pipeline"}
 
-RESUMO_SYSTEM_PROMPT = """Você é o copiloto de vendas do CRM da GD Conecta (governança e cotação de frete
+RESUMO_SYSTEM_PROMPT = """Você é o copiloto de vendas do Argos, o CRM da GD Conecta (governança e cotação de frete
 rodoviário para embarcadores industriais no Brasil). Com os dados abaixo sobre uma conta, escreva um resumo
 executivo curto pra um vendedor que vai ligar ou se reunir com essa empresa agora e precisa saber tudo em
 poucos segundos.
@@ -41,7 +41,7 @@ Responda SOMENTE com um objeto JSON (sem texto antes ou depois, sem markdown), c
     o próximo passo natural do estágio atual.
 }"""
 
-ASK_SYSTEM_PROMPT = """Você é o copiloto de vendas do CRM da GD Conecta. Responda a pergunta do vendedor
+ASK_SYSTEM_PROMPT = """Você é o copiloto de vendas do Argos, o CRM da GD Conecta. Responda a pergunta do vendedor
 SOMENTE com base nos dados da empresa fornecidos abaixo — nunca invente informação que não está neles. Se os
 dados não permitirem responder, diga isso explicitamente.
 

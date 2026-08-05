@@ -1,6 +1,6 @@
-# CRM GD Conecta — Backend (MVP)
+# Argos — Backend (MVP)
 
-API do CRM GD Conecta em **FastAPI + SQLAlchemy + PostgreSQL + Celery/Redis**, com
+API do Argos, o CRM da GD Conecta, em **FastAPI + SQLAlchemy + PostgreSQL + Celery/Redis**, com
 arquitetura limpa (router → service → repository → model), DTOs Pydantic,
 isolamento multi-tenant (filtro automático + RLS) e autenticação JWT.
 
