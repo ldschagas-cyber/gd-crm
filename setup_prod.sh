@@ -11,7 +11,7 @@ set -euo pipefail
 
 echo
 echo "========================================"
-echo " GD CRM — Setup Produção"
+echo " Argos — Setup Produção"
 echo "========================================"
 echo
 

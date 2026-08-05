@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# GD CRM — Atualizar produção
+# Argos — Atualizar produção
 # ============================================================
 # Uso (no servidor, dentro da pasta do projeto):
 #   ./atualizar_producao.sh
@@ -18,7 +18,7 @@ COMPOSE="docker compose -f docker-compose.prod.yml --env-file .env.prod"
 
 echo
 echo "========================================"
-echo " GD CRM — Atualizando"
+echo " Argos — Atualizando"
 echo "========================================"
 echo
 
