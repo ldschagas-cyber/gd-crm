@@ -1,0 +1,40 @@
+/* Inteligência Comercial — usado no drawer da Pesquisa de Leads (geração) e no
+   card "Inteligência Comercial" do Dossiê Comercial da Empresa (só leitura,
+   copiado da Pesquisa de Leads na promoção). Mesma linguagem visual nos dois
+   lugares de propósito: é o mesmo dado, só muda o contexto onde é mostrado. */
+.intel-section { display: flex; flex-direction: column; gap: 9px; margin-bottom: 16px; }
+.intel-section:last-child { margin-bottom: 0; }
+.intel-section-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.intel-section-head h3, .intel-section-head h4 { margin: 0; font-size: 12.5px; font-weight: 700; color: var(--ink); }
+
+.source-tag { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 700; padding: 2px 9px; border-radius: 100px; text-transform: uppercase; letter-spacing: .03em; white-space: nowrap; }
+.source-tag.pesquisa { background: rgba(0, 119, 168, 0.12); color: var(--azul); }
+.source-tag.benchmark { background: rgba(12, 163, 12, 0.12); color: var(--good); }
+.source-tag.arg { background: rgba(201, 168, 76, 0.18); color: var(--amber); }
+
+.fact-list { display: flex; flex-direction: column; gap: 8px; background: var(--paper); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+.fact-row { font-size: 12.8px; color: var(--ink); }
+.fact-row b { font-weight: 650; }
+.fact-row.unk { color: var(--ink-faint); font-style: italic; }
+
+.bench-box { background: var(--paper); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.mapping-row { font-size: 12px; color: var(--ink-dim); }
+.mapping-row .seg-out { font-weight: 650; color: var(--ink); }
+.bench-compare { display: flex; align-items: center; justify-content: space-between; padding-top: 6px; border-top: 1px dashed var(--border); }
+.bench-compare .lbl { font-size: 12px; color: var(--ink-dim); }
+.bench-compare .val { font-family: var(--font-mono); font-weight: 700; font-size: 16px; color: var(--ink); }
+.bench-note { font-size: 11px; color: var(--ink-faint); line-height: 1.5; }
+
+.arg-box { background: color-mix(in srgb, var(--amber) 7%, var(--card-bg)); border: 1px solid rgba(201, 168, 76, 0.35); border-radius: 10px; padding: 14px; }
+.arg-box p { margin: 0; font-size: 13px; color: var(--ink); line-height: 1.6; }
+
+/* estado gravado — banner no drawer (Pesquisa de Leads) */
+.intel-saved-banner { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600;
+  color: var(--success); background: color-mix(in srgb, var(--success) 10%, var(--card-bg));
+  border: 1px solid color-mix(in srgb, var(--success) 30%, transparent); border-radius: 8px; padding: 9px 12px; }
+.intel-saved-banner .t { color: var(--ink-faint); font-weight: 500; margin-left: auto; font-size: 11px; white-space: nowrap; }
+
+/* nota de proveniência — card do Dossiê (Empresa) */
+.intel-copied-meta { display: flex; align-items: flex-start; gap: 7px; font-size: 11px; color: var(--ink-faint);
+  margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); line-height: 1.5; }
+.intel-copied-meta b { color: var(--ink-dim); font-weight: 650; }

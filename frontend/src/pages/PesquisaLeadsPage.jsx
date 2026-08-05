@@ -3,11 +3,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../context/AuthContext.jsx'
 import {
   createLeadProspect, deleteLeadProspect, enrichLeadProspect, gerarInteligenciaComercial,
-  getLeadProspectImportJob, importLeadProspects, listLeadProspects, promoteLeadProspect, updateLeadProspect,
+  getLeadProspectImportJob, gravarInteligenciaComercial, importLeadProspects, listLeadProspects,
+  promoteLeadProspect, updateLeadProspect,
 } from '../api/leadProspects'
 import { getIcpScoringRules, updateIcpScoringRules } from '../api/tenant'
 import { listUsers } from '../api/users'
 import '../styles/dataTable.css'
+import '../styles/commercialIntel.css'
 import './PesquisaLeadsPage.css'
 import DesempenhoPesquisaTab from './DesempenhoPesquisaPage.jsx'
 
@@ -46,6 +48,15 @@ function initials(nome) {
   if (!nome) return '?'
   const parts = nome.trim().split(/\s+/)
   return (parts[0][0] + (parts[1]?.[0] ?? '')).toUpperCase()
+}
+function formatDateTime(iso) {
+  const d = new Date(iso)
+  const p = (n) => String(n).padStart(2, '0')
+  return `${p(d.getDate())}/${p(d.getMonth() + 1)} às ${p(d.getHours())}:${p(d.getMinutes())}`
+}
+function parseInteligenciaComercial(raw) {
+  if (!raw) return null
+  try { return JSON.parse(raw) } catch { return null }
 }
 function IconImport() {
   return (
@@ -97,6 +108,10 @@ function LeadsTab({ setTab }) {
   const promoteMutation = useMutation({ mutationFn: promoteLeadProspect, onSuccess: () => { setPromotingLead(null); invalidate() } })
   const enrichMutation = useMutation({ mutationFn: enrichLeadProspect })
   const intelMutation = useMutation({ mutationFn: gerarInteligenciaComercial })
+  const saveIntelMutation = useMutation({
+    mutationFn: ({ id, data }) => gravarInteligenciaComercial(id, data),
+    onSuccess: (updated) => { setIntelLead(updated); invalidate() },
+  })
   const applyEnrichMutation = useMutation({
     mutationFn: ({ id, data }) => updateLeadProspect(id, data),
     onSuccess: () => { setEnrichingLead(null); enrichMutation.reset(); invalidate() },
@@ -371,7 +386,9 @@ function LeadsTab({ setTab }) {
           isPending={intelMutation.isPending}
           error={intelMutation.error}
           onRetry={() => intelMutation.mutate(intelLead.id)}
-          onClose={() => { setIntelLead(null); intelMutation.reset() }}
+          onClose={() => { setIntelLead(null); intelMutation.reset(); saveIntelMutation.reset() }}
+          onSave={(data) => saveIntelMutation.mutate({ id: intelLead.id, data })}
+          saving={saveIntelMutation.isPending}
         />
       )}
     </>
@@ -437,8 +454,9 @@ function EnrichModal({ lead, result, isPending, error, applying, onRetry, onClos
   )
 }
 
-function CommercialIntelligenceModal({ lead, result, isPending, error, onRetry, onClose }) {
+function CommercialIntelligenceModal({ lead, result, isPending, error, onRetry, onClose, onSave, saving }) {
   const [copied, setCopied] = useState(false)
+  const savedRecord = parseInteligenciaComercial(lead.inteligencia_comercial)
 
   function copiarArgumento() {
     navigator.clipboard?.writeText(result.argumento)
@@ -457,6 +475,13 @@ function CommercialIntelligenceModal({ lead, result, isPending, error, onRetry, 
           <button className="drawer-close" onClick={onClose}>✕</button>
         </div>
         <div className="drawer-body">
+          {savedRecord && (
+            <div className="intel-saved-banner">
+              💾 Gravado no lead
+              <span className="t">{formatDateTime(savedRecord.gravado_em)}</span>
+            </div>
+          )}
+
           {isPending && <p className="state-msg">Pesquisando a empresa e consultando o Benchmark Logístico do Diagnóstico… isso pode levar de 5 a 15 segundos.</p>}
 
           {error && (
@@ -533,7 +558,12 @@ function CommercialIntelligenceModal({ lead, result, isPending, error, onRetry, 
         <div className="drawer-foot">
           <button className="btn-ghost" onClick={onClose}>Fechar</button>
           {result && (
-            <button className="btn-primary" onClick={copiarArgumento}>{copied ? 'Copiado!' : 'Copiar argumento'}</button>
+            <>
+              <button className="btn-ghost" onClick={copiarArgumento}>{copied ? 'Copiado!' : 'Copiar argumento'}</button>
+              <button className="btn-primary" disabled={saving} onClick={() => onSave(result)}>
+                {saving ? 'Gravando…' : (savedRecord ? '↻ Atualizar gravação' : '💾 Gravar no lead')}
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -586,7 +616,16 @@ function LeadRow({ lead, pesquisadorNome, selected, onToggleSelect, onEdit, onPr
       <td>
         <div className="row-actions" style={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
           {canEnrich && <button className="icon-btn" title="Enriquecer com IA" onClick={onEnrich}>✨</button>}
-          {canIntel && <button className="icon-btn" title="Inteligência Comercial" onClick={onIntel}>🧭</button>}
+          {canIntel && (
+            <button
+              className="icon-btn intel-btn"
+              title={lead.inteligencia_comercial ? 'Inteligência Comercial (já gravada)' : 'Inteligência Comercial'}
+              onClick={onIntel}
+            >
+              🧭
+              {lead.inteligencia_comercial && <span className="saved-dot" />}
+            </button>
+          )}
           {canPromote && <button className="icon-btn" title="Promover para Empresa" onClick={onPromote}>↑</button>}
           <button className="icon-btn" title="Editar" onClick={onEdit}>✎</button>
         </div>

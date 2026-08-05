@@ -42,3 +42,9 @@ class LeadProspect(Base, TenantMixin, TimestampMixin):
     promoted_company_id: Mapped[uuid.UUID | None] = mapped_column(
         PGUUID(as_uuid=True), ForeignKey("companies.id")
     )
+
+    # Inteligência Comercial (JSON de CommercialIntelligenceRecord: perfil + benchmark +
+    # argumento + gravado_em) — gravada manualmente pelo usuário a partir do resultado de
+    # POST .../inteligencia-comercial. Copiada como está para Company.inteligencia_comercial
+    # em promote() — ver app/services/lead_prospect.py.
+    inteligencia_comercial: Mapped[str | None] = mapped_column(Text)

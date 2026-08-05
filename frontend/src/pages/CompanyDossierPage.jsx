@@ -9,6 +9,7 @@ import { listTimeline } from '../api/timeline'
 import CompanyTabs from '../components/CompanyTabs.jsx'
 import { useSoftphone } from '../context/SoftphoneContext.jsx'
 import '../styles/detailPage.css'
+import '../styles/commercialIntel.css'
 import './CompanyDetailPage.css'
 import './CompanyDossierPage.css'
 
@@ -32,6 +33,18 @@ function tempoDecorrido(iso) {
 function tipoGlyph(tipo) {
   const map = { nota: '📝', ligacao: '📞', email: '✉️', reuniao: '📅', pipeline: '📈', tarefa: '✔️', cadastro: '●' }
   return map[tipo] ?? '●'
+}
+function formatDateTime(iso) {
+  const d = new Date(iso)
+  const p = (n) => String(n).padStart(2, '0')
+  return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} às ${p(d.getHours())}:${p(d.getMinutes())}`
+}
+function parseInteligenciaComercial(raw) {
+  if (!raw) return null
+  try { return JSON.parse(raw) } catch { return null }
+}
+function formatFreteKg(n) {
+  return `R$ ${Number(n ?? 0).toFixed(2).replace('.', ',')}`
 }
 
 function ManualField({ label, value, placeholder, onSave, saving }) {
@@ -104,6 +117,7 @@ export default function CompanyDossierPage() {
   const emails = (timelineQuery.data?.items ?? []).filter((e) => e.tipo === 'email').slice(0, 3)
   const reunioes = (timelineQuery.data?.items ?? []).filter((e) => e.tipo === 'reuniao').slice(0, 3)
   const contatoPrincipal = contactsQuery.data?.items?.[0]
+  const intel = parseInteligenciaComercial(company.inteligencia_comercial)
 
   const saveField = (field) => (value, done) => {
     dossierMutation.mutate({ [field]: value }, { onSuccess: done })
@@ -203,6 +217,59 @@ export default function CompanyDossierPage() {
               <div className="stat"><dt>Funcionários</dt><dd>{company.num_funcionarios?.toLocaleString('pt-BR') ?? '—'}</dd></div>
             </dl>
           </section>
+
+          {/* Inteligência Comercial — só existe se veio da Pesquisa de Leads (copiada na promoção) */}
+          {intel && (
+            <section className="card card-pad">
+              <div className="card-head">
+                <div><h3>Inteligência Comercial</h3><p>Perfil pesquisado + argumento — trazido da Pesquisa de Leads</p></div>
+                <span className="source-tag arg">✦ Síntese da IA</span>
+              </div>
+
+              <div className="intel-section">
+                <div className="intel-section-head"><h4>Perfil da empresa</h4><span className="source-tag pesquisa">🔍 Pesquisa web</span></div>
+                <div className="fact-list">
+                  {intel.perfil?.erp && <div className="fact-row">ERP identificado: <b>{intel.perfil.erp}</b></div>}
+                  {intel.perfil?.porte_estimado && <div className="fact-row">Porte estimado: <b>{intel.perfil.porte_estimado}</b></div>}
+                  {intel.perfil?.atuacao && <div className="fact-row">{intel.perfil.atuacao}</div>}
+                  {intel.perfil?.operacao_transporte && <div className="fact-row">{intel.perfil.operacao_transporte}</div>}
+                  {!intel.perfil?.erp && !intel.perfil?.porte_estimado && !intel.perfil?.atuacao && !intel.perfil?.operacao_transporte && (
+                    <div className="fact-row unk">A IA não encontrou dados públicos suficientes sobre esta empresa.</div>
+                  )}
+                </div>
+              </div>
+
+              <div className="intel-section">
+                <div className="intel-section-head"><h4>Benchmark Logístico</h4><span className="source-tag benchmark">📊 Referência — Diagnóstico</span></div>
+                {intel.benchmark?.disponivel ? (
+                  <div className="bench-box">
+                    <div className="mapping-row">
+                      Setor pesquisado <b>{intel.benchmark.segmento_pesquisado}</b> → classificado como{' '}
+                      <span className="seg-out">{intel.benchmark.segmento_diagnostico}</span> no Diagnóstico
+                    </div>
+                    <div className="bench-compare">
+                      <span className="lbl">Custo médio de referência do segmento</span>
+                      <span className="val">{formatFreteKg(intel.benchmark.frete_kg_medio)}/kg</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bench-box">
+                    <div className="bench-note">Sem referência de benchmark disponível ({intel.benchmark?.motivo_indisponivel ?? 'não informado'}).</div>
+                  </div>
+                )}
+              </div>
+
+              <div className="intel-section">
+                <div className="intel-section-head"><h4>Argumento comercial sugerido</h4></div>
+                <div className="arg-box"><p>{intel.argumento}</p></div>
+              </div>
+
+              <div className="intel-copied-meta">
+                ↳ Copiado automaticamente da Pesquisa de Leads ao promover, em <b>{formatDateTime(intel.gravado_em)}</b>.
+                Somente leitura aqui — para atualizar, gere e grave de novo na Pesquisa de Leads antes da próxima promoção.
+              </div>
+            </section>
+          )}
 
           {/* Stack operacional */}
           <section className="card card-pad">

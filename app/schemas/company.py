@@ -102,6 +102,9 @@ class CompanyRead(ORMModel):
     tms: str | None
     problemas_encontrados: str | None
     hipoteses: str | None
+    # JSON bruto de CommercialIntelligenceRecord — só chega aqui por cópia automática na
+    # promoção do LeadProspect (ver LeadProspectService.promote()); sem endpoint próprio.
+    inteligencia_comercial: str | None
 
 
 class IcpBreakdownItemRead(BaseModel):

@@ -67,3 +67,8 @@ class Company(Base, TenantMixin, TimestampMixin, SoftDeleteMixin):
     # Dossiê Comercial — descoberta, texto livre.
     problemas_encontrados: Mapped[str | None] = mapped_column(Text)
     hipoteses: Mapped[str | None] = mapped_column(Text)
+
+    # Dossiê Comercial — Inteligência Comercial (mesmo JSON de LeadProspect.inteligencia_comercial).
+    # Só chega aqui por cópia automática em LeadProspectService.promote(); não há endpoint de
+    # geração/gravação própria da Company — a geração acontece sempre no lead, antes de promover.
+    inteligencia_comercial: Mapped[str | None] = mapped_column(Text)

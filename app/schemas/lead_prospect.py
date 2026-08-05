@@ -62,6 +62,9 @@ class LeadProspectRead(BaseModel):
     pesquisado_por: UUID
     promoted_company_id: UUID | None
     created_at: datetime
+    # JSON bruto de CommercialIntelligenceRecord (perfil + benchmark + argumento + gravado_em),
+    # ou None se a Inteligência Comercial nunca foi gravada para este lead. O frontend faz o parse.
+    inteligencia_comercial: str | None
     # calculados a partir de tenants.config.icp_scoring_rules — nunca persistidos
     score_icp: int
     icp_fit: str
@@ -126,6 +129,14 @@ class CommercialIntelligenceResponse(BaseModel):
     perfil: CommercialIntelligencePerfil
     benchmark: CommercialIntelligenceBenchmark
     argumento: str
+
+
+class CommercialIntelligenceRecord(CommercialIntelligenceResponse):
+    """O mesmo resultado acima, mas gravado: é o formato serializado (via
+    model_dump_json) em LeadProspect.inteligencia_comercial e, por cópia na
+    promoção, em Company.inteligencia_comercial. `gravado_em` é definido pelo
+    servidor no momento do PATCH — nunca vem do cliente."""
+    gravado_em: datetime
 
 
 class PerformanceReportRow(BaseModel):
