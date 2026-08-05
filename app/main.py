@@ -15,7 +15,7 @@ Path(settings.UPLOAD_DIR, "avatars").mkdir(parents=True, exist_ok=True)
 app = FastAPI(
     title=settings.APP_NAME,
     version="1.0.0",
-    description="API do CRM GD Conecta — MVP",
+    description="API do Argos — MVP",
     openapi_url=f"{settings.API_V1_PREFIX}/openapi.json",
     docs_url="/docs",
     redoc_url="/redoc",

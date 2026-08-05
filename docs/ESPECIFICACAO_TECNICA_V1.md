@@ -1,4 +1,4 @@
-# Especificação Técnica — CRM GD Conecta
+# Especificação Técnica — Argos
 
 **Versão:** 1.0 · **Base:** Documento de Requisitos "CRM GD Conecta — Versão 1.0" · **Autor:** Arquitetura (assistida por IA) · **Escopo:** análise de viabilidade + especificação técnica para desenvolvimento. Nenhum requisito de negócio foi alterado; onde a especificação técnica precisa de uma decisão que o documento funcional não define, isso é sinalizado explicitamente como **"a validar com o PO"**.
 
@@ -653,7 +653,7 @@ Uma rodada de prototipagem de frontend (13 protótipos interativos, todos aprova
 
 ### 9.0 Decisão fundamental: uso interno, não SaaS comercializável
 
-O GD CRM é para **uso interno da própria GD Conecta** — não será comercializado/revendido a princípio. Isso não muda a arquitetura (multi-tenant + RLS continuam corretos e não devem ser removidos, é o padrão certo independentemente de revenda), mas muda a priorização:
+O Argos é para **uso interno da própria GD Conecta** — não será comercializado/revendido a princípio. Isso não muda a arquitetura (multi-tenant + RLS continuam corretos e não devem ser removidos, é o padrão certo independentemente de revenda), mas muda a priorização:
 
 - O item "SaaS multiempresa self-service" da Fase 3 (onboarding automático de novos tenants) fica **fora de escopo por ora** — GD Conecta é, na prática, o único tenant relevante no curto/médio prazo.
 - Não implementar cobrança/revenda de minutos de chamada, planos pagos para outros tenants, ou onboarding self-service **sem pedido explícito** do usuário.
@@ -724,7 +724,7 @@ Ação `POST /lead-prospects/{id}/promote`: cria um registro em `companies` (sta
 
 #### HubSpot
 
-O fluxo antigo ("ao enriquecer, integra com o HubSpot") **não existe mais** — confirmado pelo usuário em 2026-07-27 ("não teremos a HubSpot mais"). O CRM GD Conecta (Negócios/Pipeline, e futuramente Cadências) é o único destino depois de "pronto para cadência". Não adicionar campos `hubspot_url`/`hubspot_company_id`.
+O fluxo antigo ("ao enriquecer, integra com o HubSpot") **não existe mais** — confirmado pelo usuário em 2026-07-27 ("não teremos a HubSpot mais"). O Argos (Negócios/Pipeline, e futuramente Cadências) é o único destino depois de "pronto para cadência". Não adicionar campos `hubspot_url`/`hubspot_company_id`.
 
 ### 9.2 Preferências pessoais e integrações (Microsoft 365)
 

@@ -1,4 +1,4 @@
-# Deployment do CRM GD Conecta em Produção
+# Deployment do Argos em Produção
 
 ## 📋 Pré-requisitos
 
@@ -196,7 +196,7 @@ Veja `docs/ESPECIFICACAO_TECNICA_V1.md` para detalhes sobre cada endpoint e inte
 
 | Variável | Descrição | Exemplo |
 |----------|-----------|---------|
-| `APP_NAME` | Nome da app | `CRM GD Conecta` |
+| `APP_NAME` | Nome da app | `Argos` |
 | `DEBUG` | Modo debug (NUNCA true em prod) | `false` |
 | `ENVIRONMENT` | Ambiente | `production` |
 | `DATABASE_URL` | PostgreSQL connection string | `postgresql+psycopg://crm:senha@db:5432/crm` |

@@ -1,4 +1,4 @@
-# ✅ Checklist de QA Manual — CRM GD Conecta
+# ✅ Checklist de QA Manual — Argos
 
 Não há suite de testes de UI automatizada (só `tests/test_commercial_intelligence.py`
 no backend). Este roteiro cobre teste manual de ponta a ponta. Rode sempre **como

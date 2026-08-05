@@ -1,12 +1,12 @@
 # ============================================================
-# GD CRM — Ambiente de PRODUÇÃO
+# Argos — Ambiente de PRODUÇÃO
 # ============================================================
 # Uso:
 #   cp .env.example .env.prod  # ajuste SECRET_KEY, senhas
 #   docker network create gd_conecta_network   # uma única vez no servidor
 #   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
 #
-# Este servidor hospeda mais de uma aplicação (GD Diagnóstico + GD CRM).
+# Este servidor hospeda mais de uma aplicação (GD Diagnóstico + Argos).
 # Por isso o frontend NÃO expõe as portas 80/443 diretamente — quem faz
 # isso é o Nginx central em /opt (nginx-proxy.conf), que termina o TLS
 # para os dois domínios e encaminha para cada app por dentro da rede

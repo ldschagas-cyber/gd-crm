@@ -9,9 +9,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon-32x32.png', 'apple-touch-icon.png'],
       manifest: {
-        name: 'GD Conecta CRM',
-        short_name: 'GD CRM',
-        description: 'CRM GD Conecta',
+        name: 'Argos',
+        short_name: 'Argos',
+        description: 'Argos — CRM da GD Conecta',
         lang: 'pt-BR',
         start_url: '/',
         display: 'standalone',

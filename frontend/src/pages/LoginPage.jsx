@@ -46,10 +46,10 @@ export default function LoginPage() {
       <aside className="brand" aria-hidden="false">
         <div className="brand-top">
           <div className="wordmark">
-            <div className="monogram">GD</div>
+            <div className="monogram">A</div>
             <div className="wordmark-text">
-              <strong>Conecta CRM</strong>
-              <span>Gestão comercial B2B</span>
+              <strong>Argos</strong>
+              <span>by GD Conecta</span>
             </div>
           </div>
 
@@ -63,7 +63,7 @@ export default function LoginPage() {
         </div>
 
         <div className="brand-bottom">
-          <span>GD Conecta &copy; 2026</span>
+          <span>Argos by GD Conecta &copy; 2026</span>
           <span className="env-pill">v0.1 · ambiente local</span>
         </div>
       </aside>
@@ -71,10 +71,10 @@ export default function LoginPage() {
       <main className="form-panel">
         <div className="form-card">
           <div className="form-mobile-brand">
-            <div className="monogram">GD</div>
+            <div className="monogram">A</div>
             <div>
-              <strong>Conecta CRM</strong>
-              <span>Gestão comercial B2B</span>
+              <strong>Argos</strong>
+              <span>by GD Conecta</span>
             </div>
           </div>
 
