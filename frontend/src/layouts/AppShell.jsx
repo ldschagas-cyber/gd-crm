@@ -68,9 +68,9 @@ export default function AppShell() {
       {sidebarOpen && <div className="sidebar-scrim" onClick={() => setSidebarOpen(false)} />}
       <aside className={`sidebar${sidebarOpen ? ' open' : ''}`}>
         <div className="sb-brand">
-          <div className="monogram">GD</div>
+          <div className="monogram">A</div>
           <div>
-            <strong>Conecta CRM</strong>
+            <strong>Argos</strong>
             <span>Gestão comercial</span>
           </div>
         </div>
