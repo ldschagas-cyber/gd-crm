@@ -207,6 +207,14 @@ Veja `docs/ESPECIFICACAO_TECNICA_V1.md` para detalhes sobre cada endpoint e inte
 | `MICROSOFT_TENANT_ID` | Azure AD Tenant ID | (seu valor) |
 | `MICROSOFT_REDIRECT_URI` | Callback OAuth2 | `https://seu-dominio.com.br/api/v1/me/integrations/callback` |
 
+## 🤖 Deploy automático (CI/CD)
+
+Existe um workflow do GitHub Actions (`.github/workflows/deploy.yml`) que
+roda `atualizar_producao.sh` no servidor via SSH a cada push na `main`,
+ou manualmente pela aba Actions. Setup dos secrets necessários em
+[`docs/CI_CD.md`](docs/CI_CD.md). Até esses secrets serem cadastrados, o
+deploy continua manual (seção anterior).
+
 ## ⚠️ Notas Importantes
 
 1. **Working tree**: O script `atualizar_producao.sh` verifica se há mudanças locais. Não edite arquivos no servidor manualmente — sempre commite e faça push para o Git.
