@@ -1,0 +1,64 @@
+name: Deploy em produção
+
+# Roda o ./atualizar_producao.sh no servidor de produção via SSH sempre
+# que a main é atualizada (merge de PR ou push direto), ou manualmente
+# via "Run workflow" na aba Actions.
+#
+# Requer os seguintes Secrets no repositório (Settings > Secrets and
+# variables > Actions > New repository secret) — ver docs/CI_CD.md:
+#   PROD_SSH_HOST     host/IP do servidor (ex.: crm.gdconecta.com.br)
+#   PROD_SSH_USER     usuário SSH com permissão de docker + git pull
+#   PROD_SSH_KEY      chave privada SSH (par dedicado ao deploy)
+#   PROD_DEPLOY_PATH  caminho do projeto no servidor (ex.: /opt/gdconecta/crm)
+#   PROD_SSH_PORT     porta SSH (opcional, default 22)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    steps:
+      - name: Validar secrets obrigatórios
+        run: |
+          missing=0
+          for var in PROD_SSH_HOST PROD_SSH_USER PROD_SSH_KEY PROD_DEPLOY_PATH; do
+            if [ -z "${!var:-}" ]; then
+              echo "::error::Secret $var não está configurado (Settings > Secrets and variables > Actions)."
+              missing=1
+            fi
+          done
+          exit $missing
+        env:
+          PROD_SSH_HOST: ${{ secrets.PROD_SSH_HOST }}
+          PROD_SSH_USER: ${{ secrets.PROD_SSH_USER }}
+          PROD_SSH_KEY: ${{ secrets.PROD_SSH_KEY }}
+          PROD_DEPLOY_PATH: ${{ secrets.PROD_DEPLOY_PATH }}
+
+      - name: Configurar chave SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.PROD_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "${{ secrets.PROD_SSH_PORT || '22' }}" -H "${{ secrets.PROD_SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Rodar atualizar_producao.sh no servidor
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+              -p "${{ secrets.PROD_SSH_PORT || '22' }}" \
+              -o StrictHostKeyChecking=yes \
+              -o BatchMode=yes \
+              "${{ secrets.PROD_SSH_USER }}@${{ secrets.PROD_SSH_HOST }}" \
+              "cd '${{ secrets.PROD_DEPLOY_PATH }}' && ./atualizar_producao.sh"
+
+      - name: Limpar chave SSH
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
