@@ -97,10 +97,12 @@ export default function LoginPage() {
 
         <div className="brand-bottom">
           <span>Argos by GD Conecta &copy; 2026</span>
-          <span className="env-pill">
-            <span className="env-dot" aria-hidden="true" />
-            v0.1 · ambiente local
-          </span>
+          {import.meta.env.DEV && (
+            <span className="env-pill">
+              <span className="env-dot" aria-hidden="true" />
+              v0.1 · ambiente local
+            </span>
+          )}
         </div>
       </aside>
 
