@@ -1,7 +1,7 @@
 """Tarefas Celery: importação assíncrona de empresas e contatos (Excel/CSV) e automações."""
 import base64
 import io
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timedelta
 from uuid import UUID
 
 import pandas as pd
@@ -28,9 +28,10 @@ from app.repositories.contact import ContactRepository
 from app.repositories.lead_prospect import LeadProspectRepository
 from app.repositories.user import UserRepository
 from app.services.sequence_dispatch import (
-    has_active_email_integration, has_replied, log_email_sent, render_template,
+    advance_due_steps, has_active_email_integration, has_replied, log_email_sent, render_template,
     resolve_company_id, resolve_contact, send_step_email,
 )
+from app.services.sequence_dispatch import _resolve_responsavel as resolve_sequence_responsavel
 
 COMPANY_REQUIRED = ["razao_social", "cnpj", "cidade", "uf"]
 CONTACT_REQUIRED = ["nome", "empresa", "email"]
@@ -220,44 +221,11 @@ def import_lead_prospects_task(job_id: str, tenant_id: str, user_id: str, conten
         db.close()
 
 
-SEQUENCE_STEP_LABEL = {
-    "ligacao": "Ligação", "email": "E-mail", "whatsapp": "WhatsApp",
-    "linkedin_conexao": "LinkedIn (conexão)", "linkedin_mensagem": "LinkedIn (mensagem)",
-    "tarefa_manual": "Tarefa", "followup": "Follow-up",
-}
-
-
-def _resolve_responsavel(db, enrollment, owner) -> UUID:
-    """Responsável da tarefa gerada: dono do negócio > dono da empresa > quem criou a sequência.
-
-    `enrollment` é um SequenceEnrollment e `owner` a Sequence correspondente.
-    """
-    if enrollment.deal_id:
-        deal = db.get(Deal, enrollment.deal_id)
-        if deal:
-            return deal.responsavel_id
-    if enrollment.company_id:
-        company = db.get(Company, enrollment.company_id)
-        if company and company.responsavel_id:
-            return company.responsavel_id
-    return owner.created_by
-
-
-def _titulo_para_step(db, sequence: Sequence, step) -> str:
-    base = SEQUENCE_STEP_LABEL.get(step.tipo, step.tipo)
-    if step.template_id:
-        template = db.get(EmailTemplate, step.template_id)
-        if template:
-            return f"{base} — {sequence.nome}: {template.nome}"
-    return f"{base} — {sequence.nome}"
-
-
 def _process_tenant_sequence_enrollments(tenant_id: UUID) -> int:
     set_current_tenant(tenant_id)
     db = SessionLocal()
     criadas = 0
     try:
-        hoje = date.today()
         enrollments = db.execute(
             select(SequenceEnrollment)
             .join(Sequence, Sequence.id == SequenceEnrollment.sequence_id)
@@ -269,46 +237,19 @@ def _process_tenant_sequence_enrollments(tenant_id: UUID) -> int:
         ).scalars().all()
         for enrollment in enrollments:
             sequence = enrollment.sequence
-            steps = sorted(sequence.steps, key=lambda s: s.ordem)
-            responsavel_id = _resolve_responsavel(db, enrollment, sequence)
             contact = resolve_contact(db, enrollment.contact_id, enrollment.deal_id)
 
-            if (
-                sequence.pausar_em_resposta and enrollment.step_atual > 0
-                and contact and contact.email
-                and has_active_email_integration(db, responsavel_id)
-                and has_replied(db, responsavel_id, contact.email, enrollment.atualizado_em)
-            ):
-                enrollment.status = "pausada"
-                enrollment.pausado_motivo = "resposta_recebida"
-                continue
+            if sequence.pausar_em_resposta and enrollment.step_atual > 0 and contact and contact.email:
+                responsavel_id = resolve_sequence_responsavel(db, enrollment, sequence)
+                if (
+                    has_active_email_integration(db, responsavel_id)
+                    and has_replied(db, responsavel_id, contact.email, enrollment.atualizado_em)
+                ):
+                    enrollment.status = "pausada"
+                    enrollment.pausado_motivo = "resposta_recebida"
+                    continue
 
-            dias_decorridos = (datetime.now(timezone.utc) - enrollment.iniciado_em).days
-            while enrollment.step_atual < len(steps) and steps[enrollment.step_atual].dia_offset <= dias_decorridos:
-                step = steps[enrollment.step_atual]
-                enviado = False
-                if step.tipo == "email" and step.template_id:
-                    template = db.get(EmailTemplate, step.template_id)
-                    company_id = resolve_company_id(db, enrollment.company_id, enrollment.deal_id, contact)
-                    if template and contact and contact.email and company_id:
-                        assunto, corpo = render_template(
-                            template, contact, db.get(Company, company_id), db.get(User, responsavel_id),
-                        )
-                        enviado = send_step_email(db, responsavel_id, contact, assunto, corpo)
-                        if enviado:
-                            log_email_sent(db, tenant_id, company_id, contact.id, enrollment.deal_id, assunto, responsavel_id)
-                if not enviado:
-                    db.add(Task(
-                        tenant_id=tenant_id, titulo=_titulo_para_step(db, sequence, step), tipo=step.tipo,
-                        descricao=step.instrucoes,
-                        responsavel_id=responsavel_id,
-                        company_id=enrollment.company_id, contact_id=enrollment.contact_id, deal_id=enrollment.deal_id,
-                        data=hoje,
-                    ))
-                enrollment.step_atual += 1
-                criadas += 1
-            if enrollment.step_atual >= len(steps):
-                enrollment.status = "concluida"
+            criadas += advance_due_steps(db, tenant_id, enrollment)
         db.commit()
     finally:
         db.close()
@@ -494,10 +435,16 @@ def _execute_workflow_action(db, workflow: Workflow, action, entidade_ref: UUID,
         ).scalars().first()
         if ja_inscrito:
             return "Já inscrito nesta sequência — ação ignorada"
-        db.add(SequenceEnrollment(
+        enrollment = SequenceEnrollment(
             tenant_id=tenant_id, sequence_id=sequence.id,
             company_id=company_id, contact_id=contact_id, deal_id=deal_id,
-        ))
+        )
+        db.add(enrollment)
+        db.flush()
+        db.refresh(enrollment)
+        # Etapa(s) com dia_offset <= 0 viram tarefa (ou e-mail) já aqui, em vez
+        # de esperar a próxima varredura diária do Celery Beat (6h).
+        advance_due_steps(db, tenant_id, enrollment)
         return f"Inscrito na sequência \"{sequence.nome}\""
 
     if action.tipo_acao == "executar_enriquecimento":

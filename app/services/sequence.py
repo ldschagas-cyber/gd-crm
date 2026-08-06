@@ -4,7 +4,7 @@ from uuid import UUID
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.core.context import get_current_user_id
+from app.core.context import get_current_tenant, get_current_user_id
 from app.core.exceptions import NotFoundError
 from app.models.company import Company
 from app.models.contact import Contact
@@ -13,6 +13,7 @@ from app.models.sequence import Sequence, SequenceEnrollment, SequenceStep
 from app.repositories.sequence import SequenceEnrollmentRepository, SequenceRepository
 from app.schemas.common import PageParams
 from app.schemas.sequence import SequenceCreate, SequenceEnrollmentCreate, SequenceStepIn, SequenceUpdate
+from app.services.sequence_dispatch import advance_due_steps
 
 
 class SequenceService:
@@ -120,4 +121,8 @@ class SequenceService:
             contact_id=data.contact_id, deal_id=data.deal_id,
         )
         enrollment = self.enroll_repo.add(enrollment)
+        # Etapa(s) com dia_offset <= 0 viram tarefa (ou e-mail) já na inscrição,
+        # em vez de esperar a próxima varredura diária do Celery Beat (6h).
+        advance_due_steps(self.db, get_current_tenant(), enrollment)
+        self.enroll_repo.save(enrollment)
         return self._resolve_alvo(enrollment)
