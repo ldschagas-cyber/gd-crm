@@ -10,6 +10,7 @@ from app.schemas.common import ORMModel
 
 class TaskCreate(BaseModel):
     titulo: str = Field(min_length=1, max_length=255)
+    descricao: str | None = None
     tipo: TaskType
     responsavel_id: UUID
     company_id: UUID | None = None
@@ -22,6 +23,7 @@ class TaskCreate(BaseModel):
 
 class TaskUpdate(BaseModel):
     titulo: str | None = None
+    descricao: str | None = None
     tipo: TaskType | None = None
     responsavel_id: UUID | None = None
     company_id: UUID | None = None
@@ -35,6 +37,7 @@ class TaskUpdate(BaseModel):
 class TaskRead(ORMModel):
     id: UUID
     titulo: str
+    descricao: str | None
     tipo: str
     responsavel_id: UUID
     company_id: UUID | None

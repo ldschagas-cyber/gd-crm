@@ -199,6 +199,7 @@ function TaskRow({ task, companiesById, usersById, onComplete, onEdit, onDelete 
       </button>
       <div className="task-body">
         <div className="task-title">{task.titulo}</div>
+        {task.descricao && <div className="task-descricao" title={task.descricao}>{task.descricao}</div>}
         <div className="task-meta-row">
           <span className="task-meta-item mono">{task.hora ? task.hora.slice(0, 5) : 'Dia todo'}</span>
           <span className="task-meta-item"><TaskTypeChip tipo={task.tipo} /></span>
@@ -221,6 +222,7 @@ function TaskRow({ task, companiesById, usersById, onComplete, onEdit, onDelete 
 function TaskModal({ task, companies, users, onClose, onSubmit, submitting, error }) {
   const [form, setForm] = useState({
     titulo: task?.titulo ?? '',
+    descricao: task?.descricao ?? '',
     tipo: task?.tipo ?? 'ligacao',
     prioridade: task?.prioridade ?? 'media',
     data: task?.data ?? new Date().toISOString().slice(0, 10),
@@ -245,6 +247,7 @@ function TaskModal({ task, companies, users, onClose, onSubmit, submitting, erro
     if (!form.titulo.trim() || !form.responsavel_id || !form.data) return
     onSubmit({
       titulo: form.titulo.trim(),
+      descricao: form.descricao.trim() || null,
       tipo: form.tipo,
       prioridade: form.prioridade,
       data: form.data,
@@ -267,6 +270,16 @@ function TaskModal({ task, companies, users, onClose, onSubmit, submitting, erro
             <div className="f-group">
               <label className="f-label">Título <span className="req">*</span></label>
               <input className="f-input" value={form.titulo} onChange={set('titulo')} placeholder="Ex.: Ligar para confirmar reunião" required />
+            </div>
+            <div className="f-group">
+              <label className="f-label">Descrição / roteiro <span className="opt">opcional</span></label>
+              <textarea
+                className="f-input"
+                rows={3}
+                value={form.descricao}
+                onChange={set('descricao')}
+                placeholder="Roteiro / instruções para quem for executar…"
+              />
             </div>
             <div className="f-row">
               <div className="f-group">

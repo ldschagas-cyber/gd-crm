@@ -300,6 +300,7 @@ def _process_tenant_sequence_enrollments(tenant_id: UUID) -> int:
                 if not enviado:
                     db.add(Task(
                         tenant_id=tenant_id, titulo=_titulo_para_step(db, sequence, step), tipo=step.tipo,
+                        descricao=step.instrucoes,
                         responsavel_id=responsavel_id,
                         company_id=enrollment.company_id, contact_id=enrollment.contact_id, deal_id=enrollment.deal_id,
                         data=hoje,

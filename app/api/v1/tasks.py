@@ -17,7 +17,7 @@ from app.services.task import TaskService
 
 router = APIRouter(prefix="/tasks", tags=["Tarefas"])
 
-EXPORT_COLUMNS = ["titulo", "tipo", "data", "hora", "prioridade", "status"]
+EXPORT_COLUMNS = ["titulo", "descricao", "tipo", "data", "hora", "prioridade", "status"]
 
 
 @router.get("", response_model=Page[TaskRead])
@@ -69,7 +69,7 @@ def export_tasks(
     writer.writerow(EXPORT_COLUMNS)
     for t in items:
         writer.writerow([
-            t.titulo, t.tipo, t.data.isoformat(), t.hora.isoformat() if t.hora else "",
+            t.titulo, t.descricao or "", t.tipo, t.data.isoformat(), t.hora.isoformat() if t.hora else "",
             t.prioridade, t.status,
         ])
     buffer.seek(0)

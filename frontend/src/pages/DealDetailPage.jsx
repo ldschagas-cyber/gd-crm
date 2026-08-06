@@ -323,6 +323,7 @@ export default function DealDetailPage() {
                     </button>
                     <div>
                       <div className="task-title">{t.titulo}</div>
+                      {t.descricao && <div className="task-desc" title={t.descricao}>{t.descricao}</div>}
                       <div className="task-meta">{new Date(`${t.data}T00:00:00`).toLocaleDateString('pt-BR')}{t.hora ? ` às ${t.hora}` : ''}</div>
                     </div>
                   </div>

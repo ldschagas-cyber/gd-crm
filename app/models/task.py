@@ -3,7 +3,7 @@ import enum
 import uuid
 from datetime import date, datetime, time
 
-from sqlalchemy import Date, DateTime, ForeignKey, String, Time
+from sqlalchemy import Date, DateTime, ForeignKey, String, Text, Time
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -38,6 +38,7 @@ class Task(Base, TenantMixin, TimestampMixin):
 
     id: Mapped[uuid.UUID] = uuid_pk()
     titulo: Mapped[str] = mapped_column(String(255), nullable=False)
+    descricao: Mapped[str | None] = mapped_column(Text)
     tipo: Mapped[str] = mapped_column(String(20), nullable=False)
     responsavel_id: Mapped[uuid.UUID] = mapped_column(
         PGUUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
