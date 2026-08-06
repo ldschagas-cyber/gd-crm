@@ -26,9 +26,9 @@ export function AuthProvider({ children }) {
       })
   }, [])
 
-  const login = useCallback(async (email, senha) => {
+  const login = useCallback(async (email, senha, remember = true) => {
     const tokens = await authApi.login(email, senha)
-    saveTokens(tokens)
+    saveTokens(tokens, remember)
     const data = await authApi.me()
     setUser(data)
     setStatus('authenticated')

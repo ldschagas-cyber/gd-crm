@@ -5,20 +5,41 @@ export const API_ORIGIN = BASE_URL.replace(/\/api\/v1\/?$/, '')
 
 const TOKENS_KEY = 'gdcrm.tokens'
 
+// "Manter conectado": marcado -> localStorage (sobrevive ao fechar o navegador);
+// desmarcado -> sessionStorage (some ao fechar a aba). loadTokens() olha os dois
+// pra funcionar em ambos os casos; saveTokens() sem `persist` explícito (usado no
+// refresh de token) mantém o par onde já estava, sem trocar de storage sozinho.
 export function loadTokens() {
   try {
-    const raw = localStorage.getItem(TOKENS_KEY)
+    const raw = localStorage.getItem(TOKENS_KEY) ?? sessionStorage.getItem(TOKENS_KEY)
     return raw ? JSON.parse(raw) : null
   } catch {
     return null
   }
 }
 
-export function saveTokens(tokens) {
-  if (tokens) {
-    localStorage.setItem(TOKENS_KEY, JSON.stringify(tokens))
-  } else {
-    localStorage.removeItem(TOKENS_KEY)
+function currentTokenStorage() {
+  try {
+    if (localStorage.getItem(TOKENS_KEY)) return localStorage
+  } catch {
+    // ignora — segue pro fallback
+  }
+  return sessionStorage
+}
+
+export function saveTokens(tokens, persist) {
+  try {
+    if (!tokens) {
+      localStorage.removeItem(TOKENS_KEY)
+      sessionStorage.removeItem(TOKENS_KEY)
+      return
+    }
+    const storage = persist === undefined ? currentTokenStorage() : (persist ? localStorage : sessionStorage)
+    storage.setItem(TOKENS_KEY, JSON.stringify(tokens))
+    const other = storage === localStorage ? sessionStorage : localStorage
+    other.removeItem(TOKENS_KEY)
+  } catch {
+    // storage indisponível (modo privado restrito etc.) — segue sem persistir
   }
 }
 
