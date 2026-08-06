@@ -59,3 +59,7 @@ export function gravarInteligenciaComercial(id, data) {
 export function getPerformanceReport(mes) {
   return api.get('/lead-prospects/performance-report', { params: { mes } }).then((res) => res.data)
 }
+
+export function getMetasProgress() {
+  return api.get('/lead-prospects/metas').then((res) => res.data)
+}

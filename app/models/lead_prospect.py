@@ -2,7 +2,7 @@
 import enum
 import uuid
 
-from sqlalchemy import ForeignKey, Numeric, String, Text
+from sqlalchemy import ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -18,6 +18,31 @@ class LeadStatus(str, enum.Enum):
     DESCARTADO = "descartado"
 
 
+class SegmentoLead(str, enum.Enum):
+    """Papel da empresa na cadeia logística — taxonomia fixa (antes era texto
+    livre de subcategoria). Distinto de `setor`, que é a taxonomia do Score ICP."""
+    INDUSTRIA = "Indústria"
+    DISTRIBUIDOR = "Distribuidor"
+    TRANSPORTADORA = "Transportadora"
+
+
+# Faixas de faturamento anual — estilo LinkedIn Sales Navigator. Fixas por design
+# (era numérico livre antes); não entram no Score ICP, só ajudam a qualificar
+# manualmente e a montar o argumento de Inteligência Comercial.
+FAIXAS_FATURAMENTO = [
+    "Até R$ 5 milhões",
+    "R$ 5–25 milhões",
+    "R$ 25–100 milhões",
+    "R$ 100–500 milhões",
+    "R$ 500 milhões – R$ 1 bilhão",
+    "Acima de R$ 1 bilhão",
+]
+
+# Origem da pesquisa — de onde veio o interesse nesta empresa-alvo. Lista fixa
+# pra dar filtro/relatório limpo; "Outro" cobre o resto.
+ORIGENS_LEAD = ["Feira", "Indicação", "Campanha", "Prospecção ativa", "LinkedIn", "Outro"]
+
+
 class LeadProspect(Base, TenantMixin, TimestampMixin):
     __tablename__ = "lead_prospects"
 
@@ -29,7 +54,8 @@ class LeadProspect(Base, TenantMixin, TimestampMixin):
     uf: Mapped[str | None] = mapped_column(String(2))
     regiao: Mapped[str | None] = mapped_column(String(20))
     faixa_funcionarios: Mapped[str | None] = mapped_column(String(50))
-    faturamento: Mapped[float | None] = mapped_column(Numeric(15, 2))
+    faixa_faturamento: Mapped[str | None] = mapped_column(String(60))
+    origem: Mapped[str | None] = mapped_column(String(80))
     site: Mapped[str | None] = mapped_column(String(255))
     telefone: Mapped[str | None] = mapped_column(String(20))
     linkedin: Mapped[str | None] = mapped_column(String(255))

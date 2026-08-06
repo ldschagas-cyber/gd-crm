@@ -1,6 +1,7 @@
 """Serviço de pesquisa de leads: cálculo de Score ICP/Fit/Gamificação/Bônus,
 CRUD e promoção para companies. Item 9.1 da especificação técnica."""
-from datetime import datetime, timezone
+from collections import Counter
+from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -13,7 +14,8 @@ from app.repositories.lead_prospect import LeadProspectRepository
 from app.repositories.user import UserRepository
 from app.schemas.lead_prospect import (
     CommercialIntelligenceRecord, CommercialIntelligenceResponse, IcpScoringRules, LeadProspectCreate,
-    LeadProspectPageParams, LeadProspectRead, LeadProspectUpdate, PerformanceReportResponse, PerformanceReportRow,
+    LeadProspectPageParams, LeadProspectRead, LeadProspectUpdate, MetaProgressResponse, MetaProgressRow,
+    PerformanceReportResponse, PerformanceReportRow,
 )
 from app.services.icp_scoring import DEFAULT_ICP_RULES, calcular_icp
 from app.services.tenant import TenantService
@@ -70,7 +72,7 @@ class LeadProspectService:
             id=lead.id, empresa=lead.empresa, cnpj=lead.cnpj, setor=lead.setor, segmento=lead.segmento, uf=lead.uf,
             regiao=lead.regiao,
             faixa_funcionarios=lead.faixa_funcionarios,
-            faturamento=float(lead.faturamento) if lead.faturamento is not None else None,
+            faixa_faturamento=lead.faixa_faturamento, origem=lead.origem,
             site=lead.site, telefone=lead.telefone, linkedin=lead.linkedin, dor_sugerida=lead.dor_sugerida,
             contato_sugerido=lead.contato_sugerido, status=lead.status, pesquisado_por=lead.pesquisado_por,
             promoted_company_id=lead.promoted_company_id, created_at=lead.created_at,
@@ -115,6 +117,8 @@ class LeadProspectService:
     def create(self, data: LeadProspectCreate) -> LeadProspectRead:
         payload = data.model_dump()
         payload["status"] = data.status.value
+        if data.segmento is not None:
+            payload["segmento"] = data.segmento.value
         lead = LeadProspect(**payload)
         lead = self.repo.add(lead)
         return self.to_read(lead)
@@ -124,6 +128,8 @@ class LeadProspectService:
         payload = data.model_dump(exclude_unset=True)
         if payload.get("status") is not None:
             payload["status"] = payload["status"].value
+        if payload.get("segmento") is not None:
+            payload["segmento"] = payload["segmento"].value
         for field, value in payload.items():
             setattr(lead, field, value)
         lead = self.repo.save(lead)
@@ -149,8 +155,10 @@ class LeadProspectService:
         company = Company(
             razao_social=lead.empresa, cnpj=lead.cnpj, segmento=lead.segmento, setor=lead.setor, uf=lead.uf,
             site=lead.site, telefone=lead.telefone, porte=lead.faixa_funcionarios,
-            faturamento_estimado=lead.faturamento,
-            status=CompanyStatus.LEAD.value, origem="Pesquisa de Leads",
+            # faixa_faturamento não é copiada: é uma faixa (texto), não um número, e
+            # Company.faturamento_estimado é Numeric — sem base pra converter uma faixa
+            # num valor exato sem inventar dado. Fica só como texto na Pesquisa de Leads.
+            status=CompanyStatus.LEAD.value, origem=lead.origem or "Pesquisa de Leads",
             inteligencia_comercial=lead.inteligencia_comercial,
         )
         company = CompanyRepository(self.db).add(company)
@@ -208,3 +216,36 @@ class LeadProspectService:
             ))
         rows.sort(key=lambda r: (-r.taxa_qualificacao, -r.promovidos))
         return PerformanceReportResponse(mes=mes, rows=rows)
+
+    # ---- metas de pesquisa (semanal/mensal, individual por usuário) -----------------
+    def metas_progress(self) -> MetaProgressResponse:
+        """Progresso sempre relativo a "agora" (semana e mês correntes) — independente
+        do mês escolhido no relatório de desempenho, que pode ser um mês passado."""
+        now = datetime.now(timezone.utc)
+        inicio_semana = (now - timedelta(days=now.weekday())).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+        inicio_mes = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+        leads_semana, _ = self.repo.list(LeadProspect.created_at >= inicio_semana, offset=0, limit=100_000)
+        leads_mes, _ = self.repo.list(LeadProspect.created_at >= inicio_mes, offset=0, limit=100_000)
+        contagem_semana = Counter(lead.pesquisado_por for lead in leads_semana)
+        contagem_mes = Counter(lead.pesquisado_por for lead in leads_mes)
+
+        users, _ = UserRepository(self.db).list(offset=0, limit=1000)
+        rows = []
+        for user in users:
+            pesquisas_semana = contagem_semana.get(user.id, 0)
+            pesquisas_mes = contagem_mes.get(user.id, 0)
+            # Some da lista quem nunca pesquisou e não tem meta configurada — não é um
+            # SDR relevante pra essa tela.
+            if user.meta_pesquisa_semanal is None and user.meta_pesquisa_mensal is None \
+                    and pesquisas_semana == 0 and pesquisas_mes == 0:
+                continue
+            rows.append(MetaProgressRow(
+                pesquisador_id=user.id, pesquisador_nome=user.nome,
+                pesquisas_semana=pesquisas_semana, meta_semanal=user.meta_pesquisa_semanal,
+                pesquisas_mes=pesquisas_mes, meta_mensal=user.meta_pesquisa_mensal,
+            ))
+        rows.sort(key=lambda r: -r.pesquisas_semana)
+        return MetaProgressResponse(rows=rows)

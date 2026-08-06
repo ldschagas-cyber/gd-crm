@@ -177,13 +177,6 @@ def import_lead_prospects_task(job_id: str, tenant_id: str, user_id: str, conten
             def opt_str(col):
                 return str(row[col]).strip() if col in df.columns and not pd.isna(row.get(col)) else None
 
-            def opt_float(col):
-                val = opt_str(col)
-                try:
-                    return float(val) if val else None
-                except ValueError:
-                    return None
-
             pesquisador_id = UUID(user_id)
             email_col = opt_str("pesquisado_por")
             if email_col:
@@ -202,7 +195,8 @@ def import_lead_prospects_task(job_id: str, tenant_id: str, user_id: str, conten
                 uf=(opt_str("uf") or "")[:2] or None,
                 regiao=opt_str("regiao"),
                 faixa_funcionarios=opt_str("faixa_funcionarios"),
-                faturamento=opt_float("faturamento"),
+                faixa_faturamento=opt_str("faixa_faturamento"),
+                origem=opt_str("origem"),
                 telefone=opt_str("telefone"), site=opt_str("site"), linkedin=opt_str("linkedin"),
                 contato_sugerido=opt_str("contato_sugerido"), dor_sugerida=opt_str("dor_sugerida"),
                 status=status, pesquisado_por=pesquisador_id,

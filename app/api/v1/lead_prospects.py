@@ -12,7 +12,7 @@ from app.schemas.common import Page
 from app.schemas.import_job import ImportJobRead
 from app.schemas.lead_prospect import (
     CommercialIntelligenceResponse, LeadEnrichmentSuggestion, LeadProspectCreate, LeadProspectPageParams,
-    LeadProspectRead, LeadProspectUpdate, PerformanceReportResponse,
+    LeadProspectRead, LeadProspectUpdate, MetaProgressResponse, PerformanceReportResponse,
 )
 from app.services.commercial_intelligence import CommercialIntelligenceService
 from app.services.import_job import ImportJobService
@@ -74,6 +74,14 @@ def performance_report(
     db: Session = Depends(get_db),
 ):
     return LeadProspectService(db).performance_report(mes)
+
+
+@router.get("/metas", response_model=MetaProgressResponse)
+def metas_progress(
+    _: User = Depends(require_roles(UserRole.ADMIN.value, UserRole.GESTOR.value)),
+    db: Session = Depends(get_db),
+):
+    return LeadProspectService(db).metas_progress()
 
 
 @router.get("/{lead_id}", response_model=LeadProspectRead)

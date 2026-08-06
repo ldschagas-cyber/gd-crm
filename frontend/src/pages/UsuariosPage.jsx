@@ -132,6 +132,8 @@ function UserModal({ user, onClose, onSubmit, submitting, error }) {
     telefone: user?.telefone ?? '',
     cargo: user?.cargo ?? '',
     perfil: user?.perfil ?? 'vendedor',
+    meta_pesquisa_semanal: user?.meta_pesquisa_semanal ?? '',
+    meta_pesquisa_mensal: user?.meta_pesquisa_mensal ?? '',
   })
 
   function set(field) {
@@ -140,12 +142,17 @@ function UserModal({ user, onClose, onSubmit, submitting, error }) {
 
   function handleSubmit(e) {
     e.preventDefault()
+    const metas = {
+      meta_pesquisa_semanal: form.meta_pesquisa_semanal !== '' ? Number(form.meta_pesquisa_semanal) : null,
+      meta_pesquisa_mensal: form.meta_pesquisa_mensal !== '' ? Number(form.meta_pesquisa_mensal) : null,
+    }
     if (isEdit) {
       onSubmit({
         nome: form.nome.trim(),
         telefone: form.telefone.trim() || null,
         cargo: form.cargo.trim() || null,
         perfil: form.perfil,
+        ...metas,
       })
     } else {
       onSubmit({
@@ -155,6 +162,7 @@ function UserModal({ user, onClose, onSubmit, submitting, error }) {
         telefone: form.telefone.trim() || null,
         cargo: form.cargo.trim() || null,
         perfil: form.perfil,
+        ...metas,
       })
     }
   }
@@ -187,6 +195,16 @@ function UserModal({ user, onClose, onSubmit, submitting, error }) {
             <select id="perfil" value={form.perfil} onChange={set('perfil')}>
               {Object.entries(PERFIL_LABEL).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
             </select>
+          </div>
+          <div className="field-row">
+            <div className="field">
+              <label htmlFor="meta_semanal">Meta de pesquisa semanal</label>
+              <input id="meta_semanal" type="number" min="0" value={form.meta_pesquisa_semanal} onChange={set('meta_pesquisa_semanal')} placeholder="Ex.: 20" />
+            </div>
+            <div className="field">
+              <label htmlFor="meta_mensal">Meta de pesquisa mensal</label>
+              <input id="meta_mensal" type="number" min="0" value={form.meta_pesquisa_mensal} onChange={set('meta_pesquisa_mensal')} placeholder="Ex.: 80" />
+            </div>
           </div>
           {!isEdit && (
             <div className="field">

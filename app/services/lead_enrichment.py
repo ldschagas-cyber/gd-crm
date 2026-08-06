@@ -6,7 +6,7 @@ as sugestões no frontend — o enriquecimento é só uma fonte de preenchimento
 mais rápida do formulário, não um passo automático."""
 from app.core.config import settings
 from app.core.exceptions import ConflictError
-from app.models.lead_prospect import LeadProspect
+from app.models.lead_prospect import FAIXAS_FATURAMENTO, LeadProspect, SegmentoLead
 from app.schemas.lead_prospect import LeadEnrichmentSuggestion
 from app.services._ai_json import extract_json
 
@@ -14,6 +14,7 @@ SETORES_CONHECIDOS = [
     "Farma", "Alimentos", "Autopeças", "Etiquetas", "Plástico", "Máquinas e Equipamentos",
     "Química", "Cosmético", "Serviços", "Tecnologia", "Varejo",
 ]
+SEGMENTOS_CONHECIDOS = [s.value for s in SegmentoLead]
 FAIXAS_CONHECIDAS = ["1-50", "51-200", "201-500", "501-1.000", "1.001-5.000", "5.001-10.000", "+ de 10.001"]
 
 SYSTEM_PROMPT = f"""Você ajuda um vendedor de uma empresa de governança e cotação de frete rodoviário (GD Conecta) a
@@ -24,10 +25,12 @@ responda SOMENTE com um objeto JSON (sem texto antes ou depois, sem markdown), c
 
 {{
   "setor": string ou null — escolha um destes se possível: {SETORES_CONHECIDOS}, senão descreva livremente ou use null,
-  "segmento": string ou null — subcategoria/nicho dentro do setor,
+  "segmento": string ou null — classifique o papel da empresa na cadeia logística, escolhendo exatamente uma destas
+    opções: {SEGMENTOS_CONHECIDOS},
   "uf": string ou null — sigla de 2 letras do estado brasileiro da sede/planta principal,
   "faixa_funcionarios": string ou null — escolha exatamente uma destas faixas: {FAIXAS_CONHECIDAS},
-  "faturamento": number ou null — faturamento anual estimado em reais (só o número, sem formatação),
+  "faixa_faturamento": string ou null — estime o faturamento anual e escolha exatamente uma destas faixas:
+    {FAIXAS_FATURAMENTO},
   "site": string ou null,
   "telefone": string ou null,
   "linkedin": string ou null — URL do LinkedIn da empresa,

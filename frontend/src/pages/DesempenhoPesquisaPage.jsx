@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { getPerformanceReport } from '../api/leadProspects'
+import { getMetasProgress, getPerformanceReport } from '../api/leadProspects'
+import { listUsers } from '../api/users'
 import '../styles/dataTable.css'
 import './DesempenhoPesquisaPage.css'
 
@@ -13,6 +14,10 @@ function qualClass(pct) {
   if (pct >= 70) return 'high'
   if (pct >= 40) return 'mid'
   return 'low'
+}
+function metaPct(atual, meta) {
+  if (!meta) return null
+  return Math.round((atual / meta) * 100)
 }
 function initials(nome) {
   if (!nome) return '?'
@@ -57,14 +62,55 @@ function IconInfo() {
   )
 }
 
+function MetaBar({ label, atual, meta }) {
+  const pct = metaPct(atual, meta)
+  return (
+    <div className="meta-bar">
+      <span className="meta-bar-label">{label}</span>
+      {meta ? (
+        <>
+          <div className="bar-track">
+            <div className={`bar-fill meta-fill ${qualClass(pct)}`} style={{ width: `${Math.min(100, pct)}%` }} />
+          </div>
+          <span className={`qual-pill ${qualClass(pct)}`}>{atual}/{meta}</span>
+        </>
+      ) : (
+        <span className="meta-no-goal">{atual} pesquisa{atual === 1 ? '' : 's'} · sem meta definida</span>
+      )}
+    </div>
+  )
+}
+
+function MetaRow({ row }) {
+  return (
+    <div className="meta-row">
+      <div className="row-resp"><span className="avatar">{initials(row.pesquisador_nome)}</span>{row.pesquisador_nome}</div>
+      <div className="meta-bars">
+        <MetaBar label="Semana" atual={row.pesquisas_semana} meta={row.meta_semanal} />
+        <MetaBar label="Mês" atual={row.pesquisas_mes} meta={row.meta_mensal} />
+      </div>
+    </div>
+  )
+}
+
 export default function DesempenhoPesquisaTab({ setTab }) {
   const [helpOpen, setHelpOpen] = useState(false)
   const options = useMemo(mesOptions, [])
   const [mes, setMes] = useState(options[0].value)
+  const [pesquisadorFiltro, setPesquisadorFiltro] = useState('')
+
+  const usersQuery = useQuery({ queryKey: ['users', 'for-desempenho'], queryFn: () => listUsers({ size: 100 }), retry: false })
+  const users = usersQuery.data?.items ?? []
 
   const reportQuery = useQuery({
     queryKey: ['lead-prospects', 'performance-report', mes],
     queryFn: () => getPerformanceReport(mes),
+    retry: false,
+  })
+
+  const metasQuery = useQuery({
+    queryKey: ['lead-prospects', 'metas'],
+    queryFn: getMetasProgress,
     retry: false,
   })
 
@@ -79,7 +125,8 @@ export default function DesempenhoPesquisaTab({ setTab }) {
     )
   }
 
-  const rows = reportQuery.data?.rows ?? []
+  const allRows = reportQuery.data?.rows ?? []
+  const rows = pesquisadorFiltro ? allRows.filter((r) => r.pesquisador_id === pesquisadorFiltro) : allRows
   const summary = rows.reduce((acc, r) => ({
     total: acc.total + r.total,
     promovidos: acc.promovidos + r.promovidos,
@@ -90,6 +137,7 @@ export default function DesempenhoPesquisaTab({ setTab }) {
 
   const ranking = [...rows].sort((a, b) => b.taxa_qualificacao - a.taxa_qualificacao || b.promovidos - a.promovidos)
   const maxTotal = Math.max(1, ...rows.map((r) => r.total))
+  const metaRows = metasQuery.data?.rows ?? []
 
   return (
     <>
@@ -115,11 +163,27 @@ export default function DesempenhoPesquisaTab({ setTab }) {
           <select className="filter-select" value={mes} onChange={(e) => setMes(e.target.value)}>
             {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
+          <select className="filter-select" value={pesquisadorFiltro} onChange={(e) => setPesquisadorFiltro(e.target.value)}>
+            <option value="">Todos os pesquisadores</option>
+            {users.map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
+          </select>
         </div>
 
         <button className="info-trigger" onClick={() => setHelpOpen(true)}>
           <IconInfo /> Como funciona o bônus
         </button>
+
+        {metaRows.length > 0 && (
+          <div className="card meta-card">
+            <div className="card-head">
+              <h2>Metas de pesquisa</h2>
+              <p>Semana e mês correntes — sempre "hoje", independente do mês filtrado acima</p>
+            </div>
+            <div className="card-body">
+              {metaRows.map((r) => <MetaRow key={r.pesquisador_id} row={r} />)}
+            </div>
+          </div>
+        )}
 
         {reportQuery.isLoading && <p className="state-msg">Carregando relatório…</p>}
 

@@ -20,6 +20,12 @@ const STATUS_LABEL = {
 const SETORES = ['Farma', 'Alimentos', 'Autopeças', 'Etiquetas', 'Plástico', 'Máquinas e Equipamentos',
   'Química', 'Cosmético', 'Serviços', 'Tecnologia', 'Varejo', 'Outro']
 const FAIXAS = ['1-50', '51-200', '201-500', '501-1.000', '1.001-5.000', '5.001-10.000', '+ de 10.001']
+const SEGMENTOS = ['Indústria', 'Distribuidor', 'Transportadora']
+const FAIXAS_FATURAMENTO = [
+  'Até R$ 5 milhões', 'R$ 5–25 milhões', 'R$ 25–100 milhões',
+  'R$ 100–500 milhões', 'R$ 500 milhões – R$ 1 bilhão', 'Acima de R$ 1 bilhão',
+]
+const ORIGENS = ['Feira', 'Indicação', 'Campanha', 'Prospecção ativa', 'LinkedIn', 'Outro']
 const UF_REGIAO = {
   AC: 'Norte', AP: 'Norte', AM: 'Norte', PA: 'Norte', RO: 'Norte', RR: 'Norte', TO: 'Norte',
   AL: 'Nordeste', BA: 'Nordeste', CE: 'Nordeste', MA: 'Nordeste', PB: 'Nordeste', PE: 'Nordeste',
@@ -397,7 +403,7 @@ function LeadsTab({ setTab }) {
 
 const ENRICH_FIELD_LABELS = {
   setor: 'Setor', segmento: 'Segmento', uf: 'UF', faixa_funcionarios: 'Faixa de funcionários',
-  faturamento: 'Faturamento estimado', site: 'Site', telefone: 'Telefone', linkedin: 'LinkedIn',
+  faixa_faturamento: 'Faixa de faturamento', site: 'Site', telefone: 'Telefone', linkedin: 'LinkedIn',
   contato_sugerido: 'Contato sugerido', dor_sugerida: 'Dor sugerida',
 }
 
@@ -433,7 +439,7 @@ function EnrichModal({ lead, result, isPending, error, applying, onRetry, onClos
                 <div className="f-group" key={key} style={{ marginBottom: 0 }}>
                   <label className="f-label">{label}</label>
                   <div className="row-title" style={{ fontWeight: 500 }}>
-                    {key === 'faturamento' ? money(result[key]) : result[key]}
+                    {result[key]}
                   </div>
                 </div>
               ))}
@@ -586,6 +592,7 @@ function LeadRow({ lead, pesquisadorNome, selected, onToggleSelect, onEdit, onPr
       <td>
         <div className="row-title lead-empresa-name">{lead.empresa}</div>
         {lead.segmento && <div className="row-sub">{lead.segmento}</div>}
+        {lead.origem && <div className="row-sub">🏷️ {lead.origem}</div>}
       </td>
       <td>
         <span className="status-pill" data-status={lead.status}><span className="d" />{STATUS_LABEL[lead.status] ?? lead.status}</span>
@@ -642,7 +649,8 @@ function LeadDrawer({ lead, users, onClose, onSubmit, submitting, error }) {
     uf: lead?.uf ?? '',
     regiao: lead?.regiao ?? '',
     faixa_funcionarios: lead?.faixa_funcionarios ?? '',
-    faturamento: lead?.faturamento ?? '',
+    faixa_faturamento: lead?.faixa_faturamento ?? '',
+    origem: lead?.origem ?? '',
     telefone: lead?.telefone ?? '',
     site: lead?.site ?? '',
     linkedin: lead?.linkedin ?? '',
@@ -668,7 +676,8 @@ function LeadDrawer({ lead, users, onClose, onSubmit, submitting, error }) {
       uf: form.uf || null,
       regiao: form.regiao || null,
       faixa_funcionarios: form.faixa_funcionarios || null,
-      faturamento: form.faturamento ? Number(form.faturamento) : null,
+      faixa_faturamento: form.faixa_faturamento || null,
+      origem: form.origem || null,
       telefone: form.telefone || null,
       site: form.site || null,
       linkedin: form.linkedin || null,
@@ -709,8 +718,11 @@ function LeadDrawer({ lead, users, onClose, onSubmit, submitting, error }) {
                 </select>
               </div>
               <div className="f-group">
-                <label className="f-label">Segmento <span className="opt">subcategoria</span></label>
-                <input className="f-input" value={form.segmento} onChange={set('segmento')} placeholder="Ex.: Genéricos, Embalagens flexíveis…" />
+                <label className="f-label">Segmento</label>
+                <select className="f-select" value={form.segmento} onChange={set('segmento')}>
+                  <option value="">Selecione…</option>
+                  {SEGMENTOS.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
               </div>
             </div>
 
@@ -740,8 +752,11 @@ function LeadDrawer({ lead, users, onClose, onSubmit, submitting, error }) {
                 </select>
               </div>
               <div className="f-group">
-                <label className="f-label">Faturamento estimado</label>
-                <input className="f-input" type="number" step="0.01" value={form.faturamento} onChange={set('faturamento')} placeholder="Ex.: 20000000" />
+                <label className="f-label">Faixa de faturamento</label>
+                <select className="f-select" value={form.faixa_faturamento} onChange={set('faixa_faturamento')}>
+                  <option value="">Selecione…</option>
+                  {FAIXAS_FATURAMENTO.map((f) => <option key={f} value={f}>{f}</option>)}
+                </select>
               </div>
             </div>
 
@@ -756,9 +771,18 @@ function LeadDrawer({ lead, users, onClose, onSubmit, submitting, error }) {
               </div>
             </div>
 
-            <div className="f-group">
-              <label className="f-label">LinkedIn</label>
-              <input className="f-input" value={form.linkedin} onChange={set('linkedin')} placeholder="linkedin.com/company/…" />
+            <div className="f-row">
+              <div className="f-group">
+                <label className="f-label">LinkedIn</label>
+                <input className="f-input" value={form.linkedin} onChange={set('linkedin')} placeholder="linkedin.com/company/…" />
+              </div>
+              <div className="f-group">
+                <label className="f-label">Origem</label>
+                <select className="f-select" value={form.origem} onChange={set('origem')}>
+                  <option value="">Selecione…</option>
+                  {ORIGENS.map((o) => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
             </div>
 
             <div className="f-group">
@@ -893,15 +917,18 @@ function ImportDrawer({ onClose, onDone }) {
         <div className="drawer-body">
           <div className="import-cols">
             Colunas esperadas: <code>empresa*</code> <code>setor</code> <code>segmento</code> <code>uf</code>{' '}
-            <code>regiao</code> <code>faixa_funcionarios</code> <code>faturamento</code> <code>telefone</code>{' '}
-            <code>site</code> <code>linkedin</code> <code>contato_sugerido</code> <code>dor_sugerida</code>{' '}
-            <code>status</code> <code>pesquisado_por</code>
+            <code>regiao</code> <code>faixa_funcionarios</code> <code>faixa_faturamento</code> <code>origem</code>{' '}
+            <code>telefone</code> <code>site</code> <code>linkedin</code> <code>contato_sugerido</code>{' '}
+            <code>dor_sugerida</code> <code>status</code> <code>pesquisado_por</code>
             <br />
             <span className="f-hint">
               Os nomes das colunas precisam vir exatamente assim (minúsculo, sem acento, sem espaço) — cabeçalhos
               como &quot;Faixa de Funcionários&quot; ou &quot;Região&quot; com acento não são reconhecidos.
               <code>uf</code> é a sigla do estado (ex.: SP); <code>regiao</code> é a macrorregião (ex.: Sudeste) — informe
-              ao menos um dos dois. <code>pesquisado_por</code> aceita o e-mail de um usuário do CRM — se a coluna
+              ao menos um dos dois. <code>segmento</code> aceita Indústria, Distribuidor ou Transportadora;{' '}
+              <code>faixa_faturamento</code> aceita uma das faixas do formulário (ex.: &quot;R$ 5–25 milhões&quot;);{' '}
+              <code>origem</code> aceita Feira, Indicação, Campanha, Prospecção ativa, LinkedIn ou Outro.{' '}
+              <code>pesquisado_por</code> aceita o e-mail de um usuário do CRM — se a coluna
               faltar ou vier vazia, a pesquisa fica atribuída a quem está importando.
             </span>
           </div>

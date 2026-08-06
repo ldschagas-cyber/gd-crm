@@ -41,6 +41,8 @@ class UserService:
             telefone=data.telefone,
             cargo=data.cargo,
             perfil=data.perfil.value,
+            meta_pesquisa_semanal=data.meta_pesquisa_semanal,
+            meta_pesquisa_mensal=data.meta_pesquisa_mensal,
         )
         return self.repo.add(user)
 

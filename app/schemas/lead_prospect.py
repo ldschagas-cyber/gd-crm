@@ -4,18 +4,19 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from app.models.lead_prospect import LeadStatus
+from app.models.lead_prospect import LeadStatus, SegmentoLead
 
 
 class LeadProspectCreate(BaseModel):
     empresa: str = Field(min_length=1, max_length=255)
     cnpj: str | None = Field(default=None, max_length=14)
     setor: str | None = None
-    segmento: str | None = None
+    segmento: SegmentoLead | None = None
     uf: str | None = Field(default=None, max_length=2)
     regiao: str | None = None
     faixa_funcionarios: str | None = None
-    faturamento: float | None = None
+    faixa_faturamento: str | None = None
+    origem: str | None = None
     site: str | None = None
     telefone: str | None = None
     linkedin: str | None = None
@@ -29,11 +30,12 @@ class LeadProspectUpdate(BaseModel):
     empresa: str | None = Field(default=None, min_length=1, max_length=255)
     cnpj: str | None = Field(default=None, max_length=14)
     setor: str | None = None
-    segmento: str | None = None
+    segmento: SegmentoLead | None = None
     uf: str | None = Field(default=None, max_length=2)
     regiao: str | None = None
     faixa_funcionarios: str | None = None
-    faturamento: float | None = None
+    faixa_faturamento: str | None = None
+    origem: str | None = None
     site: str | None = None
     telefone: str | None = None
     linkedin: str | None = None
@@ -52,7 +54,8 @@ class LeadProspectRead(BaseModel):
     uf: str | None
     regiao: str | None
     faixa_funcionarios: str | None
-    faturamento: float | None
+    faixa_faturamento: str | None
+    origem: str | None
     site: str | None
     telefone: str | None
     linkedin: str | None
@@ -92,7 +95,7 @@ class LeadEnrichmentSuggestion(BaseModel):
     segmento: str | None = None
     uf: str | None = None
     faixa_funcionarios: str | None = None
-    faturamento: float | None = None
+    faixa_faturamento: str | None = None
     site: str | None = None
     telefone: str | None = None
     linkedin: str | None = None
@@ -156,6 +159,22 @@ class PerformanceReportRow(BaseModel):
 class PerformanceReportResponse(BaseModel):
     mes: str
     rows: list[PerformanceReportRow]
+
+
+class MetaProgressRow(BaseModel):
+    """Progresso de um pesquisador contra a meta de pesquisa (semana/mês corrente,
+    independente do mês selecionado no relatório de desempenho). `meta_*=None`
+    significa que o admin não definiu meta pra esse usuário ainda."""
+    pesquisador_id: UUID
+    pesquisador_nome: str
+    pesquisas_semana: int
+    meta_semanal: int | None
+    pesquisas_mes: int
+    meta_mensal: int | None
+
+
+class MetaProgressResponse(BaseModel):
+    rows: list[MetaProgressRow]
 
 
 class IcpScoringRules(BaseModel):
