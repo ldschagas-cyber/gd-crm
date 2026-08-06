@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Como funciona a Central de Leads — Argos</title>
+<style>
+  :root {
+    --font-display: 'IBM Plex Sans', 'Segoe UI', 'Helvetica Neue', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', 'Cascadia Code', 'SFMono-Regular', 'Consolas', ui-monospace, monospace;
+
+    --indigo: #2D3561;
+    --indigo-600: #3B4478;
+    --amber: #C9A84C;
+    --azul: #0077A8;
+    --marfim: #F5F1EB;
+
+    --paper: var(--marfim);
+    --ink: #22243A;
+    --ink-dim: #5B5E78;
+    --ink-faint: #8B8EA6;
+    --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF;
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+
+    --good: #0ca30c;
+    --warning: #fab219;
+    --serious: #ec835a;
+    --critical: #d03b3b;
+
+    --seq-1: #86b6ef; --seq-2: #5598e7; --seq-3: #2a78d6; --seq-4: #1c5cab; --seq-5: #104281; --seq-6: #0a2d5c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14172A; --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98;
+      --border: rgba(241, 238, 230, 0.12); --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+      --seq-1: #9ec5f4; --seq-2: #6da7ec; --seq-3: #3987e5; --seq-4: #256abf; --seq-5: #184f95; --seq-6: #123a70;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-display); color: var(--ink); background: var(--paper);
+    -webkit-font-smoothing: antialiased; line-height: 1.6;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 48px 24px 90px; }
+
+  header.hero { margin-bottom: 40px; }
+  .kicker {
+    display: inline-flex; align-items: center; gap: 7px; font-family: var(--font-mono); font-size: 11px;
+    font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--azul);
+    background: color-mix(in srgb, var(--azul) 10%, var(--card-bg)); border: 1px solid var(--border);
+    border-radius: 100px; padding: 4px 12px; margin-bottom: 16px;
+  }
+  h1 { font-size: 30px; font-weight: 750; letter-spacing: -0.02em; margin: 0 0 12px; line-height: 1.2; }
+  .lede { font-size: 16.5px; color: var(--ink-dim); max-width: 640px; margin: 0; }
+
+  h2 {
+    font-size: 20px; font-weight: 700; letter-spacing: -0.01em; margin: 56px 0 6px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  h2 .num {
+    font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--indigo);
+    background: color-mix(in srgb, var(--amber) 22%, var(--card-bg)); border-radius: 8px;
+    width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; flex: none;
+  }
+  h3 { font-size: 15px; font-weight: 700; margin: 22px 0 8px; }
+  p { margin: 0 0 14px; color: var(--ink-dim); }
+  p strong, li strong { color: var(--ink); }
+  section > p:first-of-type { margin-top: 4px; }
+
+  .card {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px;
+    box-shadow: var(--shadow); padding: 22px 24px; margin: 18px 0;
+  }
+  .note {
+    display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: 12px;
+    background: color-mix(in srgb, var(--azul) 6%, var(--card-bg)); border: 1px solid var(--border);
+    font-size: 14px; color: var(--ink-dim); margin: 18px 0;
+  }
+  .note.amber { background: color-mix(in srgb, var(--amber) 10%, var(--card-bg)); }
+  .note svg { width: 18px; height: 18px; color: var(--azul); flex: none; margin-top: 1px; }
+  .note.amber svg { color: var(--amber); }
+  .note b { color: var(--ink); }
+
+  /* Diagrama de posição no fluxo */
+  .flow-diagram {
+    display: flex; align-items: center; gap: 0; margin: 26px 0; flex-wrap: wrap;
+  }
+  .flow-step {
+    flex: 1; min-width: 150px; background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 18px; box-shadow: var(--shadow); text-align: center;
+  }
+  .flow-step.active { border-color: var(--azul); border-width: 2px; background: color-mix(in srgb, var(--azul) 6%, var(--card-bg)); }
+  .flow-step .t { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-faint); }
+  .flow-step .n { font-size: 14.5px; font-weight: 700; margin-top: 4px; color: var(--ink); }
+  .flow-step .d { font-size: 11.5px; color: var(--ink-faint); margin-top: 4px; }
+  .flow-arrow { flex: none; width: 36px; text-align: center; color: var(--ink-faint); font-size: 18px; }
+  @media (max-width: 640px) { .flow-arrow { transform: rotate(90deg); } }
+
+  /* Funil de estágios */
+  .funnel { display: flex; flex-direction: column; gap: 2px; margin: 22px 0; }
+  .funnel-row {
+    display: grid; grid-template-columns: 30px 176px 1fr 100px; align-items: center; gap: 14px;
+    padding: 14px 16px; border-radius: 10px; color: #fff; position: relative;
+  }
+  .funnel-row .idx { font-family: var(--font-mono); font-size: 12px; font-weight: 700; opacity: .85; }
+  .funnel-row .name { font-size: 14.5px; font-weight: 700; }
+  .funnel-row .desc { font-size: 12.5px; opacity: .9; }
+  .funnel-row .trig {
+    font-size: 10.5px; font-weight: 700; text-align: center; padding: 4px 8px; border-radius: 100px;
+    background: rgba(255,255,255,.18); white-space: nowrap;
+  }
+  .funnel-row .trig.manual { background: #fff; color: var(--indigo); }
+  @media (max-width: 640px) {
+    .funnel-row { grid-template-columns: 24px 1fr; }
+    .funnel-row .desc, .funnel-row .trig { grid-column: 2; }
+  }
+
+  /* Tabela de dados exibidos */
+  table.info-table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 18px 0; }
+  table.info-table th {
+    text-align: left; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-faint);
+    font-weight: 700; padding: 10px 14px; border-bottom: 2px solid var(--border);
+  }
+  table.info-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: top; color: var(--ink-dim); }
+  table.info-table td:first-child { color: var(--ink); font-weight: 650; white-space: nowrap; }
+  table.info-table tr:last-child td { border-bottom: none; }
+
+  /* Score breakdown visual */
+  .score-demo { display: flex; flex-direction: column; gap: 12px; }
+  .score-row { display: flex; align-items: center; gap: 12px; }
+  .score-row .lbl { width: 130px; flex: none; font-size: 13px; color: var(--ink-dim); font-weight: 600; }
+  .score-row .track { flex: 1; height: 10px; border-radius: 100px; background: var(--paper); overflow: hidden; }
+  .score-row .fill { height: 100%; border-radius: 100px; }
+  .score-row .fill.icp { background: var(--azul); width: 78%; }
+  .score-row .fill.eng { background: var(--amber); width: 46%; }
+  .score-row .fill.total { background: var(--good); width: 65%; }
+  .score-row .val { width: 60px; flex: none; text-align: right; font-family: var(--font-mono); font-weight: 700; color: var(--ink); }
+  .score-formula {
+    font-family: var(--font-mono); font-size: 13.5px; text-align: center; color: var(--ink);
+    background: var(--paper); border: 1px dashed var(--border); border-radius: 10px; padding: 12px; margin-top: 14px;
+  }
+
+  ul.check-list { list-style: none; margin: 14px 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  ul.check-list li { display: flex; gap: 10px; align-items: flex-start; font-size: 14.5px; color: var(--ink-dim); }
+  ul.check-list li svg { width: 17px; height: 17px; color: var(--good); flex: none; margin-top: 2px; }
+
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+  .chip {
+    font-size: 12.5px; font-weight: 600; padding: 5px 12px; border-radius: 100px;
+    background: var(--card-bg); border: 1px solid var(--border); color: var(--ink-dim);
+  }
+  .chip b { color: var(--ink); }
+
+  footer { margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 12.5px; color: var(--ink-faint); }
+  code { font-family: var(--font-mono); font-size: 0.92em; background: var(--paper); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <span class="kicker">Manual funcional · Argos CRM</span>
+    <h1>Como funciona a Central de Leads</h1>
+    <p class="lede">
+      A Central de Leads é o funil comercial que acompanha uma empresa desde o momento em que ela é promovida
+      da Pesquisa de Leads até virar um Negócio no Pipeline — reunindo, num único lugar, estágio, Lead Score,
+      última interação, próxima ação e responsável.
+    </p>
+  </header>
+
+  <h2><span class="num">1</span>Onde ela entra no fluxo</h2>
+  <p>
+    A Central de Leads não substitui nada que já existe — ela é a ponte entre duas telas que já existiam e
+    ficavam desconectadas. <strong>Pesquisa de Leads</strong> continua sendo pré-CRM: você ainda está avaliando
+    se a empresa tem perfil, sem contato feito. Quando alguém clica em <em>“Promover”</em> lá, nasce um registro
+    de <code>Company</code> — e é só nesse momento que ele entra na Central de Leads, no estágio <strong>Novo</strong>.
+  </p>
+
+  <div class="flow-diagram">
+    <div class="flow-step">
+      <div class="t">Pré-CRM</div>
+      <div class="n">Pesquisa de Leads</div>
+      <div class="d">Perfil da empresa, sem contato ainda</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step active">
+      <div class="t">Você está aqui</div>
+      <div class="n">Central de Leads</div>
+      <div class="d">Funil de trabalho comercial</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="t">Pós-conversão</div>
+      <div class="n">Negócios / Pipeline</div>
+      <div class="d">Proposta, negociação, fechamento</div>
+    </div>
+  </div>
+
+  <div class="note">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="7.3"/><path d="M10 9v4.4M10 6.6v.1"/></svg>
+    <span>
+      Empresas cadastradas manualmente ou importadas <b>não entram automaticamente</b> na Central de Leads —
+      ficam de fora até serem atribuídas a um estágio. Isso é proposital: o funil só mostra quem está de fato
+      sendo trabalhado a partir de uma origem de prospecção.
+    </span>
+  </div>
+
+  <h2><span class="num">2</span>As seis etapas do funil</h2>
+  <p>Cada empresa ocupa exatamente um estágio por vez. A cor de cada etapa fica mais “quente” conforme o lead avança:</p>
+
+  <div class="funnel">
+    <div class="funnel-row" style="background:var(--seq-1)">
+      <span class="idx">01</span><span class="name">Novo</span>
+      <span class="desc">Acabou de ser promovido, ninguém tocou ainda</span>
+      <span class="trig">automático</span>
+    </div>
+    <div class="funnel-row" style="background:var(--seq-2)">
+      <span class="idx">02</span><span class="name">Qualificando</span>
+      <span class="desc">Alguém registrou a 1ª interação de verdade (ligação, e-mail, reunião ou nota)</span>
+      <span class="trig">automático</span>
+    </div>
+    <div class="funnel-row" style="background:var(--seq-3)">
+      <span class="idx">03</span><span class="name">Em cadência</span>
+      <span class="desc">Foi inscrito numa Sequência ativa de contato</span>
+      <span class="trig">automático</span>
+    </div>
+    <div class="funnel-row" style="background:var(--seq-4)">
+      <span class="idx">04</span><span class="name">MQL</span>
+      <span class="desc">“Esse perfil parece bom o suficiente pra marketing empurrar”</span>
+      <span class="trig manual">🔒 sempre manual</span>
+    </div>
+    <div class="funnel-row" style="background:var(--seq-5)">
+      <span class="idx">05</span><span class="name">SQL</span>
+      <span class="desc">“Vendas aceitou, tá pronto pra virar proposta”</span>
+      <span class="trig manual">🔒 sempre manual</span>
+    </div>
+    <div class="funnel-row" style="background:var(--seq-6)">
+      <span class="idx">06</span><span class="name">Convertido em negócio</span>
+      <span class="desc">Um Negócio foi criado pra essa empresa</span>
+      <span class="trig">automático</span>
+    </div>
+  </div>
+
+  <h3>Por que MQL e SQL nunca são automáticos</h3>
+  <p>
+    Mesmo que o Lead Score de um lead esteja altíssimo, ele <strong>nunca</strong> pula sozinho para MQL ou SQL.
+    Qualificação é julgamento humano, não corte de número — a Central de Leads só mostra o dado, quem decide é
+    a pessoa. Por isso, ao arrastar um card pra uma dessas duas colunas (ou trocar o estágio no drawer de
+    detalhe), aparece um modal de confirmação explícito antes de aplicar a mudança.
+  </p>
+
+  <div class="note amber">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M10 2.5l8 14H2z"/><path d="M10 8v3.4M10 13.6v.1"/></svg>
+    <span>
+      As transições automáticas nunca <b>rebaixam</b> um lead: se ele já está em MQL e uma nova interação é
+      registrada, não volta pra Qualificando; se já é SQL e entra numa nova cadência, não recua pra
+      “Em cadência”.
+    </span>
+  </div>
+
+  <h2><span class="num">3</span>As quatro informações de cada lead</h2>
+
+  <h3>Lead Score</h3>
+  <p>Combina dois componentes num único número de 0 a 100:</p>
+  <div class="card">
+    <div class="score-demo">
+      <div class="score-row">
+        <span class="lbl">Fit ICP (60%)</span>
+        <div class="track"><div class="fill icp"></div></div>
+        <span class="val">78</span>
+      </div>
+      <div class="score-row">
+        <span class="lbl">Engajamento (40%)</span>
+        <div class="track"><div class="fill eng"></div></div>
+        <span class="val">46</span>
+      </div>
+      <div class="score-row">
+        <span class="lbl"><strong>Lead Score</strong></span>
+        <div class="track"><div class="fill total"></div></div>
+        <span class="val">65</span>
+      </div>
+    </div>
+    <div class="score-formula">Lead Score = 0,6 × Fit ICP&nbsp;&nbsp;+&nbsp;&nbsp;0,4 × Engajamento</div>
+  </div>
+  <p>
+    O <strong>Fit ICP</strong> é o mesmo motor de setor/região/porte que já existia na Pesquisa de Leads — não
+    foi recriado, é reaproveitado. O <strong>Engajamento</strong> é novo: soma pontos por interação registrada
+    (ligação, e-mail, reunião, nota) e por etapa de cadência concluída, com <strong>decaimento</strong> — perde
+    pontos por semana sem contato, então um lead “esfriando” cai de score sozinho, sem ninguém precisar mexer.
+  </p>
+
+  <h3>Última interação</h3>
+  <p>
+    Calculada direto da timeline da empresa — o mesmo evento que qualquer ligação, e-mail ou nota já grava hoje.
+    Não é um campo separado que alguém preenche manualmente, é sempre o reflexo do que de fato aconteceu.
+    Passou de <strong>7 dias sem nenhuma interação</strong>, o card ganha a tag “Parado”.
+  </p>
+
+  <h3>Próxima ação</h3>
+  <p>Segue uma ordem de prioridade bem simples:</p>
+  <ul class="check-list">
+    <li>
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10l4 4 8-8"/></svg>
+      Existe uma <strong>Tarefa aberta</strong> agendada pra essa empresa? Mostra ela (com data e ícone do tipo).
+    </li>
+    <li>
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10l4 4 8-8"/></svg>
+      Não existe? Cai na <strong>sugestão da IA</strong> do Dossiê Comercial (a mesma que já existe na tela de
+      Empresas), sempre com o selo “✦ sugestão da IA” — nunca se confunde com um compromisso real.
+    </li>
+  </ul>
+
+  <h3>Responsável</h3>
+  <p>
+    É o mesmo campo <code>responsavel_id</code> usado em Negócios e no Dossiê Comercial — editável direto no
+    drawer de detalhe da Central de Leads, sem duplicar cadastro.
+  </p>
+
+  <h2><span class="num">4</span>Como o lead “sai” do funil</h2>
+  <p>
+    Quando o lead está em <strong>SQL</strong>, o drawer mostra o botão <strong>“Converter em negócio”</strong>.
+    Isso leva direto pra tela de Negócios com a empresa já pré-selecionada no formulário de novo negócio. É a
+    <strong>criação desse negócio</strong> — não um clique de “marcar como convertido” — que dispara o estágio
+    Convertido automaticamente.
+  </p>
+  <div class="note">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="7.3"/><path d="M10 9v4.4M10 6.6v.1"/></svg>
+    <span>
+      Leads <b>convertidos continuam visíveis</b> na Central de Leads — não somem do funil. Isso dá noção da
+      taxa de conversão inteira num lugar só. Se a lista ficar poluída, um filtro deixa esconder convertidos
+      há mais de 7 ou 30 dias.
+    </span>
+  </div>
+
+  <h2><span class="num">5</span>Resumo em uma tabela</h2>
+  <table class="info-table">
+    <thead><tr><th>Estágio</th><th>Gatilho</th><th>Pode ser revertido manualmente?</th></tr></thead>
+    <tbody>
+      <tr><td>Novo</td><td>Promoção da Pesquisa de Leads</td><td>Sim, a qualquer momento</td></tr>
+      <tr><td>Qualificando</td><td>1ª interação registrada na timeline</td><td>Sim</td></tr>
+      <tr><td>Em cadência</td><td>Inscrição numa Sequência ativa</td><td>Sim</td></tr>
+      <tr><td>MQL</td><td>Confirmação manual explícita (modal)</td><td>Sim</td></tr>
+      <tr><td>SQL</td><td>Confirmação manual explícita (modal)</td><td>Sim</td></tr>
+      <tr><td>Convertido</td><td>Criação de um Negócio pra essa empresa</td><td>Sim, mas fica visível como histórico</td></tr>
+    </tbody>
+  </table>
+
+  <div class="chip-row">
+    <span class="chip">Menu: <b>Inteligência Comercial → Central de Leads</b></span>
+    <span class="chip">Rota: <b>/central-leads</b></span>
+    <span class="chip">Vistas: <b>Kanban</b> e <b>Lista</b></span>
+  </div>
+
+  <footer>
+    Documento gerado como referência funcional da feature “Central de Leads” do Argos CRM (GD Conecta).
+    Consulte também <code>docs/PLANO_CENTRAL_DE_LEADS.md</code> no repositório para o detalhamento técnico
+    (modelo de dados, endpoints e regras de transição).
+  </footer>
+
+</div>
+</body>
+</html>

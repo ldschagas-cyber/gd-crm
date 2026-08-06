@@ -70,6 +70,12 @@ class DealService:
         deal = self.repo.add(deal)
         self.timeline.registrar(deal.company_id, TimelineType.PIPELINE.value,
                                 "Negócio criado", deal.nome, deal_id=deal.id)
+
+        # Central de Leads: negócio criado é o gatilho automático de "convertido" — só
+        # se a empresa já estava sendo acompanhada no funil (import tardio: evita ciclo).
+        from app.services.company import CompanyService
+        CompanyService(self.db).advance_funil_on_convertido(deal.company_id)
+
         pipeline = self.pipelines.get(deal.pipeline_id)
         publish_event(self.db, "negocio_criado", deal.id, {
             "pipeline": pipeline.nome if pipeline else None, "origem": deal.origem,

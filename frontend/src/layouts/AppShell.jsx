@@ -22,6 +22,7 @@ const NAV_GROUPS = [
     items: [
       { to: '/buscar-empresas', label: 'Buscar Empresas', icon: IconSearch },
       { to: '/pesquisa-leads', label: 'Pesquisa de Leads', icon: IconRadar },
+      { to: '/central-leads', label: 'Central de Leads', icon: IconFunnel },
     ],
   },
   {
@@ -192,6 +193,13 @@ function IconSearch() {
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
       <circle cx="8.8" cy="8.8" r="5.3" />
       <path d="M16.5 16.5l-3.8-3.8" strokeLinecap="round" />
+    </svg>
+  )
+}
+function IconFunnel() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <path d="M3 3.5h14l-5.3 6.6v5.4l-3.4 1.7v-7.1z" strokeLinejoin="round" />
     </svg>
   )
 }

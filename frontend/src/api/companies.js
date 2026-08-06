@@ -64,6 +64,30 @@ export function askCompanyAi(id, pergunta) {
   return api.post(`/companies/${id}/dossie/perguntar`, { pergunta }).then((res) => res.data)
 }
 
+// ---- Central de Leads --------------------------------------------------------
+
+export function listCentralLeads({
+  funilEstagio, responsavelId, busca, leadScoreMin, emCadencia, esconderConvertidosAposDias,
+} = {}) {
+  return api
+    .get('/companies/central-leads', {
+      params: {
+        funil_estagio: funilEstagio, responsavel_id: responsavelId, busca,
+        lead_score_min: leadScoreMin, em_cadencia: emCadencia,
+        esconder_convertidos_apos_dias: esconderConvertidosAposDias,
+      },
+    })
+    .then((res) => res.data)
+}
+
+export function getCentralLeadsResumo() {
+  return api.get('/companies/central-leads/resumo').then((res) => res.data)
+}
+
+export function setCompanyFunilEstagio(id, funilEstagio) {
+  return api.patch(`/companies/${id}/funil-estagio`, { funil_estagio: funilEstagio }).then((res) => res.data)
+}
+
 export async function exportCompanies({
   status, uf, busca, responsavelId, segmento, porte, origem,
 } = {}) {

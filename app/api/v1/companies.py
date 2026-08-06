@@ -13,8 +13,8 @@ from app.models.import_job import ImportType
 from app.models.user import User
 from app.schemas.common import Page, PageParams
 from app.schemas.company import (
-    CompanyAskRequest, CompanyAskResponse, CompanyCreate, CompanyDossierUpdate, CompanyFilterOptions,
-    CompanyIcpRead, CompanyRead, CompanyStatusUpdate, CompanyUpdate,
+    CentralLeadRead, CentralLeadsResumo, CompanyAskRequest, CompanyAskResponse, CompanyCreate, CompanyDossierUpdate,
+    CompanyFilterOptions, CompanyFunilEstagioUpdate, CompanyIcpRead, CompanyRead, CompanyStatusUpdate, CompanyUpdate,
 )
 from app.schemas.import_job import ImportJobRead
 from app.schemas.timeline import TimelineEventRead, TimelineNoteCreate
@@ -117,6 +117,33 @@ def filter_options(_: User = Depends(get_current_user), db: Session = Depends(ge
     return CompanyService(db).filter_options()
 
 
+# ---- Central de Leads --------------------------------------------------------
+# Rotas estáticas antes de /{company_id} — senão "central-leads" seria interpretado
+# como um UUID de empresa e cairia (422) na rota dinâmica abaixo.
+
+@router.get("/central-leads", response_model=list[CentralLeadRead])
+def list_central_leads(
+    funil_estagio: str | None = None,
+    responsavel_id: UUID | None = None,
+    busca: str | None = None,
+    lead_score_min: int | None = None,
+    em_cadencia: bool | None = None,
+    esconder_convertidos_apos_dias: int | None = None,
+    _: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return CompanyService(db).list_central_leads(
+        funil_estagio=funil_estagio, responsavel_id=responsavel_id, busca=busca,
+        lead_score_min=lead_score_min, em_cadencia=em_cadencia,
+        esconder_convertidos_apos_dias=esconder_convertidos_apos_dias,
+    )
+
+
+@router.get("/central-leads/resumo", response_model=CentralLeadsResumo)
+def get_central_leads_resumo(_: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    return CompanyService(db).resumo_central_leads()
+
+
 @router.get("/{company_id}", response_model=CompanyRead)
 def get_company(company_id: UUID, _: User = Depends(get_current_user),
                 db: Session = Depends(get_db)):
@@ -133,6 +160,14 @@ def update_company(company_id: UUID, data: CompanyUpdate, _: User = Depends(get_
 def set_status(company_id: UUID, data: CompanyStatusUpdate, _: User = Depends(get_current_user),
                db: Session = Depends(get_db)):
     return CompanyService(db).set_status(company_id, data)
+
+
+@router.patch("/{company_id}/funil-estagio", response_model=CompanyRead)
+def set_funil_estagio(company_id: UUID, data: CompanyFunilEstagioUpdate, _: User = Depends(get_current_user),
+                      db: Session = Depends(get_db)):
+    """Única porta pra MQL/SQL: essas transições nunca têm gatilho automático no
+    backend, só chegam aqui por uma ação explícita do usuário na Central de Leads."""
+    return CompanyService(db).set_funil_estagio(company_id, data)
 
 
 @router.delete("/{company_id}", status_code=status.HTTP_204_NO_CONTENT)

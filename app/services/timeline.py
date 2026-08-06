@@ -40,6 +40,12 @@ class TimelineService:
         from app.services.company_ai import schedule_if_relevant
         schedule_if_relevant(self.db, evento)
 
+        # Central de Leads: primeira interação de verdade avança novo -> qualificando
+        # (import tardio — CompanyService importa TimelineService, então o import no
+        # topo do módulo criaria um ciclo). Silencioso pra empresas fora do funil.
+        from app.services.company import CompanyService
+        CompanyService(self.db).advance_funil_on_interaction(company_id, tipo)
+
         return evento
 
     def registrar_from_schema(

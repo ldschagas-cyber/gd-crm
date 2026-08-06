@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   closeDeal, createDeal, deleteDeal, listDeals, moveDealStage, updateDeal,
@@ -41,6 +41,7 @@ function IconChevron() {
 
 export default function NegociosPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const queryClient = useQueryClient()
   const [view, setView] = useState('kanban')
   const [busca, setBusca] = useState('')
@@ -49,6 +50,7 @@ export default function NegociosPage() {
   const [responsavelId, setResponsavelId] = useState('')
   const [page, setPage] = useState(1)
   const [showNewDeal, setShowNewDeal] = useState(false)
+  const [presetCompany, setPresetCompany] = useState(null) // { id, nome } — vindo da Central de Leads ("Converter em negócio")
   const [editingDeal, setEditingDeal] = useState(null)
   const [losingDeal, setLosingDeal] = useState(null)
   const [selectedPipelineId, setSelectedPipelineId] = useState(null)
@@ -74,6 +76,24 @@ export default function NegociosPage() {
   const usersQuery = useQuery({ queryKey: ['users', 'for-assign'], queryFn: () => listUsers({ size: 100 }), retry: false })
   const users = usersQuery.data?.items ?? []
   const usersById = Object.fromEntries(users.map((u) => [u.id, u.nome]))
+
+  // Vindo da Central de Leads (botão "Converter em negócio" no drawer, só aparece
+  // quando o lead está em SQL) — abre o drawer de novo negócio já com a empresa
+  // selecionada. Limpa o state da navegação pra não reabrir num back/refresh.
+  useEffect(() => {
+    if (location.state?.presetCompanyId) {
+      setPresetCompany({ id: location.state.presetCompanyId, nome: location.state.presetCompanyNome })
+      setShowNewDeal(true)
+      navigate(location.pathname, { replace: true, state: null })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state])
+
+  // A empresa pode não estar nas primeiras 100 (ordem alfabética) que o select carrega —
+  // garante que ela apareça como opção mesmo assim.
+  const companiesForSelect = presetCompany && !companies.some((c) => c.id === presetCompany.id)
+    ? [...companies, { id: presetCompany.id, razao_social: presetCompany.nome }]
+    : companies
 
   const boardQuery = useQuery({
     queryKey: ['deals', 'board', pipelineId],
@@ -214,9 +234,10 @@ export default function NegociosPage() {
       {showNewDeal && (
         <DealDrawer
           pipeline={pipeline}
-          companies={companies}
+          companies={companiesForSelect}
+          presetCompanyId={presetCompany?.id}
           users={users}
-          onClose={() => setShowNewDeal(false)}
+          onClose={() => { setShowNewDeal(false); setPresetCompany(null) }}
           submitting={createMutation.isPending}
           error={createMutation.error}
           onSubmit={(data) => createMutation.mutate({ ...data, pipeline_id: pipeline.id })}
@@ -432,9 +453,9 @@ function DealsList({ query, page, setPage, companiesById, usersById, stages, col
   )
 }
 
-function DealDrawer({ pipeline, companies, users, onClose, onSubmit, submitting, error }) {
+function DealDrawer({ pipeline, companies, presetCompanyId, users, onClose, onSubmit, submitting, error }) {
   const [form, setForm] = useState({
-    nome: '', company_id: '', contact_id: '', responsavel_id: '',
+    nome: '', company_id: presetCompanyId ?? '', contact_id: '', responsavel_id: '',
     stage_id: pipeline.stages.find((s) => s.tipo === 'aberta')?.id ?? '',
     valor_previsto: '', probabilidade: '', data_prev_fechamento: '', origem: '',
   })

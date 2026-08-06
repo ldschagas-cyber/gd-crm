@@ -7,7 +7,7 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import AppException, ConflictError, NotFoundError
-from app.models.company import Company, CompanyStatus
+from app.models.company import Company, CompanyStatus, FunilEstagio
 from app.models.lead_prospect import LeadProspect, LeadStatus
 from app.repositories.company import CompanyRepository
 from app.repositories.lead_prospect import LeadProspectRepository
@@ -160,6 +160,11 @@ class LeadProspectService:
             # num valor exato sem inventar dado. Fica só como texto na Pesquisa de Leads.
             status=CompanyStatus.LEAD.value, origem=lead.origem or "Pesquisa de Leads",
             inteligencia_comercial=lead.inteligencia_comercial,
+            # Central de Leads: toda promoção entra no funil como "novo" — ver
+            # docs/PLANO_CENTRAL_DE_LEADS.md. Empresas criadas por outro caminho (cadastro
+            # manual, importação) continuam de fora até serem atribuídas manualmente.
+            funil_estagio=FunilEstagio.NOVO.value,
+            funil_estagio_atualizado_em=datetime.now(timezone.utc),
         )
         company = CompanyRepository(self.db).add(company)
         lead.promoted_company_id = company.id

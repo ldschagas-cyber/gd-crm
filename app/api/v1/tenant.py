@@ -5,8 +5,10 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.deps import get_current_user, require_roles
 from app.models.user import User, UserRole
+from app.schemas.company import LeadScoreRules
 from app.schemas.lead_prospect import IcpScoringRules
 from app.schemas.tenant import TenantRead, TenantUpdate
+from app.services.company import CompanyService
 from app.services.lead_prospect import LeadProspectService
 from app.services.tenant import TenantService
 
@@ -39,3 +41,19 @@ def update_icp_scoring_rules(
     db: Session = Depends(get_db),
 ):
     return LeadProspectService(db).update_rules(data)
+
+
+@router.get("/lead-score-rules")
+def get_lead_score_rules(_: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Pesos do componente de Engajamento do Lead Score (Central de Leads) — o
+    componente de Fit ICP continua sendo /icp-scoring-rules, acima."""
+    return CompanyService(db).get_lead_score_rules()
+
+
+@router.put("/lead-score-rules")
+def update_lead_score_rules(
+    data: LeadScoreRules,
+    _: User = Depends(require_roles(UserRole.ADMIN.value)),
+    db: Session = Depends(get_db),
+):
+    return CompanyService(db).update_lead_score_rules(data)

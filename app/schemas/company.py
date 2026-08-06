@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from app.models.company import CompanyStatus
+from app.models.company import CompanyStatus, FunilEstagio
 from app.schemas.common import ORMModel
 
 
@@ -105,6 +105,9 @@ class CompanyRead(ORMModel):
     # JSON bruto de CommercialIntelligenceRecord — só chega aqui por cópia automática na
     # promoção do LeadProspect (ver LeadProspectService.promote()); sem endpoint próprio.
     inteligencia_comercial: str | None
+    # Central de Leads — None enquanto a empresa nunca entrou no funil (ver FunilEstagio).
+    funil_estagio: str | None
+    funil_estagio_atualizado_em: datetime | None
 
 
 class IcpBreakdownItemRead(BaseModel):
@@ -126,3 +129,74 @@ class CompanyAskRequest(BaseModel):
 class CompanyAskResponse(BaseModel):
     resposta: str
     fontes: list[str]
+
+
+# ---- Central de Leads --------------------------------------------------------
+
+class CompanyFunilEstagioUpdate(BaseModel):
+    """Troca manual de estágio (drag-and-drop no kanban ou seletor no drawer). MQL e
+    SQL só chegam aqui por este endpoint — nunca por um gatilho automático do backend
+    (promoção, inscrição em cadência, criação de negócio). Ver plano §3."""
+    funil_estagio: FunilEstagio
+
+
+class LeadScoreRules(BaseModel):
+    """Pesos do componente de Engajamento do Lead Score — o componente de Fit ICP
+    continua sendo `IcpScoringRules` (Pesquisa de Leads). Lead Score = 60% ICP + 40%
+    engajamento, pesos de mistura fixos por ora (não expostos aqui)."""
+    eventos: dict[str, int] = {}
+    etapa_cadencia_concluida: int = 5
+    decaimento_por_semana_sem_interacao: int = 10
+    quente_a_partir_de: int = 70
+    morno_a_partir_de: int = 40
+
+
+class ProximaAcaoRead(BaseModel):
+    tipo: str  # 'tarefa' (task aberta mais próxima) ou 'ia' (proxima_acao_sugerida do Dossiê)
+    texto: str
+    data: datetime | None = None
+
+
+class CadenciaInfoRead(BaseModel):
+    enrollment_id: UUID
+    sequence_id: UUID
+    nome: str
+    etapa_atual: int
+    total_etapas: int
+
+
+class CentralLeadRead(BaseModel):
+    """Uma linha da Central de Leads — Company enriquecida com Lead Score, cadência
+    ativa e próxima ação. Não substitui CompanyRead (usado em Empresas); é uma visão
+    combinada específica pro funil, análoga ao que LeadProspectRead é pra Pesquisa
+    de Leads."""
+    id: UUID
+    razao_social: str
+    nome_fantasia: str | None
+    segmento: str | None
+    uf: str | None
+    origem: str | None
+    responsavel_id: UUID | None
+    funil_estagio: str
+    funil_estagio_atualizado_em: datetime | None
+    ultima_interacao: datetime
+    score_icp: int
+    score_engajamento: int
+    lead_score: int
+    temperatura: str
+    proxima_acao: ProximaAcaoRead | None
+    cadencia: CadenciaInfoRead | None
+    convertido_em: datetime | None = None
+
+
+class EstagioCountRead(BaseModel):
+    estagio: str
+    total: int
+
+
+class CentralLeadsResumo(BaseModel):
+    total: int
+    total_ativos: int  # exclui 'convertido' — ver decisão de produto (convertidos ficam visíveis, mas fora da contagem de "ativos")
+    por_estagio: list[EstagioCountRead]
+    score_medio: int
+    parados: int  # sem interação há 7+ dias, exclui 'convertido'

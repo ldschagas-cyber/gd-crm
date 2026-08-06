@@ -125,4 +125,19 @@ class SequenceService:
         # em vez de esperar a próxima varredura diária do Celery Beat (6h).
         advance_due_steps(self.db, get_current_tenant(), enrollment)
         self.enroll_repo.save(enrollment)
+
+        # Central de Leads: inscrição avança a empresa alvo pra "em cadência" — resolve
+        # a empresa mesmo quando a inscrição é feita por contato/negócio (import tardio:
+        # evita ciclo, já que nada aqui mais importa CompanyService no topo do módulo).
+        company_id = data.company_id
+        if company_id is None and data.contact_id is not None:
+            contact = self.db.get(Contact, data.contact_id)
+            company_id = contact.company_id if contact else None
+        elif company_id is None and data.deal_id is not None:
+            deal = self.db.get(Deal, data.deal_id)
+            company_id = deal.company_id if deal else None
+        if company_id is not None:
+            from app.services.company import CompanyService
+            CompanyService(self.db).advance_funil_on_cadencia(company_id)
+
         return self._resolve_alvo(enrollment)
