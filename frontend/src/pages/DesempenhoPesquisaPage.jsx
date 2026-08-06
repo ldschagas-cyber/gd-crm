@@ -37,19 +37,150 @@ function mesOptions() {
   return options
 }
 
-function exportCsv(mes, rows) {
-  const headers = ['pesquisador', 'pesquisas', 'icp_a', 'icp_b', 'icp_c', 'sem_perfil_nao_avaliado', 'taxa_qualificacao', 'promovidos', 'bonus_valido']
-  const lines = [headers.join(',')]
-  rows.forEach((r) => {
-    lines.push([r.pesquisador_nome, r.total, r.icp_a, r.icp_b, r.icp_c, r.sem_perfil, `${r.taxa_qualificacao}%`, r.promovidos, r.bonus_valido.toFixed(2)].join(','))
-  })
-  const blob = new Blob([`﻿${lines.join('\r\n')}`], { type: 'text/csv;charset=utf-8;' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `desempenho-pesquisa-${mes}.csv`
-  a.click()
-  URL.revokeObjectURL(url)
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
+}
+
+// Relatório visual, standalone (cores fixas — não herda tema claro/escuro do app,
+// é um documento aberto em aba própria pra visualizar/imprimir/salvar em PDF).
+function abrirRelatorioHtml({ mesLabel, pesquisadorNome, rows, summary, qualifGeral, ranking, metaRows }) {
+  const geradoEm = new Date().toLocaleString('pt-BR', { dateStyle: 'long', timeStyle: 'short' })
+  const qualCor = (pct) => (pct >= 70 ? '#0ca30c' : pct >= 40 ? '#fab219' : '#d03b3b')
+
+  const linhasRanking = ranking.map((r, i) => `
+    <div class="rank-row">
+      <span class="medal">${i + 1}º</span>
+      <div class="rank-body">
+        <div class="rank-name">${escapeHtml(r.pesquisador_nome)}</div>
+        <div class="rank-meta">${r.total} pesquisa${r.total === 1 ? '' : 's'} · ${r.promovidos} promovido${r.promovidos === 1 ? '' : 's'}</div>
+      </div>
+      <div class="rank-value" style="color:${qualCor(r.taxa_qualificacao)}">${r.taxa_qualificacao}%</div>
+    </div>`).join('') || '<p class="muted">Sem pesquisas no período.</p>'
+
+  const linhasTabela = rows.map((r) => `
+    <tr>
+      <td>${escapeHtml(r.pesquisador_nome)}</td>
+      <td class="num">${r.total}</td>
+      <td class="num">${r.icp_a}</td>
+      <td class="num">${r.icp_b}</td>
+      <td class="num">${r.icp_c}</td>
+      <td class="num">${r.sem_perfil}</td>
+      <td class="num"><span class="pill" style="background:${qualCor(r.taxa_qualificacao)}1a;color:${qualCor(r.taxa_qualificacao)}">${r.taxa_qualificacao}%</span></td>
+      <td class="num">${r.promovidos}</td>
+      <td class="num">${money(r.bonus_valido)}</td>
+    </tr>`).join('')
+
+  const linhasMetas = metaRows.map((r) => {
+    const pctSemana = r.meta_semanal ? Math.round((r.pesquisas_semana / r.meta_semanal) * 100) : null
+    const pctMes = r.meta_mensal ? Math.round((r.pesquisas_mes / r.meta_mensal) * 100) : null
+    return `
+    <tr>
+      <td>${escapeHtml(r.pesquisador_nome)}</td>
+      <td class="num">${r.pesquisas_semana}${r.meta_semanal ? ` / ${r.meta_semanal}` : ''}${pctSemana != null ? ` <span class="pill" style="background:${qualCor(pctSemana)}1a;color:${qualCor(pctSemana)}">${pctSemana}%</span>` : ' <span class="muted">sem meta</span>'}</td>
+      <td class="num">${r.pesquisas_mes}${r.meta_mensal ? ` / ${r.meta_mensal}` : ''}${pctMes != null ? ` <span class="pill" style="background:${qualCor(pctMes)}1a;color:${qualCor(pctMes)}">${pctMes}%</span>` : ' <span class="muted">sem meta</span>'}</td>
+    </tr>`
+  }).join('')
+
+  const html = `<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Relatório de Desempenho — ${escapeHtml(mesLabel)}</title>
+<style>
+  :root { --azul:#0077A8; --amber:#C9A84C; --good:#0ca30c; --warning:#fab219; --critical:#d03b3b;
+          --ink:#22243A; --ink-dim:#5B5E78; --ink-faint:#8B8EA6; --border:#e4dfd3; --paper:#F5F1EB; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 40px 48px 60px; background: #fff; color: var(--ink);
+         font-family: 'IBM Plex Sans', 'Segoe UI', Helvetica, Arial, sans-serif; }
+  .mono { font-family: 'IBM Plex Mono', 'Consolas', monospace; }
+  header.doc-head { display: flex; justify-content: space-between; align-items: flex-end;
+                     border-bottom: 2px solid var(--ink); padding-bottom: 16px; margin-bottom: 24px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .doc-sub { color: var(--ink-dim); font-size: 13px; margin: 0; }
+  .brand { text-align: right; font-size: 12px; color: var(--ink-faint); }
+  .brand b { color: var(--azul); font-size: 14px; }
+  .stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
+  .stat-tile { border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; background: var(--paper); }
+  .stat-tile .t { font-size: 11px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .04em; }
+  .stat-tile .v { font-size: 22px; font-weight: 700; margin-top: 4px; }
+  .stat-tile.bonus .v { color: var(--amber); }
+  section { margin-bottom: 30px; }
+  h2 { font-size: 15px; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .rank-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .rank-row:last-child { border-bottom: none; }
+  .medal { width: 24px; height: 24px; border-radius: 50%; background: var(--paper); border: 1px solid var(--border);
+           display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex: none; }
+  .rank-body { flex: 1; }
+  .rank-name { font-weight: 600; font-size: 13.5px; }
+  .rank-meta { font-size: 11.5px; color: var(--ink-faint); }
+  .rank-value { font-weight: 700; font-family: 'IBM Plex Mono', monospace; font-size: 15px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { font-size: 10.5px; text-transform: uppercase; letter-spacing: .03em; color: var(--ink-faint); font-weight: 600; }
+  td.num, th.num { text-align: right; font-family: 'IBM Plex Mono', monospace; }
+  .pill { padding: 2px 8px; border-radius: 100px; font-weight: 700; font-size: 11.5px; white-space: nowrap; }
+  .muted { color: var(--ink-faint); font-size: 12px; }
+  .no-print { position: fixed; top: 20px; right: 20px; }
+  .no-print button { background: var(--azul); color: #fff; border: none; padding: 10px 18px; border-radius: 8px;
+                      font-weight: 600; cursor: pointer; font-size: 13px; }
+  footer { margin-top: 40px; padding-top: 14px; border-top: 1px solid var(--border); font-size: 11px; color: var(--ink-faint); }
+  @media print { .no-print { display: none; } body { padding: 0 12px; } }
+</style>
+</head>
+<body>
+  <div class="no-print"><button onclick="window.print()">🖨️ Imprimir / Salvar PDF</button></div>
+
+  <header class="doc-head">
+    <div>
+      <h1>Relatório de Desempenho de Pesquisa</h1>
+      <p class="doc-sub">${escapeHtml(mesLabel)}${pesquisadorNome ? ` · Pesquisador: ${escapeHtml(pesquisadorNome)}` : ' · Todos os pesquisadores'}</p>
+    </div>
+    <div class="brand"><b>Argos CRM</b><br>Gerado em ${geradoEm}</div>
+  </header>
+
+  <div class="stat-strip">
+    <div class="stat-tile"><div class="t">Pesquisas no mês</div><div class="v">${summary.total}</div></div>
+    <div class="stat-tile"><div class="t">Promovidos</div><div class="v">${summary.promovidos}</div></div>
+    <div class="stat-tile"><div class="t">Taxa de qualificação</div><div class="v">${qualifGeral}%</div></div>
+    <div class="stat-tile bonus"><div class="t">Bônus total do mês</div><div class="v">${money(summary.bonus)}</div></div>
+  </div>
+
+  <section>
+    <h2>Ranking do mês — por taxa de qualificação (ICP A + B)</h2>
+    ${linhasRanking}
+  </section>
+
+  <section>
+    <h2>Detalhamento por pesquisador</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Pesquisador</th><th class="num">Pesquisas</th><th class="num">ICP A</th><th class="num">ICP B</th>
+          <th class="num">ICP C</th><th class="num">Sem perfil/Não aval.</th><th class="num">Taxa qualif.</th>
+          <th class="num">Promovidos</th><th class="num">Bônus válido</th>
+        </tr>
+      </thead>
+      <tbody>${linhasTabela || '<tr><td colspan="9" class="muted">Nenhuma pesquisa registrada neste mês.</td></tr>'}</tbody>
+    </table>
+  </section>
+
+  ${metaRows.length > 0 ? `
+  <section>
+    <h2>Metas de pesquisa — semana e mês correntes</h2>
+    <table>
+      <thead><tr><th>Pesquisador</th><th class="num">Semana</th><th class="num">Mês</th></tr></thead>
+      <tbody>${linhasMetas}</tbody>
+    </table>
+  </section>` : ''}
+
+  <footer>Bônus só é válido quando a pesquisa vira empresa de verdade (status "Promovido" em Pesquisa de Leads) — este relatório é só consulta, não substitui a folha de pagamento.</footer>
+</body>
+</html>`
+
+  const win = window.open('', '_blank')
+  if (!win) return
+  win.document.write(html)
+  win.document.close()
 }
 
 function IconInfo() {
@@ -138,6 +269,8 @@ export default function DesempenhoPesquisaTab({ setTab }) {
   const ranking = [...rows].sort((a, b) => b.taxa_qualificacao - a.taxa_qualificacao || b.promovidos - a.promovidos)
   const maxTotal = Math.max(1, ...rows.map((r) => r.total))
   const metaRows = metasQuery.data?.rows ?? []
+  const mesLabel = options.find((o) => o.value === mes)?.label ?? mes
+  const pesquisadorNome = pesquisadorFiltro ? users.find((u) => u.id === pesquisadorFiltro)?.nome : null
 
   return (
     <>
@@ -147,7 +280,13 @@ export default function DesempenhoPesquisaTab({ setTab }) {
           <p>Gamificação e bônus por pesquisador — a tela de consumo do que é calculado em Pesquisa de Leads</p>
         </div>
         <div className="page-actions">
-          <button className="btn-ghost" disabled={rows.length === 0} onClick={() => exportCsv(mes, rows)}>Exportar .csv</button>
+          <button
+            className="btn-ghost"
+            disabled={rows.length === 0}
+            onClick={() => abrirRelatorioHtml({ mesLabel, pesquisadorNome, rows, summary, qualifGeral, ranking, metaRows })}
+          >
+            📄 Ver relatório
+          </button>
         </div>
       </header>
 
