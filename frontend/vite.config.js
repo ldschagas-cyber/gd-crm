@@ -15,8 +15,8 @@ export default defineConfig({
         lang: 'pt-BR',
         start_url: '/',
         display: 'standalone',
-        background_color: '#F5F1EB',
-        theme_color: '#2D3561',
+        background_color: '#F4F4F2',
+        theme_color: '#232748',
         icons: [
           { src: '/pwa-192x192.png', sizes: '192x192', type: 'image/png' },
           { src: '/pwa-512x512.png', sizes: '512x512', type: 'image/png' },

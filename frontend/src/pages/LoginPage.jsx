@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
+import ArgosMark from '../components/ArgosMark.jsx'
 import './LoginPage.css'
 
 export default function LoginPage() {
@@ -46,7 +47,7 @@ export default function LoginPage() {
       <aside className="brand" aria-hidden="false">
         <div className="brand-top">
           <div className="wordmark">
-            <div className="monogram">A</div>
+            <ArgosMark size={40} variant="dark" />
             <div className="wordmark-text">
               <strong>Argos</strong>
               <span>by GD Conecta</span>
@@ -71,7 +72,7 @@ export default function LoginPage() {
       <main className="form-panel">
         <div className="form-card">
           <div className="form-mobile-brand">
-            <div className="monogram">A</div>
+            <ArgosMark size={40} variant="light" />
             <div>
               <strong>Argos</strong>
               <span>by GD Conecta</span>

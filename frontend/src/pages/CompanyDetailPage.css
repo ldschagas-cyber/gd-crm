@@ -5,9 +5,9 @@
 .deal-status-pill {
   display: inline-block; font-size: 11px; font-weight: 650; padding: 2px 8px; border-radius: 100px; margin-top: 2px;
 }
-.deal-status-aberto { background: rgba(0, 119, 168, 0.12); color: var(--azul); }
-.deal-status-ganho { background: rgba(12, 163, 12, 0.12); color: var(--good); }
-.deal-status-perdido { background: rgba(208, 59, 59, 0.12); color: var(--critical); }
+.deal-status-aberto { background: rgba(47, 107, 168, 0.12); color: var(--azul); }
+.deal-status-ganho { background: rgba(46, 125, 91, 0.12); color: var(--good); }
+.deal-status-perdido { background: rgba(180, 69, 60, 0.12); color: var(--critical); }
 
 .email-lookup-list { margin-top: 12px; }
 .email-lookup-row { display: flex; gap: 10px; padding: 9px 0; border-top: 1px solid var(--border); }

@@ -5,25 +5,25 @@
 .stat-tile.fit-B .v { color: var(--azul); }
 .stat-tile.fit-C .v { color: var(--warning); }
 
-.status-pill[data-status='novo'] { background: rgba(0, 119, 168, 0.12); color: var(--azul); }
+.status-pill[data-status='novo'] { background: rgba(47, 107, 168, 0.12); color: var(--azul); }
 .status-pill[data-status='novo'] .d { background: var(--azul); }
-.status-pill[data-status='enriquecer'] { background: rgba(250, 178, 25, 0.16); color: var(--warning); }
+.status-pill[data-status='enriquecer'] { background: rgba(179, 106, 33, 0.16); color: var(--warning); }
 .status-pill[data-status='enriquecer'] .d { background: var(--warning); }
-.status-pill[data-status='triagem'] { background: rgba(45, 53, 97, 0.1); color: var(--indigo); }
+.status-pill[data-status='triagem'] { background: rgba(43, 47, 94, 0.1); color: var(--indigo); }
 .status-pill[data-status='triagem'] .d { background: var(--indigo); }
-.status-pill[data-status='qualificado'] { background: rgba(12, 163, 12, 0.12); color: var(--good); }
+.status-pill[data-status='qualificado'] { background: rgba(46, 125, 91, 0.12); color: var(--good); }
 .status-pill[data-status='qualificado'] .d { background: var(--good); }
-.status-pill[data-status='descartado'] { background: rgba(208, 59, 59, 0.12); color: var(--critical); }
+.status-pill[data-status='descartado'] { background: rgba(180, 69, 60, 0.12); color: var(--critical); }
 .status-pill[data-status='descartado'] .d { background: var(--critical); }
-.status-pill[data-status='promovido'] { background: rgba(201, 168, 76, 0.18); color: var(--amber); }
+.status-pill[data-status='promovido'] { background: rgba(217, 182, 84, 0.18); color: var(--amber); }
 .status-pill[data-status='promovido'] .d { background: var(--amber); }
 
 .fit-cell { display: flex; align-items: center; gap: 8px; }
 .fit-badge { width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex: none; }
-.fit-badge.A { background: rgba(12, 163, 12, 0.14); color: var(--good); }
-.fit-badge.B { background: rgba(0, 119, 168, 0.14); color: var(--azul); }
-.fit-badge.C { background: rgba(250, 178, 25, 0.18); color: var(--warning); }
-.fit-badge.SemPerfil { background: rgba(208, 59, 59, 0.12); color: var(--critical); font-size: 9px; }
+.fit-badge.A { background: rgba(46, 125, 91, 0.14); color: var(--good); }
+.fit-badge.B { background: rgba(47, 107, 168, 0.14); color: var(--azul); }
+.fit-badge.C { background: rgba(179, 106, 33, 0.18); color: var(--warning); }
+.fit-badge.SemPerfil { background: rgba(180, 69, 60, 0.12); color: var(--critical); font-size: 9px; }
 .fit-badge.NaoAvaliado { background: var(--paper); color: var(--ink-faint); font-size: 9px; }
 .fit-score { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-faint); }
 
@@ -32,7 +32,7 @@
 .gam-bar-fill { height: 100%; border-radius: 100px; background: var(--amber); }
 .gam-num { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-faint); }
 .bonus-pill { font-size: 10.5px; font-weight: 700; padding: 1px 7px; border-radius: 100px; white-space: nowrap; }
-.bonus-pill.yes { background: rgba(201, 168, 76, 0.18); color: var(--amber); }
+.bonus-pill.yes { background: rgba(217, 182, 84, 0.18); color: var(--amber); }
 .bonus-pill.pending { background: transparent; color: var(--amber); border: 1px dashed var(--amber); }
 .bonus-pill.no { background: var(--paper); color: var(--ink-faint); }
 

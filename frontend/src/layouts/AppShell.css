@@ -1,4 +1,4 @@
-.shell { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+.shell { display: grid; grid-template-columns: var(--sidebar-w) 1fr; min-height: 100vh; }
 
 .sidebar {
   background: var(--panel); color: var(--panel-fg);
@@ -6,15 +6,12 @@
   position: sticky; top: 0; height: 100vh;
 }
 .sb-brand { display: flex; align-items: center; gap: 10px; padding: 20px 18px 16px; }
-.monogram {
-  width: 34px; height: 34px; border-radius: 9px; flex: none;
-  background: var(--amber); color: var(--indigo);
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 700; font-size: 14px;
+.sb-brand strong {
+  display: block; font-family: var(--font-brand); font-size: 17px; font-weight: 700;
+  letter-spacing: -0.015em; line-height: 1.2;
 }
-.sb-brand strong { display: block; font-size: 14.5px; font-weight: 650; line-height: 1.2; }
 .sb-brand span {
-  display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.07em;
+  display: block; font-family: var(--font-mono); font-size: 7.5px; letter-spacing: 0.2em;
   text-transform: uppercase; color: var(--panel-fg-dim); margin-top: 2px;
 }
 
@@ -36,12 +33,13 @@
   background: none; border: none; width: 100%; text-align: left;
 }
 .sb-item svg { width: 17px; height: 17px; flex: none; opacity: 0.9; }
-.sb-item:hover { background: rgba(241, 238, 230, 0.06); color: var(--panel-fg); }
+.sb-item:hover { background: var(--panel-hover-bg); color: var(--panel-fg); }
 .sb-item:focus-visible { outline: 2px solid var(--amber); outline-offset: -2px; }
 .sb-item.active {
   background: var(--panel-active-bg);
   color: var(--panel-fg);
   font-weight: 600;
+  box-shadow: inset 3px 0 0 var(--amber); /* uso canônico do dourado — linha selecionada */
 }
 
 .avatar {
@@ -62,7 +60,7 @@
 .tenant-pill {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 5px 12px; border-radius: 100px;
-  background: rgba(45, 53, 97, 0.06); border: 1px solid var(--border);
+  background: rgba(43, 47, 94, 0.06); border: 1px solid var(--border);
   font-size: 12.5px; font-weight: 600; color: var(--ink); cursor: default;
 }
 .tenant-pill svg { width: 15px; height: 15px; flex: none; color: var(--indigo); }
@@ -112,7 +110,10 @@
   padding: 20px 28px; border-bottom: 1px solid var(--border);
   background: var(--paper);
 }
-.topbar-title h1 { margin: 0; font-size: 19px; font-weight: 650; letter-spacing: -0.01em; }
+.topbar-title h1 {
+  margin: 0; font-family: var(--font-brand); font-size: 21px; font-weight: 700; letter-spacing: -0.01em;
+  color: var(--ink);
+}
 .topbar-title p { margin: 2px 0 0; font-size: 13px; color: var(--ink-dim); }
 
 .content { padding: 24px 28px 40px; }
@@ -126,7 +127,7 @@
 .sidebar-toggle svg { width: 19px; height: 19px; }
 .sidebar-scrim { display: none; }
 
-/* Abaixo de 768px a sidebar de 232px não cabe ao lado do conteúdo — vira
+/* Abaixo de 768px a sidebar de 240px não cabe ao lado do conteúdo — vira
    painel off-canvas (some por padrão, abre por cima como overlay). */
 @media (max-width: 768px) {
   .shell { grid-template-columns: 1fr; }

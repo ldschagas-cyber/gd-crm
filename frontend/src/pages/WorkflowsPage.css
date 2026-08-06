@@ -1,9 +1,9 @@
-.status-pill.ativo { background: rgba(12,163,12,0.12); color: var(--good); }
+.status-pill.ativo { background: rgba(46, 125, 91,0.12); color: var(--good); }
 .status-pill.ativo .d { background: var(--good); }
 .status-pill.inativo { background: var(--paper); color: var(--ink-faint); border: 1px solid var(--border); }
 .status-pill.inativo .d { background: var(--ink-faint); }
 
-.trigger-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 650; padding: 3px 10px; border-radius: 100px; white-space: nowrap; background: rgba(0,119,168,0.12); color: var(--azul); }
+.trigger-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 650; padding: 3px 10px; border-radius: 100px; white-space: nowrap; background: rgba(47, 107, 168,0.12); color: var(--azul); }
 
 .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 0; }
 .toggle-row .t { font-size: 13px; font-weight: 600; color: var(--ink); }
@@ -20,8 +20,8 @@
 
 .flow-diagram { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 12px 14px; background: var(--paper); border: 1px solid var(--border); border-radius: 10px; font-size: 12px; }
 .flow-node { display: flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 100px; font-weight: 650; white-space: nowrap; }
-.flow-node.trigger { background: rgba(0,119,168,0.14); color: var(--azul); }
-.flow-node.cond { background: rgba(250,178,25,0.16); color: color-mix(in srgb, var(--warning) 55%, var(--ink-dim)); }
+.flow-node.trigger { background: rgba(47, 107, 168,0.14); color: var(--azul); }
+.flow-node.cond { background: rgba(179, 106, 33,0.16); color: color-mix(in srgb, var(--warning) 55%, var(--ink-dim)); }
 .flow-node.action { background: var(--panel-active-bg); color: var(--amber); }
 .flow-arrow { color: var(--ink-faint); flex: none; }
 
@@ -51,8 +51,8 @@
 .log-row { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); }
 .log-row:last-child { border-bottom: none; }
 .log-icon { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex: none; margin-top: 1px; font-size: 11px; }
-.log-icon.sucesso { background: rgba(12,163,12,0.12); color: var(--good); }
-.log-icon.erro { background: rgba(208,59,59,0.1); color: var(--critical); }
+.log-icon.sucesso { background: rgba(46, 125, 91,0.12); color: var(--good); }
+.log-icon.erro { background: rgba(180, 69, 60,0.1); color: var(--critical); }
 .log-body { flex: 1; min-width: 0; font-size: 12.3px; }
 .log-body .lb-title { font-weight: 600; color: var(--ink); }
 .log-body .lb-detail { color: var(--ink-dim); margin-top: 2px; }

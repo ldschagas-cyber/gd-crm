@@ -24,7 +24,7 @@
   padding: 10px; overflow-y: auto; flex: 1; display: flex; flex-direction: column;
   gap: 8px; min-height: 60px; transition: background-color 100ms ease;
 }
-.kb-col-body.drag-over { background: rgba(0, 119, 168, 0.06); }
+.kb-col-body.drag-over { background: rgba(47, 107, 168, 0.06); }
 .kb-card { background: var(--paper); border: 1px solid var(--border); border-radius: 9px; padding: 10px 11px; cursor: grab; }
 .kb-card:active { cursor: grabbing; }
 .kb-card-name { font-size: 12.8px; font-weight: 650; color: var(--ink); }

@@ -1,95 +1,141 @@
 /* Design tokens — Argos by GD Conecta.
-   Fonte de verdade: docs/prototypes/*.html (aprovados pelo usuário em 2026-07-27).
-   Ver memória "identidade_visual_gd_conecta": Índigo/Âmbar/Azul/Marfim + IBM Plex Sans/Mono. */
+   Fonte de verdade: "Manual da Marca Argos" V1 (ago 2026) + design_handoff_argos_crm/tokens.css.
+   Cores, tipografia, espaço e raio são literais — não interpretar, reproduzir como estão.
+   Nomes de variável preservados da v1 (2026-07-27) pra não quebrar ~30 arquivos que já
+   consomem var(--indigo)/var(--amber)/etc; só os valores hex mudaram de fonte. */
 :root {
   --font-display: 'IBM Plex Sans', 'Segoe UI', 'Helvetica Neue', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', 'Cascadia Code', 'SFMono-Regular', 'Consolas', ui-monospace, monospace;
+  /* só marca e títulos (página, seção, modal) — nunca corpo, tabela ou campo. Sempre peso 700. */
+  --font-brand: 'Space Grotesk', 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
 
-  --indigo: #2D3561;
-  --indigo-600: #3B4478;
-  --amber: #C9A84C;
-  --amber-ink: #7A5F1E;
-  --azul: #0077A8;
-  --marfim: #F5F1EB;
+  /* ---- Marca ---- */
+  --panel: #232748;        /* azul profundo — navegação, cabeçalho, superfícies escuras */
+  --indigo: #2B2F5E;       /* azul-noite — botão primário, links, ícones ativos */
+  --indigo-600: #3A3F78;   /* azul hover — hover/active do primário */
+  --amber: #D9B654;        /* dourado — marca, anel de foco, linha selecionada, 1 destaque/tela */
+  --amber-dark: #C4A244;   /* dourado escuro — hover de elemento dourado */
+  --amber-light: #F7EFD8;  /* dourado claro — fundo de badge de prioridade */
+  --amber-ink: var(--amber-dark); /* alias de compat (nome antigo) */
 
-  --paper: var(--marfim);
-  --panel: var(--indigo);
+  --paper: #F4F4F2;        /* n-100 — fundo da aplicação */
+  --surface: #FAFAF8;      /* n-050 — zebra e hover de tabela/lista */
   --panel-fg: #F1EEE6;
-  --panel-fg-dim: #B7BBD6;
+  --panel-fg-dim: #A9ADC9;
   --panel-border: rgba(241, 238, 230, 0.12);
-  --panel-active-bg: rgba(201, 168, 76, 0.14);
+  --panel-active-bg: rgba(255, 255, 255, 0.07); /* fundo do item ativo na sidebar */
+  --panel-hover-bg: rgba(255, 255, 255, 0.04);  /* hover de item inativo na sidebar */
 
-  --ink: #22243A;
-  --ink-dim: #5B5E78;
-  --ink-faint: #8B8EA6;
-  --border: rgba(45, 53, 97, 0.14);
-  --field-bg: #FFFFFF;
-  --card-bg: #FFFFFF;
+  --ink: #1B1D33;          /* n-900 — texto primário */
+  --ink-dim: #5C5F74;      /* n-600 — texto secundário */
+  --ink-faint: #8A8D9C;    /* legenda/rótulo mono discreto (cabeçalho de tabela etc.) — valor literal do manual, entre n-400 e n-600 */
+  --ink-disabled: #B4B4AE; /* n-400 — placeholder e texto desabilitado */
+  --border: #EAEAE6;       /* n-200 — divisor, borda de card */
+  --border-field: #D8D8D2; /* n-300 — borda de campo */
+  --field-bg: #FFFFFF;     /* n-000 */
+  --card-bg: #FFFFFF;      /* n-000 */
   --accent: var(--amber);
-  --link: var(--azul);
-  --danger: #B5342C;
-  --danger-bg: #FBEAE8;
-  --success: #1E7A4C;
-  --focus-ring: rgba(0, 119, 168, 0.35);
-  --shadow: 0 1px 2px rgba(34, 36, 58, 0.06), 0 12px 28px -12px rgba(34, 36, 58, 0.18);
+  --link: var(--indigo);   /* azul-noite — links (regra do manual) */
+  --danger: #B4453C;
+  --danger-bg: #F8E7E5;
+  --success: #2E7D5B;
+  --success-bg: #E4F1EA;
+  --info: #2F6BA8;
+  --info-bg: #E6EFF7;
+  /* --azul preservado como alias do accent informativo (usado hoje em ~150 lugares
+     pra focus ring, badges de "lead"/"em análise" e links dentro de card) */
+  --azul: var(--info);
+  --focus-ring: rgba(217, 182, 84, 0.45); /* anel dourado — regra de foco do manual */
+  --shadow: 0 1px 2px rgba(27, 29, 51, 0.06), 0 12px 32px -12px rgba(27, 29, 51, 0.14); /* sombra sempre azulada */
 
   /* status — fixo, invariável por tema, sempre pareado com ícone + rótulo */
-  --good: #0ca30c;
-  --warning: #fab219;
-  --serious: #ec835a;
-  --critical: #d03b3b;
+  --good: var(--success);
+  --warning: #B36A21;      /* pendência/atenção */
+  --warning-bg: #FAEDE0;
+  --serious: var(--warning);
+  --critical: var(--danger);
 
-  /* rampa sequencial — usada pra distinguir etapas de funil/pipeline */
+  /* rampa sequencial — usada pra distinguir etapas de funil/pipeline (mantida) */
   --seq-1: #86b6ef;
   --seq-2: #5598e7;
   --seq-3: #2a78d6;
   --seq-4: #1c5cab;
   --seq-5: #104281;
   --seq-6: #0a2d5c;
+
+  /* ---- Espaço (base 4) ---- */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+  --sp-6: 24px; --sp-8: 32px; --sp-12: 48px; --sp-16: 64px;
+
+  /* ---- Raio ---- */
+  --r-field: 3px;   /* campo, botão */
+  --r-card: 6px;    /* card, modal, painel */
+  --r-app: 14px;    /* ícone de app */
+  --r-pill: 999px;  /* etiqueta de status, símbolo da marca */
+
+  /* ---- Layout ---- */
+  --sidebar-w: 240px;
+  --row-h: 44px;      /* altura de linha de tabela / alvo mínimo de toque */
+  --control-h: 38px;  /* botão e campo */
+  --measure: 46em;    /* largura máxima de texto corrido */
 }
 
+/* Tema escuro: não coberto pelo manual (pendência declarada no handoff). Mantemos a
+   estrutura já em produção, só recalibrada pros novos anchors de marca — ver nota em
+   cada variável abaixo pra saber o que é literal do manual e o que é extensão nossa. */
 @media (prefers-color-scheme: dark) {
   :root {
-    --paper: #14172A;
-    --panel: #10121F;
-    --panel-fg: #F1EEE6;
-    --panel-fg-dim: #9AA0C0;
+    --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
     --panel-border: rgba(241, 238, 230, 0.10);
-    --panel-active-bg: rgba(217, 184, 94, 0.14);
-    --ink: #EDEAE2;
-    --ink-dim: #A6A9C2;
-    --ink-faint: #767A98;
-    --border: rgba(241, 238, 230, 0.12);
-    --field-bg: #1B1E33;
-    --card-bg: #1B1E33;
-    --amber: #D9B85E;
-    --azul: #4CB2DE;
-    --link: #4CB2DE;
-    --danger: #E2766D;
-    --danger-bg: rgba(181, 52, 44, 0.16);
-    --success: #4FBE86;
-    --focus-ring: rgba(76, 178, 222, 0.4);
+    --panel-active-bg: rgba(255, 255, 255, 0.08); --panel-hover-bg: rgba(255, 255, 255, 0.05);
+    --surface: #1B1E33;
+    --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #82869e; --ink-disabled: #5c5f74;
+    --border: rgba(241, 238, 230, 0.12); --border-field: rgba(241, 238, 230, 0.18);
+    --field-bg: #1B1E33; --card-bg: #1B1E33;
+    --amber: #D9B85E; --amber-dark: #C4A244; --amber-light: rgba(217, 184, 94, 0.16);
+    --info: #4CB2DE; --azul: var(--info); --link: var(--info); /* azul-noite fica ilegível sobre fundo escuro */
+    --danger: #E2766D; --danger-bg: rgba(181, 52, 44, 0.16);
+    --success: #4FBE86; --success-bg: rgba(46, 125, 91, 0.18);
+    --warning: #E0A455; --warning-bg: rgba(179, 106, 33, 0.18);
+    --good: var(--success); --warning: #E0A455; --serious: var(--warning); --critical: var(--danger);
+    --focus-ring: rgba(217, 184, 94, 0.4);
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 20px 40px -16px rgba(0, 0, 0, 0.55);
     --seq-1: #9ec5f4; --seq-2: #6da7ec; --seq-3: #3987e5; --seq-4: #256abf; --seq-5: #184f95; --seq-6: #123a70;
   }
 }
 :root[data-theme='dark'] {
   --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
-  --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
-  --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
-  --field-bg: #1B1E33; --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
-  --danger: #E2766D; --danger-bg: rgba(181, 52, 44, 0.16); --success: #4FBE86;
-  --focus-ring: rgba(76, 178, 222, 0.4);
+  --panel-border: rgba(241, 238, 230, 0.10);
+  --panel-active-bg: rgba(255, 255, 255, 0.08); --panel-hover-bg: rgba(255, 255, 255, 0.05);
+  --surface: #1B1E33;
+  --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #82869e; --ink-disabled: #5c5f74;
+  --border: rgba(241, 238, 230, 0.12); --border-field: rgba(241, 238, 230, 0.18);
+  --field-bg: #1B1E33; --card-bg: #1B1E33;
+  --amber: #D9B85E; --amber-dark: #C4A244; --amber-light: rgba(217, 184, 94, 0.16);
+  --info: #4CB2DE; --azul: var(--info); --link: var(--info);
+  --danger: #E2766D; --danger-bg: rgba(181, 52, 44, 0.16);
+  --success: #4FBE86; --success-bg: rgba(46, 125, 91, 0.18);
+  --warning: #E0A455; --warning-bg: rgba(179, 106, 33, 0.18);
+  --good: var(--success); --serious: var(--warning); --critical: var(--danger);
+  --focus-ring: rgba(217, 184, 94, 0.4);
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 20px 40px -16px rgba(0, 0, 0, 0.55);
   --seq-1: #9ec5f4; --seq-2: #6da7ec; --seq-3: #3987e5; --seq-4: #256abf; --seq-5: #184f95; --seq-6: #123a70;
 }
 :root[data-theme='light'] {
-  --paper: #F5F1EB; --panel: #2D3561; --panel-fg: #F1EEE6; --panel-fg-dim: #B7BBD6;
-  --panel-border: rgba(45, 53, 97, 0.12); --panel-active-bg: rgba(201, 168, 76, 0.14);
-  --ink: #22243A; --ink-dim: #5B5E78; --ink-faint: #8B8EA6; --border: rgba(45, 53, 97, 0.14);
-  --field-bg: #FFFFFF; --card-bg: #FFFFFF; --amber: #C9A84C; --azul: #0077A8; --link: #0077A8;
-  --danger: #B5342C; --danger-bg: #FBEAE8; --success: #1E7A4C;
-  --focus-ring: rgba(0, 119, 168, 0.35);
-  --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+  --paper: #F4F4F2; --panel: #232748; --panel-fg: #F1EEE6; --panel-fg-dim: #A9ADC9;
+  --panel-border: rgba(241, 238, 230, 0.12);
+  --panel-active-bg: rgba(255, 255, 255, 0.07); --panel-hover-bg: rgba(255, 255, 255, 0.04);
+  --surface: #FAFAF8;
+  --ink: #1B1D33; --ink-dim: #5C5F74; --ink-faint: #8A8D9C; --ink-disabled: #B4B4AE;
+  --border: #EAEAE6; --border-field: #D8D8D2;
+  --field-bg: #FFFFFF; --card-bg: #FFFFFF;
+  --amber: #D9B654; --amber-dark: #C4A244; --amber-light: #F7EFD8;
+  --info: #2F6BA8; --azul: var(--info); --link: var(--indigo);
+  --danger: #B4453C; --danger-bg: #F8E7E5;
+  --success: #2E7D5B; --success-bg: #E4F1EA;
+  --warning: #B36A21; --warning-bg: #FAEDE0;
+  --good: var(--success); --serious: var(--warning); --critical: var(--danger);
+  --focus-ring: rgba(217, 182, 84, 0.45);
+  --shadow: 0 1px 2px rgba(27, 29, 51, 0.05), 0 10px 24px -14px rgba(27, 29, 51, 0.2);
   --seq-1: #86b6ef; --seq-2: #5598e7; --seq-3: #2a78d6; --seq-4: #1c5cab; --seq-5: #104281; --seq-6: #0a2d5c;
 }

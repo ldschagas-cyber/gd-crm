@@ -45,7 +45,7 @@ function escapeHtml(s) {
 // é um documento aberto em aba própria pra visualizar/imprimir/salvar em PDF).
 function abrirRelatorioHtml({ mesLabel, pesquisadorNome, rows, summary, qualifGeral, ranking, metaRows }) {
   const geradoEm = new Date().toLocaleString('pt-BR', { dateStyle: 'long', timeStyle: 'short' })
-  const qualCor = (pct) => (pct >= 70 ? '#0ca30c' : pct >= 40 ? '#fab219' : '#d03b3b')
+  const qualCor = (pct) => (pct >= 70 ? '#2E7D5B' : pct >= 40 ? '#B36A21' : '#B4453C')
 
   const linhasRanking = ranking.map((r, i) => `
     <div class="rank-row">
@@ -87,23 +87,23 @@ function abrirRelatorioHtml({ mesLabel, pesquisadorNome, rows, summary, qualifGe
 <meta charset="utf-8">
 <title>Relatório de Desempenho — ${escapeHtml(mesLabel)}</title>
 <style>
-  :root { --azul:#0077A8; --amber:#C9A84C; --good:#0ca30c; --warning:#fab219; --critical:#d03b3b;
-          --ink:#22243A; --ink-dim:#5B5E78; --ink-faint:#8B8EA6; --border:#e4dfd3; --paper:#F5F1EB; }
+  :root { --indigo:#2B2F5E; --azul:#2F6BA8; --amber:#D9B654; --good:#2E7D5B; --warning:#B36A21; --critical:#B4453C;
+          --ink:#1B1D33; --ink-dim:#5C5F74; --ink-faint:#8A8D9C; --border:#EAEAE6; --paper:#F4F4F2; }
   * { box-sizing: border-box; }
   body { margin: 0; padding: 40px 48px 60px; background: #fff; color: var(--ink);
          font-family: 'IBM Plex Sans', 'Segoe UI', Helvetica, Arial, sans-serif; }
   .mono { font-family: 'IBM Plex Mono', 'Consolas', monospace; }
   header.doc-head { display: flex; justify-content: space-between; align-items: flex-end;
-                     border-bottom: 2px solid var(--ink); padding-bottom: 16px; margin-bottom: 24px; }
-  h1 { font-size: 22px; margin: 0 0 4px; }
+                     border-bottom: 2px solid var(--indigo); padding-bottom: 16px; margin-bottom: 24px; }
+  h1 { font-family: 'Space Grotesk', 'IBM Plex Sans', sans-serif; font-weight: 700; font-size: 22px; margin: 0 0 4px; letter-spacing: -0.01em; }
   .doc-sub { color: var(--ink-dim); font-size: 13px; margin: 0; }
   .brand { text-align: right; font-size: 12px; color: var(--ink-faint); }
-  .brand b { color: var(--azul); font-size: 14px; }
+  .brand b { font-family: 'Space Grotesk', 'IBM Plex Sans', sans-serif; color: var(--indigo); font-size: 14px; }
   .stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
   .stat-tile { border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; background: var(--paper); }
   .stat-tile .t { font-size: 11px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .04em; }
   .stat-tile .v { font-size: 22px; font-weight: 700; margin-top: 4px; }
-  .stat-tile.bonus .v { color: var(--amber); }
+  .stat-tile.bonus .v { color: var(--good); }
   section { margin-bottom: 30px; }
   h2 { font-size: 15px; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
   .rank-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }

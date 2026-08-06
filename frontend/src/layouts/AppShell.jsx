@@ -7,6 +7,7 @@ import { getTenant } from '../api/tenant'
 import { avatarUrl } from '../api/me'
 import { initials } from '../utils/avatar'
 import Softphone from '../components/Softphone.jsx'
+import ArgosMark from '../components/ArgosMark.jsx'
 import './AppShell.css'
 
 const NAV_GROUPS = [
@@ -68,10 +69,10 @@ export default function AppShell() {
       {sidebarOpen && <div className="sidebar-scrim" onClick={() => setSidebarOpen(false)} />}
       <aside className={`sidebar${sidebarOpen ? ' open' : ''}`}>
         <div className="sb-brand">
-          <div className="monogram">A</div>
+          <ArgosMark size={26} variant="dark" />
           <div>
             <strong>Argos</strong>
-            <span>Gestão comercial</span>
+            <span>By GD Conecta</span>
           </div>
         </div>
 

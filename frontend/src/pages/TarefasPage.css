@@ -14,7 +14,7 @@
   border-bottom: 1px solid var(--border); border-left: 3px solid transparent;
 }
 .task-row:last-child { border-bottom: none; }
-.task-row.overdue { border-left-color: var(--critical); background: rgba(208, 59, 59, 0.03); }
+.task-row.overdue { border-left-color: var(--critical); background: rgba(180, 69, 60, 0.03); }
 .task-row.done { opacity: 0.68; }
 
 .task-check {
@@ -46,7 +46,7 @@
 .prio-baixa { color: var(--ink-faint); }
 
 .overdue-pill {
-  font-size: 10.5px; font-weight: 700; color: var(--critical); background: rgba(208, 59, 59, 0.1);
+  font-size: 10.5px; font-weight: 700; color: var(--critical); background: rgba(180, 69, 60, 0.1);
   padding: 2px 8px; border-radius: 100px;
 }
 

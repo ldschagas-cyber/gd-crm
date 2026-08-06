@@ -26,7 +26,7 @@
   border: 1px solid var(--border); background: var(--card-bg); color: var(--ink-dim);
   font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 8px; cursor: pointer;
 }
-.composer-type.active { border-color: var(--azul); color: var(--azul); background: rgba(0, 119, 168, 0.07); }
+.composer-type.active { border-color: var(--azul); color: var(--azul); background: rgba(47, 107, 168, 0.07); }
 .composer textarea {
   width: 100%; font: inherit; font-size: 13px; color: var(--ink); background: var(--card-bg);
   border: 1px solid var(--border); border-radius: 8px; padding: 9px 11px; min-height: 56px; resize: vertical;
@@ -60,7 +60,7 @@
   display: inline-block; margin-left: 7px; font-size: 10px; font-weight: 700; text-transform: uppercase;
   letter-spacing: .02em; padding: 1px 7px; border-radius: 100px; vertical-align: middle;
 }
-.tl-tag.ok { background: rgba(12,163,12,0.12); color: var(--good, #0ca30c); }
+.tl-tag.ok { background: rgba(46, 125, 91,0.12); color: var(--good, #0ca30c); }
 .tl-tag.teams { background: rgba(91,95,199,0.14); color: #5b5fc7; }
 .tl-tag.err { background: rgba(211,47,47,0.12); color: var(--bad, #d32f2f); }
 .tl-teams-link { display: inline-block; font-size: 12px; color: #5b5fc7; font-weight: 600; margin-top: 4px; }
@@ -109,12 +109,12 @@
 .co-header { padding: 20px 22px; }
 .co-header-top { display: flex; align-items: flex-start; gap: 16px; }
 .co-logo {
-  width: 52px; height: 52px; border-radius: 12px; flex: none; background: rgba(0, 119, 168, 0.12);
+  width: 52px; height: 52px; border-radius: 12px; flex: none; background: rgba(47, 107, 168, 0.12);
   color: var(--azul); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700;
 }
 .co-title-block { flex: 1; min-width: 0; }
 .co-title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.co-title-row h1 { margin: 0; font-size: 21px; font-weight: 650; letter-spacing: -0.01em; }
+.co-title-row h1 { margin: 0; font-family: var(--font-brand); font-size: 21px; font-weight: 700; letter-spacing: -0.01em; color: var(--ink); }
 .co-sub { margin: 3px 0 0; font-size: 13px; color: var(--ink-dim); }
 .co-tags { display: flex; gap: 7px; margin-top: 10px; flex-wrap: wrap; }
 .tag {

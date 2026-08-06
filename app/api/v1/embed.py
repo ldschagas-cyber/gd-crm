@@ -91,21 +91,21 @@ FORM_WIDGET_JS = """
       + '.gdc-form .gdc-field{margin-bottom:16px;}'
       + '.gdc-form label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:inherit;}'
       + '.gdc-form input,.gdc-form select,.gdc-form textarea{'
-      +   'width:100%;padding:10px 12px;border:1px solid #d7d7e0;border-radius:8px;'
+      +   'width:100%;padding:10px 12px;border:1px solid #D8D8D2;border-radius:3px;'
       +   'box-sizing:border-box;font:inherit;font-size:14px;color:inherit;background:#fff;'
       +   'transition:border-color .15s ease,box-shadow .15s ease;}'
       + '.gdc-form textarea{min-height:88px;resize:vertical;}'
       + '.gdc-form input:focus,.gdc-form select:focus,.gdc-form textarea:focus{'
-      +   'outline:none;border-color:#2D3561;box-shadow:0 0 0 3px rgba(45,53,97,0.15);}'
+      +   'outline:2px solid #D9B654;outline-offset:1px;border-color:#2B2F5E;}'
       + '.gdc-form-submit{'
-      +   'width:100%;background:#2D3561;color:#fff;border:none;padding:12px 20px;'
-      +   'border-radius:8px;cursor:pointer;font:inherit;font-size:14px;font-weight:600;'
+      +   'width:100%;background:#2B2F5E;color:#fff;border:none;padding:12px 20px;'
+      +   'border-radius:3px;cursor:pointer;font:inherit;font-size:14px;font-weight:600;'
       +   'transition:background-color .15s ease;}'
-      + '.gdc-form-submit:hover{background:#232a4d;}'
+      + '.gdc-form-submit:hover{background:#3A3F78;}'
       + '.gdc-form-submit:disabled{opacity:.6;cursor:default;}'
-      + '.gdc-form-msg{display:none;margin-top:14px;padding:10px 14px;border-radius:8px;font-size:13px;}'
-      + '.gdc-form-msg.ok{display:block;background:rgba(12,163,12,0.1);color:#0ca30c;}'
-      + '.gdc-form-msg.err{display:block;background:rgba(208,59,59,0.1);color:#d03b3b;}';
+      + '.gdc-form-msg{display:none;margin-top:14px;padding:10px 14px;border-radius:6px;font-size:13px;}'
+      + '.gdc-form-msg.ok{display:block;background:#E4F1EA;color:#2E7D5B;}'
+      + '.gdc-form-msg.err{display:block;background:#F8E7E5;color:#B4453C;}';
     document.head.appendChild(style);
   }
 

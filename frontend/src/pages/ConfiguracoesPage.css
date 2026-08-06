@@ -6,8 +6,8 @@
 .job-status-pill {
   display: inline-block; font-size: 11.5px; font-weight: 650; padding: 3px 10px; border-radius: 100px; white-space: nowrap;
 }
-.job-status-concluido { background: rgba(12, 163, 12, 0.12); color: var(--good); }
-.job-status-processando { background: rgba(0, 119, 168, 0.12); color: var(--azul); }
+.job-status-concluido { background: rgba(46, 125, 91, 0.12); color: var(--good); }
+.job-status-processando { background: rgba(47, 107, 168, 0.12); color: var(--azul); }
 .job-status-pendente { background: rgba(139, 142, 166, 0.14); color: var(--ink-dim); }
-.job-status-erro { background: rgba(208, 59, 59, 0.12); color: var(--critical); }
+.job-status-erro { background: rgba(180, 69, 60, 0.12); color: var(--critical); }
 .job-errors { color: var(--critical); font-weight: 600; cursor: help; }

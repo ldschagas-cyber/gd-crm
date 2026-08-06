@@ -16,11 +16,11 @@
 
 .num { text-align: right; font-weight: 600; }
 
-.status-pill[data-status='ativo'] { background: rgba(12, 163, 12, 0.12); color: var(--good); }
+.status-pill[data-status='ativo'] { background: rgba(46, 125, 91, 0.12); color: var(--good); }
 .status-pill[data-status='ativo'] .d { background: var(--good); }
 .status-pill[data-status='rascunho'] { background: rgba(139, 142, 166, 0.14); color: var(--ink-dim); }
 .status-pill[data-status='rascunho'] .d { background: var(--ink-faint); }
-.status-pill[data-status='pausado'] { background: rgba(250, 178, 25, 0.16); color: var(--warning); }
+.status-pill[data-status='pausado'] { background: rgba(179, 106, 33, 0.16); color: var(--warning); }
 .status-pill[data-status='pausado'] .d { background: var(--warning); }
 
 .row-actions { display: flex; gap: 6px; justify-content: flex-end; }
@@ -30,11 +30,11 @@
 .subm-list { display: flex; flex-direction: column; padding: 2px 18px 16px; }
 .subm-item { display: flex; align-items: center; gap: 11px; padding: 9px 0; }
 .subm-item + .subm-item { border-top: 1px dashed var(--border); }
-.subm-avatar { width: 27px; height: 27px; border-radius: 50%; flex: none; background: rgba(0, 119, 168, 0.16); color: var(--azul); display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 700; }
+.subm-avatar { width: 27px; height: 27px; border-radius: 50%; flex: none; background: rgba(47, 107, 168, 0.16); color: var(--azul); display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 700; }
 .subm-text { flex: 1; min-width: 0; font-size: 12.8px; color: var(--ink); }
 .subm-text b { font-weight: 600; }
 .subm-meta { font-size: 11px; color: var(--ink-faint); margin-top: 2px; font-family: var(--font-mono); }
-.tag-lead { font-size: 10.5px; font-weight: 700; color: var(--good); background: rgba(12, 163, 12, 0.12); padding: 2px 7px; border-radius: 100px; white-space: nowrap; }
+.tag-lead { font-size: 10.5px; font-weight: 700; color: var(--good); background: rgba(46, 125, 91, 0.12); padding: 2px 7px; border-radius: 100px; white-space: nowrap; }
 .tag-dup { font-size: 10.5px; font-weight: 700; color: var(--ink-faint); background: rgba(139, 142, 166, 0.14); padding: 2px 7px; border-radius: 100px; white-space: nowrap; }
 
 .page-list { display: flex; flex-direction: column; padding: 4px 18px 16px; }
@@ -44,9 +44,9 @@
 .page-row .views { font-weight: 650; width: 52px; text-align: right; }
 
 .co-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 100px; white-space: nowrap; }
-.co-badge.new { background: rgba(0, 119, 168, 0.12); color: var(--azul); }
-.co-badge.lead { background: rgba(250, 178, 25, 0.16); color: var(--warning); }
-.co-badge.client { background: rgba(12, 163, 12, 0.12); color: var(--good); }
+.co-badge.new { background: rgba(47, 107, 168, 0.12); color: var(--azul); }
+.co-badge.lead { background: rgba(179, 106, 33, 0.16); color: var(--warning); }
+.co-badge.client { background: rgba(46, 125, 91, 0.12); color: var(--good); }
 
 .source-cell { color: var(--ink-dim); font-size: 12.5px; }
 
@@ -91,7 +91,7 @@
 .canvas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; align-items: start; }
 .canvas-field { position: relative; display: flex; flex-direction: column; gap: 5px; border: 1.5px solid transparent; border-radius: 8px; padding: 3px; transition: border-color 100ms ease, background-color 100ms ease; cursor: grab; }
 .canvas-field.full { grid-column: 1 / -1; }
-.canvas-field.drag-over { border-color: var(--azul); background: rgba(0, 119, 168, 0.05); }
+.canvas-field.drag-over { border-color: var(--azul); background: rgba(47, 107, 168, 0.05); }
 .canvas-field label { font-size: 11px; font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 5px; }
 .canvas-field .lock-icon { font-size: 10px; }
 .canvas-field input, .canvas-field textarea, .canvas-field select {
@@ -112,7 +112,7 @@
   grid-column: 1 / -1; border: 1.5px dashed var(--border); border-radius: 8px; padding: 12px;
   text-align: center; font-size: 12px; color: var(--ink-faint); margin-top: 2px; transition: border-color 100ms ease, color 100ms ease;
 }
-.canvas-dropzone.drag-over { border-color: var(--azul); color: var(--azul); background: rgba(0, 119, 168, 0.06); }
+.canvas-dropzone.drag-over { border-color: var(--azul); color: var(--azul); background: rgba(47, 107, 168, 0.06); }
 
 .canvas-actions { display: flex; justify-content: flex-end; margin-top: 16px; }
 .preview-submit {

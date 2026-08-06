@@ -3,7 +3,7 @@
    layout pro card de Empresa relacionada. */
 
 .deal-head { display: flex; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
-.deal-head h1 { margin: 0 0 6px; font-size: 21px; font-weight: 700; letter-spacing: -0.01em; }
+.deal-head h1 { margin: 0 0 6px; font-family: var(--font-brand); font-size: 21px; font-weight: 700; letter-spacing: -0.01em; color: var(--ink); }
 .deal-head-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 12.8px; color: var(--ink-dim); }
 .deal-actions { margin-left: auto; display: flex; gap: 8px; flex: none; flex-wrap: wrap; }
 
@@ -11,18 +11,18 @@
 .stage-pill-lg .d { width: 7px; height: 7px; border-radius: 50%; }
 .stage-pill-lg.aberto { background: rgba(16, 66, 129, 0.12); color: var(--seq-5); }
 .stage-pill-lg.aberto .d { background: var(--seq-5); }
-.stage-pill-lg.ganho { background: rgba(12, 163, 12, 0.14); color: var(--good); }
+.stage-pill-lg.ganho { background: rgba(46, 125, 91, 0.14); color: var(--good); }
 .stage-pill-lg.ganho .d { background: var(--good); }
-.stage-pill-lg.perdido { background: rgba(208, 59, 59, 0.12); color: var(--critical); }
+.stage-pill-lg.perdido { background: rgba(180, 69, 60, 0.12); color: var(--critical); }
 .stage-pill-lg.perdido .d { background: var(--critical); }
 
 .btn-good { display: inline-flex; align-items: center; gap: 7px; background: var(--good); color: #fff; border: 1px solid var(--good); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
 .btn-good:hover { filter: brightness(0.94); }
 .btn-good[disabled] { opacity: 0.4; cursor: not-allowed; }
-.btn-danger-outline { display: inline-flex; align-items: center; gap: 7px; background: var(--card-bg); color: var(--critical); border: 1px solid rgba(208, 59, 59, .35); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
-.btn-danger-outline:hover { background: rgba(208, 59, 59, .06); }
+.btn-danger-outline { display: inline-flex; align-items: center; gap: 7px; background: var(--card-bg); color: var(--critical); border: 1px solid rgba(180, 69, 60, .35); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+.btn-danger-outline:hover { background: rgba(180, 69, 60, .06); }
 .btn-sm { padding: 6px 11px; font-size: 12px; border-radius: 7px; }
 
 .closed-banner { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; }
-.closed-banner.ganho { background: rgba(12, 163, 12, 0.1); color: var(--good); }
-.closed-banner.perdido { background: rgba(208, 59, 59, 0.1); color: var(--critical); }
+.closed-banner.ganho { background: rgba(46, 125, 91, 0.1); color: var(--good); }
+.closed-banner.perdido { background: rgba(180, 69, 60, 0.1); color: var(--critical); }

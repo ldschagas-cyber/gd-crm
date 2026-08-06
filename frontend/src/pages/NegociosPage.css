@@ -38,7 +38,7 @@
   padding: 10px; overflow-y: auto; flex: 1; display: flex; flex-direction: column;
   gap: 8px; min-height: 60px; transition: background-color 100ms ease;
 }
-.kb-col-body.drag-over { background: rgba(0, 119, 168, 0.06); }
+.kb-col-body.drag-over { background: rgba(47, 107, 168, 0.06); }
 
 .kb-col-foot { padding: 9px 13px; border-top: 1px solid var(--border); flex: none; }
 .kb-col-foot-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-family: var(--font-mono); font-size: 12px; font-weight: 650; color: var(--ink); }
@@ -55,7 +55,7 @@
 .kb-card-value { font-family: var(--font-mono); font-size: 13px; font-weight: 650; color: var(--ink); margin-top: 7px; }
 .stalled-tag {
   display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; font-size: 10.5px; font-weight: 700;
-  color: var(--warning); background: rgba(250, 178, 25, 0.16); padding: 2px 8px; border-radius: 100px; white-space: nowrap;
+  color: var(--warning); background: rgba(179, 106, 33, 0.16); padding: 2px 8px; border-radius: 100px; white-space: nowrap;
 }
 .kb-card .stalled-tag { display: flex; width: fit-content; }
 td .stalled-tag { margin-top: 3px; margin-left: 4px; }

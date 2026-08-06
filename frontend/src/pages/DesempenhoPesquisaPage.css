@@ -6,7 +6,7 @@
 .rank-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
 .rank-row:last-child { border-bottom: none; }
 .rank-medal { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex: none; font-family: var(--font-mono); }
-.rank-medal.p1 { background: rgba(201, 168, 76, 0.22); color: var(--amber); }
+.rank-medal.p1 { background: rgba(217, 182, 84, 0.22); color: var(--amber); }
 .rank-medal.p2 { background: rgba(139, 142, 166, 0.18); color: var(--ink-dim); }
 .rank-medal.p3 { background: rgba(178, 123, 58, 0.18); color: #b27b3a; }
 .rank-body { flex: 1; min-width: 0; }
@@ -25,9 +25,9 @@
 .cell-num { font-family: var(--font-mono); text-align: right; }
 .row-resp-name { font-weight: 600; color: var(--ink); font-size: 13px; }
 .qual-pill { font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 100px; font-family: var(--font-mono); }
-.qual-pill.high { background: rgba(12, 163, 12, 0.12); color: var(--good); }
-.qual-pill.mid { background: rgba(250, 178, 25, 0.16); color: var(--warning); }
-.qual-pill.low { background: rgba(208, 59, 59, 0.1); color: var(--critical); }
+.qual-pill.high { background: rgba(46, 125, 91, 0.12); color: var(--good); }
+.qual-pill.mid { background: rgba(179, 106, 33, 0.16); color: var(--warning); }
+.qual-pill.low { background: rgba(180, 69, 60, 0.1); color: var(--critical); }
 .bonus-cell { font-family: var(--font-mono); font-weight: 700; color: var(--amber); text-align: right; }
 
 @media (max-width: 1080px) { .grid-main { grid-template-columns: 1fr; } }
