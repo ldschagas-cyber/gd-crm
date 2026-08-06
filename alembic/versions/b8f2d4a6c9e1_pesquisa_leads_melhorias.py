@@ -1,8 +1,17 @@
 """pesquisa de leads: faixa_faturamento, origem, metas de pesquisa por usuário
 
 Revision ID: b8f2d4a6c9e1
-Revises: a3f6c1d9e2b7
+Revises: fb11856ce211
 Create Date: 2026-08-06 00:00:00.000000
+
+Nota: originalmente encadeada em cima de a3f6c1d9e2b7 (add descricao to tasks),
+mas essa revisão nunca foi commitada no git — ficou de fora de propósito de um
+commit anterior (só Pesquisa de Leads foi pra produção). Reapontada pra
+fb11856ce211, que é onde o banco de produção realmente estava. Quando a
+migração de descricao em tasks for commitada, ela vai precisar de um merge
+(`alembic merge heads`) pra unificar as duas pontas — nenhuma DDL chegou a
+rodar no banco antes dessa correção (o erro acontecia na resolução do grafo
+de revisões, antes de qualquer SQL ser executado).
 """
 from typing import Sequence, Union
 
@@ -11,7 +20,7 @@ import sqlalchemy as sa
 
 
 revision: str = 'b8f2d4a6c9e1'
-down_revision: Union[str, None] = 'a3f6c1d9e2b7'
+down_revision: Union[str, None] = 'fb11856ce211'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
