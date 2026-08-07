@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.context import get_current_tenant
 from app.core.exceptions import ConflictError
+from app.core.text import normalize_company_name
 from app.models.company import Company
 from app.models.lead_prospect import LeadProspect, LeadStatus
 from app.schemas.public_company import (
@@ -128,7 +129,7 @@ class PublicCompanyService:
             if e.cnpj in existentes:
                 continue
             lead = LeadProspect(
-                tenant_id=tenant_id, empresa=e.razao_social, cnpj=e.cnpj, uf=e.uf,
+                tenant_id=tenant_id, empresa=normalize_company_name(e.razao_social), cnpj=e.cnpj, uf=e.uf,
                 regiao=UF_REGIAO.get(e.uf) if e.uf else None,
                 status=LeadStatus.NOVO.value, pesquisado_por=pesquisado_por,
             )
