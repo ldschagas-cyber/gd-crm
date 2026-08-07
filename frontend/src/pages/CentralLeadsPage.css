@@ -2,6 +2,21 @@
    Reaproveita .stat-strip/.stat-tile/.status-pill/.modal-box/.scrim/.row-resp/.icon-btn
    de dataTable.css; aqui só o que é específico desta tela. */
 
+/* Paleta de estágio própria desta tela — não reaproveita a rampa mono-azul --seq-*
+   (usada em Negócios/Dashboard/Desempenho da Pesquisa, onde a intenção é indicar
+   progressão numa escala única). Aqui cada estágio é uma categoria distinta, então
+   cores de matiz diferente ajudam a diferenciar de relance no kanban. Fixo por tema,
+   mesmo padrão de --good/--warning/--critical em tokens.css: sempre pareado com
+   rótulo, contraste checado contra texto branco (~4.5:1+ em todas). */
+:root {
+  --stg-novo: #64748B;        /* slate — recém-chegado, neutro */
+  --stg-qualificando: #2F6BA8; /* azul info da marca — discovery em andamento */
+  --stg-cadencia: #96701C;     /* dourado escuro — ecoa o âmbar já usado pra cadência nos cards */
+  --stg-mql: #7C5CBF;          /* violeta — marketing qualificou */
+  --stg-sql: #B44E7A;          /* vinho — vendas qualificou */
+  --stg-convertido: #2E7D5B;   /* verde de sucesso da marca — virou negócio */
+}
+
 .info-banner {
   display: flex; gap: 10px; align-items: flex-start; padding: 11px 14px;
   background: color-mix(in srgb, var(--azul) 7%, var(--card-bg)); border: 1px solid var(--border);
