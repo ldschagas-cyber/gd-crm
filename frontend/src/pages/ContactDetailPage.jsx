@@ -3,11 +3,14 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getContact, getContactEmails, updateContact } from '../api/contacts'
 import { getCompany } from '../api/companies'
-import { listDeals } from '../api/deals'
-import { listTasks, completeTask } from '../api/tasks'
+import { listDeals, createDeal } from '../api/deals'
+import { listPipelines } from '../api/pipelines'
+import { listTasks, completeTask, createTask } from '../api/tasks'
 import { listContactTimeline, addContactTimelineNote } from '../api/timeline'
 import { listUsers } from '../api/users'
 import { ContactModal } from './ContatosPage.jsx'
+import { DealDrawer } from './NegociosPage.jsx'
+import { TaskModal } from './TarefasPage.jsx'
 import TimelineComposer from '../components/TimelineComposer.jsx'
 import { useSoftphone } from '../context/SoftphoneContext.jsx'
 import '../styles/dataTable.css'
@@ -43,6 +46,8 @@ export default function ContactDetailPage() {
   const queryClient = useQueryClient()
   const { conectado: chamadasConectadas, call: ligar } = useSoftphone()
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showNewDeal, setShowNewDeal] = useState(false)
+  const [showNewTask, setShowNewTask] = useState(false)
   const [timelineFilter, setTimelineFilter] = useState('all')
 
   const contactQuery = useQuery({ queryKey: ['contacts', 'detail', id], queryFn: () => getContact(id) })
@@ -57,6 +62,9 @@ export default function ContactDetailPage() {
   const timelineQuery = useQuery({ queryKey: ['contact-timeline', id], queryFn: () => listContactTimeline(id) })
   const dealsQuery = useQuery({ queryKey: ['deals', 'mini-contact', id], queryFn: () => listDeals({ contactId: id, size: 5 }) })
   const tasksQuery = useQuery({ queryKey: ['tasks', 'mini-contact', id], queryFn: () => listTasks({ contactId: id, size: 20 }) })
+  const pipelinesQuery = useQuery({ queryKey: ['pipelines'], queryFn: () => listPipelines({ size: 100 }) })
+  const pipelines = pipelinesQuery.data?.items ?? []
+  const dealPipeline = pipelines.find((p) => p.is_default) ?? pipelines[0]
   const emailsQuery = useQuery({
     queryKey: ['contact-emails', id],
     queryFn: () => getContactEmails(id),
@@ -79,6 +87,21 @@ export default function ContactDetailPage() {
   const completeTaskMutation = useMutation({
     mutationFn: completeTask,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tasks', 'mini-contact', id] }),
+  })
+  const createDealMutation = useMutation({
+    mutationFn: createDeal,
+    onSuccess: () => {
+      setShowNewDeal(false)
+      queryClient.invalidateQueries({ queryKey: ['deals', 'mini-contact', id] })
+      queryClient.invalidateQueries({ queryKey: ['contact-timeline', id] })
+    },
+  })
+  const createTaskMutation = useMutation({
+    mutationFn: createTask,
+    onSuccess: () => {
+      setShowNewTask(false)
+      queryClient.invalidateQueries({ queryKey: ['tasks', 'mini-contact', id] })
+    },
   })
 
   if (contactQuery.isLoading) return <div className="content"><p className="state-msg">Carregando…</p></div>
@@ -294,6 +317,7 @@ export default function ContactDetailPage() {
                   <p className="state-msg">Nenhum negócio vinculado.</p>
                 )}
               </div>
+              {company && dealPipeline && <div className="add-row-btn" onClick={() => setShowNewDeal(true)}>+ Novo negócio</div>}
             </div>
 
             <div className="card">
@@ -321,6 +345,7 @@ export default function ContactDetailPage() {
                   <p className="state-msg">Nenhuma tarefa vinculada.</p>
                 )}
               </div>
+              {company && <div className="add-row-btn" onClick={() => setShowNewTask(true)}>+ Nova tarefa</div>}
             </div>
           </div>
         </section>
@@ -334,6 +359,32 @@ export default function ContactDetailPage() {
           onSubmit={(data) => updateMutation.mutate(data)}
           submitting={updateMutation.isPending}
           error={updateMutation.error}
+        />
+      )}
+
+      {showNewDeal && company && dealPipeline && (
+        <DealDrawer
+          pipeline={dealPipeline}
+          companies={[company]}
+          presetCompanyId={company.id}
+          presetContactId={id}
+          users={usersQuery.data?.items ?? []}
+          onClose={() => setShowNewDeal(false)}
+          onSubmit={(data) => createDealMutation.mutate({ ...data, pipeline_id: dealPipeline.id })}
+          submitting={createDealMutation.isPending}
+          error={createDealMutation.error}
+        />
+      )}
+
+      {showNewTask && company && (
+        <TaskModal
+          task={{ company_id: company.id, contact_id: id }}
+          companies={[company]}
+          users={usersQuery.data?.items ?? []}
+          onClose={() => setShowNewTask(false)}
+          onSubmit={(data) => createTaskMutation.mutate(data)}
+          submitting={createTaskMutation.isPending}
+          error={createTaskMutation.error}
         />
       )}
     </>

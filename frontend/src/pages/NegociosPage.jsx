@@ -11,6 +11,7 @@ import { listUsers } from '../api/users'
 import { buildStageTintMap } from '../utils/stageColor'
 import StageLabel from '../components/StageLabel.jsx'
 import EnrollModal from '../components/EnrollModal.jsx'
+import BulkTaskModal from '../components/BulkTaskModal.jsx'
 import '../styles/dataTable.css'
 import './NegociosPage.css'
 
@@ -360,7 +361,9 @@ function DealsList({ query, page, setPage, companiesById, usersById, stages, col
   const queryClient = useQueryClient()
   const [selected, setSelected] = useState({})
   const [showBulkEnroll, setShowBulkEnroll] = useState(false)
+  const [showBulkTask, setShowBulkTask] = useState(false)
   const selectedIds = Object.keys(selected).filter((id) => selected[id])
+  const selectedDeals = items.filter((d) => selected[d.id])
 
   function toggleSelect(id) {
     setSelected((s) => ({ ...s, [id]: !s[id] }))
@@ -385,6 +388,7 @@ function DealsList({ query, page, setPage, companiesById, usersById, stages, col
           <span><b>{selectedIds.length}</b> selecionados</span>
           <div className="link-btn">
             <a onClick={() => setShowBulkEnroll(true)}>Inscrever</a>
+            <a onClick={() => setShowBulkTask(true)}>+ Tarefa</a>
             <a onClick={handleBulkDelete}>Excluir</a>
           </div>
         </div>
@@ -449,15 +453,24 @@ function DealsList({ query, page, setPage, companiesById, usersById, stages, col
           onEnrolled={() => setSelected({})}
         />
       )}
+
+      {showBulkTask && (
+        <BulkTaskModal
+          alvos={selectedDeals.map((d) => ({ deal_id: d.id, company_id: d.company_id, contact_id: d.contact_id }))}
+          alvoLabel={`${selectedIds.length} negócio(s) selecionado(s)`}
+          onClose={() => setShowBulkTask(false)}
+          onCreated={() => setSelected({})}
+        />
+      )}
     </div>
   )
 }
 
-function DealDrawer({ pipeline, companies, presetCompanyId, users, onClose, onSubmit, submitting, error }) {
+export function DealDrawer({ pipeline, companies, presetCompanyId, presetContactId, users, onClose, onSubmit, submitting, error }) {
   const [form, setForm] = useState({
-    nome: '', company_id: presetCompanyId ?? '', contact_id: '', responsavel_id: '',
+    nome: '', company_id: presetCompanyId ?? '', contact_id: presetContactId ?? '', responsavel_id: '',
     stage_id: pipeline.stages.find((s) => s.tipo === 'aberta')?.id ?? '',
-    valor_previsto: '', probabilidade: '', data_prev_fechamento: '', origem: '',
+    valor_previsto: '', probabilidade: '', data_prev_fechamento: '',
   })
 
   const contactsQuery = useQuery({
@@ -482,11 +495,11 @@ function DealDrawer({ pipeline, companies, presetCompanyId, users, onClose, onSu
       valor_previsto: form.valor_previsto === '' ? null : Number(form.valor_previsto),
       probabilidade: form.probabilidade === '' ? null : parseInt(form.probabilidade, 10),
       data_prev_fechamento: form.data_prev_fechamento || null,
-      origem: form.origem.trim() || null,
     })
   }
 
   const openStages = pipeline.stages.filter((s) => s.tipo === 'aberta').sort((a, b) => a.ordem - b.ordem)
+  const selectedCompany = companies.find((c) => c.id === form.company_id)
 
   return (
     <div className="scrim show" onClick={onClose}>
@@ -546,8 +559,9 @@ function DealDrawer({ pipeline, companies, presetCompanyId, users, onClose, onSu
                 <input className="f-input" type="date" value={form.data_prev_fechamento} onChange={set('data_prev_fechamento')} />
               </div>
               <div className="f-group">
-                <label className="f-label">Origem <span className="opt">opcional</span></label>
-                <input className="f-input" value={form.origem} onChange={set('origem')} placeholder="Ex.: Indicação" />
+                <label className="f-label">Origem</label>
+                <input className="f-input" value={selectedCompany?.origem || 'Sem origem'} disabled />
+                <span className="f-hint">Herdada da empresa selecionada — para mudar, edite a origem em Empresas.</span>
               </div>
             </div>
             {error && <p className="state-msg error">Não foi possível salvar. Confira os dados e tente de novo.</p>}
@@ -569,7 +583,6 @@ function EditDealModal({ deal, companies, users, onClose, onSubmit, submitting, 
     valor_previsto: deal.valor_previsto ?? '',
     probabilidade: deal.probabilidade ?? '',
     data_prev_fechamento: deal.data_prev_fechamento ?? '',
-    origem: deal.origem ?? '',
   })
 
   function set(field) {
@@ -584,7 +597,6 @@ function EditDealModal({ deal, companies, users, onClose, onSubmit, submitting, 
       valor_previsto: form.valor_previsto === '' ? null : Number(form.valor_previsto),
       probabilidade: form.probabilidade === '' ? null : parseInt(form.probabilidade, 10),
       data_prev_fechamento: form.data_prev_fechamento || null,
-      origem: form.origem.trim() || null,
     })
   }
 
@@ -620,7 +632,7 @@ function EditDealModal({ deal, companies, users, onClose, onSubmit, submitting, 
             </div>
             <div className="field">
               <label htmlFor="origem">Origem</label>
-              <input id="origem" value={form.origem} onChange={set('origem')} />
+              <input id="origem" value={companies.find((c) => c.id === deal.company_id)?.origem || 'Sem origem'} disabled />
             </div>
           </div>
           {error && <p className="state-msg error">Não foi possível salvar. Confira os dados e tente de novo.</p>}

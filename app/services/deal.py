@@ -58,7 +58,8 @@ class DealService:
         return deal
 
     def create(self, data: DealCreate) -> Deal:
-        if self.companies.get(data.company_id) is None:
+        company = self.companies.get(data.company_id)
+        if company is None:
             raise NotFoundError("Empresa não encontrada")
         stage = self.stages.get(data.stage_id)
         if stage is None:
@@ -66,6 +67,8 @@ class DealService:
         payload = data.model_dump()
         if payload.get("probabilidade") is None:
             payload["probabilidade"] = stage.probabilidade
+        # Origem não é escolhida no negócio — herda sempre da empresa (ver DealCreate/DealUpdate).
+        payload["origem"] = company.origem
         deal = Deal(**payload)
         deal = self.repo.add(deal)
         self.timeline.registrar(deal.company_id, TimelineType.PIPELINE.value,

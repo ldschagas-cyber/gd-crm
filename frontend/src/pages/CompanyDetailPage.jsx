@@ -3,13 +3,16 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getCompany, setCompanyStatus, updateCompany } from '../api/companies'
 import { listContacts, createContact } from '../api/contacts'
-import { listDeals } from '../api/deals'
-import { listTasks, completeTask } from '../api/tasks'
+import { listDeals, createDeal } from '../api/deals'
+import { listPipelines } from '../api/pipelines'
+import { listTasks, completeTask, createTask } from '../api/tasks'
 import { listTimeline, addTimelineNote } from '../api/timeline'
 import { getContactEmails } from '../api/contacts'
 import { listUsers } from '../api/users'
 import { CompanyModal } from './EmpresasPage.jsx'
 import { ContactModal } from './ContatosPage.jsx'
+import { DealDrawer } from './NegociosPage.jsx'
+import { TaskModal } from './TarefasPage.jsx'
 import EnrollModal from '../components/EnrollModal.jsx'
 import TimelineComposer from '../components/TimelineComposer.jsx'
 import CompanyTabs from '../components/CompanyTabs.jsx'
@@ -44,6 +47,8 @@ export default function CompanyDetailPage() {
   const { conectado: chamadasConectadas, call: ligar } = useSoftphone()
   const [showEditModal, setShowEditModal] = useState(false)
   const [showNewContact, setShowNewContact] = useState(false)
+  const [showNewDeal, setShowNewDeal] = useState(false)
+  const [showNewTask, setShowNewTask] = useState(false)
   const [showEnrollModal, setShowEnrollModal] = useState(false)
   const [timelineFilter, setTimelineFilter] = useState('all')
   const [emailsContactId, setEmailsContactId] = useState('')
@@ -54,6 +59,9 @@ export default function CompanyDetailPage() {
   const contactsQuery = useQuery({ queryKey: ['contacts', 'mini', id], queryFn: () => listContacts({ companyId: id, size: 5 }) })
   const dealsQuery = useQuery({ queryKey: ['deals', 'mini', id], queryFn: () => listDeals({ companyId: id, size: 5 }) })
   const tasksQuery = useQuery({ queryKey: ['tasks', 'mini', id], queryFn: () => listTasks({ companyId: id, size: 5 }) })
+  const pipelinesQuery = useQuery({ queryKey: ['pipelines'], queryFn: () => listPipelines({ size: 100 }) })
+  const pipelines = pipelinesQuery.data?.items ?? []
+  const dealPipeline = pipelines.find((p) => p.is_default) ?? pipelines[0]
   const emailsQuery = useQuery({
     queryKey: ['contact-emails', emailsContactId],
     queryFn: () => getContactEmails(emailsContactId),
@@ -90,6 +98,21 @@ export default function CompanyDetailPage() {
   const completeTaskMutation = useMutation({
     mutationFn: completeTask,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tasks', 'mini', id] }),
+  })
+  const createDealMutation = useMutation({
+    mutationFn: createDeal,
+    onSuccess: () => {
+      setShowNewDeal(false)
+      queryClient.invalidateQueries({ queryKey: ['deals', 'mini', id] })
+      queryClient.invalidateQueries({ queryKey: ['timeline', id] })
+    },
+  })
+  const createTaskMutation = useMutation({
+    mutationFn: createTask,
+    onSuccess: () => {
+      setShowNewTask(false)
+      queryClient.invalidateQueries({ queryKey: ['tasks', 'mini', id] })
+    },
   })
 
   if (companyQuery.isLoading) return <div className="content"><p className="state-msg">Carregando…</p></div>
@@ -311,6 +334,7 @@ export default function CompanyDetailPage() {
                   <p className="state-msg">Nenhum negócio ainda.</p>
                 )}
               </div>
+              {dealPipeline && <div className="add-row-btn" onClick={() => setShowNewDeal(true)}>+ Novo negócio</div>}
             </div>
 
             <div className="card">
@@ -338,6 +362,7 @@ export default function CompanyDetailPage() {
                   <p className="state-msg">Nenhuma tarefa vinculada.</p>
                 )}
               </div>
+              <div className="add-row-btn" onClick={() => setShowNewTask(true)}>+ Nova tarefa</div>
             </div>
           </div>
         </section>
@@ -371,6 +396,31 @@ export default function CompanyDetailPage() {
           alvos={[{ company_id: id }]}
           alvoLabel={company.razao_social}
           onClose={() => setShowEnrollModal(false)}
+        />
+      )}
+
+      {showNewDeal && dealPipeline && (
+        <DealDrawer
+          pipeline={dealPipeline}
+          companies={[company]}
+          presetCompanyId={id}
+          users={usersQuery.data?.items ?? []}
+          onClose={() => setShowNewDeal(false)}
+          onSubmit={(data) => createDealMutation.mutate({ ...data, pipeline_id: dealPipeline.id })}
+          submitting={createDealMutation.isPending}
+          error={createDealMutation.error}
+        />
+      )}
+
+      {showNewTask && (
+        <TaskModal
+          task={{ company_id: id }}
+          companies={[company]}
+          users={usersQuery.data?.items ?? []}
+          onClose={() => setShowNewTask(false)}
+          onSubmit={(data) => createTaskMutation.mutate(data)}
+          submitting={createTaskMutation.isPending}
+          error={createTaskMutation.error}
         />
       )}
     </>

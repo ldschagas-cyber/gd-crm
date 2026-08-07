@@ -28,6 +28,7 @@ class TaskUpdate(BaseModel):
     responsavel_id: UUID | None = None
     company_id: UUID | None = None
     contact_id: UUID | None = None
+    deal_id: UUID | None = None
     data: date | None = None
     hora: time | None = None
     prioridade: TaskPriority | None = None

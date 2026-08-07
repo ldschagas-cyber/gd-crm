@@ -15,7 +15,6 @@ import '../styles/dataTable.css'
 import '../styles/detailPage.css'
 import './DealDetailPage.css'
 
-const ORIGENS = ['Indicação', 'Site institucional', 'Formulário do site', 'Prospecção ativa', 'Cadência de e-mail']
 const MOTIVOS_PERDA = ['Preço', 'Concorrência', 'Não é o momento', 'Sem orçamento', 'Perda de contato', 'Outro']
 
 function initials(nome) {
@@ -89,7 +88,6 @@ export default function DealDetailPage() {
         valor_previsto: deal.valor_previsto ?? '',
         probabilidade: deal.probabilidade ?? '',
         data_prev_fechamento: deal.data_prev_fechamento ?? '',
-        origem: deal.origem ?? '',
       })
     }
   }, [deal])
@@ -107,7 +105,6 @@ export default function DealDetailPage() {
       valor_previsto: form.valor_previsto === '' ? null : Number(form.valor_previsto),
       probabilidade: form.probabilidade === '' ? null : Number(form.probabilidade),
       data_prev_fechamento: form.data_prev_fechamento || null,
-      origem: form.origem || null,
     })
   }
 
@@ -249,10 +246,8 @@ export default function DealDetailPage() {
                   </div>
                   <div className="f-group">
                     <label className="f-label">Origem</label>
-                    <select className="f-select" value={form.origem} onChange={(e) => setForm((f) => ({ ...f, origem: e.target.value }))}>
-                      <option value="">Nenhuma</option>
-                      {ORIGENS.map((o) => <option key={o} value={o}>{o}</option>)}
-                    </select>
+                    <input className="f-input" value={deal.origem ?? 'Sem origem'} disabled />
+                    <span className="f-hint">Herdada da empresa — edite a origem em Empresas para mudar.</span>
                   </div>
                   <button className="btn-primary btn-sm" disabled={updateMutation.isPending} onClick={handleSaveDetails} style={{ width: 'fit-content' }}>
                     {updateMutation.isPending ? 'Salvando…' : 'Salvar alterações'}

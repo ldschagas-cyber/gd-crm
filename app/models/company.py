@@ -11,6 +11,15 @@ from app.models.base import Base, SoftDeleteMixin, TenantMixin, TimestampMixin, 
 from app.models.timeline import TimelineEvent
 
 
+# Origem do cadastro — lista fixa pra dar filtro/relatório limpo (mesmo espírito de
+# ORIGENS_LEAD em lead_prospect.py). O Negócio herda esse valor da empresa na criação
+# (ver DealService.create) em vez de ter origem própria — ver app/services/deal.py.
+ORIGENS_EMPRESA = [
+    "Indicação", "Prospecção ativa", "Feira", "Campanha", "LinkedIn",
+    "Site institucional", "Formulário do site", "Pesquisa de Leads", "Outro",
+]
+
+
 class CompanyStatus(str, enum.Enum):
     LEAD = "lead"
     QUALIFICADO = "qualificado"

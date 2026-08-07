@@ -7,6 +7,7 @@ import {
 } from '../api/companies'
 import { listUsers } from '../api/users'
 import EnrollModal from '../components/EnrollModal.jsx'
+import BulkTaskModal from '../components/BulkTaskModal.jsx'
 import '../styles/dataTable.css'
 import './EmpresasPage.css'
 
@@ -20,6 +21,11 @@ const STATUS_LABEL = {
 const STATUS_ORDER = ['lead', 'qualificado', 'cliente', 'perdido', 'inativo']
 const SETORES = ['Farma', 'Alimentos', 'Autopeças', 'Etiquetas', 'Plástico', 'Máquinas e Equipamentos',
   'Química', 'Cosmético', 'Serviços', 'Tecnologia', 'Varejo', 'Outro']
+// Negócios criados para a empresa herdam essa origem (não é escolhida de novo lá) — ver DealDrawer.
+const ORIGENS_EMPRESA = [
+  'Indicação', 'Prospecção ativa', 'Feira', 'Campanha', 'LinkedIn',
+  'Site institucional', 'Formulário do site', 'Pesquisa de Leads', 'Outro',
+]
 
 const COLUMN_DEFS = [
   { key: 'segmento', label: 'Segmento', default: true },
@@ -56,6 +62,7 @@ export default function EmpresasPage() {
   const [modalCompany, setModalCompany] = useState(undefined) // undefined = fechado, null = criar, obj = editar
   const [showImportDrawer, setShowImportDrawer] = useState(false)
   const [showBulkEnroll, setShowBulkEnroll] = useState(false)
+  const [showBulkTask, setShowBulkTask] = useState(false)
 
   const queryClient = useQueryClient()
   const filters = {
@@ -226,6 +233,7 @@ export default function EmpresasPage() {
                 <span><b>{selectedIds.length}</b> selecionadas</span>
                 <div className="link-btn">
                   <a onClick={() => setShowBulkEnroll(true)}>Inscrever</a>
+                  <a onClick={() => setShowBulkTask(true)}>+ Tarefa</a>
                   <a onClick={() => exportCompanies(filters)}>Exportar</a>
                   <a onClick={handleBulkDelete}>Excluir</a>
                 </div>
@@ -333,6 +341,15 @@ export default function EmpresasPage() {
           alvoLabel={`${selectedIds.length} empresa(s) selecionada(s)`}
           onClose={() => setShowBulkEnroll(false)}
           onEnrolled={() => setSelected({})}
+        />
+      )}
+
+      {showBulkTask && (
+        <BulkTaskModal
+          alvos={selectedIds.map((id) => ({ company_id: id }))}
+          alvoLabel={`${selectedIds.length} empresa(s) selecionada(s)`}
+          onClose={() => setShowBulkTask(false)}
+          onCreated={() => setSelected({})}
         />
       )}
     </>
@@ -480,7 +497,13 @@ export function CompanyModal({ company, users, usersError, onClose, onSubmit, su
     email: company?.email ?? '',
     responsavel_id: company?.responsavel_id ?? '',
     contexto_rapido: company?.contexto_rapido ?? '',
+    origem: company?.origem ?? '',
   })
+  // Empresa pode já ter uma origem gravada fora da lista fixa (importação, formulário
+  // do site, promoção de lead) — mantém ela selecionável em vez de apagar ao editar.
+  const origemOptions = form.origem && !ORIGENS_EMPRESA.includes(form.origem)
+    ? [form.origem, ...ORIGENS_EMPRESA]
+    : ORIGENS_EMPRESA
 
   function set(field) {
     return (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
@@ -559,6 +582,14 @@ export function CompanyModal({ company, users, usersError, onClose, onSubmit, su
               <label htmlFor="email">E-mail</label>
               <input id="email" type="email" value={form.email} onChange={set('email')} />
             </div>
+          </div>
+          <div className="field">
+            <label htmlFor="origem">Origem</label>
+            <select id="origem" value={form.origem} onChange={set('origem')}>
+              <option value="">Sem origem</option>
+              {origemOptions.map((o) => <option key={o} value={o}>{o}</option>)}
+            </select>
+            <span className="hint-text">Negócios criados para esta empresa herdam essa origem.</span>
           </div>
           <div className="field">
             <label htmlFor="responsavel_id">Responsável</label>

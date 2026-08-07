@@ -7,6 +7,7 @@ import {
 } from '../api/contacts'
 import { listCompanies } from '../api/companies'
 import EnrollModal from '../components/EnrollModal.jsx'
+import BulkTaskModal from '../components/BulkTaskModal.jsx'
 import { useSoftphone } from '../context/SoftphoneContext.jsx'
 import '../styles/dataTable.css'
 import './ContatosPage.css'
@@ -38,6 +39,7 @@ export default function ContatosPage() {
   const [modalContact, setModalContact] = useState(undefined) // undefined = fechado, null = criar, obj = editar
   const [showImportDrawer, setShowImportDrawer] = useState(false)
   const [showBulkEnroll, setShowBulkEnroll] = useState(false)
+  const [showBulkTask, setShowBulkTask] = useState(false)
 
   const queryClient = useQueryClient()
   const filters = {
@@ -77,6 +79,7 @@ export default function ContatosPage() {
   const items = listQuery.data?.items ?? []
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
   const selectedIds = Object.keys(selected).filter((id) => selected[id])
+  const selectedContacts = items.filter((c) => selected[c.id])
 
   function handleFilterChange(setter) {
     return (e) => { setter(e.target.value); setPage(1) }
@@ -173,6 +176,7 @@ export default function ContatosPage() {
               <span><b>{selectedIds.length}</b> selecionados</span>
               <div className="link-btn">
                 <a onClick={() => setShowBulkEnroll(true)}>Inscrever</a>
+                <a onClick={() => setShowBulkTask(true)}>+ Tarefa</a>
                 <a onClick={handleBulkDelete}>Excluir</a>
               </div>
             </div>
@@ -271,6 +275,15 @@ export default function ContatosPage() {
           alvoLabel={`${selectedIds.length} contato(s) selecionado(s)`}
           onClose={() => setShowBulkEnroll(false)}
           onEnrolled={() => setSelected({})}
+        />
+      )}
+
+      {showBulkTask && (
+        <BulkTaskModal
+          alvos={selectedContacts.map((c) => ({ contact_id: c.id, company_id: c.company_id }))}
+          alvoLabel={`${selectedIds.length} contato(s) selecionado(s)`}
+          onClose={() => setShowBulkTask(false)}
+          onCreated={() => setSelected({})}
         />
       )}
     </>

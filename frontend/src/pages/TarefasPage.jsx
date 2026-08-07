@@ -5,6 +5,7 @@ import {
 } from '../api/tasks'
 import { listCompanies } from '../api/companies'
 import { listContacts } from '../api/contacts'
+import { listDeals } from '../api/deals'
 import { listUsers } from '../api/users'
 import { TIPO_LABEL, TaskTypeChip } from '../components/TaskTypeIcon'
 import '../styles/dataTable.css'
@@ -157,7 +158,7 @@ export default function TarefasPage() {
           users={users}
           onClose={() => setModalTask(undefined)}
           onSubmit={(data) => {
-            if (modalTask) updateMutation.mutate({ id: modalTask.id, data })
+            if (modalTask?.id) updateMutation.mutate({ id: modalTask.id, data })
             else createMutation.mutate(data)
           }}
           submitting={createMutation.isPending || updateMutation.isPending}
@@ -219,7 +220,8 @@ function TaskRow({ task, companiesById, usersById, onComplete, onEdit, onDelete 
   )
 }
 
-function TaskModal({ task, companies, users, onClose, onSubmit, submitting, error }) {
+export function TaskModal({ task, companies, users, onClose, onSubmit, submitting, error }) {
+  const isEdit = Boolean(task?.id)
   const [form, setForm] = useState({
     titulo: task?.titulo ?? '',
     descricao: task?.descricao ?? '',
@@ -230,11 +232,17 @@ function TaskModal({ task, companies, users, onClose, onSubmit, submitting, erro
     responsavel_id: task?.responsavel_id ?? '',
     company_id: task?.company_id ?? '',
     contact_id: task?.contact_id ?? '',
+    deal_id: task?.deal_id ?? '',
   })
 
   const contactsQuery = useQuery({
     queryKey: ['contacts', 'for-task', form.company_id],
     queryFn: () => listContacts({ companyId: form.company_id, size: 100 }),
+    enabled: Boolean(form.company_id),
+  })
+  const dealsQuery = useQuery({
+    queryKey: ['deals', 'for-task', form.company_id],
+    queryFn: () => listDeals({ companyId: form.company_id, size: 100 }),
     enabled: Boolean(form.company_id),
   })
 
@@ -255,6 +263,7 @@ function TaskModal({ task, companies, users, onClose, onSubmit, submitting, erro
       responsavel_id: form.responsavel_id,
       company_id: form.company_id || null,
       contact_id: form.contact_id || null,
+      deal_id: form.deal_id || null,
     })
   }
 
@@ -262,7 +271,7 @@ function TaskModal({ task, companies, users, onClose, onSubmit, submitting, erro
     <div className="scrim show" onClick={onClose}>
       <div className="drawer show" onClick={(e) => e.stopPropagation()}>
         <div className="drawer-head">
-          <div><h2>{task ? 'Editar tarefa' : 'Nova tarefa'}</h2><p>Preencha os dados da tarefa</p></div>
+          <div><h2>{isEdit ? 'Editar tarefa' : 'Nova tarefa'}</h2><p>Preencha os dados da tarefa</p></div>
           <button className="drawer-close" onClick={onClose}>✕</button>
         </div>
         <form onSubmit={handleSubmit}>
@@ -314,7 +323,11 @@ function TaskModal({ task, companies, users, onClose, onSubmit, submitting, erro
             </div>
             <div className="f-group">
               <label className="f-label">Empresa <span className="opt">opcional</span></label>
-              <select className="f-select" value={form.company_id} onChange={(e) => setForm((f) => ({ ...f, company_id: e.target.value, contact_id: '' }))}>
+              <select
+                className="f-select"
+                value={form.company_id}
+                onChange={(e) => setForm((f) => ({ ...f, company_id: e.target.value, contact_id: '', deal_id: '' }))}
+              >
                 <option value="">Nenhuma</option>
                 {companies.map((c) => <option key={c.id} value={c.id}>{c.razao_social}</option>)}
               </select>
@@ -324,6 +337,13 @@ function TaskModal({ task, companies, users, onClose, onSubmit, submitting, erro
               <select className="f-select" value={form.contact_id} onChange={set('contact_id')} disabled={!form.company_id}>
                 <option value="">{form.company_id ? 'Nenhum' : 'Selecione uma empresa primeiro'}</option>
                 {(contactsQuery.data?.items ?? []).map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
+              </select>
+            </div>
+            <div className="f-group">
+              <label className="f-label">Negócio <span className="opt">opcional</span></label>
+              <select className="f-select" value={form.deal_id} onChange={set('deal_id')} disabled={!form.company_id}>
+                <option value="">{form.company_id ? 'Nenhum' : 'Selecione uma empresa primeiro'}</option>
+                {(dealsQuery.data?.items ?? []).map((d) => <option key={d.id} value={d.id}>{d.nome}</option>)}
               </select>
             </div>
             {error && <p className="state-msg error">Não foi possível salvar. Confira os dados e tente de novo.</p>}

@@ -18,7 +18,8 @@ class DealCreate(BaseModel):
     valor_previsto: float | None = None
     probabilidade: int | None = Field(default=None, ge=0, le=100)
     data_prev_fechamento: date | None = None
-    origem: str | None = None
+    # Sem `origem` aqui de propósito — o negócio herda a origem da empresa na criação
+    # (ver DealService.create), não é escolhida manualmente.
 
 
 class DealUpdate(BaseModel):
@@ -28,7 +29,6 @@ class DealUpdate(BaseModel):
     valor_previsto: float | None = None
     probabilidade: int | None = Field(default=None, ge=0, le=100)
     data_prev_fechamento: date | None = None
-    origem: str | None = None
 
 
 class DealStageMove(BaseModel):
