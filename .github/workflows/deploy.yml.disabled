@@ -1,5 +1,15 @@
 name: Deploy em produção
 
+# DESATIVADO (extensão .disabled, GitHub não reconhece como workflow) —
+# renomeado em 2026-08-09 porque nunca funcionou (falhava sempre na etapa
+# "Configurar chave SSH", provavelmente PROD_SSH_HOST incorreto) e o
+# deploy passou a ser feito manualmente: SSH no servidor, cd /opt/gd-crm,
+# ./atualizar_producao.sh.
+#
+# Pra reativar: corrigir os Secrets (ver docs/CI_CD.md), renomear de volta
+# para deploy.yml e testar com "Run workflow" na aba Actions antes de
+# confiar em disparo automático por push.
+
 # Roda o ./atualizar_producao.sh no servidor de produção via SSH sempre
 # que a main é atualizada (merge de PR ou push direto), ou manualmente
 # via "Run workflow" na aba Actions.
