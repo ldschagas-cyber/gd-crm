@@ -1,0 +1,893 @@
+<title>Base de Conhecimento — Argos</title>
+<style>
+  /* Font note: real product should self-host IBM Plex Sans/Mono; CDN fonts are blocked
+     in this artifact sandbox, so a close system-grotesque stack stands in here. */
+  :root {
+    --font-display: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Cascadia Code", "SFMono-Regular", "Consolas", ui-monospace, monospace;
+
+    --indigo: #2D3561;
+    --indigo-600: #3B4478;
+    --amber: #C9A84C;
+    --azul: #0077A8;
+    --marfim: #F5F1EB;
+
+    --paper: var(--marfim);
+    --panel: var(--indigo);
+    --panel-fg: #F1EEE6;
+    --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12);
+    --panel-active-bg: rgba(201, 168, 76, 0.14);
+
+    --ink: #22243A;
+    --ink-dim: #5B5E78;
+    --ink-faint: #8B8EA6;
+    --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF;
+    --accent: var(--amber);
+    --link: var(--azul);
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+
+    --good: #0ca30c;
+    --warning: #fab219;
+    --serious: #ec835a;
+    --critical: #d03b3b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+      --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+      --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+      --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+    --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+    --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+    --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+  }
+  :root[data-theme="light"] {
+    --paper: #F5F1EB; --panel: #2D3561; --panel-fg: #F1EEE6; --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(45, 53, 97, 0.12); --panel-active-bg: rgba(201, 168, 76, 0.14);
+    --ink: #22243A; --ink-dim: #5B5E78; --ink-faint: #8B8EA6; --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF; --amber: #C9A84C; --azul: #0077A8; --link: #0077A8;
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; font-family: var(--font-display); color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; }
+  button, input, select, textarea { font-family: inherit; }
+  a { color: inherit; }
+  ::selection { background: rgba(201,168,76,.3); }
+  :focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; border-radius: 4px; }
+
+  .shell { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+
+  /* ---------------- Sidebar ---------------- */
+  .sidebar { background: var(--panel); color: var(--panel-fg); padding: 0 12px 16px; display: flex; flex-direction: column; }
+  .sb-brand { display: flex; align-items: center; gap: 10px; padding: 20px 18px 16px; }
+  .monogram { width: 32px; height: 32px; border-radius: 9px; background: var(--amber); color: var(--indigo); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; flex: none; }
+  .sb-brand strong { display: block; font-size: 14.5px; font-weight: 650; line-height: 1.2; }
+  .sb-brand span { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--panel-fg-dim); margin-top: 2px; }
+  .sb-nav { flex: 1; padding: 6px 0; }
+  .sb-group + .sb-group { margin-top: 18px; }
+  .sb-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--panel-fg-dim); padding: 0 10px; margin-bottom: 6px; }
+  .sb-item { display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: 8px; margin-bottom: 2px; font-size: 13.6px; font-weight: 500; color: var(--panel-fg-dim); text-decoration: none; cursor: pointer; border: 1px solid transparent; position: relative; }
+  .sb-item svg { width: 17px; height: 17px; flex: none; opacity: 0.9; }
+  .sb-item:hover { background: rgba(241, 238, 230, 0.06); color: var(--panel-fg); }
+  .sb-item.active { background: var(--panel-active-bg); color: var(--panel-fg); font-weight: 650; }
+  .sb-item.active::before { content: ""; position: absolute; left: -12px; top: 6px; bottom: 6px; width: 3px; background: var(--amber); border-radius: 2px; }
+  .sb-item .badge-new { margin-left: auto; font-size: 9px; font-weight: 700; letter-spacing: .03em; background: var(--amber); color: var(--indigo); padding: 1.5px 6px; border-radius: 100px; }
+  .sb-user { display: flex; align-items: center; gap: 10px; padding: 12px 10px 4px; border-top: 1px solid var(--panel-border); margin-top: 10px; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; flex: none; background: rgba(201,168,76,0.18); color: var(--amber); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; border: 1px solid rgba(201,168,76,0.3); }
+  .sb-user-meta { display: flex; flex-direction: column; min-width: 0; }
+  .sb-user-meta strong { font-size: 12.6px; color: var(--panel-fg); }
+  .sb-user-meta span { font-size: 11px; color: var(--panel-fg-dim); }
+
+  .main-col { min-width: 0; }
+  .content { padding: 22px 28px 60px; display: flex; flex-direction: column; gap: 16px; }
+
+  .page-head { display: flex; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+  .page-head h1 { margin: 0; font-size: 20px; font-weight: 650; letter-spacing: -0.01em; }
+  .page-head p { margin: 3px 0 0; font-size: 12.5px; color: var(--ink-dim); }
+  .page-head p .mono { font-family: var(--font-mono); color: var(--ink); font-weight: 500; }
+  .page-actions { display: flex; gap: 8px; margin-left: auto; flex: none; align-items: center; }
+
+  .btn-primary { display: flex; align-items: center; gap: 7px; background: var(--indigo); color: var(--panel-fg); border: 1px solid var(--indigo); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; white-space: nowrap; }
+  .btn-primary:hover { background: var(--indigo-600); }
+  .btn-primary svg { width: 14px; height: 14px; }
+  .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-ghost { display: flex; align-items: center; gap: 7px; background: var(--card-bg); color: var(--ink); border: 1px solid var(--border); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; white-space: nowrap; }
+  .btn-ghost:hover { border-color: var(--ink-faint); }
+  .btn-ghost svg { width: 14px; height: 14px; }
+  .btn-danger { display: flex; align-items: center; gap: 7px; background: none; color: var(--critical); border: 1px solid rgba(208,59,59,0.35); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-danger:hover { background: rgba(208,59,59,0.08); }
+
+  .info-banner { display: flex; gap: 10px; align-items: flex-start; padding: 11px 14px; background: color-mix(in srgb, var(--azul) 7%, var(--card-bg)); border: 1px solid var(--border); border-radius: 10px; font-size: 12.3px; color: var(--ink-dim); line-height: 1.55; }
+  .info-banner svg { width: 15px; height: 15px; color: var(--azul); flex: none; margin-top: 1px; }
+  .info-banner b { color: var(--ink); }
+  .info-banner button { margin-left: auto; flex: none; background: none; border: none; color: var(--ink-faint); cursor: pointer; font-size: 12px; text-decoration: underline; padding: 0; }
+
+  .role-switch { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink-dim); }
+  .segmented { display: inline-flex; gap: 3px; padding: 3px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; flex: none; }
+  .segmented button { border: none; background: transparent; padding: 6px 12px; border-radius: 7px; font-size: 12.5px; font-weight: 600; color: var(--ink-dim); cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .segmented button svg { width: 13px; height: 13px; }
+  .segmented button.active { background: var(--indigo); color: var(--panel-fg); }
+  .segmented button:not(.active):hover { color: var(--ink); }
+
+  .stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+  .stat-tile { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 11px 13px; box-shadow: var(--shadow); cursor: default; }
+  .stat-tile.clickable { cursor: pointer; }
+  .stat-tile.clickable:hover { border-color: var(--ink-faint); }
+  .stat-tile .t { font-size: 10.5px; color: var(--ink-faint); font-weight: 600; text-transform: uppercase; letter-spacing: .03em; white-space: nowrap; }
+  .stat-tile .v { font-size: 18px; font-weight: 700; margin-top: 4px; font-family: var(--font-mono); }
+  .stat-tile.stale .v { color: var(--serious); }
+  .stat-tile.pending .v { color: var(--amber); }
+  .stat-tile.good .v { color: var(--good); }
+
+  .cat-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .cat-tab { display: flex; align-items: center; gap: 7px; font-size: 12.6px; font-weight: 600; color: var(--ink-dim); background: var(--card-bg); border: 1px solid var(--border); border-radius: 100px; padding: 7px 13px; cursor: pointer; }
+  .cat-tab .d { width: 7px; height: 7px; border-radius: 50%; background: var(--cat-color, var(--ink-faint)); flex: none; }
+  .cat-tab .n { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-faint); }
+  .cat-tab.active { background: var(--indigo); border-color: var(--indigo); color: var(--panel-fg); }
+  .cat-tab.active .n { color: var(--panel-fg-dim); }
+  .cat-tab.active .d { background: var(--amber); }
+  .cat-tab:not(.active):hover { border-color: var(--ink-faint); }
+
+  .filters-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .search { display: flex; align-items: center; gap: 8px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 9px; padding: 8px 12px; color: var(--ink-faint); flex: 1; min-width: 190px; max-width: 280px; }
+  .search svg { width: 15px; height: 15px; flex: none; }
+  .search input { border: none; outline: none; background: none; font-size: 13px; color: var(--ink); width: 100%; }
+  .filter-select-wrap { position: relative; }
+  .filter-select { appearance: none; font-size: 13px; color: var(--ink); background: var(--card-bg); border: 1px solid var(--border); border-radius: 9px; padding: 8px 28px 8px 12px; cursor: pointer; }
+  .filter-select-wrap svg { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); width: 11px; height: 11px; pointer-events: none; color: var(--ink-faint); }
+  .result-count { font-size: 12px; color: var(--ink-faint); margin-left: auto; }
+
+  /* ---------------- Article grid ---------------- */
+  .article-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 12px; }
+  .art-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); padding: 13px 14px; cursor: pointer; display: flex; flex-direction: column; gap: 8px; }
+  .art-card:hover { border-color: var(--ink-faint); }
+  .art-card-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+  .cat-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 10.3px; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; color: #fff; background: var(--cat-color); border-radius: 100px; padding: 2.5px 8px 2.5px 6px; }
+  .cat-badge .d { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,.8); }
+  .status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 700; padding: 2.5px 8px; border-radius: 100px; white-space: nowrap; }
+  .status-pill.rascunho { background: rgba(250,178,25,0.18); color: color-mix(in srgb, var(--warning) 55%, var(--ink-dim)); }
+  .status-pill.arquivado { background: rgba(139,142,166,0.15); color: var(--ink-faint); }
+  .art-card-title { font-size: 13.6px; font-weight: 650; color: var(--ink); line-height: 1.3; }
+  .art-card-resumo { font-size: 12px; color: var(--ink-dim); line-height: 1.45; flex: 1; }
+  .art-card-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 10.8px; color: var(--ink-faint); }
+  .setor-tag { background: var(--paper); border: 1px solid var(--border); border-radius: 100px; padding: 1.5px 8px; }
+  .stale-tag { display: inline-flex; align-items: center; gap: 4px; color: var(--serious); font-weight: 650; }
+  .stale-tag svg { width: 10px; height: 10px; }
+  .art-card-foot { display: flex; align-items: center; justify-content: space-between; padding-top: 8px; border-top: 1px solid var(--border); font-size: 11px; color: var(--ink-faint); }
+  .vote-mini { display: flex; align-items: center; gap: 10px; }
+  .vote-mini span { display: flex; align-items: center; gap: 3px; }
+
+  .empty-state { padding: 40px 20px; text-align: center; color: var(--ink-faint); font-size: 13px; background: var(--card-bg); border: 1px dashed var(--border); border-radius: 12px; }
+
+  /* ---------------- Drawer ---------------- */
+  .scrim { position: fixed; inset: 0; background: rgba(20,23,43,.4); opacity: 0; pointer-events: none; transition: opacity .18s ease; z-index: 40; }
+  .scrim.show { opacity: 1; pointer-events: auto; }
+  .drawer { position: fixed; top: 0; right: 0; height: 100%; width: min(560px, 100vw); background: var(--card-bg); box-shadow: -8px 0 40px rgba(20,23,43,.25); z-index: 41; display: flex; flex-direction: column; transform: translateX(100%); transition: transform .22s cubic-bezier(.4,0,.2,1); }
+  .drawer.show { transform: translateX(0); }
+  .drawer-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 22px 14px; border-bottom: 1px solid var(--border); }
+  .drawer-head h2 { margin: 0 0 5px; font-size: 16.5px; font-weight: 700; line-height: 1.3; }
+  .drawer-head p { margin: 0; font-size: 12.3px; color: var(--ink-dim); }
+  .drawer-close { width: 30px; height: 30px; border-radius: 8px; border: none; background: transparent; color: var(--ink-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; flex: none; }
+  .drawer-close:hover { background: var(--paper); color: var(--ink); }
+  .drawer-close svg { width: 16px; height: 16px; }
+  .drawer-body { flex: 1; overflow-y: auto; padding: 16px 22px 22px; display: flex; flex-direction: column; gap: 16px; }
+  .drawer-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 14px 22px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+  .drawer-foot .right { display: flex; gap: 8px; margin-left: auto; }
+
+  .badge-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .meta-line { font-size: 11.5px; color: var(--ink-faint); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+
+  .md-content { font-size: 13.6px; line-height: 1.65; color: var(--ink); }
+  .md-content h4 { font-size: 12.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-faint); font-weight: 700; margin: 16px 0 6px; }
+  .md-content h4:first-child { margin-top: 0; }
+  .md-content p { margin: 0 0 10px; }
+  .md-content ul { margin: 0 0 10px; padding-left: 20px; }
+  .md-content li { margin-bottom: 4px; }
+  .md-content strong { color: var(--ink); }
+
+  .feedback-box { display: flex; align-items: center; gap: 10px; background: var(--paper); border: 1px solid var(--border); border-radius: 10px; padding: 11px 14px; }
+  .feedback-box .lbl { font-size: 12.3px; color: var(--ink-dim); margin-right: auto; }
+  .vote-btn { display: flex; align-items: center; gap: 6px; font-size: 12.6px; font-weight: 650; border: 1px solid var(--border); background: var(--card-bg); border-radius: 8px; padding: 6px 11px; cursor: pointer; color: var(--ink-dim); }
+  .vote-btn:hover { border-color: var(--ink-faint); }
+  .vote-btn.voted-up { border-color: var(--good); color: var(--good); background: rgba(12,163,12,0.08); }
+  .vote-btn.voted-down { border-color: var(--critical); color: var(--critical); background: rgba(208,59,59,0.08); }
+
+  .dr-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-faint); font-weight: 700; }
+
+  .f-group { display: flex; flex-direction: column; gap: 6px; }
+  .f-label { font-size: 12.3px; font-weight: 600; color: var(--ink-dim); }
+  .f-label .req { color: var(--critical); }
+  .f-select, .f-input, .f-textarea { width: 100%; border: 1px solid var(--border); border-radius: 9px; padding: 8px 11px; font-size: 13px; background: var(--card-bg); color: var(--ink); }
+  .f-textarea { resize: vertical; min-height: 90px; font-family: var(--font-mono); line-height: 1.55; }
+  .f-textarea.big { min-height: 200px; }
+  .f-hint { font-size: 11px; color: var(--ink-faint); }
+  .f-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .preview-card { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; background: var(--paper); }
+  .preview-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-faint); font-weight: 700; margin-bottom: 8px; }
+
+  .toast { position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 12px); background: var(--ink); color: var(--paper); font-size: 13.5px; padding: 10px 16px; border-radius: 8px; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: opacity 180ms ease, transform 180ms ease; z-index: 60; max-width: 88vw; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+
+  /* ---------------- Fase 2 preview: Dossiê ---------------- */
+  .dossier-mock { max-width: 720px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 14px; }
+  .dossier-mock .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); padding: 16px 18px; }
+  .dossier-co-head { display: flex; align-items: center; gap: 12px; }
+  .dossier-co-head .co-avatar { width: 44px; height: 44px; border-radius: 10px; background: var(--indigo); color: var(--panel-fg); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; flex: none; }
+  .dossier-co-head h3 { margin: 0; font-size: 16px; }
+  .dossier-co-head p { margin: 2px 0 0; font-size: 12px; color: var(--ink-dim); }
+  .dossier-card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+  .dossier-card-head h3 { margin: 0; font-size: 14px; }
+  .dossier-card-head p { margin: 2px 0 0; font-size: 11.5px; color: var(--ink-dim); }
+  .dossier-new-tag { font-size: 9.5px; font-weight: 700; letter-spacing: .03em; background: var(--amber); color: var(--indigo); padding: 1.5px 7px; border-radius: 100px; }
+  .sug-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+  .sug-card { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; cursor: pointer; background: var(--paper); }
+  .sug-card:hover { border-color: var(--ink-faint); }
+  .sug-card .cat { font-size: 9.5px; font-weight: 700; text-transform: uppercase; color: var(--cat-color); margin-bottom: 4px; }
+  .sug-card .t { font-size: 12.6px; font-weight: 650; line-height: 1.3; margin-bottom: 3px; }
+  .sug-card .r { font-size: 11px; color: var(--ink-dim); line-height: 1.4; }
+  .dossier-fake-line { height: 9px; border-radius: 4px; background: var(--paper); margin-bottom: 7px; }
+  .dossier-fake-line.w60 { width: 60%; } .dossier-fake-line.w80 { width: 80%; } .dossier-fake-line.w40 { width: 40%; }
+
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar { position: relative; height: auto; }
+    .sb-nav, .sb-user { display: none; }
+    .page-head { flex-wrap: wrap; }
+    .f-row-2 { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .toast, .drawer, .scrim { transition: none; }
+  }
+</style>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="monogram">A</div>
+      <div><strong>Argos</strong><span>Gestão comercial</span></div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-group">
+        <a class="sb-item" href="#" data-page="Dashboard">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="2.5" width="6.2" height="6.2" rx="1.3"/><rect x="11.3" y="2.5" width="6.2" height="4.4" rx="1.3"/><rect x="11.3" y="9.4" width="6.2" height="8.1" rx="1.3"/><rect x="2.5" y="11.2" width="6.2" height="6.3" rx="1.3"/></svg>
+          Dashboard
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Inteligência Comercial</div>
+        <a class="sb-item" href="#" data-page="Buscar Empresas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8.8" cy="8.8" r="5.3"/><path d="M16.5 16.5l-3.8-3.8"/></svg>
+          Buscar Empresas
+        </a>
+        <a class="sb-item" href="#" data-page="Pesquisa de Leads">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7"/><circle cx="10" cy="10" r="3.2"/><path d="M10 3v2.4M10 14.6V17M17 10h-2.4M5.4 10H3"/></svg>
+          Pesquisa de Leads
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">CRM</div>
+        <a class="sb-item" href="#" data-page="Empresas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17.5V3.8a.8.8 0 01.8-.8h6.4a.8.8 0 01.8.8v13.7"/><path d="M13 17.5V8.3a.8.8 0 01.8-.8h3.4a.8.8 0 01.8.8v9.2"/><path d="M5.4 6h1.6M5.4 9h1.6M5.4 12h1.6M15 10.6h1M15 13.4h1"/></svg>
+          Empresas
+        </a>
+        <a class="sb-item" href="#" data-page="Negócios">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 10.3l3-4.6a1 1 0 01.85-.47h7.3a1 1 0 01.85.47l3 4.6"/><path d="M2.5 10.3v5.2a1 1 0 001 1h13a1 1 0 001-1v-5.2"/><path d="M7.3 10.3a2.7 2.7 0 005.4 0"/></svg>
+          Negócios
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Capacitação</div>
+        <div class="sb-item active" data-page="Base de Conhecimento">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3.5 4.2c1.8-.9 4-.9 5.8 0v11.6c-1.8-.9-4-.9-5.8 0z"/><path d="M16.5 4.2c-1.8-.9-4-.9-5.8 0v11.6c1.8-.9 4-.9 5.8 0z"/></svg>
+          Base de Conhecimento
+          <span class="badge-new">NOVO</span>
+        </div>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Automação</div>
+        <a class="sb-item" href="#" data-page="Sequências">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4h5.5l1.5 2h5v10H4z"/><path d="M8 9h4M8 12h6"/></svg>
+          Sequências
+        </a>
+        <a class="sb-item" href="#" data-page="Snippets">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="14" height="12" rx="2"/><path d="M6.5 8h7M6.5 11.5h4.5"/></svg>
+          Snippets
+        </a>
+      </div>
+    </nav>
+
+    <div class="sb-user">
+      <div class="avatar" id="sbAvatar">DC</div>
+      <div class="sb-user-meta"><strong id="sbName">Daniel Chagas</strong><span id="sbRole">Admin · GD Conecta</span></div>
+    </div>
+  </aside>
+
+  <div class="main-col">
+    <div class="content">
+      <div class="page-head">
+        <div>
+          <h1>Base de Conhecimento</h1>
+          <p><span class="mono" id="headTotal">—</span> artigos publicados · <span class="mono" id="headPending">—</span> rascunhos aguardando revisão · <span class="mono" id="headStale">—</span> sem revisão há 90+ dias</p>
+        </div>
+        <div class="page-actions">
+          <div class="role-switch">
+            Ver como
+            <div class="segmented" id="roleSwitch">
+              <button class="active" data-role="admin">Admin/Gestor</button>
+              <button data-role="vendedor">Vendedor</button>
+            </div>
+          </div>
+          <button class="btn-primary" id="newArticleBtn">+ Novo artigo</button>
+        </div>
+      </div>
+
+      <div class="info-banner" id="infoBanner">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="7.3"/><path d="M10 9v4.4M10 6.6v.1"/></svg>
+        <span>
+          <b>Protótipo funcional — dados fictícios, nada aqui é salvo.</b> Playbooks de <b>processo comercial</b>,
+          <b>scripts</b>, <b>objeções</b>, <b>cases</b> e <b>metodologia</b> num só lugar, com curadoria (rascunho →
+          publicado) e feedback de utilidade. Use o alternador "Ver como" pra comparar o que Admin/Gestor pode fazer
+          (publicar, arquivar, revisar fila) e o que o Vendedor vê. A aba <b>"Prévia no Dossiê"</b> mostra a Fase 2:
+          o conteúdo relevante aparecendo dentro do Dossiê Comercial da empresa, por setor.
+        </span>
+        <button onclick="document.getElementById('infoBanner').style.display='none'">Fechar</button>
+      </div>
+
+      <div class="segmented" id="screenSwitch" role="tablist" style="align-self:flex-start;">
+        <button class="active" data-screen="lib">📚 Base de Conhecimento</button>
+        <button data-screen="dossier">🔍 Prévia: dentro do Dossiê da empresa (Fase 2)</button>
+      </div>
+
+      <!-- ============ TELA 1: BIBLIOTECA ============ -->
+      <div id="screenLib">
+        <div class="stat-strip" id="statStrip"></div>
+
+        <div class="cat-tabs" id="catTabs"></div>
+
+        <div class="filters-bar">
+          <div class="search">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="8.8" cy="8.8" r="5.8"/><path d="M17 17l-3.6-3.6"/></svg>
+            <input type="text" id="searchInput" placeholder="Buscar por título ou tag" />
+          </div>
+          <div class="filter-select-wrap">
+            <select class="filter-select" id="setorFilter">
+              <option value="">Todos os setores</option>
+            </select>
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l5 5 5-5"/></svg>
+          </div>
+          <span class="result-count" id="resultCount"></span>
+        </div>
+
+        <div class="article-grid" id="articleGrid"></div>
+        <div class="empty-state" id="emptyState" style="display:none;">Nenhum artigo encontrado com esses filtros.</div>
+      </div>
+
+      <!-- ============ TELA 2: PRÉVIA NO DOSSIÊ ============ -->
+      <div id="screenDossier" style="display:none;">
+        <div class="dossier-mock">
+          <div class="info-banner" style="background: color-mix(in srgb, var(--amber) 10%, var(--card-bg));">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" style="color:var(--amber);"><circle cx="10" cy="10" r="7.3"/><path d="M10 9v4.4M10 6.6v.1"/></svg>
+            <span>Simulação de como o bloco <b>"Playbook sugerido"</b> apareceria dentro do Dossiê Comercial real
+            ([CompanyDossierPage.jsx]), logo abaixo do Perfil de encaixe (ICP) — puxando pelo <b>setor</b> da empresa.</span>
+          </div>
+
+          <div class="card">
+            <div class="dossier-co-head">
+              <div class="co-avatar">FV</div>
+              <div>
+                <h3>Farmacêutica Vale Verde</h3>
+                <p>Farma · SP · MQL no funil de leads</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="dossier-card-head"><div><h3>Perfil de encaixe (ICP)</h3></div></div>
+            <div class="dossier-fake-line w80"></div>
+            <div class="dossier-fake-line w60"></div>
+            <div class="dossier-fake-line w40"></div>
+          </div>
+
+          <div class="card">
+            <div class="dossier-card-head">
+              <div>
+                <h3>📘 Playbook sugerido</h3>
+                <p>Scripts, objeções e cases do setor <b>Farma</b> (+ conteúdo geral)</p>
+              </div>
+              <span class="dossier-new-tag">FASE 2</span>
+            </div>
+            <div class="sug-grid" id="dossierSugGrid"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Article read drawer -->
+<div class="scrim" id="drawerScrim"></div>
+<div class="drawer" id="readDrawer"></div>
+
+<!-- Article edit drawer -->
+<div class="scrim" id="editScrim"></div>
+<div class="drawer" id="editDrawer"></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  var TODAY = new Date('2026-08-05T12:00:00');
+
+  var CATEGORIAS = [
+    { id: 'processo',    nome: 'Processo Comercial', color: 'var(--azul)',      desc: 'Etapas do processo de venda, SLAs, o que fazer em cada fase' },
+    { id: 'script',      nome: 'Scripts',            color: 'var(--indigo-600)',desc: 'Roteiros de abordagem — ligação, e-mail, WhatsApp' },
+    { id: 'objecao',     nome: 'Objeções',           color: 'var(--serious)',   desc: 'Objeção do prospect + como responder' },
+    { id: 'case',        nome: 'Cases',              color: 'var(--good)',      desc: 'Case real de cliente — problema, solução, resultado' },
+    { id: 'metodologia', nome: 'Metodologia',        color: 'var(--amber)',     desc: 'Frameworks de venda — qualificação, descoberta, etc.' },
+  ];
+  var CAT_BY_ID = {};
+  CATEGORIAS.forEach(function (c) { CAT_BY_ID[c.id] = c; });
+
+  var SETORES = ['Geral', 'Farma', 'Alimentos', 'Autopeças', 'Química', 'Etiquetas', 'Plástico', 'Máquinas e Equipamentos', 'Cosmético', 'Varejo'];
+
+  var USERS = { FN: 'Felipe Nogueira', MD: 'Marina Duarte', CR: 'Camila Rezende', PL: 'Paula Lemos', DC: 'Daniel Chagas' };
+
+  function daysAgo(n) { var d = new Date(TODAY); d.setDate(d.getDate() - n); return d; }
+  function fmtRelative(date) {
+    var days = Math.floor((TODAY - date) / 86400000);
+    if (days <= 0) return 'hoje';
+    if (days === 1) return 'ontem';
+    if (days < 7) return 'há ' + days + ' dias';
+    if (days < 30) return 'há ' + Math.floor(days / 7) + ' semana(s)';
+    if (days < 365) return 'há ' + Math.floor(days / 30) + ' mês(es)';
+    return 'há ' + Math.floor(days / 365) + ' ano(s)';
+  }
+  function daysSince(date) { return Math.floor((TODAY - date) / 86400000); }
+  function escapeHtml(s) { return (s || '').replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+
+  // ---------------- Markdown leve: **negrito**, "- item" -> lista, "## " -> h4 ----------------
+  function inline(s) { return escapeHtml(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>'); }
+  function renderMd(md) {
+    var blocks = (md || '').split(/\n\s*\n/);
+    return blocks.map(function (block) {
+      var lines = block.split('\n').filter(function (l) { return l.trim() !== ''; });
+      if (lines.length === 0) return '';
+      if (/^##\s+/.test(lines[0]) && lines.length === 1) return '<h4>' + inline(lines[0].replace(/^##\s+/, '')) + '</h4>';
+      if (lines.every(function (l) { return /^\s*-\s+/.test(l); })) {
+        return '<ul>' + lines.map(function (l) { return '<li>' + inline(l.replace(/^\s*-\s+/, '')) + '</li>'; }).join('') + '</ul>';
+      }
+      return '<p>' + lines.map(inline).join('<br>') + '</p>';
+    }).join('');
+  }
+
+  // ---------------- Mock dataset ----------------
+  var seq = 0;
+  function art(o) { seq++; return Object.assign({ id: 'a' + seq, tags: '', util_positivo: 0, util_negativo: 0, visualizacoes: 0, status: 'publicado', autor: 'DC' }, o); }
+
+  var ARTICLES = [
+    art({ categoria: 'processo', titulo: 'Processo comercial: da Central de Leads ao fechamento', setor: 'Geral',
+      resumo: 'As 6 etapas do funil e o que fazer (e não fazer) em cada uma.',
+      tags: 'processo,funil,sla',
+      conteudo: '## Visão geral\nO funil tem 6 etapas: Novo, Qualificando, Cadência, MQL, SQL e Convertido. MQL e SQL **nunca** são automáticos — sempre exigem confirmação humana.\n\n## O que fazer em cada etapa\n- **Novo**: validar dados de contato e confirmar setor/porte antes de qualquer abordagem.\n- **Qualificando**: fazer a primeira ligação de descoberta em até 24h — leads esfriam rápido.\n- **Cadência**: acompanhar aberturas de e-mail; se não engajar em 3 tentativas, ir para reativação.\n- **MQL**: priorizar contato humano na semana — engajamento alto sem contato é oportunidade perdida.\n- **SQL**: preparar proposta em até 48h do sinal de compra.',
+      atualizado: daysAgo(12), util_positivo: 18, util_negativo: 1, visualizacoes: 140 }),
+
+    art({ categoria: 'script', titulo: 'Ligação fria — abertura em 30 segundos', setor: 'Geral',
+      resumo: 'Roteiro de abertura pra primeira ligação com um lead que nunca ouviu falar da gente.',
+      tags: 'ligação,cold call,abertura',
+      conteudo: '## Abertura\n"Oi, [nome], aqui é [seu nome] da Argos. Te liguei porque [motivo específico — não genérico]. Tenho só 30 segundos, tudo bem?"\n\n## Se a pessoa topar\n- Confirmar 1 dor específica do setor antes de falar de produto.\n- Perguntar quem mais participa da decisão de transporte/frete.\n- Fechar pedindo 20 minutos numa data específica — nunca "quando puder".\n\n## Se a pessoa cortar\n"Sem problema — posso mandar 1 e-mail curto com o que eu ia falar?" (sempre peça permissão pro follow-up, não insista na ligação).',
+      atualizado: daysAgo(5), util_positivo: 24, util_negativo: 2, visualizacoes: 210 }),
+
+    art({ categoria: 'script', titulo: 'E-mail de reativação — base fria há 90+ dias', setor: 'Geral',
+      resumo: 'Modelo curto pra reabrir conversa com lead que parou de responder.',
+      tags: 'email,reativação',
+      conteudo: '## Quando usar\nLead sem interação há 90 dias ou mais, cadência anterior esgotada sem resposta.\n\n## Modelo\n"Assunto: ainda faz sentido pra vocês?\n\nOi [nome], faz um tempo que não conversamos sobre [tema]. Sei que prioridade muda — ainda faz sentido explorar isso este trimestre, ou prefere que eu volte a falar daqui uns meses?"\n\n- Curto de propósito — a pergunta é o gancho, não o argumento.\n- Se não responder em 5 dias úteis, mover pra "reengajamento anual" e não insistir mais.',
+      atualizado: daysAgo(140), util_positivo: 9, util_negativo: 3, visualizacoes: 88 }),
+
+    art({ categoria: 'objecao', titulo: '"Já temos transportadora fixa, não trocamos"', setor: 'Geral',
+      resumo: 'Objeção mais comum na abordagem inicial — como não entrar em confronto direto.',
+      tags: 'objeção,preço,transportadora',
+      conteudo: '## O que a pessoa está dizendo de verdade\nNa maioria das vezes não é "não preciso", é "trocar dá trabalho e risco". Não é uma objeção de preço.\n\n## Como responder\n"Faz todo sentido — a maioria dos nossos clientes também tinha transportadora fixa. A gente não entra pra substituir, entra pra dar visibilidade e cotação sobre o que já roda — muita gente descobre 15-20% de economia sem trocar de transportadora, só organizando a cotação."\n\n- Nunca ataque a transportadora atual do cliente.\n- Peça 1 dado concreto (nº de CT-e/mês) pra ancorar o benchmark do setor.',
+      atualizado: daysAgo(30), util_positivo: 31, util_negativo: 1, visualizacoes: 265 }),
+
+    art({ categoria: 'objecao', titulo: '"Não tenho orçamento agora"', setor: 'Geral',
+      resumo: 'Como separar objeção de timing real de desculpa educada.',
+      tags: 'objeção,orçamento,timing',
+      conteudo: '## Diagnosticar antes de responder\nPergunte: "Isso é uma questão de prioridade ou de o orçamento já estar fechado pro ano?" — a resposta muda totalmente a estratégia.\n\n## Se for prioridade\nTraga o benchmark de custo/kg do setor pra virar prioridade de novo.\n\n## Se for orçamento fechado\nNão insista em fechar agora. Agende retomada pro início do próximo ciclo orçamentário e mantenha em cadência de nutrição — forçar aqui queima o relacionamento.',
+      atualizado: daysAgo(75), util_positivo: 14, util_negativo: 0, visualizacoes: 120 }),
+
+    art({ categoria: 'objecao', titulo: '"Seu sistema não integra com nosso ERP"', setor: 'Farma',
+      resumo: 'Objeção técnica comum no setor Farma, onde ERPs legados são a norma.',
+      tags: 'objeção,integração,erp,farma',
+      conteudo: '## Contexto do setor\nDistribuidoras de Farma costumam rodar ERPs antigos (às vezes desenvolvidos internamente) — integração é preocupação legítima, não desculpa.\n\n## Como responder\n"Entendo — a maioria dos nossos clientes de Farma também tinha essa dúvida. A gente não exige substituir o ERP: dá pra rodar em paralelo via planilha/e-mail no início e evoluir pra integração depois, sem travar o começo."\n\n- Cite o case da Vale Verde (ver Cases) se o prospect for do mesmo porte.',
+      atualizado: daysAgo(20), util_positivo: 11, util_negativo: 0, visualizacoes: 74 }),
+
+    art({ categoria: 'case', titulo: 'Case: Farmacêutica Vale Verde — 18% de economia em 4 meses', setor: 'Farma',
+      resumo: 'Do diagnóstico ao resultado — use quando o prospect for do mesmo porte/setor.',
+      tags: 'case,farma,economia',
+      conteudo: '## Problema\nDistribuidora regional de Farma, ~180 funcionários, sem visibilidade de custo/kg entre transportadoras diferentes por região.\n\n## Solução\nBenchmark Logístico + cotação centralizada, sem trocar transportadora nos primeiros 2 meses.\n\n## Resultado\n**18% de economia em custo/kg** em 4 meses, mantendo o mesmo nível de serviço — usado pra renegociar contrato com a transportadora principal, não pra substituí-la.\n\n## Quando citar\nProspects de Farma/distribuição com múltiplas transportadoras regionais e sem cotação centralizada hoje.',
+      atualizado: daysAgo(8), util_positivo: 22, util_negativo: 0, visualizacoes: 190 }),
+
+    art({ categoria: 'case', titulo: 'Case: Grupo Andrade Embalagens — piloto de 30 dias', setor: 'Etiquetas',
+      resumo: 'Bom exemplo pra prospect que pede "prova antes de comprometer o ano todo".',
+      tags: 'case,piloto,etiquetas',
+      conteudo: '## Problema\nEmpresa de etiquetas relutante em assinar contrato anual sem ver resultado primeiro.\n\n## Solução\nPiloto de 30 dias numa única filial, sem custo de setup, com relatório comparativo ao final.\n\n## Resultado\nApós o piloto, expandiu para as 3 filiais e fechou contrato anual — o piloto reduziu o risco percebido sem a gente precisar baixar preço.',
+      atualizado: daysAgo(200), util_positivo: 6, util_negativo: 1, visualizacoes: 55 }),
+
+    art({ categoria: 'metodologia', titulo: 'Framework de qualificação — GD-FIT', setor: 'Geral',
+      resumo: 'Adaptação do BANT pro nosso produto: Frequência, Impacto, Timing.',
+      tags: 'metodologia,qualificação,bant',
+      conteudo: '## As 3 perguntas\n- **Frequência**: quantos CT-e/mês a empresa emite ou recebe? (abaixo de 50/mês, o ROI é fraco)\n- **Impacto**: quem sente a dor hoje — logística, financeiro ou diretoria? Quanto mais alto, mais rápido fecha.\n- **Timing**: existe gatilho concreto (expansão, troca de transportadora, reclamação recente) ou é "seria bom ter"?\n\n## Como pontuar\nUse a régua de Lead Score (Fit ICP + Engajamento) da Central de Leads — este framework serve pra guiar a conversa de descoberta, não substitui o score automático.',
+      atualizado: daysAgo(45), util_positivo: 19, util_negativo: 2, visualizacoes: 133 }),
+
+    art({ categoria: 'metodologia', titulo: 'Descoberta em 5 perguntas antes de propor preço', setor: 'Geral',
+      resumo: 'Evita a maior causa de proposta rejeitada: apresentar preço sem entender o cenário.',
+      tags: 'metodologia,descoberta',
+      conteudo: '- Quantas transportadoras vocês usam hoje?\n- Como é feita a cotação hoje — planilha, e-mail, sistema?\n- Quem aprova a escolha de transportadora numa entrega nova?\n- Já tiveram problema de atraso/avaria que gerou custo extra recente?\n- O que faria essa decisão ser prioridade este trimestre?',
+      atualizado: daysAgo(60), util_positivo: 15, util_negativo: 0, visualizacoes: 98 }),
+
+    art({ categoria: 'script', titulo: 'WhatsApp — follow-up pós-reunião de descoberta', setor: 'Geral',
+      resumo: 'Mensagem curta pra manter o ritmo sem parecer robótico.',
+      tags: 'whatsapp,follow-up',
+      conteudo: '"Oi [nome], obrigado pelo tempo hoje! Vou preparar [o que foi combinado] e te mando até [dia]. Fica algo pendente da nossa parte além disso?"\n\n- Sempre reafirme prazo e próximo passo — reunião sem follow-up em 24h esfria.',
+      atualizado: daysAgo(3), util_positivo: 8, util_negativo: 0, visualizacoes: 61, status: 'rascunho', autor: 'CR' }),
+
+    art({ categoria: 'objecao', titulo: '"Vou conversar com meu sócio e te retorno"', setor: 'Varejo',
+      resumo: 'Comum em empresas de varejo de porte menor com decisão compartilhada.',
+      tags: 'objeção,decisor,varejo',
+      conteudo: '"Faz sentido! Pra eu ajudar nessa conversa, consigo te mandar um resumo de 1 página com o número principal — assim vocês dois já discutem com o dado em mãos. Quando seria um bom dia pra eu retomar contigo?"\n\n- Sempre feche com uma data, não um "te aviso".',
+      atualizado: daysAgo(2), util_positivo: 2, util_negativo: 0, visualizacoes: 14, status: 'rascunho', autor: 'PL' }),
+
+    art({ categoria: 'processo', titulo: 'SLA de resposta por etapa do funil', setor: 'Geral',
+      resumo: 'Tempos máximos de resposta — referência rápida de time de vendas.',
+      tags: 'sla,processo',
+      conteudo: '- **Novo → primeiro contato**: até 24h úteis\n- **Reunião realizada → follow-up**: até 24h\n- **Proposta enviada → checagem de leitura**: até 48h\n- **SQL sem negócio aberto há 7 dias**: escalar para o gestor',
+      atualizado: daysAgo(400), util_positivo: 5, util_negativo: 4, visualizacoes: 300 }),
+
+    art({ categoria: 'case', titulo: 'Case antigo: Metalúrgica (descontinuado)', setor: 'Máquinas e Equipamentos',
+      resumo: 'Case fora de uso — cliente encerrou contrato; manter só de referência histórica.',
+      tags: 'case,arquivado',
+      conteudo: 'Case arquivado após encerramento de contrato em 2025. Não usar em abordagem — mantido só pra referência interna de histórico.',
+      atualizado: daysAgo(500), util_positivo: 1, util_negativo: 2, visualizacoes: 40, status: 'arquivado' }),
+  ];
+
+  // ---------------- Estado ----------------
+  var state = { role: 'admin', screen: 'lib', categoria: '', setor: '', busca: '', myVotes: {} };
+
+  var roleSwitch = document.getElementById('roleSwitch');
+  roleSwitch.addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-role]');
+    if (!btn) return;
+    state.role = btn.dataset.role;
+    Array.prototype.forEach.call(roleSwitch.children, function (b) { b.classList.toggle('active', b === btn); });
+    if (state.role === 'vendedor') {
+      document.getElementById('sbName').textContent = 'Camila Rezende';
+      document.getElementById('sbRole').textContent = 'Vendedor · GD Conecta';
+      document.getElementById('sbAvatar').textContent = 'CR';
+    } else {
+      document.getElementById('sbName').textContent = 'Daniel Chagas';
+      document.getElementById('sbRole').textContent = 'Admin · GD Conecta';
+      document.getElementById('sbAvatar').textContent = 'DC';
+    }
+    renderAll();
+  });
+
+  var screenSwitch = document.getElementById('screenSwitch');
+  screenSwitch.addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-screen]');
+    if (!btn) return;
+    state.screen = btn.dataset.screen;
+    Array.prototype.forEach.call(screenSwitch.children, function (b) { b.classList.toggle('active', b === btn); });
+    document.getElementById('screenLib').style.display = state.screen === 'lib' ? '' : 'none';
+    document.getElementById('screenDossier').style.display = state.screen === 'dossier' ? '' : 'none';
+    if (state.screen === 'dossier') renderDossierPreview();
+  });
+
+  // setor filter options
+  var setorSel = document.getElementById('setorFilter');
+  setorSel.innerHTML += SETORES.map(function (s) { return '<option value="' + s + '">' + s + '</option>'; }).join('');
+  setorSel.addEventListener('change', function () { state.setor = setorSel.value; renderGrid(); });
+  document.getElementById('searchInput').addEventListener('input', function (e) { state.busca = e.target.value.toLowerCase(); renderGrid(); });
+
+  function isVisible(a) {
+    // Vendedor só vê publicados + seus próprios rascunhos.
+    if (state.role === 'vendedor') return a.status === 'publicado' || (a.status === 'rascunho' && a.autor === 'CR');
+    return true;
+  }
+
+  function passesFilter(a) {
+    if (!isVisible(a)) return false;
+    if (state.categoria && a.categoria !== state.categoria) return false;
+    if (state.setor && a.setor !== state.setor) return false;
+    if (state.busca) {
+      var hay = (a.titulo + ' ' + a.tags + ' ' + a.resumo).toLowerCase();
+      if (hay.indexOf(state.busca) === -1) return false;
+    }
+    return true;
+  }
+
+  function renderCatTabs() {
+    var counts = {};
+    ARTICLES.filter(isVisible).forEach(function (a) { counts[a.categoria] = (counts[a.categoria] || 0) + 1; });
+    var total = ARTICLES.filter(isVisible).length;
+    var html = '<div class="cat-tab' + (state.categoria === '' ? ' active' : '') + '" data-cat="" style="--cat-color: var(--indigo);"><span class="d"></span>Todos <span class="n">' + total + '</span></div>';
+    html += CATEGORIAS.map(function (c) {
+      var n = counts[c.id] || 0;
+      return '<div class="cat-tab' + (state.categoria === c.id ? ' active' : '') + '" data-cat="' + c.id + '" style="--cat-color: ' + c.color + ';" title="' + escapeHtml(c.desc) + '"><span class="d"></span>' + c.nome + ' <span class="n">' + n + '</span></div>';
+    }).join('');
+    var el = document.getElementById('catTabs');
+    el.innerHTML = html;
+    Array.prototype.forEach.call(el.querySelectorAll('.cat-tab'), function (t) {
+      t.addEventListener('click', function () { state.categoria = t.dataset.cat; renderCatTabs(); renderGrid(); });
+    });
+  }
+
+  function renderStats() {
+    var visible = ARTICLES.filter(isVisible);
+    var publicados = visible.filter(function (a) { return a.status === 'publicado'; }).length;
+    var pendentes = ARTICLES.filter(function (a) { return a.status === 'rascunho'; }).length;
+    var stale = visible.filter(function (a) { return a.status !== 'arquivado' && daysSince(a.atualizado) >= 90; }).length;
+    var totalVotos = visible.reduce(function (s, a) { return s + a.util_positivo + a.util_negativo; }, 0);
+    var totalPos = visible.reduce(function (s, a) { return s + a.util_positivo; }, 0);
+    var pctUtil = totalVotos ? Math.round((totalPos / totalVotos) * 100) : 0;
+
+    document.getElementById('headTotal').textContent = publicados;
+    document.getElementById('headPending').textContent = pendentes;
+    document.getElementById('headStale').textContent = stale;
+
+    var tiles = [
+      { t: 'Publicados', v: publicados, cls: '' },
+      { t: 'Rascunhos p/ revisar', v: pendentes, cls: 'pending', clickable: state.role === 'admin' },
+      { t: 'Sem revisão 90+ dias', v: stale, cls: 'stale', clickable: true },
+      { t: '% achou útil', v: pctUtil + '%', cls: 'good' },
+      { t: 'Setores cobertos', v: (new Set(visible.map(function (a) { return a.setor; }))).size, cls: '' },
+    ];
+    document.getElementById('statStrip').innerHTML = tiles.map(function (s) {
+      return '<div class="stat-tile ' + s.cls + (s.clickable ? ' clickable' : '') + '" data-tile="' + s.t + '"><div class="t">' + s.t + '</div><div class="v">' + s.v + '</div></div>';
+    }).join('');
+    var staleTile = document.querySelector('.stat-tile.stale');
+    if (staleTile) staleTile.addEventListener('click', function () { toast('Em produção, isso filtraria a grade pelos artigos sem revisão há 90+ dias.'); });
+    var pendTile = document.querySelector('.stat-tile.pending');
+    if (pendTile) pendTile.addEventListener('click', function () { state.categoria = ''; state.setor = ''; state.busca = ''; document.getElementById('searchInput').value=''; setorSel.value=''; renderCatTabs(); renderGridPendingOnly(); });
+  }
+
+  function renderGridPendingOnly() {
+    var list = ARTICLES.filter(function (a) { return a.status === 'rascunho'; });
+    paintGrid(list);
+  }
+
+  function articleCardHtml(a) {
+    var cat = CAT_BY_ID[a.categoria];
+    var stale = a.status !== 'arquivado' && daysSince(a.atualizado) >= 90;
+    return '' +
+      '<div class="art-card" data-id="' + a.id + '" style="--cat-color:' + cat.color + ';">' +
+        '<div class="art-card-top">' +
+          '<span class="cat-badge"><span class="d"></span>' + cat.nome + '</span>' +
+          (a.status !== 'publicado' ? '<span class="status-pill ' + a.status + '">' + (a.status === 'rascunho' ? 'Rascunho' : 'Arquivado') + '</span>' : '') +
+        '</div>' +
+        '<div class="art-card-title">' + escapeHtml(a.titulo) + '</div>' +
+        '<div class="art-card-resumo">' + escapeHtml(a.resumo) + '</div>' +
+        '<div class="art-card-meta">' +
+          '<span class="setor-tag">' + escapeHtml(a.setor) + '</span>' +
+          (stale ? '<span class="stale-tag"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="7.3"/><path d="M10 6.5v4.2l3 1.8"/></svg>Sem revisão ' + fmtRelative(a.atualizado) + '</span>' : '<span>Atualizado ' + fmtRelative(a.atualizado) + '</span>') +
+        '</div>' +
+        '<div class="art-card-foot">' +
+          '<span class="vote-mini"><span>👍 ' + a.util_positivo + '</span><span>👎 ' + a.util_negativo + '</span></span>' +
+          '<span>' + a.visualizacoes + ' visualizações</span>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function paintGrid(list) {
+    var grid = document.getElementById('articleGrid');
+    var empty = document.getElementById('emptyState');
+    document.getElementById('resultCount').textContent = list.length + ' artigo(s)';
+    if (list.length === 0) { grid.innerHTML = ''; empty.style.display = ''; return; }
+    empty.style.display = 'none';
+    grid.innerHTML = list.map(articleCardHtml).join('');
+    Array.prototype.forEach.call(grid.querySelectorAll('.art-card'), function (card) {
+      card.addEventListener('click', function () { openReadDrawer(card.dataset.id); });
+    });
+  }
+
+  function renderGrid() {
+    var list = ARTICLES.filter(passesFilter).sort(function (x, y) { return y.atualizado - x.atualizado; });
+    paintGrid(list);
+  }
+
+  function renderAll() { renderCatTabs(); renderStats(); renderGrid(); }
+
+  // ---------------- Drawer de leitura ----------------
+  var readScrim = document.getElementById('drawerScrim');
+  var readDrawer = document.getElementById('readDrawer');
+  readScrim.addEventListener('click', closeReadDrawer);
+
+  function closeReadDrawer() { readScrim.classList.remove('show'); readDrawer.classList.remove('show'); }
+
+  function openReadDrawer(id) {
+    var a = ARTICLES.find(function (x) { return x.id === id; });
+    if (!a) return;
+    a.visualizacoes++;
+    var cat = CAT_BY_ID[a.categoria];
+    var vote = state.myVotes[a.id];
+    var canManage = state.role === 'admin';
+
+    readDrawer.innerHTML = '' +
+      '<div class="drawer-head">' +
+        '<div>' +
+          '<div class="badge-row" style="margin-bottom:6px;">' +
+            '<span class="cat-badge" style="--cat-color:' + cat.color + ';"><span class="d"></span>' + cat.nome + '</span>' +
+            (a.status !== 'publicado' ? '<span class="status-pill ' + a.status + '">' + (a.status === 'rascunho' ? 'Rascunho' : 'Arquivado') + '</span>' : '') +
+            '<span class="setor-tag">' + escapeHtml(a.setor) + '</span>' +
+          '</div>' +
+          '<h2>' + escapeHtml(a.titulo) + '</h2>' +
+          '<p>Por ' + (USERS[a.autor] || a.autor) + ' · atualizado ' + fmtRelative(a.atualizado) + ' · ' + a.visualizacoes + ' visualizações</p>' +
+        '</div>' +
+        '<button class="drawer-close" onclick="document.getElementById(\'drawerScrim\').classList.remove(\'show\');document.getElementById(\'readDrawer\').classList.remove(\'show\')"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 5l10 10M15 5L5 15"/></svg></button>' +
+      '</div>' +
+      '<div class="drawer-body">' +
+        '<div class="md-content">' + renderMd(a.conteudo) + '</div>' +
+        '<div class="feedback-box">' +
+          '<span class="lbl">Isso ajudou você?</span>' +
+          '<button class="vote-btn' + (vote === 'up' ? ' voted-up' : '') + '" id="voteUpBtn">👍 Sim (' + a.util_positivo + ')</button>' +
+          '<button class="vote-btn' + (vote === 'down' ? ' voted-down' : '') + '" id="voteDownBtn">👎 Não (' + a.util_negativo + ')</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="drawer-foot">' +
+        (canManage ? (
+          '<div>' + (a.status === 'rascunho' ? '<button class="btn-primary" id="publishBtn">Publicar</button>' : (a.status === 'publicado' ? '<button class="btn-ghost" id="archiveBtn">Arquivar</button>' : '<button class="btn-ghost" id="unarchiveBtn">Reativar</button>')) + '</div>'
+        ) : '<div></div>') +
+        '<div class="right">' +
+          (canManage || a.autor === 'CR' ? '<button class="btn-ghost" id="editBtn">Editar</button>' : '') +
+          (canManage ? '<button class="btn-danger" id="deleteBtn">Excluir</button>' : '') +
+        '</div>' +
+      '</div>';
+
+    readScrim.classList.add('show');
+    readDrawer.classList.add('show');
+    renderStats(); // visualizações mudou
+
+    document.getElementById('voteUpBtn').addEventListener('click', function () {
+      if (state.myVotes[a.id] === 'up') return;
+      if (state.myVotes[a.id] === 'down') a.util_negativo--;
+      a.util_positivo++; state.myVotes[a.id] = 'up';
+      openReadDrawer(id); toast('Valeu pelo feedback!');
+    });
+    document.getElementById('voteDownBtn').addEventListener('click', function () {
+      if (state.myVotes[a.id] === 'down') return;
+      if (state.myVotes[a.id] === 'up') a.util_positivo--;
+      a.util_negativo++; state.myVotes[a.id] = 'down';
+      openReadDrawer(id); toast('Obrigado — vamos revisar esse conteúdo.');
+    });
+    var publishBtn = document.getElementById('publishBtn');
+    if (publishBtn) publishBtn.addEventListener('click', function () { a.status = 'publicado'; closeReadDrawer(); renderAll(); toast('Artigo publicado.'); });
+    var archiveBtn = document.getElementById('archiveBtn');
+    if (archiveBtn) archiveBtn.addEventListener('click', function () { a.status = 'arquivado'; closeReadDrawer(); renderAll(); toast('Artigo arquivado.'); });
+    var unarchiveBtn = document.getElementById('unarchiveBtn');
+    if (unarchiveBtn) unarchiveBtn.addEventListener('click', function () { a.status = 'publicado'; closeReadDrawer(); renderAll(); toast('Artigo reativado.'); });
+    var editBtn = document.getElementById('editBtn');
+    if (editBtn) editBtn.addEventListener('click', function () { closeReadDrawer(); openEditDrawer(a); });
+    var deleteBtn = document.getElementById('deleteBtn');
+    if (deleteBtn) deleteBtn.addEventListener('click', function () {
+      if (!confirm('Excluir "' + a.titulo + '"?')) return;
+      ARTICLES = ARTICLES.filter(function (x) { return x.id !== a.id; });
+      closeReadDrawer(); renderAll(); toast('Artigo excluído.');
+    });
+  }
+
+  // ---------------- Drawer de edição/criação ----------------
+  var editScrim = document.getElementById('editScrim');
+  var editDrawer = document.getElementById('editDrawer');
+  editScrim.addEventListener('click', closeEditDrawer);
+  document.getElementById('newArticleBtn').addEventListener('click', function () { openEditDrawer(null); });
+
+  function closeEditDrawer() { editScrim.classList.remove('show'); editDrawer.classList.remove('show'); }
+
+  function openEditDrawer(a) {
+    var isNew = !a;
+    var catOptions = CATEGORIAS.map(function (c) { return '<option value="' + c.id + '"' + (a && a.categoria === c.id ? ' selected' : '') + '>' + c.nome + '</option>'; }).join('');
+    var setorOptions = SETORES.map(function (s) { return '<option value="' + s + '"' + (a && a.setor === s ? ' selected' : '') + '>' + s + '</option>'; }).join('');
+
+    editDrawer.innerHTML = '' +
+      '<div class="drawer-head">' +
+        '<div><h2>' + (isNew ? 'Novo artigo' : 'Editar artigo') + '</h2><p>' + (state.role === 'vendedor' ? 'Salvo como rascunho — um admin/gestor revisa antes de publicar.' : 'Você pode publicar direto ou salvar como rascunho.') + '</p></div>' +
+        '<button class="drawer-close" id="editCloseBtn"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 5l10 10M15 5L5 15"/></svg></button>' +
+      '</div>' +
+      '<form id="editForm">' +
+      '<div class="drawer-body">' +
+        '<div class="f-row-2">' +
+          '<div class="f-group"><label class="f-label">Categoria <span class="req">*</span></label><select class="f-select" id="fCategoria">' + catOptions + '</select></div>' +
+          '<div class="f-group"><label class="f-label">Setor</label><select class="f-select" id="fSetor">' + setorOptions + '</select></div>' +
+        '</div>' +
+        '<div class="f-group"><label class="f-label">Título <span class="req">*</span></label><input class="f-input" id="fTitulo" value="' + (a ? escapeHtml(a.titulo) : '') + '" placeholder="Ex.: Objeção — já tenho transportadora fixa" /></div>' +
+        '<div class="f-group"><label class="f-label">Resumo</label><input class="f-input" id="fResumo" value="' + (a ? escapeHtml(a.resumo) : '') + '" placeholder="1 frase — aparece no card" /></div>' +
+        '<div class="f-group"><label class="f-label">Tags</label><input class="f-input" id="fTags" value="' + (a ? escapeHtml(a.tags) : '') + '" placeholder="separadas por vírgula" /></div>' +
+        '<div class="f-group">' +
+          '<label class="f-label">Conteúdo <span class="req">*</span></label>' +
+          '<textarea class="f-textarea big" id="fConteudo" placeholder="Use ## para título de seção, - para listas e **texto** para negrito">' + (a ? a.conteudo : '') + '</textarea>' +
+          '<span class="f-hint">Markdown leve: <code>## Seção</code>, <code>- item de lista</code>, <code>**negrito**</code>.</span>' +
+        '</div>' +
+        '<div class="preview-card"><div class="preview-label">Prévia</div><div class="md-content" id="fPreview"></div></div>' +
+      '</div>' +
+      '<div class="drawer-foot">' +
+        '<button type="button" class="btn-ghost" id="editCancelBtn">Cancelar</button>' +
+        '<div class="right">' +
+          (state.role === 'admin' ? '<button type="submit" class="btn-ghost" data-as="rascunho">Salvar como rascunho</button><button type="submit" class="btn-primary" data-as="publicado">Salvar e publicar</button>' : '<button type="submit" class="btn-primary" data-as="rascunho">Enviar para revisão</button>') +
+        '</div>' +
+      '</div>' +
+      '</form>';
+
+    editScrim.classList.add('show');
+    editDrawer.classList.add('show');
+
+    var contEl = document.getElementById('fConteudo');
+    function updatePreview() { document.getElementById('fPreview').innerHTML = renderMd(contEl.value) || '<span style="color:var(--ink-faint);">A prévia aparece aqui conforme você digita…</span>'; }
+    contEl.addEventListener('input', updatePreview);
+    updatePreview();
+
+    document.getElementById('editCloseBtn').addEventListener('click', closeEditDrawer);
+    document.getElementById('editCancelBtn').addEventListener('click', closeEditDrawer);
+
+    document.getElementById('editForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var asStatus = document.activeElement && document.activeElement.dataset.as ? document.activeElement.dataset.as : 'rascunho';
+      var titulo = document.getElementById('fTitulo').value.trim();
+      var conteudo = contEl.value.trim();
+      if (!titulo || !conteudo) { toast('Preencha título e conteúdo.'); return; }
+      var payload = {
+        categoria: document.getElementById('fCategoria').value,
+        setor: document.getElementById('fSetor').value,
+        titulo: titulo,
+        resumo: document.getElementById('fResumo').value.trim(),
+        tags: document.getElementById('fTags').value.trim(),
+        conteudo: conteudo,
+      };
+      if (isNew) {
+        ARTICLES.unshift(art(Object.assign(payload, { status: asStatus, autor: state.role === 'vendedor' ? 'CR' : 'DC', atualizado: new Date(TODAY) })));
+        toast(asStatus === 'publicado' ? 'Artigo publicado.' : 'Rascunho enviado para revisão.');
+      } else {
+        Object.assign(a, payload, { status: asStatus, atualizado: new Date(TODAY) });
+        toast('Artigo atualizado.');
+      }
+      closeEditDrawer();
+      renderAll();
+    });
+  }
+
+  // ---------------- Toast ----------------
+  var toastTimer;
+  function toast(msg) {
+    var el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.classList.remove('show'); }, 2600);
+  }
+
+  // ---------------- Prévia no Dossiê (Fase 2) ----------------
+  function renderDossierPreview() {
+    var setor = 'Farma';
+    var list = ARTICLES.filter(function (a) { return a.status === 'publicado' && (a.setor === setor || a.setor === 'Geral'); })
+      .sort(function (x, y) { return (y.util_positivo - y.util_negativo) - (x.util_positivo - x.util_negativo); })
+      .slice(0, 6);
+    document.getElementById('dossierSugGrid').innerHTML = list.map(function (a) {
+      var cat = CAT_BY_ID[a.categoria];
+      return '<div class="sug-card" data-id="' + a.id + '" style="--cat-color:' + cat.color + ';"><div class="cat">' + cat.nome + '</div><div class="t">' + escapeHtml(a.titulo) + '</div><div class="r">' + escapeHtml(a.resumo) + '</div></div>';
+    }).join('');
+    Array.prototype.forEach.call(document.querySelectorAll('#dossierSugGrid .sug-card'), function (card) {
+      card.addEventListener('click', function () { openReadDrawer(card.dataset.id); });
+    });
+  }
+
+  renderAll();
+</script>

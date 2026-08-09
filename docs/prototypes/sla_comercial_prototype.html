@@ -1,0 +1,799 @@
+<title>Tarefas · SLA Comercial — Argos</title>
+<style>
+  /* Font note: real product should self-host IBM Plex Sans/Mono; CDN fonts are blocked
+     in this artifact sandbox, so a close system-grotesque stack stands in here. */
+  :root {
+    --font-display: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Cascadia Code", "SFMono-Regular", "Consolas", ui-monospace, monospace;
+
+    --indigo: #2D3561;
+    --indigo-600: #3B4478;
+    --amber: #C9A84C;
+    --azul: #0077A8;
+    --marfim: #F5F1EB;
+
+    --paper: var(--marfim);
+    --panel: var(--indigo);
+    --panel-fg: #F1EEE6;
+    --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12);
+    --panel-active-bg: rgba(201, 168, 76, 0.14);
+
+    --ink: #22243A;
+    --ink-dim: #5B5E78;
+    --ink-faint: #8B8EA6;
+    --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF;
+    --accent: var(--amber);
+    --link: var(--azul);
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+
+    --good: #0ca30c;
+    --warning: #fab219;
+    --serious: #ec835a;
+    --critical: #d03b3b;
+
+    --seq-1: #86b6ef; --seq-2: #5598e7; --seq-3: #2a78d6; --seq-4: #1c5cab; --seq-5: #104281; --seq-6: #0a2d5c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+      --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+      --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+      --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+      --seq-1: #9ec5f4; --seq-2: #6da7ec; --seq-3: #3987e5; --seq-4: #256abf; --seq-5: #184f95; --seq-6: #123a70;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+    --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+    --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+    --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+    --seq-1: #9ec5f4; --seq-2: #6da7ec; --seq-3: #3987e5; --seq-4: #256abf; --seq-5: #184f95; --seq-6: #123a70;
+  }
+  :root[data-theme="light"] {
+    --paper: #F5F1EB; --panel: #2D3561; --panel-fg: #F1EEE6; --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(45, 53, 97, 0.12); --panel-active-bg: rgba(201, 168, 76, 0.14);
+    --ink: #22243A; --ink-dim: #5B5E78; --ink-faint: #8B8EA6; --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF; --amber: #C9A84C; --azul: #0077A8; --link: #0077A8;
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+    --seq-1: #86b6ef; --seq-2: #5598e7; --seq-3: #2a78d6; --seq-4: #1c5cab; --seq-5: #104281; --seq-6: #0a2d5c;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; font-family: var(--font-display); color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; }
+  button, input, select, textarea { font-family: inherit; }
+  a { color: inherit; }
+  ::selection { background: rgba(201,168,76,.3); }
+  :focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; border-radius: 4px; }
+
+  .shell { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+
+  /* ---------------- Sidebar ---------------- */
+  .sidebar { background: var(--panel); color: var(--panel-fg); padding: 0 12px 16px; display: flex; flex-direction: column; }
+  .sb-brand { display: flex; align-items: center; gap: 10px; padding: 20px 18px 16px; }
+  .monogram { width: 32px; height: 32px; border-radius: 9px; background: var(--amber); color: var(--indigo); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; flex: none; }
+  .sb-brand strong { display: block; font-size: 14.5px; font-weight: 650; line-height: 1.2; }
+  .sb-brand span { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--panel-fg-dim); margin-top: 2px; }
+  .sb-nav { flex: 1; padding: 6px 0; }
+  .sb-group + .sb-group { margin-top: 18px; }
+  .sb-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--panel-fg-dim); padding: 0 10px; margin-bottom: 6px; }
+  .sb-item { display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: 8px; margin-bottom: 2px; font-size: 13.6px; font-weight: 500; color: var(--panel-fg-dim); text-decoration: none; cursor: pointer; border: 1px solid transparent; position: relative; }
+  .sb-item svg { width: 17px; height: 17px; flex: none; opacity: 0.9; }
+  .sb-item:hover { background: rgba(241, 238, 230, 0.06); color: var(--panel-fg); }
+  .sb-item.active { background: var(--panel-active-bg); color: var(--panel-fg); font-weight: 650; }
+  .sb-item.active::before { content: ""; position: absolute; left: -12px; top: 6px; bottom: 6px; width: 3px; background: var(--amber); border-radius: 2px; }
+  .sb-item .chip { margin-left: auto; font-family: var(--font-mono); font-size: 10px; background: rgba(241,238,230,0.12); color: var(--panel-fg-dim); padding: 1px 6px; border-radius: 100px; }
+  .sb-item .badge-new { margin-left: auto; font-size: 9px; font-weight: 700; letter-spacing: .03em; background: var(--amber); color: var(--indigo); padding: 1.5px 6px; border-radius: 100px; }
+  .sb-user { display: flex; align-items: center; gap: 10px; padding: 12px 10px 4px; border-top: 1px solid var(--panel-border); margin-top: 10px; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; flex: none; background: rgba(201,168,76,0.18); color: var(--amber); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; border: 1px solid rgba(201,168,76,0.3); }
+  .sb-user-meta { display: flex; flex-direction: column; min-width: 0; }
+  .sb-user-meta strong { font-size: 12.6px; color: var(--panel-fg); }
+  .sb-user-meta span { font-size: 11px; color: var(--panel-fg-dim); }
+
+  .main-col { min-width: 0; }
+  .content { padding: 22px 28px 60px; display: flex; flex-direction: column; gap: 16px; }
+
+  .page-head { display: flex; align-items: flex-start; gap: 16px; }
+  .page-head h1 { margin: 0; font-size: 20px; font-weight: 650; letter-spacing: -0.01em; }
+  .page-head p { margin: 3px 0 0; font-size: 12.5px; color: var(--ink-dim); }
+  .page-head p .mono { font-family: var(--font-mono); color: var(--ink); font-weight: 500; }
+  .page-actions { display: flex; gap: 8px; margin-left: auto; flex: none; }
+
+  .btn-primary { display: flex; align-items: center; gap: 7px; background: var(--indigo); color: var(--panel-fg); border: 1px solid var(--indigo); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-primary:hover { background: var(--indigo-600); }
+  .btn-primary svg { width: 14px; height: 14px; }
+  .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-ghost { display: flex; align-items: center; gap: 7px; background: var(--card-bg); color: var(--ink); border: 1px solid var(--border); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-ghost:hover { border-color: var(--ink-faint); }
+  .btn-ghost svg { width: 14px; height: 14px; }
+  .btn-sm { padding: 5px 10px; font-size: 12px; border-radius: 7px; }
+
+  .info-banner { display: flex; gap: 10px; align-items: flex-start; padding: 11px 14px; background: color-mix(in srgb, var(--azul) 7%, var(--card-bg)); border: 1px solid var(--border); border-radius: 10px; font-size: 12.3px; color: var(--ink-dim); line-height: 1.55; }
+  .info-banner svg { width: 15px; height: 15px; color: var(--azul); flex: none; margin-top: 1px; }
+  .info-banner b { color: var(--ink); }
+  .info-banner button { margin-left: auto; flex: none; background: none; border: none; color: var(--ink-faint); cursor: pointer; font-size: 12px; text-decoration: underline; padding: 0; }
+
+  .stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 10px; }
+  .stat-tile { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 11px 13px; box-shadow: var(--shadow); }
+  .stat-tile .t { font-size: 10.5px; color: var(--ink-faint); font-weight: 600; text-transform: uppercase; letter-spacing: .03em; white-space: nowrap; }
+  .stat-tile .v { font-size: 18px; font-weight: 700; margin-top: 4px; font-family: var(--font-mono); }
+  .stat-tile.good .v { color: var(--good); }
+  .stat-tile.warn .v { color: color-mix(in srgb, var(--warning) 60%, var(--ink)); }
+  .stat-tile.late .v { color: var(--critical); }
+  .stat-tile.neutral .v { color: var(--azul); }
+
+  .filters-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .result-count { font-size: 12px; color: var(--ink-faint); }
+
+  .segmented { display: inline-flex; gap: 3px; padding: 3px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; }
+  .segmented button { border: none; background: transparent; padding: 7px 14px; border-radius: 7px; font-size: 12.8px; font-weight: 600; color: var(--ink-dim); cursor: pointer; display: flex; align-items: center; gap: 6px; }
+  .segmented button svg { width: 13px; height: 13px; }
+  .segmented button.active { background: var(--indigo); color: var(--panel-fg); }
+  .segmented button:not(.active):hover { color: var(--ink); }
+
+  .chip-filter { display: inline-flex; gap: 3px; padding: 3px; background: var(--paper); border: 1px solid var(--border); border-radius: 100px; }
+  .chip-filter button { border: none; background: transparent; padding: 6px 12px; border-radius: 100px; font-size: 12px; font-weight: 600; color: var(--ink-dim); cursor: pointer; }
+  .chip-filter button.active { background: var(--card-bg); color: var(--ink); box-shadow: var(--shadow); }
+
+  /* ---------------- Card / section ---------------- */
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+  .card-head { display: flex; align-items: flex-start; gap: 12px; padding: 16px 18px 12px; flex-wrap: wrap; }
+  .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 650; }
+  .card-head p { margin: 2px 0 0; font-size: 12px; color: var(--ink-faint); }
+  .card-head .card-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+  .table-scroll { overflow-x: auto; }
+  table.data { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 760px; }
+  table.data th { text-align: left; font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); font-weight: 600; padding: 10px 16px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  table.data td { padding: 10px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  table.data tbody tr:last-child td { border-bottom: none; }
+  table.data tbody tr.clickable { cursor: pointer; }
+  table.data tbody tr.clickable:hover { background: color-mix(in srgb, var(--paper) 55%, transparent); }
+  .row-title { font-weight: 600; color: var(--ink); }
+  .row-sub { font-size: 11.3px; color: var(--ink-faint); margin-top: 1px; }
+  .row-resp { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--ink-dim); }
+  .row-resp .avatar { width: 22px; height: 22px; font-size: 9.5px; }
+  .mono-cell { font-family: var(--font-mono); font-size: 12px; color: var(--ink-dim); white-space: nowrap; }
+
+  .status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11.3px; font-weight: 650; padding: 3px 10px; border-radius: 100px; white-space: nowrap; color: #fff; }
+  .status-pill .d { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.75); flex: none; }
+  .status-pill.done { background: var(--good); }
+  .status-pill.ok { background: var(--azul); }
+  .status-pill.risk { background: color-mix(in srgb, var(--warning) 82%, var(--ink) 8%); color: #3a2c04; }
+  .status-pill.risk .d { background: rgba(0,0,0,.35); }
+  .status-pill.late { background: var(--critical); }
+  .status-pill.off { background: var(--ink-faint); }
+
+  .origin-tag { font-size: 10.3px; font-weight: 650; padding: 2px 8px; border-radius: 100px; white-space: nowrap; }
+  .origin-tag.novo { background: rgba(201,168,76,0.16); color: color-mix(in srgb, var(--amber) 70%, var(--ink) 10%); }
+  .origin-tag.pipeline { background: rgba(0,119,168,0.13); color: var(--azul); }
+
+  .switch { position: relative; display: inline-block; width: 34px; height: 19px; flex: none; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .switch .track { position: absolute; inset: 0; background: var(--border); border-radius: 100px; cursor: pointer; transition: background 140ms ease; }
+  .switch .track::before { content: ""; position: absolute; width: 15px; height: 15px; left: 2px; top: 2px; background: #fff; border-radius: 50%; transition: transform 140ms ease; box-shadow: 0 1px 2px rgba(0,0,0,.25); }
+  .switch input:checked + .track { background: var(--good); }
+  .switch input:checked + .track::before { transform: translateX(15px); }
+
+  .icon-btn { width: 26px; height: 26px; border-radius: 7px; border: none; background: transparent; color: var(--ink-faint); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; }
+  .icon-btn:hover { background: var(--paper); color: var(--ink); }
+
+  .state-msg { padding: 30px; text-align: center; color: var(--ink-faint); font-size: 13px; }
+
+  /* ---------------- Drawer ---------------- */
+  .scrim { position: fixed; inset: 0; background: rgba(20,23,43,.4); opacity: 0; pointer-events: none; transition: opacity .18s ease; z-index: 40; }
+  .scrim.show { opacity: 1; pointer-events: auto; }
+  .drawer { position: fixed; top: 0; right: 0; height: 100%; width: min(440px, 100vw); background: var(--card-bg); box-shadow: -8px 0 40px rgba(20,23,43,.25); z-index: 41; display: flex; flex-direction: column; transform: translateX(100%); transition: transform .22s cubic-bezier(.4,0,.2,1); }
+  .drawer.show { transform: translateX(0); }
+  .drawer-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 22px 14px; border-bottom: 1px solid var(--border); }
+  .drawer-head h2 { margin: 0 0 3px; font-size: 16.5px; font-weight: 700; }
+  .drawer-head p { margin: 0; font-size: 12.3px; color: var(--ink-dim); }
+  .drawer-close { width: 30px; height: 30px; border-radius: 8px; border: none; background: transparent; color: var(--ink-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; flex: none; }
+  .drawer-close:hover { background: var(--paper); color: var(--ink); }
+  .drawer-close svg { width: 16px; height: 16px; }
+  .drawer-body { flex: 1; overflow-y: auto; padding: 16px 22px 22px; display: flex; flex-direction: column; gap: 16px; }
+  .drawer-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 22px; border-top: 1px solid var(--border); }
+
+  .dr-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-faint); font-weight: 700; }
+  .f-group { display: flex; flex-direction: column; gap: 6px; }
+  .f-row { display: flex; gap: 10px; }
+  .f-row .f-group { flex: 1; min-width: 0; }
+  .f-label { font-size: 12.3px; font-weight: 600; color: var(--ink-dim); }
+  .f-hint { font-size: 11px; color: var(--ink-faint); }
+  .f-select, .f-input { width: 100%; border: 1px solid var(--border); border-radius: 9px; padding: 8px 11px; font-size: 13px; background: var(--card-bg); color: var(--ink); }
+  .f-toggle-row { display: flex; align-items: center; justify-content: space-between; background: var(--paper); border: 1px solid var(--border); border-radius: 10px; padding: 10px 13px; }
+  .f-toggle-row .lbl { font-size: 13px; font-weight: 600; }
+  .f-toggle-row .sub { font-size: 11.3px; color: var(--ink-faint); }
+
+  .sla-detail-panel { background: var(--paper); border: 1px solid var(--border); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .sla-detail-panel .big-status { display: flex; align-items: center; justify-content: space-between; }
+  .sla-detail-panel .countdown { font-family: var(--font-mono); font-size: 20px; font-weight: 700; }
+  .sla-progress-track { height: 7px; border-radius: 100px; background: var(--card-bg); overflow: hidden; border: 1px solid var(--border); }
+  .sla-progress-fill { height: 100%; border-radius: 100px; }
+
+  .timeline-mini { display: flex; flex-direction: column; gap: 10px; }
+  .tl-item { display: flex; gap: 9px; }
+  .tl-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--azul); margin-top: 5px; flex: none; }
+  .tl-dot.late { background: var(--critical); }
+  .tl-dot.done { background: var(--good); }
+  .tl-dot.pending { background: var(--ink-faint); }
+  .tl-item .tt { font-size: 12.5px; color: var(--ink); font-weight: 550; }
+  .tl-item .td { font-size: 11px; color: var(--ink-faint); margin-top: 1px; }
+
+  .toast { position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 12px); background: var(--ink); color: var(--paper); font-size: 13.5px; padding: 10px 16px; border-radius: 8px; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: opacity 180ms ease, transform 180ms ease; z-index: 60; max-width: 88vw; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+
+  .view-panel { display: flex; flex-direction: column; gap: 16px; }
+
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar { position: relative; height: auto; }
+    .sb-nav, .sb-user { display: none; }
+    .page-head { flex-wrap: wrap; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .toast, .drawer, .scrim { transition: none; }
+  }
+</style>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="monogram">A</div>
+      <div><strong>Argos</strong><span>Gestão comercial</span></div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-group">
+        <a class="sb-item" href="#" data-page="Dashboard">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="2.5" width="6.2" height="6.2" rx="1.3"/><rect x="11.3" y="2.5" width="6.2" height="4.4" rx="1.3"/><rect x="11.3" y="9.4" width="6.2" height="8.1" rx="1.3"/><rect x="2.5" y="11.2" width="6.2" height="6.3" rx="1.3"/></svg>
+          Dashboard
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Inteligência Comercial</div>
+        <a class="sb-item" href="#" data-page="Buscar Empresas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8.8" cy="8.8" r="5.3"/><path d="M16.5 16.5l-3.8-3.8"/></svg>
+          Buscar Empresas
+        </a>
+        <a class="sb-item" href="#" data-page="Pesquisa de Leads">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7"/><circle cx="10" cy="10" r="3.2"/><path d="M10 3v2.4M10 14.6V17M17 10h-2.4M5.4 10H3"/></svg>
+          Pesquisa de Leads
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">CRM</div>
+        <a class="sb-item" href="#" data-page="Empresas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17.5V3.8a.8.8 0 01.8-.8h6.4a.8.8 0 01.8.8v13.7"/><path d="M13 17.5V8.3a.8.8 0 01.8-.8h3.4a.8.8 0 01.8.8v9.2"/><path d="M5.4 6h1.6M5.4 9h1.6M5.4 12h1.6M15 10.6h1M15 13.4h1"/></svg>
+          Empresas
+        </a>
+        <a class="sb-item" href="#" data-page="Contatos">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="6.6" r="3.1"/><path d="M3.6 17c.7-3.4 3.2-5.2 6.4-5.2s5.7 1.8 6.4 5.2"/></svg>
+          Contatos
+        </a>
+        <a class="sb-item" href="#" data-page="Negócios">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 10.3l3-4.6a1 1 0 01.85-.47h7.3a1 1 0 01.85.47l3 4.6"/><path d="M2.5 10.3v5.2a1 1 0 001 1h13a1 1 0 001-1v-5.2"/><path d="M7.3 10.3a2.7 2.7 0 005.4 0"/></svg>
+          Negócios
+        </a>
+        <div class="sb-item active" data-page="Tarefas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2.2"/><path d="M6.6 10.2l2 2 4.6-4.9"/></svg>
+          Tarefas
+          <span class="badge-new">SLA</span>
+        </div>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Automação</div>
+        <a class="sb-item" href="#" data-page="Sequências">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4h5.5l1.5 2h5v10H4z"/><path d="M8 9h4M8 12h6"/></svg>
+          Sequências
+        </a>
+      </div>
+    </nav>
+
+    <div class="sb-user">
+      <div class="avatar">DC</div>
+      <div class="sb-user-meta"><strong>Daniel Chagas</strong><span>Admin · GD Conecta</span></div>
+    </div>
+  </aside>
+
+  <div class="main-col">
+    <div class="content">
+      <div class="page-head">
+        <div>
+          <h1>Tarefas</h1>
+          <p><span class="mono" id="headSummary">—</span></p>
+        </div>
+        <div class="page-actions">
+          <button class="btn-ghost" id="newRuleBtn">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M10 4v12M4 10h12"/></svg>
+            Nova regra de SLA
+          </button>
+          <button class="btn-primary" id="newTaskBtn">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M10 4v12M4 10h12"/></svg>
+            Nova tarefa
+          </button>
+        </div>
+      </div>
+
+      <div class="info-banner" id="infoBanner">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="7.3"/><path d="M10 9v4.4M10 6.6v.1"/></svg>
+        <span>
+          <b>Protótipo funcional — dados fictícios, nada aqui é salvo.</b> Mostra a peça que falta em Gestão de
+          Atividades: <b>SLA Comercial</b> por status de lead/cliente e por marco (ex. 1ª reunião como cliente).
+          O SLA por etapa de negócio (ex. "Proposta 48h") <b>já existe hoje</b> em Configurações › Pipelines — aqui
+          ele só aparece junto, para dar visão única. Regras são editáveis; nada trava o vendedor, só alerta.
+        </span>
+        <button onclick="document.getElementById('infoBanner').style.display='none'">Fechar</button>
+      </div>
+
+      <div class="stat-strip" id="statStrip"></div>
+
+      <div class="filters-bar">
+        <div class="segmented" role="tablist">
+          <button class="active" id="tabSlaBtn" role="tab" aria-selected="true">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="7.3"/><path d="M10 6v4.5l3 1.8"/></svg>
+            SLA Comercial
+          </button>
+          <button id="tabTarefasBtn" role="tab" aria-selected="false">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="14" height="14" rx="2.2"/><path d="M6.6 10.2l2 2 4.6-4.9"/></svg>
+            Minhas tarefas
+          </button>
+        </div>
+      </div>
+
+      <!-- ===================== SLA COMERCIAL ===================== -->
+      <div class="view-panel" id="viewSla">
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Regras de SLA</h3>
+              <p>Prazo entre a empresa entrar num estágio/status e uma atividade do tipo certo ser concluída.</p>
+            </div>
+            <div class="card-actions">
+              <button class="btn-ghost btn-sm" id="rulesHelpBtn">Como funciona</button>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table class="data">
+              <thead>
+                <tr><th>Regra</th><th>Gatilho</th><th>Prazo</th><th>Atividade esperada</th><th>Origem</th><th>Ativa</th><th></th></tr>
+              </thead>
+              <tbody id="rulesBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Painel de cumprimento</h3>
+              <p>Empresas com uma régua de SLA em curso, agrupadas pelo estado atual.</p>
+            </div>
+            <div class="card-actions">
+              <div class="chip-filter" id="complianceFilter">
+                <button class="active" data-f="todos">Todos</button>
+                <button data-f="risk">Em risco</button>
+                <button data-f="late">Estourado</button>
+                <button data-f="done">Cumprido</button>
+              </div>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table class="data">
+              <thead>
+                <tr><th>Empresa</th><th>Regra aplicada</th><th>Disparado em</th><th>Prazo</th><th>Status</th><th>Responsável</th><th></th></tr>
+              </thead>
+              <tbody id="complianceBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===================== MINHAS TAREFAS ===================== -->
+      <div class="view-panel" id="viewTarefas" style="display:none;">
+        <div class="card">
+          <div class="table-scroll">
+            <table class="data">
+              <thead>
+                <tr><th>Tarefa</th><th>Empresa</th><th>Tipo</th><th>Vencimento</th><th>Prioridade</th><th>SLA</th><th>Responsável</th></tr>
+              </thead>
+              <tbody id="tasksBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="drawer" id="ruleDrawer"></div>
+<div class="drawer" id="companyDrawer"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+  // ---------------- Fixed "now" so the demo is stable ----------------
+  var NOW = new Date();
+  function hoursAgo(h) { return new Date(NOW.getTime() - h * 3600000); }
+  function hoursFromNow(h) { return new Date(NOW.getTime() + h * 3600000); }
+
+  var USERS = { DC: 'Daniel Chagas', JP: 'Juliana Prado' };
+
+  var GATILHO_LABEL = {
+    company_status: 'Status da empresa',
+    milestone: 'Marco (dispara 1x)',
+    deal_stage: 'Etapa de negócio',
+  };
+  var GATILHO_VALOR_LABEL = {
+    lead: 'vira Lead novo', qualificado: 'vira Qualificado', cliente: 'vira Cliente',
+    perdido: 'vira Perdido', inativo: 'vira Inativo', proposta: 'entra em "Proposta enviada"',
+  };
+  var TIPO_ATIVIDADE_LABEL = {
+    null: 'Qualquer atividade', ligacao: 'Ligação', email: 'E-mail', whatsapp: 'WhatsApp',
+    reuniao: 'Reunião', tarefa_manual: 'Tarefa manual', followup: 'Follow-up',
+  };
+
+  // ---------------- Mock data ----------------
+  var RULES = [
+    { id: 'r1', nome: 'Responder novo lead', gatilho_tipo: 'company_status', gatilho_valor: 'lead',
+      prazo_horas: 24, tipo_atividade: null, ativo: true, origem: 'novo' },
+    { id: 'r2', nome: 'Follow-up de proposta enviada', gatilho_tipo: 'deal_stage', gatilho_valor: 'proposta',
+      prazo_horas: 48, tipo_atividade: null, ativo: true, origem: 'pipeline' },
+    { id: 'r3', nome: 'Primeira reunião como cliente', gatilho_tipo: 'milestone', gatilho_valor: 'cliente',
+      prazo_horas: 168, tipo_atividade: 'reuniao', ativo: true, origem: 'novo' },
+    { id: 'r4', nome: 'Retomada de lead qualificado', gatilho_tipo: 'company_status', gatilho_valor: 'qualificado',
+      prazo_horas: 72, tipo_atividade: null, ativo: false, origem: 'novo' },
+  ];
+
+  var TRACKED = [
+    { id: 'c1', empresa: 'Rota Sul Transportes', segmento: 'Transporte rodoviário', regra: 'r1',
+      gatilho_em: hoursAgo(30), cumprida_em: null, resp: 'DC' },
+    { id: 'c2', empresa: 'Metalúrgica Andrade', segmento: 'Metalurgia', regra: 'r1',
+      gatilho_em: hoursAgo(20), cumprida_em: null, resp: 'JP' },
+    { id: 'c3', empresa: 'Confecções Bela Vista', segmento: 'Vestuário', regra: 'r1',
+      gatilho_em: hoursAgo(2), cumprida_em: null, resp: 'DC' },
+    { id: 'c4', empresa: 'Distribuidora Norte Alimentos', segmento: 'Alimentício', regra: 'r3',
+      gatilho_em: hoursAgo(190), cumprida_em: null, resp: 'JP' },
+    { id: 'c5', empresa: 'Auto Peças Rio Grande', segmento: 'Autopeças', regra: 'r3',
+      gatilho_em: hoursAgo(40), cumprida_em: null, resp: 'DC' },
+    { id: 'c6', empresa: 'TechFrota Log', segmento: 'Logística · SaaS', regra: 'r2',
+      gatilho_em: hoursAgo(60), cumprida_em: null, resp: 'DC' },
+    { id: 'c7', empresa: 'Grãos & Cia Agroindustrial', segmento: 'Agroindústria', regra: 'r1',
+      gatilho_em: hoursAgo(1), cumprida_em: hoursAgo(0.2), resp: 'DC' },
+  ];
+
+  var TASKS = [
+    { id: 't1', titulo: 'Ligar para Rota Sul Transportes', empresa: 'Rota Sul Transportes', tipo: 'ligacao',
+      vencimento: hoursAgo(6), prioridade: 'alta', resp: 'DC', trackedId: 'c1' },
+    { id: 't2', titulo: 'Ligação de descoberta', empresa: 'Metalúrgica Andrade', tipo: 'ligacao',
+      vencimento: hoursFromNow(4), prioridade: 'media', resp: 'JP', trackedId: 'c2' },
+    { id: 't3', titulo: 'Enviar e-mail de boas-vindas', empresa: 'Confecções Bela Vista', tipo: 'email',
+      vencimento: hoursFromNow(20), prioridade: 'media', resp: 'DC', trackedId: 'c3' },
+    { id: 't4', titulo: 'Agendar reunião de kickoff', empresa: 'Distribuidora Norte Alimentos', tipo: 'reuniao',
+      vencimento: hoursFromNow(24), prioridade: 'alta', resp: 'JP', trackedId: 'c4' },
+    { id: 't5', titulo: 'Follow-up da proposta comercial', empresa: 'TechFrota Log', tipo: 'email',
+      vencimento: hoursAgo(14), prioridade: 'alta', resp: 'DC', trackedId: 'c6' },
+    { id: 't6', titulo: 'Confirmar dados cadastrais', empresa: 'Auto Peças Rio Grande', tipo: 'tarefa_manual',
+      vencimento: hoursFromNow(70), prioridade: 'baixa', resp: 'DC', trackedId: 'c5' },
+    { id: 't7', titulo: 'Registrar retorno da reunião', empresa: 'Grãos & Cia Agroindustrial', tipo: 'reuniao',
+      vencimento: hoursAgo(1), prioridade: 'media', resp: 'DC', trackedId: 'c7', concluida: true },
+  ];
+
+  var currentComplianceFilter = 'todos';
+
+  // ---------------- SLA engine (mirrors app/services/activity_sla.py proposto) ----------------
+  function ruleById(id) { return RULES.filter(function (r) { return r.id === id; })[0]; }
+
+  function slaState(item) {
+    var rule = ruleById(item.regra);
+    var prazoMs = rule.prazo_horas * 3600000;
+    var prazoEm = new Date(item.gatilho_em.getTime() + prazoMs);
+    if (item.cumprida_em) {
+      return { status: 'done', prazoEm: prazoEm, label: 'Cumprido', detail: 'concluída ' + fmtRelative(item.cumprida_em) };
+    }
+    var msRestante = prazoEm.getTime() - NOW.getTime();
+    if (msRestante < 0) {
+      return { status: 'late', prazoEm: prazoEm, label: 'Estourado', detail: '+' + fmtHoras(-msRestante / 3600000) + ' de atraso' };
+    }
+    var pctRestante = msRestante / prazoMs;
+    if (pctRestante <= 0.25) {
+      return { status: 'risk', prazoEm: prazoEm, label: 'Em risco', detail: fmtHoras(msRestante / 3600000) + ' restantes' };
+    }
+    return { status: 'ok', prazoEm: prazoEm, label: 'Em andamento', detail: fmtHoras(msRestante / 3600000) + ' restantes' };
+  }
+
+  function fmtHoras(h) {
+    if (h < 1) return Math.round(h * 60) + 'min';
+    if (h < 48) return Math.round(h) + 'h';
+    return Math.round(h / 24) + 'd';
+  }
+  function fmtRelative(d) {
+    var diffH = (NOW.getTime() - d.getTime()) / 3600000;
+    if (diffH < 0) return 'em ' + fmtHoras(-diffH);
+    return 'há ' + fmtHoras(diffH);
+  }
+  function fmtDateTime(d) {
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + ' ' +
+      d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  // ---------------- Rendering ----------------
+  function renderStats() {
+    var counts = { ok: 0, risk: 0, late: 0, done: 0 };
+    TRACKED.forEach(function (it) { counts[slaState(it).status]++; });
+    var ativos = RULES.filter(function (r) { return r.ativo; }).length;
+    document.getElementById('statStrip').innerHTML = [
+      tile('neutral', 'Regras ativas', ativos + ' / ' + RULES.length),
+      tile('good', 'Em dia', counts.ok),
+      tile('warn', 'Em risco', counts.risk),
+      tile('late', 'Estourado', counts.late),
+      tile('good', 'Cumprido (7d)', counts.done),
+    ].join('');
+    var atrasadas = TASKS.filter(function (t) { return !t.concluida && t.vencimento < NOW; }).length;
+    document.getElementById('headSummary').textContent =
+      TASKS.filter(function (t) { return !t.concluida; }).length + ' tarefas pendentes · ' +
+      atrasadas + ' atrasadas · ' + counts.late + ' empresas com SLA comercial estourado';
+  }
+  function tile(cls, label, value) {
+    return '<div class="stat-tile ' + cls + '"><div class="t">' + label + '</div><div class="v">' + value + '</div></div>';
+  }
+
+  function renderRules() {
+    document.getElementById('rulesBody').innerHTML = RULES.map(function (r) {
+      var gatilhoTxt = GATILHO_LABEL[r.gatilho_tipo] + ' · ' + (GATILHO_VALOR_LABEL[r.gatilho_valor] || r.gatilho_valor);
+      var origem = r.origem === 'pipeline'
+        ? '<span class="origin-tag pipeline">já existe · Pipelines</span>'
+        : '<span class="origin-tag novo">novo</span>';
+      return '' +
+        '<tr class="clickable" data-rule="' + r.id + '">' +
+          '<td><div class="row-title">' + escapeHtml(r.nome) + '</div></td>' +
+          '<td style="color:var(--ink-dim);font-size:12.5px;">' + gatilhoTxt + '</td>' +
+          '<td class="mono-cell">' + r.prazo_horas + 'h</td>' +
+          '<td style="color:var(--ink-dim);font-size:12.5px;">' + (TIPO_ATIVIDADE_LABEL[r.tipo_atividade] || TIPO_ATIVIDADE_LABEL[null]) + '</td>' +
+          '<td>' + origem + '</td>' +
+          '<td><label class="switch" onclick="event.stopPropagation()"><input type="checkbox" ' + (r.ativo ? 'checked' : '') + ' data-toggle="' + r.id + '"/><span class="track"></span></label></td>' +
+          '<td><button class="icon-btn" title="Editar" onclick="event.stopPropagation();openRuleDrawer(\'' + r.id + '\')">✎</button></td>' +
+        '</tr>';
+    }).join('');
+    document.getElementById('rulesBody').querySelectorAll('tr[data-rule]').forEach(function (tr) {
+      tr.addEventListener('click', function () { openRuleDrawer(tr.getAttribute('data-rule')); });
+    });
+    document.getElementById('rulesBody').querySelectorAll('[data-toggle]').forEach(function (el) {
+      el.addEventListener('change', function () {
+        var r = ruleById(el.getAttribute('data-toggle'));
+        r.ativo = el.checked;
+        toast((r.ativo ? 'Regra ativada' : 'Regra desativada') + ': ' + r.nome);
+        renderStats();
+      });
+    });
+  }
+
+  function renderCompliance() {
+    var rows = TRACKED.filter(function (it) {
+      if (currentComplianceFilter === 'todos') return true;
+      return slaState(it).status === currentComplianceFilter;
+    });
+    var body = document.getElementById('complianceBody');
+    if (rows.length === 0) {
+      body.innerHTML = '<tr><td colspan="7" class="state-msg">Nenhuma empresa neste filtro.</td></tr>';
+      return;
+    }
+    body.innerHTML = rows.map(function (it) {
+      var rule = ruleById(it.regra);
+      var st = slaState(it);
+      return '' +
+        '<tr class="clickable" data-tracked="' + it.id + '">' +
+          '<td><div class="row-title">' + escapeHtml(it.empresa) + '</div><div class="row-sub">' + escapeHtml(it.segmento) + '</div></td>' +
+          '<td style="font-size:12.5px;color:var(--ink-dim);">' + escapeHtml(rule.nome) + '</td>' +
+          '<td class="mono-cell">' + fmtDateTime(it.gatilho_em) + '</td>' +
+          '<td class="mono-cell">' + fmtDateTime(st.prazoEm) + '</td>' +
+          '<td><span class="status-pill ' + st.status + '"><span class="d"></span>' + st.label + '</span><div class="row-sub" style="margin-top:3px;">' + st.detail + '</div></td>' +
+          '<td><div class="row-resp"><span class="avatar">' + it.resp + '</span>' + USERS[it.resp] + '</div></td>' +
+          '<td><button class="icon-btn" title="Abrir">→</button></td>' +
+        '</tr>';
+    }).join('');
+    body.querySelectorAll('tr[data-tracked]').forEach(function (tr) {
+      tr.addEventListener('click', function () { openCompanyDrawer(tr.getAttribute('data-tracked')); });
+    });
+  }
+
+  var PRIO_LABEL = { alta: 'Alta', media: 'Média', baixa: 'Baixa' };
+  var TIPO_TASK_LABEL = { ligacao: 'Ligação', email: 'E-mail', whatsapp: 'WhatsApp', reuniao: 'Reunião', tarefa_manual: 'Tarefa', followup: 'Follow-up' };
+
+  function renderTasks() {
+    document.getElementById('tasksBody').innerHTML = TASKS.map(function (t) {
+      var tracked = TRACKED.filter(function (it) { return it.id === t.trackedId; })[0];
+      var slaBadge = tracked
+        ? (function () { var st = slaState(tracked); return '<span class="status-pill ' + st.status + '"><span class="d"></span>' + st.label + '</span>'; })()
+        : '<span class="status-pill off"><span class="d"></span>sem regra</span>';
+      var vencColor = (!t.concluida && t.vencimento < NOW) ? 'color:var(--critical);font-weight:650;' : '';
+      return '' +
+        '<tr>' +
+          '<td><div class="row-title">' + escapeHtml(t.titulo) + (t.concluida ? ' <span style="color:var(--good);font-weight:600;font-size:11.5px;">✓ concluída</span>' : '') + '</div></td>' +
+          '<td style="font-size:12.5px;color:var(--ink-dim);">' + escapeHtml(t.empresa) + '</td>' +
+          '<td style="font-size:12.5px;color:var(--ink-dim);">' + TIPO_TASK_LABEL[t.tipo] + '</td>' +
+          '<td class="mono-cell" style="' + vencColor + '">' + fmtDateTime(t.vencimento) + '</td>' +
+          '<td style="font-size:12.5px;">' + PRIO_LABEL[t.prioridade] + '</td>' +
+          '<td>' + slaBadge + '</td>' +
+          '<td><div class="row-resp"><span class="avatar">' + t.resp + '</span>' + USERS[t.resp] + '</div></td>' +
+        '</tr>';
+    }).join('');
+  }
+
+  function renderAll() { renderStats(); renderRules(); renderCompliance(); renderTasks(); }
+
+  // ---------------- Tabs ----------------
+  document.getElementById('tabSlaBtn').addEventListener('click', function () { switchTab('sla'); });
+  document.getElementById('tabTarefasBtn').addEventListener('click', function () { switchTab('tarefas'); });
+  function switchTab(tab) {
+    document.getElementById('viewSla').style.display = tab === 'sla' ? '' : 'none';
+    document.getElementById('viewTarefas').style.display = tab === 'tarefas' ? '' : 'none';
+    document.getElementById('tabSlaBtn').classList.toggle('active', tab === 'sla');
+    document.getElementById('tabTarefasBtn').classList.toggle('active', tab === 'tarefas');
+  }
+
+  document.getElementById('complianceFilter').querySelectorAll('button').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      currentComplianceFilter = btn.getAttribute('data-f');
+      document.getElementById('complianceFilter').querySelectorAll('button').forEach(function (b) { b.classList.toggle('active', b === btn); });
+      renderCompliance();
+    });
+  });
+
+  document.getElementById('newTaskBtn').addEventListener('click', function () { toast('Abrir formulário de nova tarefa (fora do escopo deste protótipo).'); });
+  document.getElementById('rulesHelpBtn').addEventListener('click', function () {
+    toast('SLA Comercial = tempo entre a empresa entrar num status/marco e uma tarefa do tipo certo ser concluída.');
+  });
+
+  // ---------------- Rule drawer ----------------
+  function openRuleDrawer(id) {
+    var isNew = !id;
+    var r = isNew ? { nome: '', gatilho_tipo: 'company_status', gatilho_valor: 'lead', prazo_horas: 24, tipo_atividade: null, ativo: true, origem: 'novo' } : ruleById(id);
+    var lockedPipeline = r.origem === 'pipeline';
+    var drawer = document.getElementById('companyDrawer');
+    drawer.classList.remove('show');
+    var rd = document.getElementById('ruleDrawer');
+
+    var statusOptions = ['lead', 'qualificado', 'cliente', 'perdido', 'inativo'].map(function (v) {
+      return '<option value="' + v + '"' + (v === r.gatilho_valor ? ' selected' : '') + '>' + GATILHO_VALOR_LABEL[v] + '</option>';
+    }).join('');
+    var tipoAtividadeOptions = [null, 'ligacao', 'email', 'whatsapp', 'reuniao', 'tarefa_manual', 'followup'].map(function (v) {
+      return '<option value="' + v + '"' + (v === r.tipo_atividade ? ' selected' : '') + '>' + TIPO_ATIVIDADE_LABEL[v] + '</option>';
+    }).join('');
+
+    rd.innerHTML = '' +
+      '<div class="drawer-head">' +
+        '<div><h2>' + (isNew ? 'Nova regra de SLA' : escapeHtml(r.nome)) + '</h2><p>' + (lockedPipeline ? 'Este SLA é editado em Configurações › Pipelines' : 'Configuração aditiva — não altera nada existente') + '</p></div>' +
+        '<button class="drawer-close" id="ruleDrawerClose">✕</button>' +
+      '</div>' +
+      '<div class="drawer-body">' +
+        (lockedPipeline ? (
+          '<div class="info-banner" style="background:color-mix(in srgb, var(--azul) 7%, var(--card-bg));">' +
+            '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="7.3"/><path d="M10 9v4.4M10 6.6v.1"/></svg>' +
+            '<span>Regras de SLA por <b>etapa de negócio</b> já são editáveis hoje em Configurações › Pipelines. Aqui elas só aparecem para dar visão única — editar segue no mesmo lugar de sempre.</span>' +
+          '</div>'
+        ) : '') +
+        '<div class="f-group"><label class="f-label">Nome da regra</label><input class="f-input" id="rfNome" value="' + escapeHtml(r.nome) + '" ' + (lockedPipeline ? 'disabled' : '') + '/></div>' +
+        '<div class="f-row">' +
+          '<div class="f-group"><label class="f-label">Gatilho</label>' +
+            '<select class="f-select" id="rfGatilhoTipo" ' + (lockedPipeline ? 'disabled' : '') + '>' +
+              '<option value="company_status"' + (r.gatilho_tipo === 'company_status' ? ' selected' : '') + '>Status da empresa</option>' +
+              '<option value="milestone"' + (r.gatilho_tipo === 'milestone' ? ' selected' : '') + '>Marco (dispara 1x)</option>' +
+              (lockedPipeline ? '<option value="deal_stage" selected>Etapa de negócio</option>' : '') +
+            '</select>' +
+          '</div>' +
+          '<div class="f-group"><label class="f-label">Quando</label>' +
+            (lockedPipeline
+              ? '<input class="f-input" value="entra em Proposta enviada" disabled/>'
+              : '<select class="f-select" id="rfGatilhoValor">' + statusOptions + '</select>') +
+          '</div>' +
+        '</div>' +
+        '<div class="f-row">' +
+          '<div class="f-group"><label class="f-label">Prazo (horas)</label><input class="f-input" type="number" min="1" id="rfPrazo" value="' + r.prazo_horas + '" ' + (lockedPipeline ? 'disabled' : '') + '/></div>' +
+          '<div class="f-group"><label class="f-label">Atividade esperada</label><select class="f-select" id="rfTipoAtividade" ' + (lockedPipeline ? 'disabled' : '') + '>' + tipoAtividadeOptions + '</select></div>' +
+        '</div>' +
+        '<div class="f-hint">Cumprida = existe uma tarefa desse tipo <b>concluída</b> depois do gatilho e antes do prazo. "Qualquer atividade" aceita qualquer tarefa concluída vinculada à empresa.</div>' +
+        '<div class="f-toggle-row"><div><div class="lbl">Regra ativa</div><div class="sub">Desativada não some, só para de contar novos casos</div></div><label class="switch"><input type="checkbox" id="rfAtivo" ' + (r.ativo ? 'checked' : '') + ' ' + (lockedPipeline ? 'disabled' : '') + '/><span class="track"></span></label></div>' +
+      '</div>' +
+      '<div class="drawer-foot">' +
+        '<button class="btn-ghost" id="ruleDrawerCancel">Fechar</button>' +
+        (lockedPipeline ? '' : '<button class="btn-primary" id="ruleDrawerSave">' + (isNew ? 'Criar regra' : 'Salvar alterações') + '</button>') +
+      '</div>';
+
+    document.getElementById('scrim').classList.add('show');
+    rd.classList.add('show');
+    document.getElementById('ruleDrawerClose').addEventListener('click', closeDrawers);
+    document.getElementById('ruleDrawerCancel').addEventListener('click', closeDrawers);
+    var saveBtn = document.getElementById('ruleDrawerSave');
+    if (saveBtn) saveBtn.addEventListener('click', function () {
+      toast(isNew ? 'Regra criada (protótipo — não persiste).' : 'Alterações salvas (protótipo — não persiste).');
+      closeDrawers();
+    });
+  }
+  document.getElementById('newRuleBtn').addEventListener('click', function () { openRuleDrawer(null); });
+
+  // ---------------- Company SLA drawer ----------------
+  function openCompanyDrawer(id) {
+    var it = TRACKED.filter(function (x) { return x.id === id; })[0];
+    var rule = ruleById(it.regra);
+    var st = slaState(it);
+    var pct = Math.max(0, Math.min(100, (NOW.getTime() - it.gatilho_em.getTime()) / (st.prazoEm.getTime() - it.gatilho_em.getTime()) * 100));
+    var fillColor = st.status === 'late' ? 'var(--critical)' : st.status === 'risk' ? 'var(--warning)' : st.status === 'done' ? 'var(--good)' : 'var(--azul)';
+
+    var timeline = [
+      { t: 'Gatilho: ' + escapeHtml(rule.nome), d: fmtDateTime(it.gatilho_em), cls: 'ok' },
+      { t: 'Prazo do SLA (' + rule.prazo_horas + 'h)', d: fmtDateTime(st.prazoEm), cls: st.status === 'late' ? 'late' : 'pending' },
+    ];
+    if (it.cumprida_em) timeline.push({ t: 'Atividade concluída dentro do prazo', d: fmtDateTime(it.cumprida_em), cls: 'done' });
+
+    document.getElementById('ruleDrawer').classList.remove('show');
+    var cd = document.getElementById('companyDrawer');
+    cd.innerHTML = '' +
+      '<div class="drawer-head">' +
+        '<div><h2>' + escapeHtml(it.empresa) + '</h2><p>' + escapeHtml(it.segmento) + '</p></div>' +
+        '<button class="drawer-close" id="companyDrawerClose">✕</button>' +
+      '</div>' +
+      '<div class="drawer-body">' +
+        '<div>' +
+          '<div class="dr-section-title" style="margin-bottom:8px;">' + escapeHtml(rule.nome) + '</div>' +
+          '<div class="sla-detail-panel">' +
+            '<div class="big-status"><span class="status-pill ' + st.status + '"><span class="d"></span>' + st.label + '</span><span class="countdown" style="color:' + fillColor + ';">' + st.detail + '</span></div>' +
+            '<div class="sla-progress-track"><div class="sla-progress-fill" style="width:' + pct + '%;background:' + fillColor + ';"></div></div>' +
+            '<div style="font-size:11.5px;color:var(--ink-faint);">Prazo esperado: <b style="color:var(--ink);">' + (TIPO_ATIVIDADE_LABEL[rule.tipo_atividade] || TIPO_ATIVIDADE_LABEL[null]) + ' concluída</b> até ' + fmtDateTime(st.prazoEm) + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div>' +
+          '<div class="dr-section-title" style="margin-bottom:8px;">Linha do tempo</div>' +
+          '<div class="timeline-mini">' +
+            timeline.map(function (x) { return '<div class="tl-item"><div class="tl-dot ' + x.cls + '"></div><div><div class="tt">' + x.t + '</div><div class="td">' + x.d + '</div></div></div>'; }).join('') +
+          '</div>' +
+        '</div>' +
+        (st.status === 'late' ? '<div class="info-banner" style="background:color-mix(in srgb, var(--critical) 8%, var(--card-bg));"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="7.3"/><path d="M10 9v4.4M10 6.6v.1"/></svg><span>Prazo já estourado — criar a tarefa agora não reabre a régua, mas fica registrado para o histórico do responsável.</span></div>' : '') +
+      '</div>' +
+      '<div class="drawer-foot">' +
+        '<button class="btn-ghost" id="companyDrawerClose2">Fechar</button>' +
+        (it.cumprida_em ? '' : '<button class="btn-primary" id="companyDrawerCreateTask">Criar tarefa agora</button>') +
+      '</div>';
+
+    document.getElementById('scrim').classList.add('show');
+    cd.classList.add('show');
+    document.getElementById('companyDrawerClose').addEventListener('click', closeDrawers);
+    document.getElementById('companyDrawerClose2').addEventListener('click', closeDrawers);
+    var ctBtn = document.getElementById('companyDrawerCreateTask');
+    if (ctBtn) ctBtn.addEventListener('click', function () {
+      toast('Tarefa criada para ' + it.empresa + ' (protótipo — não persiste).');
+      closeDrawers();
+    });
+  }
+
+  function closeDrawers() {
+    document.getElementById('scrim').classList.remove('show');
+    document.getElementById('ruleDrawer').classList.remove('show');
+    document.getElementById('companyDrawer').classList.remove('show');
+  }
+  document.getElementById('scrim').addEventListener('click', closeDrawers);
+
+  // ---------------- Toast ----------------
+  var toastTimer;
+  function toast(msg) {
+    var el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.classList.remove('show'); }, 2600);
+  }
+
+  renderAll();
+</script>

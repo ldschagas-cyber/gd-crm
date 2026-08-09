@@ -1,0 +1,1067 @@
+<title>Customer Success — Argos</title>
+<style>
+  /* Font note: real product should self-host IBM Plex Sans/Mono; CDN fonts are blocked
+     in this artifact sandbox, so a close system-grotesque stack stands in here. */
+  :root {
+    --font-display: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Cascadia Code", "SFMono-Regular", "Consolas", ui-monospace, monospace;
+
+    --indigo: #2D3561;
+    --indigo-600: #3B4478;
+    --amber: #C9A84C;
+    --azul: #0077A8;
+    --marfim: #F5F1EB;
+
+    --paper: var(--marfim);
+    --panel: var(--indigo);
+    --panel-fg: #F1EEE6;
+    --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12);
+    --panel-active-bg: rgba(201, 168, 76, 0.14);
+
+    --ink: #22243A;
+    --ink-dim: #5B5E78;
+    --ink-faint: #8B8EA6;
+    --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF;
+    --accent: var(--amber);
+    --link: var(--azul);
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+
+    --good: #0ca30c;
+    --warning: #fab219;
+    --serious: #ec835a;
+    --critical: #d03b3b;
+
+    --seq-1: #86b6ef; --seq-2: #5598e7; --seq-3: #2a78d6; --seq-4: #d9a13a; --seq-5: #7a7f9c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+      --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+      --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+      --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+      --seq-1: #9ec5f4; --seq-2: #6da7ec; --seq-3: #3987e5; --seq-4: #e6b757; --seq-5: #8d92ad;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+    --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+    --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+    --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+    --seq-1: #9ec5f4; --seq-2: #6da7ec; --seq-3: #3987e5; --seq-4: #e6b757; --seq-5: #8d92ad;
+  }
+  :root[data-theme="light"] {
+    --paper: #F5F1EB; --panel: #2D3561; --panel-fg: #F1EEE6; --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(45, 53, 97, 0.12); --panel-active-bg: rgba(201, 168, 76, 0.14);
+    --ink: #22243A; --ink-dim: #5B5E78; --ink-faint: #8B8EA6; --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF; --amber: #C9A84C; --azul: #0077A8; --link: #0077A8;
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+    --seq-1: #86b6ef; --seq-2: #5598e7; --seq-3: #2a78d6; --seq-4: #d9a13a; --seq-5: #7a7f9c;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; font-family: var(--font-display); color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; }
+  button, input, select, textarea { font-family: inherit; }
+  a { color: inherit; }
+  ::selection { background: rgba(201,168,76,.3); }
+  :focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; border-radius: 4px; }
+
+  .shell { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+
+  /* ---------------- Sidebar ---------------- */
+  .sidebar { background: var(--panel); color: var(--panel-fg); padding: 0 12px 16px; display: flex; flex-direction: column; }
+  .sb-brand { display: flex; align-items: center; gap: 10px; padding: 20px 18px 16px; }
+  .monogram { width: 32px; height: 32px; border-radius: 9px; background: var(--amber); color: var(--indigo); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; flex: none; }
+  .sb-brand strong { display: block; font-size: 14.5px; font-weight: 650; line-height: 1.2; }
+  .sb-brand span { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--panel-fg-dim); margin-top: 2px; }
+  .sb-nav { flex: 1; padding: 6px 0; }
+  .sb-group + .sb-group { margin-top: 18px; }
+  .sb-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--panel-fg-dim); padding: 0 10px; margin-bottom: 6px; }
+  .sb-item { display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: 8px; margin-bottom: 2px; font-size: 13.6px; font-weight: 500; color: var(--panel-fg-dim); text-decoration: none; cursor: pointer; border: 1px solid transparent; position: relative; }
+  .sb-item svg { width: 17px; height: 17px; flex: none; opacity: 0.9; }
+  .sb-item:hover { background: rgba(241, 238, 230, 0.06); color: var(--panel-fg); }
+  .sb-item.active { background: var(--panel-active-bg); color: var(--panel-fg); font-weight: 650; }
+  .sb-item.active::before { content: ""; position: absolute; left: -12px; top: 6px; bottom: 6px; width: 3px; background: var(--amber); border-radius: 2px; }
+  .sb-item .badge-new { margin-left: auto; font-size: 9px; font-weight: 700; letter-spacing: .03em; background: var(--amber); color: var(--indigo); padding: 1.5px 6px; border-radius: 100px; }
+  .sb-user { display: flex; align-items: center; gap: 10px; padding: 12px 10px 4px; border-top: 1px solid var(--panel-border); margin-top: 10px; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; flex: none; background: rgba(201,168,76,0.18); color: var(--amber); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; border: 1px solid rgba(201,168,76,0.3); }
+  .sb-user-meta { display: flex; flex-direction: column; min-width: 0; }
+  .sb-user-meta strong { font-size: 12.6px; color: var(--panel-fg); }
+  .sb-user-meta span { font-size: 11px; color: var(--panel-fg-dim); }
+
+  .main-col { min-width: 0; }
+  .content { padding: 22px 28px 60px; display: flex; flex-direction: column; gap: 16px; }
+
+  .page-head { display: flex; align-items: flex-start; gap: 16px; }
+  .page-head h1 { margin: 0; font-size: 20px; font-weight: 650; letter-spacing: -0.01em; }
+  .page-head p { margin: 3px 0 0; font-size: 12.5px; color: var(--ink-dim); }
+  .page-head p .mono { font-family: var(--font-mono); color: var(--ink); font-weight: 500; }
+  .page-actions { display: flex; gap: 8px; margin-left: auto; flex: none; }
+
+  .btn-primary { display: flex; align-items: center; gap: 7px; background: var(--indigo); color: var(--panel-fg); border: 1px solid var(--indigo); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-primary:hover { background: var(--indigo-600); }
+  .btn-primary svg { width: 14px; height: 14px; }
+  .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-ghost { display: flex; align-items: center; gap: 7px; background: var(--card-bg); color: var(--ink); border: 1px solid var(--border); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-ghost:hover { border-color: var(--ink-faint); }
+  .btn-ghost svg { width: 14px; height: 14px; }
+  .btn-ghost:disabled { opacity: .5; cursor: not-allowed; }
+
+  .info-banner { display: flex; gap: 10px; align-items: flex-start; padding: 11px 14px; background: color-mix(in srgb, var(--azul) 7%, var(--card-bg)); border: 1px solid var(--border); border-radius: 10px; font-size: 12.3px; color: var(--ink-dim); line-height: 1.55; }
+  .info-banner svg { width: 15px; height: 15px; color: var(--azul); flex: none; margin-top: 1px; }
+  .info-banner b { color: var(--ink); }
+  .info-banner button { margin-left: auto; flex: none; background: none; border: none; color: var(--ink-faint); cursor: pointer; font-size: 12px; text-decoration: underline; padding: 0; }
+  .info-banner.warn { background: color-mix(in srgb, var(--warning) 12%, var(--card-bg)); }
+  .info-banner.warn svg { color: color-mix(in srgb, var(--warning) 55%, var(--ink-dim)); }
+
+  .stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 10px; }
+  .stat-tile { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 11px 13px; box-shadow: var(--shadow); }
+  .stat-tile .t { font-size: 10.5px; color: var(--ink-faint); font-weight: 600; text-transform: uppercase; letter-spacing: .03em; white-space: nowrap; }
+  .stat-tile .v { font-size: 18px; font-weight: 700; margin-top: 4px; font-family: var(--font-mono); }
+  .stat-tile.risk .v { color: var(--serious); }
+  .stat-tile.good .v { color: var(--good); }
+  .stat-tile.money .v { color: var(--azul); }
+
+  .filters-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .search { display: flex; align-items: center; gap: 8px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 9px; padding: 8px 12px; color: var(--ink-faint); flex: 1; min-width: 190px; max-width: 280px; }
+  .search svg { width: 15px; height: 15px; flex: none; }
+  .search input { border: none; outline: none; background: none; font-size: 13px; color: var(--ink); width: 100%; }
+  .filter-select-wrap { position: relative; }
+  .filter-select { appearance: none; font-size: 13px; color: var(--ink); background: var(--card-bg); border: 1px solid var(--border); border-radius: 9px; padding: 8px 28px 8px 12px; cursor: pointer; }
+  .filter-select-wrap svg { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); width: 11px; height: 11px; pointer-events: none; color: var(--ink-faint); }
+  .chip-toggle { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--ink-dim); background: var(--card-bg); border: 1px solid var(--border); border-radius: 9px; padding: 8px 12px; cursor: pointer; user-select: none; }
+  .chip-toggle input { accent-color: var(--azul); }
+  .result-count { font-size: 12px; color: var(--ink-faint); }
+
+  .segmented { display: inline-flex; gap: 3px; padding: 3px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; }
+  .segmented.last { margin-left: auto; flex: none; }
+  .segmented button { border: none; background: transparent; padding: 6px 12px; border-radius: 7px; font-size: 12.5px; font-weight: 600; color: var(--ink-dim); cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .segmented button svg { width: 13px; height: 13px; }
+  .segmented button.active { background: var(--indigo); color: var(--panel-fg); }
+  .segmented button:not(.active):hover { color: var(--ink); }
+
+  /* ---------------- Fase legend ---------------- */
+  .funnel-strip { display: flex; align-items: stretch; gap: 2px; }
+  .funnel-step { flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 8px 6px; font-size: 11.5px; font-weight: 650; color: #fff; position: relative; }
+  .funnel-step:first-child { border-radius: 8px 0 0 8px; }
+  .funnel-step:last-child { border-radius: 0 8px 8px 0; }
+  .funnel-step .n { font-family: var(--font-mono); background: rgba(255,255,255,.22); border-radius: 100px; padding: 0 6px; font-size: 10.5px; }
+  .funnel-step::after { content: ""; position: absolute; right: -7px; top: 0; bottom: 0; width: 14px; background: inherit; clip-path: polygon(0 0, 60% 0, 100% 50%, 60% 100%, 0 100%); z-index: 1; }
+  .funnel-step:last-child::after { display: none; }
+
+  /* ---------------- Kanban ---------------- */
+  .kanban-scroll { overflow-x: auto; padding-bottom: 6px; }
+  .kanban { display: flex; gap: 12px; align-items: flex-start; min-width: min-content; }
+  .kb-col { width: 258px; flex: none; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); display: flex; flex-direction: column; max-height: calc(100vh - 300px); min-height: 220px; }
+  .kb-col-head { display: flex; align-items: center; gap: 8px; padding: 11px 12px; border-bottom: 1px solid var(--border); border-top: 3px solid var(--stage-color, var(--border)); border-radius: 12px 12px 0 0; }
+  .kb-col-title { display: flex; align-items: center; gap: 8px; font-size: 12.6px; font-weight: 650; flex: 1; min-width: 0; }
+  .kb-col-title .d { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--stage-color); }
+  .kb-col-title .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .kb-col-count { font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; color: var(--ink-dim); background: var(--paper); border: 1px solid var(--border); border-radius: 100px; min-width: 19px; height: 19px; padding: 0 5px; display: flex; align-items: center; justify-content: center; flex: none; }
+  .kb-col-sub { padding: 6px 12px 0; font-size: 10.5px; color: var(--ink-faint); }
+  .kb-col-body { padding: 9px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 8px; min-height: 90px; transition: background-color 100ms ease; }
+  .kb-col-body.drag-over { background: rgba(0,119,168,0.07); }
+  .kb-card { background: var(--paper); border: 1px solid var(--border); border-left: 3px solid var(--border); border-radius: 9px; padding: 10px 11px; cursor: grab; transition: transform 120ms ease, box-shadow 120ms ease, opacity 150ms ease; }
+  .kb-card:active { cursor: grabbing; }
+  .kb-card.dragging { opacity: 0.35; }
+  .kb-card.risk { border-left-color: var(--serious); }
+  .kb-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; }
+  .kb-card-name { font-size: 12.6px; font-weight: 650; color: var(--ink); }
+  .kb-card-seg { font-size: 10.8px; color: var(--ink-faint); margin-top: 1px; }
+  .score-badge { font-family: var(--font-mono); font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 6px; flex: none; }
+  .score-badge.hi { background: rgba(12,163,12,0.14); color: var(--good); }
+  .score-badge.mid { background: rgba(250,178,25,0.18); color: color-mix(in srgb, var(--warning) 55%, var(--ink-dim)); }
+  .score-badge.lo { background: rgba(236,131,90,0.16); color: var(--serious); }
+  .kb-card-row { display: flex; align-items: center; gap: 5px; margin-top: 7px; font-size: 10.8px; color: var(--ink-faint); }
+  .kb-card-row svg { width: 11px; height: 11px; flex: none; }
+  .kb-card-mrr { font-family: var(--font-mono); font-weight: 700; color: var(--ink); }
+  .kb-card-risk { display: flex; align-items: flex-start; gap: 5px; margin-top: 7px; padding: 5px 7px; background: rgba(236,131,90,0.12); color: var(--serious); border-radius: 6px; font-size: 10.3px; font-weight: 550; }
+  .kb-card-risk svg { width: 12px; height: 12px; flex: none; margin-top: 1px; }
+  .kb-card-progress { margin-top: 8px; }
+  .kb-card-progress .track { height: 5px; border-radius: 100px; background: var(--card-bg); overflow: hidden; }
+  .kb-card-progress .fill { height: 100%; border-radius: 100px; background: var(--amber); }
+  .kb-card-progress .lbl { font-size: 10.3px; color: var(--ink-faint); margin-top: 4px; }
+  .kb-card-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 9px; padding-top: 8px; border-top: 1px solid var(--border); }
+  .kb-card-foot .avatar { width: 20px; height: 20px; font-size: 9px; }
+  .kb-card-foot .resp-name { font-size: 10.8px; color: var(--ink-dim); }
+
+  /* ---------------- List view ---------------- */
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+  .table-scroll { overflow-x: auto; }
+  table.data { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 900px; }
+  table.data th { text-align: left; font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); font-weight: 600; padding: 10px 16px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  table.data td { padding: 10px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  table.data tbody tr { cursor: pointer; }
+  table.data tbody tr:last-child td { border-bottom: none; }
+  table.data tbody tr:hover { background: color-mix(in srgb, var(--paper) 55%, transparent); }
+  .row-title { font-weight: 600; color: var(--ink); }
+  .row-sub { font-size: 11.3px; color: var(--ink-faint); margin-top: 1px; }
+  .row-resp { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--ink-dim); }
+  .row-resp .avatar { width: 22px; height: 22px; font-size: 9.5px; }
+  .updated { color: var(--ink-faint); font-size: 12px; white-space: nowrap; font-family: var(--font-mono); }
+
+  .status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11.3px; font-weight: 650; padding: 3px 10px; border-radius: 100px; white-space: nowrap; color: #fff; }
+  .status-pill .d { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.75); flex: none; }
+
+  .icon-btn { width: 26px; height: 26px; border-radius: 7px; border: none; background: transparent; color: var(--ink-faint); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; }
+  .icon-btn:hover { background: var(--paper); color: var(--ink); }
+
+  /* ---------------- Drawer ---------------- */
+  .scrim { position: fixed; inset: 0; background: rgba(20,23,43,.4); opacity: 0; pointer-events: none; transition: opacity .18s ease; z-index: 40; }
+  .scrim.show { opacity: 1; pointer-events: auto; }
+  .drawer { position: fixed; top: 0; right: 0; height: 100%; width: min(620px, 100vw); background: var(--card-bg); box-shadow: -8px 0 40px rgba(20,23,43,.25); z-index: 41; display: flex; flex-direction: column; transform: translateX(100%); transition: transform .22s cubic-bezier(.4,0,.2,1); }
+  .drawer.show { transform: translateX(0); }
+  .drawer-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 22px 0; }
+  .drawer-head h2 { margin: 0 0 3px; font-size: 16.5px; font-weight: 700; }
+  .drawer-head p { margin: 0; font-size: 12.3px; color: var(--ink-dim); }
+  .drawer-close { width: 30px; height: 30px; border-radius: 8px; border: none; background: transparent; color: var(--ink-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; flex: none; }
+  .drawer-close:hover { background: var(--paper); color: var(--ink); }
+  .drawer-close svg { width: 16px; height: 16px; }
+  .drawer-body { flex: 1; overflow-y: auto; padding: 16px 22px 22px; display: flex; flex-direction: column; gap: 16px; }
+  .drawer-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 22px; border-top: 1px solid var(--border); }
+
+  .dr-tabs { display: flex; gap: 2px; padding: 14px 22px 0; border-bottom: 1px solid var(--border); overflow-x: auto; }
+  .dr-tab { border: none; background: transparent; padding: 8px 3px; margin-right: 16px; font-size: 12.6px; font-weight: 600; color: var(--ink-faint); cursor: pointer; white-space: nowrap; border-bottom: 2px solid transparent; }
+  .dr-tab:hover { color: var(--ink-dim); }
+  .dr-tab.active { color: var(--ink); border-bottom-color: var(--amber); }
+
+  .dr-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-faint); font-weight: 700; }
+  .dr-stage-select { width: 100%; font-size: 13.5px; font-weight: 600; border: 1px solid var(--border); border-radius: 9px; padding: 9px 12px; background: var(--paper); color: var(--ink); }
+
+  .kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .kpi-card { background: var(--paper); border: 1px solid var(--border); border-radius: 10px; padding: 11px 13px; }
+  .kpi-card .t { font-size: 10.8px; color: var(--ink-faint); font-weight: 600; }
+  .kpi-card .v { font-size: 17px; font-weight: 700; font-family: var(--font-mono); margin-top: 3px; }
+  .kpi-card .v.good { color: var(--good); }
+  .kpi-card .d { font-size: 10.8px; color: var(--ink-dim); margin-top: 2px; }
+
+  .score-panel { background: var(--paper); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 9px; }
+  .score-row { display: flex; align-items: center; gap: 10px; }
+  .score-row .lbl { font-size: 12px; color: var(--ink-dim); width: 108px; flex: none; }
+  .score-row .track { flex: 1; height: 6px; border-radius: 100px; background: var(--card-bg); overflow: hidden; }
+  .score-row .fill { height: 100%; border-radius: 100px; }
+  .score-row .fill.eng { background: var(--azul); }
+  .score-row .fill.uso { background: var(--amber); }
+  .score-row .fill.sat { background: var(--seq-3); }
+  .score-row .fill.fin { background: var(--serious); }
+  .score-row .num { font-family: var(--font-mono); font-size: 12px; width: 30px; text-align: right; flex: none; }
+  .score-total-row { display: flex; align-items: center; justify-content: space-between; padding-top: 8px; border-top: 1px solid var(--border); font-size: 13px; font-weight: 650; }
+  .score-total-row .big { font-family: var(--font-mono); font-size: 17px; }
+
+  .checklist { display: flex; flex-direction: column; gap: 2px; }
+  .cl-item { display: flex; align-items: flex-start; gap: 10px; padding: 9px 4px; border-bottom: 1px solid var(--border); }
+  .cl-item:last-child { border-bottom: none; }
+  .cl-check { width: 18px; height: 18px; border-radius: 5px; border: 1.6px solid var(--border); flex: none; margin-top: 1px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: var(--card-bg); }
+  .cl-check.done { background: var(--good); border-color: var(--good); color: #fff; }
+  .cl-check svg { width: 11px; height: 11px; }
+  .cl-item .cl-title { font-size: 13px; color: var(--ink); }
+  .cl-item.done .cl-title { color: var(--ink-faint); text-decoration: line-through; }
+  .cl-item .cl-meta { font-size: 10.8px; color: var(--ink-faint); margin-top: 1px; }
+  .cl-progress-track { height: 7px; border-radius: 100px; background: var(--paper); overflow: hidden; border: 1px solid var(--border); }
+  .cl-progress-fill { height: 100%; border-radius: 100px; background: var(--amber); transition: width 200ms ease; }
+
+  .usage-row { display: flex; align-items: center; gap: 10px; }
+  .usage-row .lbl { font-size: 12.3px; color: var(--ink-dim); width: 148px; flex: none; }
+  .usage-row .track { flex: 1; height: 8px; border-radius: 100px; background: var(--paper); overflow: hidden; border: 1px solid var(--border); }
+  .usage-row .fill { height: 100%; border-radius: 100px; background: var(--seq-3); }
+  .usage-row .num { font-family: var(--font-mono); font-size: 12px; width: 34px; text-align: right; flex: none; }
+
+  .renewal-box { background: var(--paper); border: 1px solid var(--border); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .renewal-top { display: flex; align-items: center; justify-content: space-between; }
+  .renewal-top .amt { font-family: var(--font-mono); font-size: 20px; font-weight: 700; }
+  .renewal-countdown { font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 100px; }
+  .renewal-countdown.ok { background: rgba(12,163,12,0.14); color: var(--good); }
+  .renewal-countdown.soon { background: rgba(250,178,25,0.18); color: color-mix(in srgb, var(--warning) 55%, var(--ink-dim)); }
+  .renewal-countdown.urgent { background: rgba(236,131,90,0.16); color: var(--serious); }
+  .renewal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; }
+  .renewal-grid .k { color: var(--ink-faint); }
+  .renewal-grid .v { color: var(--ink); font-weight: 600; margin-top: 1px; }
+
+  .expansion-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; background: var(--paper); border: 1px solid var(--border); border-radius: 9px; }
+  .expansion-item .n { font-size: 12.8px; font-weight: 600; }
+  .expansion-item .s { font-size: 11px; color: var(--ink-faint); margin-top: 1px; }
+  .expansion-item .amt { font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--good); flex: none; }
+
+  .next-action-box { display: flex; flex-direction: column; gap: 8px; background: var(--paper); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+  .next-action-box textarea { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 13px; font-family: inherit; color: var(--ink); background: var(--card-bg); resize: vertical; min-height: 46px; }
+  .next-action-row { display: flex; gap: 8px; align-items: center; }
+
+  .timeline-mini { display: flex; flex-direction: column; gap: 10px; }
+  .tl-item { display: flex; gap: 9px; }
+  .tl-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--azul); margin-top: 5px; flex: none; }
+  .tl-item .tt { font-size: 12.5px; color: var(--ink); font-weight: 550; }
+  .tl-item .td { font-size: 11px; color: var(--ink-faint); margin-top: 1px; }
+
+  .f-group { display: flex; flex-direction: column; gap: 6px; }
+  .f-label { font-size: 12.3px; font-weight: 600; color: var(--ink-dim); }
+  .f-select, .f-input { width: 100%; border: 1px solid var(--border); border-radius: 9px; padding: 8px 11px; font-size: 13px; background: var(--card-bg); color: var(--ink); }
+  .f-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .toast { position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 12px); background: var(--ink); color: var(--paper); font-size: 13.5px; padding: 10px 16px; border-radius: 8px; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: opacity 180ms ease, transform 180ms ease; z-index: 60; max-width: 88vw; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar { position: relative; height: auto; }
+    .sb-nav, .sb-user { display: none; }
+    .page-head { flex-wrap: wrap; }
+    .funnel-strip { display: none; }
+    .kpi-grid { grid-template-columns: 1fr; }
+    .f-row2 { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .toast, .kb-card, .drawer, .scrim, .cl-progress-fill { transition: none; }
+  }
+</style>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="monogram">A</div>
+      <div><strong>Argos</strong><span>Gestão comercial</span></div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-group">
+        <a class="sb-item" href="#" data-page="Dashboard">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="2.5" width="6.2" height="6.2" rx="1.3"/><rect x="11.3" y="2.5" width="6.2" height="4.4" rx="1.3"/><rect x="11.3" y="9.4" width="6.2" height="8.1" rx="1.3"/><rect x="2.5" y="11.2" width="6.2" height="6.3" rx="1.3"/></svg>
+          Dashboard
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Inteligência Comercial</div>
+        <a class="sb-item" href="#" data-page="Buscar Empresas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8.8" cy="8.8" r="5.3"/><path d="M16.5 16.5l-3.8-3.8"/></svg>
+          Buscar Empresas
+        </a>
+        <a class="sb-item" href="#" data-page="Pesquisa de Leads">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7"/><circle cx="10" cy="10" r="3.2"/><path d="M10 3v2.4M10 14.6V17M17 10h-2.4M5.4 10H3"/></svg>
+          Pesquisa de Leads
+        </a>
+        <a class="sb-item" href="#" data-page="Central de Leads">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3.5h14l-5.3 6.6v5.4l-3.4 1.7v-7.1z"/></svg>
+          Central de Leads
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">CRM</div>
+        <a class="sb-item" href="#" data-page="Empresas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17.5V3.8a.8.8 0 01.8-.8h6.4a.8.8 0 01.8.8v13.7"/><path d="M13 17.5V8.3a.8.8 0 01.8-.8h3.4a.8.8 0 01.8.8v9.2"/><path d="M5.4 6h1.6M5.4 9h1.6M5.4 12h1.6M15 10.6h1M15 13.4h1"/></svg>
+          Empresas
+        </a>
+        <a class="sb-item" href="#" data-page="Contatos">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="6.6" r="3.1"/><path d="M3.6 17c.7-3.4 3.2-5.2 6.4-5.2s5.7 1.8 6.4 5.2"/></svg>
+          Contatos
+        </a>
+        <a class="sb-item" href="#" data-page="Negócios">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 10.3l3-4.6a1 1 0 01.85-.47h7.3a1 1 0 01.85.47l3 4.6"/><path d="M2.5 10.3v5.2a1 1 0 001 1h13a1 1 0 001-1v-5.2"/><path d="M7.3 10.3a2.7 2.7 0 005.4 0"/></svg>
+          Negócios
+        </a>
+        <a class="sb-item" href="#" data-page="Tarefas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2.2"/><path d="M6.6 10.2l2 2 4.6-4.9"/></svg>
+          Tarefas
+        </a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Customer Success</div>
+        <div class="sb-item active" data-page="Clientes">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7.3"/><path d="M6.7 10.3l2.1 2.2 4.5-4.7"/></svg>
+          Clientes
+          <span class="badge-new">NOVO</span>
+        </div>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Automação</div>
+        <a class="sb-item" href="#" data-page="Sequências">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4h5.5l1.5 2h5v10H4z"/><path d="M8 9h4M8 12h6"/></svg>
+          Sequências
+        </a>
+      </div>
+    </nav>
+
+    <div class="sb-user">
+      <div class="avatar">DC</div>
+      <div class="sb-user-meta"><strong>Daniel Chagas</strong><span>Admin · GD Conecta</span></div>
+    </div>
+  </aside>
+
+  <div class="main-col">
+    <div class="content">
+      <div class="page-head">
+        <div>
+          <h1>Customer Success</h1>
+          <p><span class="mono" id="headCount">—</span> clientes ativos · <span class="mono" id="headMrr">—</span> MRR sob gestão · <span class="mono" id="headRisk">—</span> em risco</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn-ghost" id="checklistTemplateBtn">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="14" height="14" rx="2.2"/><path d="M6.6 7.5h6.8M6.6 10.2h6.8M6.6 12.9h4.2"/></svg>
+            Template de implantação
+          </button>
+        </div>
+      </div>
+
+      <div class="info-banner" id="infoBanner">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="7.3"/><path d="M10 9v4.4M10 6.6v.1"/></svg>
+        <span>
+          <b>Protótipo funcional — dados fictícios, nada aqui é salvo.</b> O Customer Success começa onde a venda termina:
+          todo <b>Negócio ganho</b> vira um cliente aqui, na fase <b>Implantação</b>. Acompanha <b>Health Score</b> (engajamento + uso + satisfação + financeiro),
+          checklist de onboarding, uso da plataforma, resultados e renovação/expansão. Arraste um card entre colunas para simular a mudança de fase.
+        </span>
+        <button onclick="document.getElementById('infoBanner').style.display='none'">Fechar</button>
+      </div>
+
+      <div class="funnel-strip" id="funnelStrip"></div>
+
+      <div class="stat-strip" id="statStrip"></div>
+
+      <div class="filters-bar">
+        <div class="search">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="8.8" cy="8.8" r="5.8"/><path d="M17 17l-3.6-3.6"/></svg>
+          <input type="text" id="searchInput" placeholder="Buscar cliente ou segmento" />
+        </div>
+        <div class="filter-select-wrap">
+          <select class="filter-select" id="csmFilter">
+            <option value="">Todos os CSMs</option>
+          </select>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l5 5 5-5"/></svg>
+        </div>
+        <div class="filter-select-wrap">
+          <select class="filter-select" id="renewalFilter">
+            <option value="">Toda renovação</option>
+            <option value="30">Em até 30 dias</option>
+            <option value="60">Em até 60 dias</option>
+            <option value="90">Em até 90 dias</option>
+          </select>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l5 5 5-5"/></svg>
+        </div>
+        <label class="chip-toggle">
+          <input type="checkbox" id="onlyRiskChk" />
+          Somente em risco
+        </label>
+        <span class="result-count" id="resultCount"></span>
+
+        <div class="segmented last" role="tablist" aria-label="Alternar visualização">
+          <button class="active" id="viewKanbanBtn" role="tab" aria-selected="true">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2.5" y="3" width="4.4" height="14" rx="1"/><rect x="7.8" y="3" width="4.4" height="9.5" rx="1"/><rect x="13.1" y="3" width="4.4" height="6" rx="1"/></svg>
+            Kanban
+          </button>
+          <button id="viewListBtn" role="tab" aria-selected="false">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h13"/></svg>
+            Lista
+          </button>
+        </div>
+      </div>
+
+      <div id="viewKanban">
+        <div class="kanban-scroll">
+          <div class="kanban" id="kanbanBoard"></div>
+        </div>
+      </div>
+
+      <div id="viewList" style="display:none;">
+        <div class="card">
+          <div class="table-scroll">
+            <table class="data">
+              <thead>
+                <tr>
+                  <th>Cliente</th>
+                  <th>Fase</th>
+                  <th>Health</th>
+                  <th>MRR</th>
+                  <th>Renovação</th>
+                  <th>CSM</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="listBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Client detail drawer -->
+<div class="scrim" id="drawerScrim"></div>
+<div class="drawer" id="clientDrawer"></div>
+
+<!-- Onboarding template drawer -->
+<div class="scrim" id="templateScrim"></div>
+<div class="drawer" id="templateDrawer"></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  var FASES = [
+    { id: 'implantacao', nome: 'Implantação',   color: 'var(--seq-1)', desc: 'Negócio ganho — checklist de onboarding em andamento' },
+    { id: 'ativo',       nome: 'Ativo',          color: 'var(--seq-2)', desc: 'Onboarding concluído — operação estável' },
+    { id: 'em_risco',    nome: 'Em risco',       color: 'var(--seq-3)', desc: 'Health Score abaixo do corte ou renovação próxima sem contato' },
+    { id: 'em_expansao', nome: 'Em expansão',    color: 'var(--seq-4)', desc: 'Negócio de upsell/expansão aberto para este cliente' },
+    { id: 'churn',       nome: 'Encerrado',      color: 'var(--seq-5)', desc: 'Contrato cancelado — fica visível para auditoria' },
+  ];
+  var FASE_BY_ID = {};
+  FASES.forEach(function (s) { FASE_BY_ID[s.id] = s; });
+
+  var USERS = {
+    FN: 'Felipe Nogueira', MD: 'Marina Duarte', CR: 'Camila Rezende', PL: 'Paula Lemos',
+  };
+
+  var TODAY = new Date('2026-08-05T12:00:00');
+
+  function daysAgo(n) { var d = new Date(TODAY); d.setDate(d.getDate() - n); return d; }
+  function daysFromNow(n) { var d = new Date(TODAY); d.setDate(d.getDate() + n); return d; }
+  function fmtRelative(date) {
+    var diffMs = TODAY - date;
+    var days = Math.floor(diffMs / 86400000);
+    if (days <= 0) return 'hoje';
+    if (days === 1) return 'ontem';
+    if (days < 7) return 'há ' + days + ' dias';
+    if (days < 14) return 'há 1 semana';
+    if (days < 30) return 'há ' + Math.floor(days / 7) + ' semanas';
+    return 'há ' + Math.floor(days / 30) + ' meses';
+  }
+  function fmtDateBR(d) { return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear(); }
+  function fmtMoney(v) { return 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }); }
+  function escapeHtml(s) { return (s || '').replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function daysUntil(d) { return Math.round((d - TODAY) / 86400000); }
+
+  // ---------------- Mock dataset ----------------
+  var CLIENTS = [
+    { id: 'c1', empresa: 'Comércio Ferreira Ltda', segmento: 'Varejo', uf: 'BA', fase: 'implantacao', csm: 'FN',
+      mrr: 3200, dataInicio: daysAgo(9), dataRenovacao: daysFromNow(356), ultimaInteracao: daysAgo(2),
+      health: { eng: 78, uso: 40, sat: 60, fin: 90 },
+      checklist: [
+        { t: 'Kickoff com o time do cliente', done: true }, { t: 'Configuração inicial da conta', done: true },
+        { t: 'Importação de base de contatos', done: true }, { t: 'Treinamento do time comercial', done: false },
+        { t: 'Integração com ERP/TMS', done: false }, { t: 'Validação de resultados da 1ª semana', done: false },
+      ],
+      resultados: [ { t: 'Fretes cotados no mês', v: '128', ok: true }, { t: 'Tempo médio de resposta', v: '4,2h', ok: true } ] },
+
+    { id: 'c2', empresa: 'Têxtil Serra Alta', segmento: 'Têxtil', uf: 'SC', fase: 'implantacao', csm: 'PL',
+      mrr: 4100, dataInicio: daysAgo(22), dataRenovacao: daysFromNow(343), ultimaInteracao: daysAgo(12),
+      health: { eng: 30, uso: 20, sat: 50, fin: 90 },
+      checklist: [
+        { t: 'Kickoff com o time do cliente', done: true }, { t: 'Configuração inicial da conta', done: true },
+        { t: 'Importação de base de contatos', done: false }, { t: 'Treinamento do time comercial', done: false },
+        { t: 'Integração com ERP/TMS', done: false }, { t: 'Validação de resultados da 1ª semana', done: false },
+      ],
+      resultados: [] },
+
+    { id: 'c3', empresa: 'Distribuidora Norte Mix', segmento: 'Alimentos', uf: 'PA', fase: 'ativo', csm: 'CR',
+      mrr: 5600, dataInicio: daysAgo(210), dataRenovacao: daysFromNow(155), ultimaInteracao: daysAgo(4),
+      health: { eng: 82, uso: 74, sat: 88, fin: 95 },
+      checklist: Array(6).fill(0).map(function(_,i){return {t:['Kickoff com o time do cliente','Configuração inicial da conta','Importação de base de contatos','Treinamento do time comercial','Integração com ERP/TMS','Validação de resultados da 1ª semana'][i], done:true};}),
+      resultados: [ { t: 'Fretes cotados no mês', v: '412', ok: true }, { t: 'Redução de custo logístico', v: '11%', ok: true }, { t: 'SLA cumprido', v: '96%', ok: true } ] },
+
+    { id: 'c4', empresa: 'Metalúrgica Bragança', segmento: 'Máquinas e Equipamentos', uf: 'SP', fase: 'ativo', csm: 'MD',
+      mrr: 3800, dataInicio: daysAgo(340), dataRenovacao: daysFromNow(25), ultimaInteracao: daysAgo(6),
+      health: { eng: 65, uso: 60, sat: 70, fin: 90 },
+      checklist: Array(6).fill(0).map(function(_,i){return {t:['Kickoff com o time do cliente','Configuração inicial da conta','Importação de base de contatos','Treinamento do time comercial','Integração com ERP/TMS','Validação de resultados da 1ª semana'][i], done:true};}),
+      resultados: [ { t: 'Fretes cotados no mês', v: '96', ok: true }, { t: 'SLA cumprido', v: '88%', ok: true } ] },
+
+    { id: 'c5', empresa: 'Frigorífico Bom Sabor', segmento: 'Alimentos', uf: 'PR', fase: 'ativo', csm: 'MD',
+      mrr: 7200, dataInicio: daysAgo(180), dataRenovacao: daysFromNow(185), ultimaInteracao: daysAgo(1),
+      health: { eng: 90, uso: 85, sat: 92, fin: 95 },
+      checklist: Array(6).fill(0).map(function(_,i){return {t:['Kickoff com o time do cliente','Configuração inicial da conta','Importação de base de contatos','Treinamento do time comercial','Integração com ERP/TMS','Validação de resultados da 1ª semana'][i], done:true};}),
+      resultados: [ { t: 'Fretes cotados no mês', v: '530', ok: true }, { t: 'Redução de custo logístico', v: '18%', ok: true } ] },
+
+    { id: 'c6', empresa: 'Química Delta Sul', segmento: 'Química', uf: 'RS', fase: 'em_risco', csm: 'PL',
+      mrr: 2900, dataInicio: daysAgo(260), dataRenovacao: daysFromNow(18), ultimaInteracao: daysAgo(24),
+      health: { eng: 20, uso: 35, sat: 40, fin: 60 }, riscoMotivo: 'Sem contato do CSM há 24 dias e renovação em 18 dias.',
+      checklist: Array(6).fill(0).map(function(_,i){return {t:['Kickoff com o time do cliente','Configuração inicial da conta','Importação de base de contatos','Treinamento do time comercial','Integração com ERP/TMS','Validação de resultados da 1ª semana'][i], done:true};}),
+      resultados: [ { t: 'Fretes cotados no mês', v: '38', ok: false } ] },
+
+    { id: 'c7', empresa: 'Auto Peças Bandeirantes', segmento: 'Autopeças', uf: 'SP', fase: 'em_risco', csm: 'FN',
+      mrr: 1800, dataInicio: daysAgo(120), dataRenovacao: daysFromNow(245), ultimaInteracao: daysAgo(31),
+      health: { eng: 15, uso: 25, sat: 30, fin: 90 }, riscoMotivo: 'Uso da plataforma caiu — sem check-in registrado há mais de 1 mês.',
+      checklist: Array(6).fill(0).map(function(_,i){return {t:['Kickoff com o time do cliente','Configuração inicial da conta','Importação de base de contatos','Treinamento do time comercial','Integração com ERP/TMS','Validação de resultados da 1ª semana'][i], done:true};}),
+      resultados: [ { t: 'Fretes cotados no mês', v: '12', ok: false } ] },
+
+    { id: 'c8', empresa: 'Papelaria Litoral Sul', segmento: 'Etiquetas', uf: 'SC', fase: 'em_risco', csm: 'CR',
+      mrr: 1200, dataInicio: daysAgo(300), dataRenovacao: daysFromNow(9), ultimaInteracao: daysAgo(18),
+      health: { eng: 35, uso: 30, sat: 25, fin: 40 }, riscoMotivo: 'Inadimplente há 12 dias e renovação em 9 dias.',
+      checklist: Array(6).fill(0).map(function(_,i){return {t:['Kickoff com o time do cliente','Configuração inicial da conta','Importação de base de contatos','Treinamento do time comercial','Integração com ERP/TMS','Validação de resultados da 1ª semana'][i], done:true};}),
+      resultados: [] },
+
+    { id: 'c9', empresa: 'Grupo Andrade Embalagens', segmento: 'Etiquetas', uf: 'SP', fase: 'em_expansao', csm: 'FN',
+      mrr: 4600, dataInicio: daysAgo(400), dataRenovacao: daysFromNow(60), ultimaInteracao: daysAgo(0),
+      health: { eng: 88, uso: 80, sat: 90, fin: 95 },
+      checklist: Array(6).fill(0).map(function(_,i){return {t:['Kickoff com o time do cliente','Configuração inicial da conta','Importação de base de contatos','Treinamento do time comercial','Integração com ERP/TMS','Validação de resultados da 1ª semana'][i], done:true};}),
+      resultados: [ { t: 'Fretes cotados no mês', v: '610', ok: true }, { t: 'Redução de custo logístico', v: '22%', ok: true } ],
+      expansao: { nome: 'Expansão — módulo de rastreio para filial RJ', valor: 1800, etapa: 'Proposta enviada' } },
+
+    { id: 'c10', empresa: 'Transportadora Vale Rio', segmento: 'Serviços', uf: 'SP', fase: 'em_expansao', csm: 'MD',
+      mrr: 8900, dataInicio: daysAgo(500), dataRenovacao: daysFromNow(140), ultimaInteracao: daysAgo(3),
+      health: { eng: 85, uso: 90, sat: 88, fin: 95 },
+      checklist: Array(6).fill(0).map(function(_,i){return {t:['Kickoff com o time do cliente','Configuração inicial da conta','Importação de base de contatos','Treinamento do time comercial','Integração com ERP/TMS','Validação de resultados da 1ª semana'][i], done:true};}),
+      resultados: [ { t: 'Fretes cotados no mês', v: '890', ok: true }, { t: 'SLA cumprido', v: '99%', ok: true } ],
+      expansao: { nome: 'Expansão — 3 novas filiais', valor: 5200, etapa: 'Negociação' } },
+
+    { id: 'c11', empresa: 'Indústria Rocha Ltda', segmento: 'Máquinas e Equipamentos', uf: 'ES', fase: 'churn', csm: 'PL',
+      mrr: 0, dataInicio: daysAgo(600), dataRenovacao: daysAgo(15), ultimaInteracao: daysAgo(15),
+      health: { eng: 10, uso: 5, sat: 15, fin: 20 }, riscoMotivo: 'Cancelado — motivo: redução de operação do cliente.',
+      checklist: Array(6).fill(0).map(function(_,i){return {t:['Kickoff com o time do cliente','Configuração inicial da conta','Importação de base de contatos','Treinamento do time comercial','Integração com ERP/TMS','Validação de resultados da 1ª semana'][i], done:true};}),
+      resultados: [] },
+  ];
+
+  var TEMPLATE_ITEMS = [
+    'Kickoff com o time do cliente', 'Configuração inicial da conta', 'Importação de base de contatos',
+    'Treinamento do time comercial', 'Integração com ERP/TMS', 'Validação de resultados da 1ª semana',
+  ];
+
+  function healthScore(c) {
+    return Math.round(c.health.eng * 0.30 + c.health.uso * 0.25 + c.health.sat * 0.20 + c.health.fin * 0.25);
+  }
+  function scoreClass(score) { return score >= 70 ? 'hi' : (score >= 40 ? 'mid' : 'lo'); }
+  function checklistProgress(c) {
+    if (!c.checklist.length) return 0;
+    return Math.round(c.checklist.filter(function (i) { return i.done; }).length / c.checklist.length * 100);
+  }
+  function needsCheckin(c) { return (TODAY - c.ultimaInteracao) / 86400000 >= 21; }
+
+  var csmFilter = '', searchQ = '', renewalFilter = '', onlyRisk = false;
+  var currentView = 'kanban';
+
+  var fldCsm = document.getElementById('csmFilter');
+  fldCsm.innerHTML = '<option value="">Todos os CSMs</option>' +
+    Object.keys(USERS).map(function (k) { return '<option value="' + k + '">' + USERS[k] + '</option>'; }).join('');
+
+  function passesFilter(c) {
+    if (csmFilter && c.csm !== csmFilter) return false;
+    if (renewalFilter !== '') {
+      var max = Number(renewalFilter);
+      if (daysUntil(c.dataRenovacao) > max) return false;
+    }
+    if (onlyRisk && c.fase !== 'em_risco') return false;
+    if (searchQ) {
+      var hay = (c.empresa + ' ' + c.segmento).toLowerCase();
+      if (hay.indexOf(searchQ) === -1) return false;
+    }
+    return true;
+  }
+
+  function renderFunnelStrip() {
+    var el = document.getElementById('funnelStrip');
+    el.innerHTML = FASES.map(function (s) {
+      var n = CLIENTS.filter(function (c) { return c.fase === s.id; }).length;
+      return '<div class="funnel-step" style="background:' + s.color + ';" title="' + escapeHtml(s.desc) + '">' + s.nome + ' <span class="n">' + n + '</span></div>';
+    }).join('');
+  }
+
+  function renderStats() {
+    var ativos = CLIENTS.filter(function (c) { return c.fase !== 'churn'; });
+    var total = ativos.length;
+    var mrrTotal = ativos.reduce(function (sum, c) { return sum + c.mrr; }, 0);
+    var arrTotal = mrrTotal * 12;
+    var avgHealth = Math.round(ativos.reduce(function (sum, c) { return sum + healthScore(c); }, 0) / total);
+    var risk = CLIENTS.filter(function (c) { return c.fase === 'em_risco'; }).length;
+    var renewal60 = ativos.filter(function (c) { return daysUntil(c.dataRenovacao) <= 60 && daysUntil(c.dataRenovacao) >= 0; }).length;
+
+    document.getElementById('headCount').textContent = total;
+    document.getElementById('headMrr').textContent = fmtMoney(mrrTotal);
+    document.getElementById('headRisk').textContent = risk;
+
+    var tiles = [
+      { t: 'Clientes ativos', v: total },
+      { t: 'MRR total', v: fmtMoney(mrrTotal), cls: 'money' },
+      { t: 'ARR projetado', v: fmtMoney(arrTotal), cls: 'money' },
+      { t: 'Health médio', v: avgHealth + 'pt', cls: avgHealth >= 70 ? 'good' : (avgHealth < 40 ? 'risk' : '') },
+      { t: 'Em risco', v: risk, cls: 'risk' },
+      { t: 'Renovação 60d', v: renewal60 },
+    ];
+
+    document.getElementById('statStrip').innerHTML = tiles.map(function (t) {
+      return '<div class="stat-tile ' + (t.cls || '') + '"><div class="t">' + t.t + '</div><div class="v">' + t.v + '</div></div>';
+    }).join('');
+  }
+
+  function clientCardHtml(c) {
+    var s = healthScore(c);
+    var isRisk = c.fase === 'em_risco';
+    var progress = checklistProgress(c);
+    return '' +
+      '<div class="kb-card' + (isRisk ? ' risk' : '') + '" draggable="true" data-id="' + c.id + '">' +
+        '<div class="kb-card-top">' +
+          '<div><div class="kb-card-name">' + escapeHtml(c.empresa) + '</div><div class="kb-card-seg">' + escapeHtml(c.segmento) + ' · ' + c.uf + '</div></div>' +
+          '<span class="score-badge ' + scoreClass(s) + '">' + s + '</span>' +
+        '</div>' +
+        '<div class="kb-card-row"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="7.3"/><path d="M10 5.6v4.4l3 1.8"/></svg>' + fmtRelative(c.ultimaInteracao) + '<span class="kb-card-mrr" style="margin-left:auto;">' + fmtMoney(c.mrr) + '/mês</span></div>' +
+        (c.fase === 'implantacao' ? (
+          '<div class="kb-card-progress"><div class="track"><div class="fill" style="width:' + progress + '%;"></div></div><div class="lbl">Onboarding: ' + progress + '% concluído</div></div>'
+        ) : '') +
+        (isRisk ? '<div class="kb-card-risk"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M10 2.5l8 14H2z"/><path d="M10 8v3.4M10 13.6v.1"/></svg>' + escapeHtml(c.riscoMotivo || 'Health Score abaixo do corte') + '</div>' : '') +
+        (c.expansao ? '<div class="kb-card-risk" style="background:rgba(217,161,58,0.14);color:var(--indigo);"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 12l4-4 3 3 5-6"/><path d="M13 4h3v3"/></svg>' + escapeHtml(c.expansao.nome) + '</div>' : '') +
+        '<div class="kb-card-foot"><span class="avatar">' + c.csm + '</span><span class="resp-name">' + USERS[c.csm] + ' · CSM</span></div>' +
+      '</div>';
+  }
+
+  function renderKanban() {
+    var board = document.getElementById('kanbanBoard');
+    var filtered = CLIENTS.filter(passesFilter);
+    document.getElementById('resultCount').textContent = (csmFilter || searchQ || renewalFilter || onlyRisk)
+      ? filtered.length + ' de ' + CLIENTS.length + ' clientes visíveis correspondem ao filtro' : '';
+
+    board.innerHTML = FASES.map(function (fase) {
+      var faseClients = filtered.filter(function (c) { return c.fase === fase.id; });
+      var cardsHtml = faseClients.map(clientCardHtml).join('');
+      var empty = faseClients.length === 0 ? '<div style="font-size:11.5px;color:var(--ink-faint);text-align:center;padding:14px 4px;">Nenhum cliente aqui</div>' : '';
+      return '' +
+        '<div class="kb-col" style="--stage-color:' + fase.color + ';">' +
+          '<div class="kb-col-head">' +
+            '<div class="kb-col-title"><span class="d"></span><span class="name">' + fase.nome + '</span></div>' +
+            '<span class="kb-col-count">' + faseClients.length + '</span>' +
+          '</div>' +
+          '<div class="kb-col-sub">' + escapeHtml(fase.desc) + '</div>' +
+          '<div class="kb-col-body" data-fase="' + fase.id + '">' + cardsHtml + empty + '</div>' +
+        '</div>';
+    }).join('');
+
+    board.querySelectorAll('.kb-card').forEach(function (card) {
+      card.addEventListener('dragstart', function () { card.classList.add('dragging'); });
+      card.addEventListener('dragend', function () { card.classList.remove('dragging'); });
+      card.addEventListener('click', function (e) { if (!card.classList.contains('dragging')) openDrawer(card.getAttribute('data-id')); });
+    });
+    board.querySelectorAll('.kb-col-body').forEach(function (col) {
+      col.addEventListener('dragover', function (e) { e.preventDefault(); col.classList.add('drag-over'); });
+      col.addEventListener('dragleave', function () { col.classList.remove('drag-over'); });
+      col.addEventListener('drop', function (e) {
+        e.preventDefault();
+        col.classList.remove('drag-over');
+        var dragging = board.querySelector('.dragging');
+        if (!dragging) return;
+        var id = dragging.getAttribute('data-id');
+        var newFase = col.getAttribute('data-fase');
+        moveClient(id, newFase);
+      });
+    });
+  }
+
+  function moveClient(id, newFase) {
+    var c = CLIENTS.filter(function (x) { return x.id === id; })[0];
+    if (!c || c.fase === newFase) return;
+    var oldFase = c.fase;
+    c.fase = newFase;
+    var note = '';
+    if (newFase === 'churn') note = ' Em produção, isso pediria confirmação de motivo de cancelamento antes de mudar de fase.';
+    if (newFase === 'em_expansao' && !c.expansao) note = ' Em produção, isso abriria um Negócio de expansão vinculado a este cliente.';
+    renderAll();
+    showToast(escapeHtml(c.empresa) + ' movido de "' + FASE_BY_ID[oldFase].nome + '" para "' + FASE_BY_ID[newFase].nome + '".' + note);
+  }
+
+  function renderList() {
+    var filtered = CLIENTS.filter(passesFilter);
+    document.getElementById('resultCount').textContent = (csmFilter || searchQ || renewalFilter || onlyRisk)
+      ? filtered.length + ' de ' + CLIENTS.length + ' clientes visíveis correspondem ao filtro' : '';
+    var body = document.getElementById('listBody');
+    if (filtered.length === 0) {
+      body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--ink-faint);">Nenhum cliente encontrado.</td></tr>';
+      return;
+    }
+    body.innerHTML = filtered.map(function (c) {
+      var s = healthScore(c);
+      var fase = FASE_BY_ID[c.fase];
+      var du = daysUntil(c.dataRenovacao);
+      return '' +
+        '<tr data-id="' + c.id + '">' +
+          '<td><div class="row-title">' + escapeHtml(c.empresa) + '</div><div class="row-sub">' + escapeHtml(c.segmento) + ' · ' + c.uf + '</div></td>' +
+          '<td><span class="status-pill" style="background:' + fase.color + ';"><span class="d"></span>' + fase.nome + '</span></td>' +
+          '<td><span class="score-badge ' + scoreClass(s) + '">' + s + 'pt</span></td>' +
+          '<td class="updated">' + fmtMoney(c.mrr) + '</td>' +
+          '<td class="updated">' + fmtDateBR(c.dataRenovacao) + (c.fase !== 'churn' ? ' (' + (du >= 0 ? du + 'd' : 'vencida') + ')' : '') + '</td>' +
+          '<td><div class="row-resp"><span class="avatar">' + c.csm + '</span>' + USERS[c.csm] + '</div></td>' +
+          '<td><button class="icon-btn" title="Abrir">→</button></td>' +
+        '</tr>';
+    }).join('');
+    body.querySelectorAll('tr').forEach(function (tr) {
+      tr.addEventListener('click', function () { openDrawer(tr.getAttribute('data-id')); });
+    });
+  }
+
+  function renderAll() {
+    renderFunnelStrip();
+    renderStats();
+    if (currentView === 'kanban') renderKanban(); else renderList();
+  }
+
+  // ---------------- Detail drawer ----------------
+  var activeTab = 'geral';
+
+  function openDrawer(id) {
+    activeTab = 'geral';
+    renderDrawer(id);
+    var scrim = document.getElementById('drawerScrim');
+    var drawer = document.getElementById('clientDrawer');
+    scrim.classList.add('show');
+    drawer.classList.add('show');
+    scrim.onclick = closeDrawer;
+  }
+
+  function renderDrawer(id) {
+    var c = CLIENTS.filter(function (x) { return x.id === id; })[0];
+    if (!c) return;
+    var drawer = document.getElementById('clientDrawer');
+    var s = healthScore(c);
+    var fase = FASE_BY_ID[c.fase];
+
+    var faseOptions = FASES.map(function (f) {
+      return '<option value="' + f.id + '"' + (f.id === c.fase ? ' selected' : '') + '>' + f.nome + '</option>';
+    }).join('');
+
+    var tabs = [
+      { id: 'geral', label: 'Visão geral' },
+      { id: 'implantacao', label: 'Implantação' },
+      { id: 'saude', label: 'Saúde' },
+      { id: 'uso', label: 'Uso da plataforma' },
+      { id: 'resultados', label: 'Resultados' },
+      { id: 'renovacao', label: 'Renovação & Expansão' },
+    ];
+
+    drawer.innerHTML = '' +
+      '<div class="drawer-head">' +
+        '<div><h2>' + escapeHtml(c.empresa) + '</h2><p>' + escapeHtml(c.segmento) + ' · ' + c.uf + ' · CSM ' + USERS[c.csm] + '</p></div>' +
+        '<button class="drawer-close" id="closeDrawerBtn">✕</button>' +
+      '</div>' +
+      '<div class="dr-tabs" id="drTabs">' +
+        tabs.map(function (t) { return '<button class="dr-tab' + (t.id === activeTab ? ' active' : '') + '" data-tab="' + t.id + '">' + t.label + '</button>'; }).join('') +
+      '</div>' +
+      '<div class="drawer-body" id="drBody"></div>' +
+      '<div class="drawer-foot">' +
+        '<button class="btn-ghost" id="drCancel">Fechar</button>' +
+        (c.fase !== 'churn' ? '<button class="btn-primary" id="drCheckin">Registrar check-in</button>' : '') +
+      '</div>';
+
+    document.getElementById('closeDrawerBtn').onclick = closeDrawer;
+    document.getElementById('drCancel').onclick = closeDrawer;
+    drawer.querySelectorAll('.dr-tab').forEach(function (btn) {
+      btn.onclick = function () { activeTab = btn.getAttribute('data-tab'); renderDrawer(id); };
+    });
+    var checkinBtn = document.getElementById('drCheckin');
+    if (checkinBtn) {
+      checkinBtn.onclick = function () {
+        c.ultimaInteracao = new Date(TODAY);
+        renderAll();
+        renderDrawer(id);
+        showToast('Check-in registrado — engajamento do Health Score atualizado.');
+      };
+    }
+
+    renderTabBody(c, s, fase, faseOptions);
+  }
+
+  function renderTabBody(c, s, fase, faseOptions) {
+    var body = document.getElementById('drBody');
+    var du = daysUntil(c.dataRenovacao);
+    var countdownCls = du <= 30 ? 'urgent' : (du <= 60 ? 'soon' : 'ok');
+
+    if (activeTab === 'geral') {
+      body.innerHTML = '' +
+        '<div class="f-group">' +
+          '<label class="f-label">Fase de Customer Success</label>' +
+          '<select class="dr-stage-select" id="drFaseSelect">' + faseOptions + '</select>' +
+        '</div>' +
+        '<div class="kpi-grid">' +
+          '<div class="kpi-card"><div class="t">Health Score</div><div class="v ' + (s >= 70 ? 'good' : '') + '">' + s + 'pt</div><div class="d">' + (s >= 70 ? 'Saudável' : (s >= 40 ? 'Atenção' : 'Em risco')) + '</div></div>' +
+          '<div class="kpi-card"><div class="t">MRR</div><div class="v">' + fmtMoney(c.mrr) + '</div><div class="d">' + fmtMoney(c.mrr * 12) + '/ano</div></div>' +
+          '<div class="kpi-card"><div class="t">Cliente desde</div><div class="v" style="font-size:13px;">' + fmtDateBR(c.dataInicio) + '</div></div>' +
+          '<div class="kpi-card"><div class="t">Próxima renovação</div><div class="v" style="font-size:13px;">' + fmtDateBR(c.dataRenovacao) + '</div><div class="d">' + (du >= 0 ? 'em ' + du + ' dias' : 'vencida há ' + (-du) + ' dias') + '</div></div>' +
+        '</div>' +
+        (c.riscoMotivo ? '<div class="info-banner warn"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M10 2.5l8 14H2z"/><path d="M10 8v3.4M10 13.6v.1"/></svg><span><b>Motivo do alerta:</b> ' + escapeHtml(c.riscoMotivo) + '</span></div>' : '') +
+        '<div>' +
+          '<div class="dr-section-title" style="margin-bottom:8px;">Linha do tempo recente</div>' +
+          '<div class="timeline-mini">' +
+            mockTimeline(c).map(function (t) { return '<div class="tl-item"><div class="tl-dot"></div><div><div class="tt">' + escapeHtml(t.t) + '</div><div class="td">' + t.d + '</div></div></div>'; }).join('') +
+          '</div>' +
+        '</div>';
+      document.getElementById('drFaseSelect').onchange = function (e) {
+        moveClient(c.id, e.target.value);
+        renderDrawer(c.id);
+      };
+      return;
+    }
+
+    if (activeTab === 'implantacao') {
+      var progress = checklistProgress(c);
+      body.innerHTML = '' +
+        '<div>' +
+          '<div class="dr-section-title" style="margin-bottom:8px;">Checklist de onboarding — ' + progress + '% concluído</div>' +
+          '<div class="cl-progress-track" style="margin-bottom:10px;"><div class="cl-progress-fill" style="width:' + progress + '%;"></div></div>' +
+          '<div class="checklist" id="clList">' +
+            c.checklist.map(function (item, i) {
+              return '<div class="cl-item' + (item.done ? ' done' : '') + '">' +
+                '<div class="cl-check' + (item.done ? ' done' : '') + '" data-idx="' + i + '">' + (item.done ? '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 10l4 4 8-9"/></svg>' : '') + '</div>' +
+                '<div><div class="cl-title">' + escapeHtml(item.t) + '</div>' + (item.done ? '<div class="cl-meta">Concluído</div>' : '<div class="cl-meta">Pendente</div>') + '</div>' +
+              '</div>';
+            }).join('') +
+          '</div>' +
+        '</div>' +
+        (progress === 100 && c.fase === 'implantacao' ? '<button class="btn-primary" id="drFinishOnboarding" style="align-self:flex-start;">Concluir implantação → mover para Ativo</button>' : '');
+      body.querySelectorAll('.cl-check').forEach(function (el) {
+        el.onclick = function () {
+          var idx = Number(el.getAttribute('data-idx'));
+          c.checklist[idx].done = !c.checklist[idx].done;
+          renderAll();
+          renderDrawer(c.id);
+        };
+      });
+      var finishBtn = document.getElementById('drFinishOnboarding');
+      if (finishBtn) finishBtn.onclick = function () { moveClient(c.id, 'ativo'); renderDrawer(c.id); };
+      return;
+    }
+
+    if (activeTab === 'saude') {
+      body.innerHTML = '' +
+        '<div class="info-banner"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="7.3"/><path d="M10 9v4.4M10 6.6v.1"/></svg><span>Health Score = <b>30% Engajamento</b> + <b>25% Uso</b> + <b>20% Satisfação</b> + <b>25% Financeiro</b>. Pesos configuráveis por tenant.</span></div>' +
+        '<div class="score-panel">' +
+          '<div class="score-row"><span class="lbl">Engajamento</span><div class="track"><div class="fill eng" style="width:' + c.health.eng + '%;"></div></div><span class="num">' + c.health.eng + '</span></div>' +
+          '<div class="score-row"><span class="lbl">Uso da plataforma</span><div class="track"><div class="fill uso" style="width:' + c.health.uso + '%;"></div></div><span class="num">' + c.health.uso + '</span></div>' +
+          '<div class="score-row"><span class="lbl">Satisfação (NPS)</span><div class="track"><div class="fill sat" style="width:' + c.health.sat + '%;"></div></div><span class="num">' + c.health.sat + '</span></div>' +
+          '<div class="score-row"><span class="lbl">Financeiro</span><div class="track"><div class="fill fin" style="width:' + c.health.fin + '%;"></div></div><span class="num">' + c.health.fin + '</span></div>' +
+          '<div class="score-total-row"><span>Health Score</span><span class="big score-badge ' + scoreClass(s) + '" style="font-size:17px;">' + s + '</span></div>' +
+        '</div>' +
+        (needsCheckin(c) ? '<div class="info-banner warn"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M10 2.5l8 14H2z"/><path d="M10 8v3.4M10 13.6v.1"/></svg><span>Sem check-in registrado há ' + Math.floor((TODAY - c.ultimaInteracao)/86400000) + ' dias — o componente de Engajamento está decaindo.</span></div>' : '');
+      return;
+    }
+
+    if (activeTab === 'uso') {
+      body.innerHTML = '' +
+        '<div class="info-banner"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="7.3"/><path d="M10 9v4.4M10 6.6v.1"/></svg><span><b>Dado manual (check-in do CSM)</b> — o Argos é a ferramenta de vendas, não o produto do cliente. Sem uma integração com o sistema operacional do tenant, uso é reportado, não medido automaticamente.</span></div>' +
+        '<div style="display:flex;flex-direction:column;gap:10px;">' +
+          usageRow('Usuários ativos no time do cliente', c.health.uso) +
+          usageRow('Frequência de uso semanal', Math.max(10, c.health.uso - 10)) +
+          usageRow('Funcionalidades-chave adotadas', Math.max(5, c.health.uso - 20)) +
+        '</div>' +
+        '<div class="next-action-box">' +
+          '<div class="dr-section-title">Registrar novo check-in de uso</div>' +
+          '<textarea placeholder="Ex.: time comercial do cliente reportou uso diário do módulo de cotação...">' + '</textarea>' +
+          '<div class="next-action-row"><span style="font-size:11.5px;color:var(--ink-faint);">Protótipo — não salva</span><button class="btn-ghost" style="margin-left:auto;padding:6px 10px;font-size:12px;" disabled>Salvar check-in</button></div>' +
+        '</div>';
+      return;
+    }
+
+    if (activeTab === 'resultados') {
+      body.innerHTML = c.resultados.length ? (
+        '<div class="kpi-grid">' +
+          c.resultados.map(function (r) { return '<div class="kpi-card"><div class="t">' + escapeHtml(r.t) + '</div><div class="v ' + (r.ok ? 'good' : '') + '">' + escapeHtml(r.v) + '</div></div>'; }).join('') +
+        '</div>'
+      ) : '<div class="info-banner"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="7.3"/><path d="M10 9v4.4M10 6.6v.1"/></svg><span>Ainda sem resultados combinados com o cliente — normal na fase de implantação.</span></div>';
+      return;
+    }
+
+    if (activeTab === 'renovacao') {
+      body.innerHTML = '' +
+        '<div class="renewal-box">' +
+          '<div class="renewal-top"><span class="amt">' + fmtMoney(c.mrr) + '<span style="font-size:12px;color:var(--ink-faint);font-weight:500;"> /mês</span></span>' +
+            '<span class="renewal-countdown ' + countdownCls + '">' + (du >= 0 ? 'renova em ' + du + 'd' : 'vencida há ' + (-du) + 'd') + '</span></div>' +
+          '<div class="renewal-grid">' +
+            '<div><div class="k">Início do contrato</div><div class="v">' + fmtDateBR(c.dataInicio) + '</div></div>' +
+            '<div><div class="k">Próxima renovação</div><div class="v">' + fmtDateBR(c.dataRenovacao) + '</div></div>' +
+            '<div><div class="k">ARR</div><div class="v">' + fmtMoney(c.mrr * 12) + '</div></div>' +
+            '<div><div class="k">CSM responsável</div><div class="v">' + USERS[c.csm] + '</div></div>' +
+          '</div>' +
+        '</div>' +
+        '<div>' +
+          '<div class="dr-section-title" style="margin-bottom:8px;">Negócios de expansão</div>' +
+          (c.expansao ? (
+            '<div class="expansion-item"><div><div class="n">' + escapeHtml(c.expansao.nome) + '</div><div class="s">' + escapeHtml(c.expansao.etapa) + '</div></div><div class="amt">+' + fmtMoney(c.expansao.valor) + '/mês</div></div>'
+          ) : '<div style="font-size:12.5px;color:var(--ink-faint);">Nenhum negócio de expansão aberto para este cliente.</div>') +
+        '</div>' +
+        '<button class="btn-primary" id="drOpenExpansion" style="align-self:flex-start;">Abrir negócio de expansão →</button>';
+      var expBtn = document.getElementById('drOpenExpansion');
+      if (expBtn) expBtn.onclick = function () {
+        showToast('Em produção, isso abriria o formulário de Negócios já existente, pré-preenchido com ' + escapeHtml(c.empresa) + ' e origem "expansão".');
+      };
+      return;
+    }
+  }
+
+  function usageRow(label, val) {
+    return '<div class="usage-row"><span class="lbl">' + label + '</span><div class="track"><div class="fill" style="width:' + val + '%;"></div></div><span class="num">' + val + '%</span></div>';
+  }
+
+  function mockTimeline(c) {
+    return [
+      { t: 'Check-in de CS registrado', d: fmtRelative(c.ultimaInteracao) },
+      { t: 'Negócio marcado como ganho — cliente criado', d: fmtRelative(c.dataInicio) },
+    ];
+  }
+
+  function closeDrawer() {
+    document.getElementById('drawerScrim').classList.remove('show');
+    document.getElementById('clientDrawer').classList.remove('show');
+  }
+
+  // ---------------- Onboarding template drawer ----------------
+  document.getElementById('checklistTemplateBtn').addEventListener('click', function () {
+    var scrim = document.getElementById('templateScrim');
+    var drawer = document.getElementById('templateDrawer');
+    drawer.innerHTML = '' +
+      '<div class="drawer-head"><div><h2>Template de implantação</h2><p>Itens criados automaticamente quando um Negócio é ganho e o cliente entra na fase Implantação</p></div>' +
+      '<button class="drawer-close" id="closeTemplateBtn">✕</button></div>' +
+      '<div class="drawer-body">' +
+        '<div class="info-banner"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="7.3"/><path d="M10 9v4.4M10 6.6v.1"/></svg><span>Template único por tenant nesta primeira fase (sem variação por segmento/produto).</span></div>' +
+        '<div class="checklist">' +
+          TEMPLATE_ITEMS.map(function (t, i) { return '<div class="cl-item"><div class="cl-check"></div><div><div class="cl-title">' + escapeHtml(t) + '</div><div class="cl-meta">Ordem ' + (i+1) + '</div></div></div>'; }).join('') +
+        '</div>' +
+      '</div>' +
+      '<div class="drawer-foot"><button class="btn-ghost" id="templateCancel">Fechar</button><button class="btn-primary" disabled title="Protótipo — não salva">Adicionar item</button></div>';
+    scrim.classList.add('show'); drawer.classList.add('show');
+    document.getElementById('closeTemplateBtn').onclick = closeTemplate;
+    document.getElementById('templateCancel').onclick = closeTemplate;
+    scrim.onclick = closeTemplate;
+  });
+  function closeTemplate() {
+    document.getElementById('templateScrim').classList.remove('show');
+    document.getElementById('templateDrawer').classList.remove('show');
+  }
+
+  // ---------------- Toast ----------------
+  var toastTimer;
+  function showToast(msg) {
+    var el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.classList.remove('show'); }, 3800);
+  }
+
+  // ---------------- Wire filters / view toggle ----------------
+  document.getElementById('searchInput').addEventListener('input', function (e) { searchQ = e.target.value.trim().toLowerCase(); renderAll(); });
+  document.getElementById('csmFilter').addEventListener('change', function (e) { csmFilter = e.target.value; renderAll(); });
+  document.getElementById('renewalFilter').addEventListener('change', function (e) { renewalFilter = e.target.value; renderAll(); });
+  document.getElementById('onlyRiskChk').addEventListener('change', function (e) { onlyRisk = e.target.checked; renderAll(); });
+
+  document.getElementById('viewKanbanBtn').addEventListener('click', function () {
+    currentView = 'kanban';
+    this.classList.add('active'); this.setAttribute('aria-selected', 'true');
+    document.getElementById('viewListBtn').classList.remove('active');
+    document.getElementById('viewListBtn').setAttribute('aria-selected', 'false');
+    document.getElementById('viewKanban').style.display = '';
+    document.getElementById('viewList').style.display = 'none';
+    renderAll();
+  });
+  document.getElementById('viewListBtn').addEventListener('click', function () {
+    currentView = 'list';
+    this.classList.add('active'); this.setAttribute('aria-selected', 'true');
+    document.getElementById('viewKanbanBtn').classList.remove('active');
+    document.getElementById('viewKanbanBtn').setAttribute('aria-selected', 'false');
+    document.getElementById('viewList').style.display = '';
+    document.getElementById('viewKanban').style.display = 'none';
+    renderAll();
+  });
+
+  document.querySelectorAll('.sb-item[data-page]').forEach(function (item) {
+    if (!item.classList.contains('active')) {
+      item.addEventListener('click', function (e) {
+        e.preventDefault();
+        showToast('Página "' + item.getAttribute('data-page') + '" não faz parte deste protótipo.');
+      });
+    }
+  });
+
+  renderAll();
+</script>

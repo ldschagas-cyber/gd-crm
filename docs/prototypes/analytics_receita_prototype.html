@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Analytics de Receita — Argos</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /* Font note: real product should self-host IBM Plex Sans/Mono; CDN fonts are blocked
+     in this artifact sandbox, so a close system-grotesque stack stands in here. */
+  :root {
+    --font-display: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Cascadia Code", "SFMono-Regular", "Consolas", ui-monospace, monospace;
+
+    --indigo: #2D3561;
+    --indigo-600: #3B4478;
+    --amber: #C9A84C;
+    --azul: #0077A8;
+    --marfim: #F5F1EB;
+
+    --paper: var(--marfim);
+    --panel: var(--indigo);
+    --panel-fg: #F1EEE6;
+    --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12);
+    --panel-active-bg: rgba(201, 168, 76, 0.14);
+
+    --ink: #22243A;
+    --ink-dim: #5B5E78;
+    --ink-faint: #8B8EA6;
+    --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF;
+    --accent: var(--amber);
+    --link: var(--azul);
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+
+    --good: #0ca30c;
+    --warning: #fab219;
+    --serious: #ec835a;
+    --critical: #d03b3b;
+
+    /* funnel — single-hue sequential ramp (ordinal), light surface */
+    --seq-1: #86b6ef;
+    --seq-2: #5598e7;
+    --seq-3: #2a78d6;
+    --seq-4: #1c5cab;
+    --seq-5: #104281;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+      --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+      --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+      --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+      --seq-1: #9ec5f4; --seq-2: #6da7ec; --seq-3: #3987e5; --seq-4: #256abf; --seq-5: #184f95;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+    --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+    --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+    --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+    --seq-1: #9ec5f4; --seq-2: #6da7ec; --seq-3: #3987e5; --seq-4: #256abf; --seq-5: #184f95;
+  }
+  :root[data-theme="light"] {
+    --paper: #F5F1EB; --panel: #2D3561; --panel-fg: #F1EEE6; --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12); --panel-active-bg: rgba(201, 168, 76, 0.14);
+    --ink: #22243A; --ink-dim: #5B5E78; --ink-faint: #8B8EA6; --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF; --amber: #C9A84C; --azul: #0077A8; --link: #0077A8;
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+    --seq-1: #86b6ef; --seq-2: #5598e7; --seq-3: #2a78d6; --seq-4: #1c5cab; --seq-5: #104281;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; font-family: var(--font-display); color: var(--ink); background: var(--paper);
+    -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums;
+  }
+  button, input, select { font-family: inherit; }
+  a { color: inherit; }
+
+  .shell { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+
+  /* ---------------- Sidebar ---------------- */
+  .sidebar { background: var(--panel); color: var(--panel-fg); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+  .sb-brand { display: flex; align-items: center; gap: 10px; padding: 20px 18px 16px; }
+  .monogram { width: 34px; height: 34px; border-radius: 9px; flex: none; background: var(--amber); color: var(--indigo); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+  .sb-brand strong { display: block; font-size: 14.5px; font-weight: 650; line-height: 1.2; }
+  .sb-brand span { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--panel-fg-dim); margin-top: 2px; }
+
+  .sb-nav { flex: 1; overflow-y: auto; padding: 10px 12px; }
+  .sb-group + .sb-group { margin-top: 18px; }
+  .sb-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--panel-fg-dim); padding: 0 10px; margin-bottom: 6px; }
+  .sb-item { display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: 8px; margin-bottom: 2px; font-size: 13.6px; font-weight: 500; color: var(--panel-fg-dim); text-decoration: none; cursor: pointer; border: 1px solid transparent; position: relative; }
+  .sb-item svg { width: 17px; height: 17px; flex: none; opacity: 0.9; }
+  .sb-item:hover { background: rgba(241, 238, 230, 0.06); color: var(--panel-fg); }
+  .sb-item.active { background: var(--panel-active-bg); color: var(--panel-fg); font-weight: 650; }
+  .sb-item.active::before { content: ""; position: absolute; left: -12px; top: 6px; bottom: 6px; width: 3px; background: var(--amber); border-radius: 2px; }
+  .sb-item .chip { margin-left: auto; font-family: var(--font-mono); font-size: 10px; background: rgba(241,238,230,0.12); color: var(--panel-fg-dim); padding: 1px 6px; border-radius: 100px; }
+  .sb-item .chip.new { background: rgba(217, 184, 94, 0.22); color: var(--amber); font-weight: 700; }
+
+  .sb-user { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-top: 1px solid var(--panel-border); }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; flex: none; background: rgba(201,168,76,0.18); color: var(--amber); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; border: 1px solid rgba(201,168,76,0.3); }
+  .sb-user-meta { min-width: 0; flex: 1; }
+  .sb-user-meta strong { display: block; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-user-meta span { display: block; font-size: 11px; color: var(--panel-fg-dim); }
+
+  /* ---------------- Main column ---------------- */
+  .main-col { display: flex; flex-direction: column; min-width: 0; }
+  .topbar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 20px; padding: 16px 28px; background: var(--paper); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .topbar-title h1 { font-size: 19px; font-weight: 650; letter-spacing: -0.01em; margin: 0; }
+  .topbar-title p { margin: 2px 0 0; font-size: 12.5px; color: var(--ink-dim); }
+  .badge-proto { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--amber); background: rgba(201,168,76,0.14); border: 1px solid rgba(201,168,76,0.3); padding: 2px 8px; border-radius: 100px; margin-left: 10px; vertical-align: middle; }
+
+  .topbar-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; flex-wrap: wrap; }
+
+  .segmented { display: flex; background: var(--card-bg); border: 1px solid var(--border); border-radius: 9px; padding: 3px; gap: 2px; }
+  .segmented button { border: none; background: transparent; padding: 7px 13px; border-radius: 7px; font-size: 12.8px; font-weight: 600; color: var(--ink-dim); cursor: pointer; }
+  .segmented button.active { background: var(--indigo); color: var(--panel-fg); }
+
+  .content { padding: 24px 28px 56px; display: flex; flex-direction: column; gap: 22px; }
+
+  .callout { display: flex; gap: 10px; align-items: flex-start; background: color-mix(in srgb, var(--azul) 8%, var(--card-bg)); border: 1px solid color-mix(in srgb, var(--azul) 28%, var(--border)); border-radius: 12px; padding: 12px 16px; font-size: 12.8px; color: var(--ink-dim); line-height: 1.5; }
+  .callout svg { width: 16px; height: 16px; flex: none; margin-top: 1px; color: var(--azul); }
+  .callout b { color: var(--ink); }
+
+  /* ---------------- KPI row ---------------- */
+  .kpi-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; }
+  .kpi-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px 17px; box-shadow: var(--shadow); }
+  .kpi-card .label { font-size: 11.5px; color: var(--ink-dim); font-weight: 500; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
+  .kpi-card .label svg { width: 12px; height: 12px; color: var(--ink-faint); cursor: help; }
+  .kpi-card .value { font-size: 22px; font-weight: 650; letter-spacing: -0.01em; }
+  .kpi-card .delta { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; font-size: 11.5px; font-weight: 600; }
+  .kpi-card .delta svg { width: 10px; height: 10px; }
+  .delta.up { color: var(--good); }
+  .delta.down { color: var(--critical); }
+  .delta .vs { color: var(--ink-faint); font-weight: 400; margin-left: 2px; }
+  .kpi-card.accent { border-color: color-mix(in srgb, var(--amber) 45%, var(--border)); background: color-mix(in srgb, var(--amber) 6%, var(--card-bg)); }
+
+  /* ---------------- Two-column layout ---------------- */
+  .grid-main { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+  .col { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+  .card-head { display: flex; align-items: baseline; justify-content: space-between; padding: 17px 18px 12px; gap: 12px; flex-wrap: wrap; }
+  .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 650; }
+  .card-head p { margin: 2px 0 0; font-size: 12px; color: var(--ink-dim); }
+  .card-head .link-action { font-size: 12.5px; font-weight: 600; color: var(--link); text-decoration: none; cursor: pointer; background: none; border: none; }
+  .card-head .link-action:hover { text-decoration: underline; }
+
+  .toggle-mini { display: flex; background: var(--paper); border: 1px solid var(--border); border-radius: 8px; padding: 2px; gap: 2px; }
+  .toggle-mini button { border: none; background: transparent; padding: 5px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 600; color: var(--ink-dim); cursor: pointer; }
+  .toggle-mini button.active { background: var(--card-bg); color: var(--ink); box-shadow: var(--shadow); }
+
+  /* funnel — large */
+  .funnel-big { padding: 6px 18px 18px; display: flex; flex-direction: column; gap: 3px; }
+  .fb-row { display: grid; grid-template-columns: 132px 1fr 82px 96px; align-items: center; gap: 14px; padding: 10px 8px; border-radius: 9px; cursor: default; }
+  .fb-row:hover { background: color-mix(in srgb, var(--paper) 55%, transparent); }
+  .fb-name { font-size: 13px; font-weight: 600; color: var(--ink); display: flex; flex-direction: column; }
+  .fb-name small { font-weight: 400; color: var(--ink-faint); font-size: 10.5px; margin-top: 1px; }
+  .fb-track { height: 30px; background: var(--paper); border-radius: 6px; overflow: hidden; position: relative; }
+  .fb-fill { height: 100%; border-radius: 6px; transition: width 550ms cubic-bezier(.2,.7,.3,1); display: flex; align-items: center; padding-left: 10px; }
+  .fb-fill span { font-family: var(--font-mono); font-size: 11.5px; font-weight: 700; color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,0.25); }
+  .fb-count { text-align: right; font-size: 15.5px; font-weight: 700; font-family: var(--font-mono); }
+  .fb-conv { text-align: right; font-size: 11.5px; }
+  .fb-conv .pct { font-weight: 700; color: var(--ink); display: block; }
+  .fb-conv .drop { color: var(--critical); font-size: 10px; display: block; margin-top: 1px; }
+  .fb-connector { grid-column: 1 / -1; display: flex; justify-content: flex-start; padding-left: 132px; height: 14px; align-items: center; }
+  .fb-connector svg { width: 13px; height: 13px; color: var(--ink-faint); margin-left: 45px; }
+  .fb-row.won .fb-name { color: var(--good); }
+  .funnel-foot { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px 4px; border-top: 1px dashed var(--border); margin-top: 6px; font-size: 12px; }
+  .funnel-foot .overall { color: var(--ink-dim); }
+  .funnel-foot .overall b { color: var(--ink); font-size: 15px; font-family: var(--font-mono); }
+
+  /* stage time strip */
+  .time-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 0 18px 18px; }
+  .time-chip { background: var(--paper); border: 1px solid var(--border); border-radius: 9px; padding: 10px 12px; }
+  .time-chip .t { font-size: 10.5px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.03em; }
+  .time-chip .v { font-size: 16px; font-weight: 700; margin-top: 3px; font-family: var(--font-mono); }
+
+  /* investment table */
+  table.inv { width: 100%; border-collapse: collapse; font-size: 12.8px; }
+  table.inv th { text-align: left; font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); font-weight: 600; padding: 8px 18px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  table.inv td { padding: 10px 18px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  table.inv tbody tr:last-child td { border-bottom: none; }
+  table.inv tbody tr:hover { background: color-mix(in srgb, var(--paper) 55%, transparent); }
+  .cat-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; }
+  .cat-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+  .cat-dot.marketing { background: var(--azul); }
+  .cat-dot.vendas { background: var(--amber); }
+  .cat-dot.ferramentas { background: var(--seq-3); }
+  .cat-dot.outros { background: var(--ink-faint); }
+  .inv-value { text-align: right; font-weight: 650; font-family: var(--font-mono); }
+  .inv-editable { width: 100px; text-align: right; border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; font-family: var(--font-mono); font-size: 12.5px; background: var(--paper); color: var(--ink); }
+  .inv-editable:focus { outline: 2px solid var(--azul); outline-offset: -1px; }
+  .inv-total-row td { font-weight: 700; background: color-mix(in srgb, var(--paper) 70%, transparent); }
+  .btn-add-row { margin: 10px 18px 16px; display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--link); background: none; border: 1px dashed var(--border); border-radius: 8px; padding: 7px 12px; cursor: pointer; }
+  .btn-add-row svg { width: 13px; height: 13px; }
+
+  /* origem breakdown */
+  .origem-list { display: flex; flex-direction: column; padding: 2px 18px 16px; gap: 12px; }
+  .origem-row .oh { display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 5px; }
+  .origem-row .oh b { font-weight: 650; color: var(--ink); }
+  .origem-row .oh span { color: var(--ink-faint); font-family: var(--font-mono); font-size: 11px; }
+  .origem-track { height: 8px; background: var(--paper); border-radius: 100px; overflow: hidden; }
+  .origem-fill { height: 100%; border-radius: 100px; background: var(--azul); }
+
+  /* roi card */
+  .roi-block { padding: 16px 18px 20px; }
+  .roi-formula { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); background: var(--paper); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; line-height: 1.6; }
+  .roi-big { display: flex; align-items: baseline; gap: 8px; }
+  .roi-big .num { font-size: 34px; font-weight: 700; font-family: var(--font-mono); }
+  .roi-big .num.pos { color: var(--good); }
+  .roi-big .num.neg { color: var(--critical); }
+  .roi-sub { font-size: 12px; color: var(--ink-dim); margin-top: 6px; }
+  .roi-bars { display: flex; gap: 3px; height: 46px; align-items: flex-end; margin-top: 16px; }
+  .roi-bars .bar { flex: 1; border-radius: 4px 4px 0 0; background: var(--seq-2); position: relative; }
+  .roi-bars .bar.invest { background: var(--critical); opacity: 0.55; }
+  .roi-bars-label { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--ink-faint); margin-top: 6px; }
+
+  .legend-inline { display: flex; gap: 14px; font-size: 11.5px; color: var(--ink-dim); padding: 0 18px 14px; }
+  .legend-inline span { display: inline-flex; align-items: center; gap: 5px; }
+  .legend-inline i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+
+  @media (max-width: 1320px) { .kpi-row { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 1180px) { .grid-main { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar { position: relative; height: auto; flex-direction: row; align-items: center; padding: 10px 14px; }
+    .sb-nav, .sb-user { display: none; }
+    .kpi-row { grid-template-columns: repeat(2, 1fr); }
+    .fb-row { grid-template-columns: 96px 1fr 60px 74px; gap: 8px; }
+    .fb-connector { padding-left: 96px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .fb-fill { transition: none; } }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="monogram">A</div>
+      <div><strong>Argos</strong><span>Gestão comercial</span></div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-group">
+        <a class="sb-item" data-page="Dashboard">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="2.5" width="6.2" height="6.2" rx="1.3"/><rect x="11.3" y="2.5" width="6.2" height="4.4" rx="1.3"/><rect x="11.3" y="9.4" width="6.2" height="8.1" rx="1.3"/><rect x="2.5" y="11.2" width="6.2" height="6.3" rx="1.3"/></svg>
+          Dashboard
+        </a>
+      </div>
+
+      <div class="sb-group">
+        <div class="sb-label">Analytics</div>
+        <div class="sb-item active" data-page="Analytics de Receita">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 16.5h14"/><path d="M5.5 16.5v-5M9.5 16.5V6.5M13.5 16.5v-8M17 16.5V4"/></svg>
+          Analytics de Receita
+          <span class="chip new">novo</span>
+        </div>
+      </div>
+
+      <div class="sb-group">
+        <div class="sb-label">Inteligência Comercial</div>
+        <a class="sb-item" data-page="Buscar Empresas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="9" r="6"/><path d="M17 17l-4.3-4.3"/></svg>
+          Buscar Empresas
+        </a>
+        <a class="sb-item" data-page="Pesquisa de Leads">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7.2"/><path d="M10 6.2V10l2.8 1.7"/></svg>
+          Pesquisa de Leads
+        </a>
+      </div>
+
+      <div class="sb-group">
+        <div class="sb-label">CRM</div>
+        <a class="sb-item" data-page="Empresas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17.5V3.8a.8.8 0 01.8-.8h6.4a.8.8 0 01.8.8v13.7"/><path d="M13 17.5V8.3a.8.8 0 01.8-.8h3.4a.8.8 0 01.8.8v9.2"/></svg>
+          Empresas
+        </a>
+        <a class="sb-item" data-page="Contatos">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="7" r="3.4"/><path d="M3.8 17c0-3.4 2.8-6 6.2-6s6.2 2.6 6.2 6"/></svg>
+          Contatos
+        </a>
+        <a class="sb-item" data-page="Negócios">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 8.5l7-5 7 5v8a1 1 0 01-1 1H4a1 1 0 01-1-1v-8z"/></svg>
+          Negócios
+        </a>
+        <a class="sb-item" data-page="Tarefas">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2.4"/><path d="M6.5 10.3l2 2 4.2-4.6"/></svg>
+          Tarefas
+        </a>
+      </div>
+    </nav>
+
+    <div class="sb-user">
+      <div class="avatar">LC</div>
+      <div class="sb-user-meta"><strong>Leandro Chagas</strong><span>Gestor · RevOps</span></div>
+    </div>
+  </aside>
+
+  <div class="main-col">
+    <header class="topbar">
+      <div class="topbar-title">
+        <h1>Analytics de Receita <span class="badge-proto">protótipo</span></h1>
+        <p>Funil completo de pesquisa até cliente, conversão por etapa, CAC e ROI comercial</p>
+      </div>
+      <div class="topbar-actions">
+        <div class="segmented" id="periodo-seg">
+          <button data-periodo="mes" class="active">Este mês</button>
+          <button data-periodo="trimestre">Trimestre</button>
+          <button data-periodo="ano">Ano</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <div class="callout">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7.5"/><path d="M10 9v4.2M10 6.6v.1"/></svg>
+        <div><b>Protótipo navegável, dados fictícios.</b> Troque o período acima e edite os valores de investimento na tabela — CAC, ROI e o funil recalculam ao vivo, só pra validar a lógica antes de implementar de verdade. Ver o plano em <code style="font-family:var(--font-mono);font-size:11.5px;">docs/PLANO_ANALYTICS_RECEITA.md</code>.</div>
+      </div>
+
+      <!-- KPI row -->
+      <section class="kpi-row" id="kpi-row"></section>
+
+      <section class="grid-main">
+        <div class="col">
+          <div class="card">
+            <div class="card-head">
+              <div><h3>Funil de receita</h3><p>Empresas/negócios que <b style="color:inherit">entraram</b> em cada etapa no período</p></div>
+              <div class="toggle-mini" id="funnel-mode">
+                <button class="active" data-mode="qtd">Quantidade</button>
+                <button data-mode="valor">Receita potencial</button>
+              </div>
+            </div>
+            <div class="funnel-big" id="funnel-big"></div>
+            <div class="funnel-foot">
+              <span class="overall">Conversão geral do funil (pesquisada → cliente)</span>
+              <span class="overall"><b id="conv-geral">0,8%</b></span>
+            </div>
+            <div class="legend-inline">
+              <span><i style="background:var(--critical);opacity:.55"></i> perda entre etapas</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div><h3>Tempo médio por etapa</h3><p>Da entrada numa etapa até a entrada na próxima, no período</p></div>
+            </div>
+            <div class="time-strip" id="time-strip"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div><h3>Investimento comercial</h3><p>Lançamento manual — alimenta o cálculo de CAC e ROI ao lado</p></div>
+              <span class="link-action" id="inv-total-label">Total: R$ 0</span>
+            </div>
+            <table class="inv">
+              <thead><tr><th>Categoria</th><th>Observação</th><th style="text-align:right">Valor (R$)</th></tr></thead>
+              <tbody id="inv-body"></tbody>
+            </table>
+            <button class="btn-add-row" id="inv-add">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 4v12M4 10h12"/></svg>
+              Adicionar lançamento
+            </button>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="card">
+            <div class="card-head"><div><h3>ROI comercial</h3><p>Retorno sobre o investimento do período</p></div></div>
+            <div class="roi-block">
+              <div class="roi-formula">ROI = (receita ganha − investimento) ÷ investimento</div>
+              <div class="roi-big"><span class="num" id="roi-value">0%</span></div>
+              <p class="roi-sub" id="roi-sub">—</p>
+              <div class="roi-bars" id="roi-bars"></div>
+              <div class="roi-bars-label"><span>Investimento</span><span>Receita ganha</span></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><div><h3>Origem dos clientes</h3><p>De onde vieram os negócios ganhos no período</p></div></div>
+            <div class="origem-list" id="origem-list"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><div><h3>Ciclo total</h3><p>Pesquisa da empresa até fechamento como cliente</p></div></div>
+            <div class="roi-block" style="padding-top:4px">
+              <div class="roi-big"><span class="num" id="ciclo-value" style="color:var(--ink)">0 dias</span></div>
+              <p class="roi-sub">Média do período · vendedor mais rápido: <b id="ciclo-melhor" style="color:var(--ink)">—</b></p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var FUNNEL_LABELS = ['Empresas pesquisadas', 'Leads', 'Reuniões realizadas', 'Diagnóstico', 'Clientes'];
+  var FUNNEL_SUB = ['Pesquisa de Leads', 'Company criada', 'TimelineEvent · reunião', 'Deal aberto', 'Deal ganho'];
+  var COLORS = ['var(--seq-1)', 'var(--seq-2)', 'var(--seq-3)', 'var(--seq-4)', 'var(--seq-5)'];
+
+  var DATASETS = {
+    mes: {
+      label: 'este mês', funil: [1000, 300, 60, 20, 8],
+      valorFunil: [0, 4500000, 1800000, 900000, 480000],
+      tempos: ['9 dias', '4 dias', '11 dias', '18 dias'],
+      cicloTotal: 42, cicloMelhor: 'Marina Alves · 27 dias',
+      receitaGanha: 480000, ticketMedio: 60000,
+      investimentos: [
+        { cat: 'marketing', obs: 'Tráfego pago + conteúdo', valor: 18000 },
+        { cat: 'vendas', obs: 'Comissões + ferramentas de prospecção', valor: 22000 },
+        { cat: 'ferramentas', obs: 'CRM, enriquecimento de dados, e-mail', valor: 4200 },
+      ],
+      origens: [
+        { nome: 'Outbound (Pesquisa de Leads)', valor: 5, cor: 'var(--azul)' },
+        { nome: 'Indicação', valor: 2, cor: 'var(--amber)' },
+        { nome: 'Inbound (site/formulário)', valor: 1, cor: 'var(--seq-3)' },
+      ],
+    },
+    trimestre: {
+      label: 'no trimestre', funil: [2850, 810, 158, 52, 19],
+      valorFunil: [0, 12150000, 4740000, 2340000, 1140000],
+      tempos: ['8 dias', '5 dias', '13 dias', '21 dias'],
+      cicloTotal: 47, cicloMelhor: 'Marina Alves · 29 dias',
+      receitaGanha: 1140000, ticketMedio: 60000,
+      investimentos: [
+        { cat: 'marketing', obs: 'Tráfego pago + conteúdo', valor: 52000 },
+        { cat: 'vendas', obs: 'Comissões + ferramentas de prospecção', valor: 64000 },
+        { cat: 'ferramentas', obs: 'CRM, enriquecimento de dados, e-mail', valor: 12600 },
+        { cat: 'outros', obs: 'Eventos e feiras do setor', valor: 15000 },
+      ],
+      origens: [
+        { nome: 'Outbound (Pesquisa de Leads)', valor: 11, cor: 'var(--azul)' },
+        { nome: 'Indicação', valor: 5, cor: 'var(--amber)' },
+        { nome: 'Inbound (site/formulário)', valor: 3, cor: 'var(--seq-3)' },
+      ],
+    },
+    ano: {
+      label: 'no ano', funil: [10400, 2912, 545, 187, 64],
+      valorFunil: [0, 43680000, 16350000, 8415000, 3840000],
+      tempos: ['9 dias', '5 dias', '14 dias', '24 dias'],
+      cicloTotal: 52, cicloMelhor: 'Marina Alves · 31 dias',
+      receitaGanha: 3840000, ticketMedio: 60000,
+      investimentos: [
+        { cat: 'marketing', obs: 'Tráfego pago + conteúdo (acumulado)', valor: 214000 },
+        { cat: 'vendas', obs: 'Comissões + ferramentas de prospecção', valor: 268000 },
+        { cat: 'ferramentas', obs: 'CRM, enriquecimento de dados, e-mail', valor: 50400 },
+        { cat: 'outros', obs: 'Eventos e feiras do setor', valor: 61000 },
+      ],
+      origens: [
+        { nome: 'Outbound (Pesquisa de Leads)', valor: 38, cor: 'var(--azul)' },
+        { nome: 'Indicação', valor: 17, cor: 'var(--amber)' },
+        { nome: 'Inbound (site/formulário)', valor: 9, cor: 'var(--seq-3)' },
+      ],
+    },
+  };
+
+  var state = { periodo: 'mes', modo: 'qtd', investimentos: DATASETS.mes.investimentos.slice() };
+
+  var fmtBRL = function (v) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }); };
+  var fmtNum = function (v) { return v.toLocaleString('pt-BR'); };
+  var fmtPct = function (v, casas) { return v.toLocaleString('pt-BR', { maximumFractionDigits: casas === undefined ? 1 : casas }) + '%'; };
+
+  function currentData() { return DATASETS[state.periodo]; }
+
+  function investimentoTotal() {
+    return state.investimentos.reduce(function (acc, i) { return acc + Number(i.valor || 0); }, 0);
+  }
+
+  function render() {
+    var d = currentData();
+    var funil = d.funil;
+    var investTotal = investimentoTotal();
+    var clientesNovos = funil[4];
+    var cac = clientesNovos > 0 ? investTotal / clientesNovos : 0;
+    var roi = investTotal > 0 ? ((d.receitaGanha - investTotal) / investTotal) * 100 : 0;
+    var convGeral = (funil[4] / funil[0]) * 100;
+
+    renderKpis(d, investTotal, cac, roi, convGeral);
+    renderFunnel(d);
+    renderTimeStrip(d);
+    renderInvestTable();
+    renderRoi(d, investTotal, roi);
+    renderOrigens(d);
+    renderCiclo(d);
+
+    document.getElementById('conv-geral').textContent = fmtPct(convGeral, 1);
+  }
+
+  function kpiCard(label, value, accent) {
+    return '<div class="kpi-card' + (accent ? ' accent' : '') + '"><div class="label">' + label + '</div><div class="value">' + value + '</div></div>';
+  }
+
+  function renderKpis(d, investTotal, cac, roi, convGeral) {
+    var html = '';
+    html += kpiCard('Empresas pesquisadas', fmtNum(d.funil[0]));
+    html += kpiCard('Clientes fechados', fmtNum(d.funil[4]));
+    html += kpiCard('Conversão geral', fmtPct(convGeral));
+    html += kpiCard('CAC (custo por cliente)', fmtBRL(cac), true);
+    html += kpiCard('Ticket médio', fmtBRL(d.ticketMedio));
+    html += kpiCard('Receita ganha', fmtBRL(d.receitaGanha));
+    document.getElementById('kpi-row').innerHTML = html;
+  }
+
+  function renderFunnel(d) {
+    var serie = state.modo === 'qtd' ? d.funil : d.valorFunil;
+    var max = state.modo === 'qtd' ? d.funil[0] : Math.max.apply(null, d.valorFunil);
+    var html = '';
+    for (var i = 0; i < FUNNEL_LABELS.length; i++) {
+      var val = serie[i];
+      var pctWidth = max > 0 ? Math.max((val / max) * 100, val > 0 ? 4 : 0) : 0;
+      var display = state.modo === 'qtd' ? fmtNum(val) : (i === 0 ? '—' : fmtBRL(val));
+      var convStr = '', dropStr = '';
+      if (i > 0) {
+        var prevQtd = d.funil[i - 1], curQtd = d.funil[i];
+        var conv = prevQtd > 0 ? (curQtd / prevQtd) * 100 : 0;
+        var drop = prevQtd - curQtd;
+        convStr = fmtPct(conv, 0);
+        dropStr = '−' + fmtNum(drop);
+      }
+      var isWon = i === FUNNEL_LABELS.length - 1;
+      html += '<div class="fb-row' + (isWon ? ' won' : '') + '">' +
+        '<div class="fb-name">' + FUNNEL_LABELS[i] + '<small>' + FUNNEL_SUB[i] + '</small></div>' +
+        '<div class="fb-track"><div class="fb-fill" style="width:' + pctWidth + '%;background:' + COLORS[i] + '"><span>' + (state.modo === 'qtd' ? fmtNum(val) : (i === 0 ? '' : fmtBRL(val))) + '</span></div></div>' +
+        '<div class="fb-count">' + (state.modo === 'qtd' ? fmtNum(val) : '') + '</div>' +
+        '<div class="fb-conv">' + (i > 0 ? '<span class="pct">' + convStr + '</span><span class="drop">' + dropStr + '</span>' : '<span class="pct" style="color:var(--ink-faint)">base</span>') + '</div>' +
+      '</div>';
+      if (i < FUNNEL_LABELS.length - 1) {
+        html += '<div class="fb-connector"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 4v10M6 10.5L10 14.5 14 10.5"/></svg></div>';
+      }
+    }
+    document.getElementById('funnel-big').innerHTML = html;
+  }
+
+  function renderTimeStrip(d) {
+    var pares = [
+      ['Pesquisada → Lead', d.tempos[0]],
+      ['Lead → Reunião', d.tempos[1]],
+      ['Reunião → Diagnóstico', d.tempos[2]],
+      ['Diagnóstico → Cliente', d.tempos[3]],
+    ];
+    var html = pares.map(function (p) {
+      return '<div class="time-chip"><div class="t">' + p[0] + '</div><div class="v">' + p[1] + '</div></div>';
+    }).join('');
+    document.getElementById('time-strip').innerHTML = html;
+  }
+
+  var CAT_LABEL = { marketing: 'Marketing', vendas: 'Vendas', ferramentas: 'Ferramentas', outros: 'Outros' };
+
+  function renderInvestTable() {
+    var html = '';
+    state.investimentos.forEach(function (inv, idx) {
+      html += '<tr>' +
+        '<td><span class="cat-pill"><span class="cat-dot ' + inv.cat + '"></span>' + CAT_LABEL[inv.cat] + '</span></td>' +
+        '<td>' + inv.obs + '</td>' +
+        '<td class="inv-value"><input class="inv-editable" type="number" min="0" step="100" value="' + inv.valor + '" data-idx="' + idx + '"></td>' +
+      '</tr>';
+    });
+    var total = investimentoTotal();
+    html += '<tr class="inv-total-row"><td colspan="2">Total do período</td><td class="inv-value">' + fmtBRL(total) + '</td></tr>';
+    document.getElementById('inv-body').innerHTML = html;
+    document.getElementById('inv-total-label').textContent = 'Total: ' + fmtBRL(total);
+
+    document.querySelectorAll('.inv-editable').forEach(function (input) {
+      input.addEventListener('input', function () {
+        var idx = Number(input.dataset.idx);
+        state.investimentos[idx].valor = Number(input.value || 0);
+        var d = currentData();
+        var investTotal = investimentoTotal();
+        var cac = d.funil[4] > 0 ? investTotal / d.funil[4] : 0;
+        var roi = investTotal > 0 ? ((d.receitaGanha - investTotal) / investTotal) * 100 : 0;
+        document.getElementById('inv-total-label').textContent = 'Total: ' + fmtBRL(investTotal);
+        var totalCell = document.querySelector('.inv-total-row .inv-value');
+        if (totalCell) totalCell.textContent = fmtBRL(investTotal);
+        var kpis = document.querySelectorAll('#kpi-row .kpi-card .value');
+        if (kpis[3]) kpis[3].textContent = fmtBRL(cac);
+        renderRoi(d, investTotal, roi);
+      });
+    });
+  }
+
+  function renderRoi(d, investTotal, roi) {
+    var el = document.getElementById('roi-value');
+    var isPos = roi >= 0;
+    el.textContent = (isPos ? '+' : '') + fmtPct(roi, 0);
+    el.className = 'num ' + (isPos ? 'pos' : 'neg');
+    document.getElementById('roi-sub').innerHTML = 'Investido ' + fmtBRL(investTotal) + ' · retorno ' + fmtBRL(d.receitaGanha);
+
+    var maxBar = Math.max(investTotal, d.receitaGanha, 1);
+    var hInv = Math.max((investTotal / maxBar) * 46, 4);
+    var hRec = Math.max((d.receitaGanha / maxBar) * 46, 4);
+    document.getElementById('roi-bars').innerHTML =
+      '<div class="bar invest" style="height:' + hInv + 'px" title="Investimento: ' + fmtBRL(investTotal) + '"></div>' +
+      '<div class="bar" style="height:' + hRec + 'px" title="Receita ganha: ' + fmtBRL(d.receitaGanha) + '"></div>';
+  }
+
+  function renderOrigens(d) {
+    var total = d.origens.reduce(function (a, o) { return a + o.valor; }, 0);
+    var html = d.origens.map(function (o) {
+      var pct = total > 0 ? (o.valor / total) * 100 : 0;
+      return '<div class="origem-row">' +
+        '<div class="oh"><b>' + o.nome + '</b><span>' + o.valor + ' clientes · ' + fmtPct(pct, 0) + '</span></div>' +
+        '<div class="origem-track"><div class="origem-fill" style="width:' + pct + '%;background:' + o.cor + '"></div></div>' +
+      '</div>';
+    }).join('');
+    document.getElementById('origem-list').innerHTML = html;
+  }
+
+  function renderCiclo(d) {
+    document.getElementById('ciclo-value').textContent = d.cicloTotal + ' dias';
+    document.getElementById('ciclo-melhor').textContent = d.cicloMelhor;
+  }
+
+  document.getElementById('periodo-seg').addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-periodo]');
+    if (!btn) return;
+    document.querySelectorAll('#periodo-seg button').forEach(function (b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    state.periodo = btn.dataset.periodo;
+    state.investimentos = DATASETS[state.periodo].investimentos.map(function (i) { return Object.assign({}, i); });
+    render();
+  });
+
+  document.getElementById('funnel-mode').addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-mode]');
+    if (!btn) return;
+    document.querySelectorAll('#funnel-mode button').forEach(function (b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    state.modo = btn.dataset.mode;
+    renderFunnel(currentData());
+  });
+
+  document.getElementById('inv-add').addEventListener('click', function () {
+    state.investimentos.push({ cat: 'outros', obs: 'Novo lançamento', valor: 0 });
+    renderInvestTable();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
