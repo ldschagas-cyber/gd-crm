@@ -96,6 +96,8 @@ function LeadsTab({ setTab }) {
   const [selected, setSelected] = useState({})
   const [bulkOwnerOpen, setBulkOwnerOpen] = useState(false)
   const [bulkOwnerId, setBulkOwnerId] = useState('')
+  const [bulkStatusOpen, setBulkStatusOpen] = useState(false)
+  const [bulkStatusValue, setBulkStatusValue] = useState('')
 
   const usersQuery = useQuery({ queryKey: ['users', 'for-lead-prospects'], queryFn: () => listUsers({ size: 100 }), retry: false })
   const users = usersQuery.data?.items ?? []
@@ -125,6 +127,10 @@ function LeadsTab({ setTab }) {
   const bulkOwnerMutation = useMutation({
     mutationFn: () => Promise.all(selectedIds.map((id) => updateLeadProspect(id, { pesquisado_por: bulkOwnerId }))),
     onSuccess: () => { setBulkOwnerOpen(false); setBulkOwnerId(''); setSelected({}); invalidate() },
+  })
+  const bulkStatusMutation = useMutation({
+    mutationFn: () => Promise.all(selectedIds.map((id) => updateLeadProspect(id, { status: bulkStatusValue }))),
+    onSuccess: () => { setBulkStatusOpen(false); setBulkStatusValue(''); setSelected({}); invalidate() },
   })
 
   function handleEnrich(lead) {
@@ -255,6 +261,7 @@ function LeadsTab({ setTab }) {
               <span><b>{selectedIds.length}</b> selecionada(s)</span>
               <div className="link-btn">
                 <a onClick={() => setBulkOwnerOpen(true)}>Alterar proprietário</a>
+                <a onClick={() => setBulkStatusOpen(true)}>Alterar status</a>
                 <a onClick={handleBulkDelete}>Excluir</a>
               </div>
             </div>
@@ -343,6 +350,32 @@ function LeadsTab({ setTab }) {
                 onClick={() => bulkOwnerMutation.mutate()}
               >
                 {bulkOwnerMutation.isPending ? 'Salvando…' : 'Aplicar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {bulkStatusOpen && (
+        <div className="scrim show" onClick={() => setBulkStatusOpen(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <h3>Alterar status</h3>
+            <p className="sub">Definir o status de <strong>{selectedIds.length}</strong> pesquisa(s) selecionada(s).</p>
+            <div className="f-group">
+              <select className="f-select" value={bulkStatusValue} onChange={(e) => setBulkStatusValue(e.target.value)}>
+                <option value="" disabled>Selecione o novo status</option>
+                {Object.entries(STATUS_LABEL).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+              </select>
+              <span className="f-hint">Bônus só é válido quando o status vira &quot;Promovido&quot;.</span>
+            </div>
+            <div className="row">
+              <button className="btn-ghost" onClick={() => setBulkStatusOpen(false)}>Cancelar</button>
+              <button
+                className="btn-primary"
+                disabled={!bulkStatusValue || bulkStatusMutation.isPending}
+                onClick={() => bulkStatusMutation.mutate()}
+              >
+                {bulkStatusMutation.isPending ? 'Salvando…' : 'Aplicar'}
               </button>
             </div>
           </div>
