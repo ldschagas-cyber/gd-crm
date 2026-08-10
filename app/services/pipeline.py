@@ -37,6 +37,7 @@ class PipelineService:
             stage = PipelineStage(
                 pipeline_id=pipeline.id, nome=st.nome, ordem=st.ordem or i,
                 tipo=st.tipo.value, sla_horas=st.sla_horas, probabilidade=st.probabilidade,
+                marco_funil=st.marco_funil.value if st.marco_funil else None,
             )
             self.stages.add(stage)
         self.db.refresh(pipeline)
@@ -55,6 +56,7 @@ class PipelineService:
         stage = PipelineStage(
             pipeline_id=pipeline_id, nome=data.nome, ordem=data.ordem,
             tipo=data.tipo.value, sla_horas=data.sla_horas, probabilidade=data.probabilidade,
+            marco_funil=data.marco_funil.value if data.marco_funil else None,
         )
         return self.stages.add(stage)
 
@@ -67,6 +69,7 @@ class PipelineService:
         stage.tipo = data.tipo.value
         stage.sla_horas = data.sla_horas
         stage.probabilidade = data.probabilidade
+        stage.marco_funil = data.marco_funil.value if data.marco_funil else None
         return self.stages.save(stage)
 
     def delete_stage(self, pipeline_id: UUID, stage_id: UUID) -> None:

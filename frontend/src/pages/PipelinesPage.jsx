@@ -123,6 +123,7 @@ export default function PipelinesPage() {
         tipo: stage.tipo,
         sla_horas: patch.sla_horas !== undefined ? patch.sla_horas : stage.sla_horas,
         probabilidade: patch.probabilidade !== undefined ? patch.probabilidade : stage.probabilidade,
+        marco_funil: patch.marco_funil !== undefined ? patch.marco_funil : stage.marco_funil,
       },
     })
   }
@@ -246,7 +247,9 @@ export default function PipelinesPage() {
               </div>
 
               <div className="stage-list-cols">
-                <span></span><span>Etapa</span><span>Tipo</span><span>SLA</span><span>Probabilidade</span><span>Abertos</span>
+                <span></span><span>Etapa</span><span>Tipo</span><span>SLA</span><span>Probabilidade</span>
+                <span title="Marca esta etapa pro controle de Metas do Funil (Anexo 1) — ver /metas-funil">Marco do funil</span>
+                <span>Abertos</span>
                 <span>Regras de lógica condicional</span><span></span>
               </div>
 
@@ -414,6 +417,22 @@ function StageRow({ stage, openCount, terminal, colorMode = 'sem_cor', tint, dra
           <span className="suffix">%</span>
         </div>
       )}
+      {terminal ? (
+        <div className="num-field fixed">—</div>
+      ) : (
+        <select
+          className="marco-select" defaultValue={stage.marco_funil ?? ''} key={`marco-${stage.id}`}
+          title="Etapa de Diagnóstico/Proposta do controle de Metas do Funil (Anexo 1)"
+          onChange={(e) => {
+            const v = e.target.value || null
+            if (v !== stage.marco_funil) onCommit({ marco_funil: v })
+          }}
+        >
+          <option value="">— nenhum —</option>
+          <option value="diagnostico">Diagnóstico</option>
+          <option value="proposta">Proposta</option>
+        </select>
+      )}
       <span className={`stage-count${openCount === 0 ? ' zero' : ''}`}>{terminal ? '—' : openCount}</span>
       <div className="stage-logic-cell" title="Em breve — ver roadmap na especificação técnica">
         <button className="btn-ghost sm" disabled>+ Adicionar lógica</button>
@@ -430,6 +449,7 @@ function NewStageDrawer({ pipelineName, onClose, onSubmit, submitting }) {
   const [nome, setNome] = useState('')
   const [sla, setSla] = useState('')
   const [prob, setProb] = useState('')
+  const [marco, setMarco] = useState('')
 
   function handleSave() {
     if (!nome.trim()) return
@@ -437,6 +457,7 @@ function NewStageDrawer({ pipelineName, onClose, onSubmit, submitting }) {
       nome: nome.trim(),
       sla_horas: sla === '' ? null : parseInt(sla, 10),
       probabilidade: prob === '' ? null : parseInt(prob, 10),
+      marco_funil: marco || null,
     })
   }
 
@@ -461,6 +482,15 @@ function NewStageDrawer({ pipelineName, onClose, onSubmit, submitting }) {
               <label className="f-label">Probabilidade padrão <span className="opt">opcional</span></label>
               <input className="f-input" type="number" min="0" max="100" value={prob} onChange={(e) => setProb(e.target.value)} placeholder="Ex.: 30" />
             </div>
+          </div>
+          <div className="f-group">
+            <label className="f-label">Marco do funil de metas <span className="opt">opcional</span></label>
+            <select className="f-input" value={marco} onChange={(e) => setMarco(e.target.value)}>
+              <option value="">— nenhum —</option>
+              <option value="diagnostico">Diagnóstico</option>
+              <option value="proposta">Proposta</option>
+            </select>
+            <p className="f-hint">Usado pelo controle de Metas do Funil (Anexo 1) pra contar "Diagnósticos realizados"/"Propostas enviadas" — ver <code>/metas-funil</code>.</p>
           </div>
         </div>
         <div className="drawer-foot">

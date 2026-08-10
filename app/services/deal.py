@@ -71,8 +71,12 @@ class DealService:
         payload["origem"] = company.origem
         deal = Deal(**payload)
         deal = self.repo.add(deal)
+        # meta.para no formato de move_stage (§3 do PLANO_METAS_FUNIL.md) — permite
+        # reconstruir "em que etapa esse negócio nasceu" com a mesma query que já lê
+        # os eventos de movimentação, sem tratar criação como caso especial.
         self.timeline.registrar(deal.company_id, TimelineType.PIPELINE.value,
-                                "Negócio criado", deal.nome, deal_id=deal.id)
+                                "Negócio criado", deal.nome, deal_id=deal.id,
+                                meta={"para": str(deal.stage_id)})
 
         # Central de Leads: negócio criado é o gatilho automático de "convertido" — só
         # se a empresa já estava sendo acompanhada no funil (import tardio: evita ciclo).
