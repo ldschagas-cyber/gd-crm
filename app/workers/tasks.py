@@ -193,6 +193,7 @@ def import_lead_prospects_task(job_id: str, tenant_id: str, user_id: str, conten
             leads.add(LeadProspect(
                 empresa=str(row["empresa"]).strip(),
                 setor=opt_str("setor"), segmento=opt_str("segmento"),
+                cidade=opt_str("cidade"),
                 uf=(opt_str("uf") or "")[:2] or None,
                 regiao=opt_str("regiao"),
                 faixa_funcionarios=opt_str("faixa_funcionarios"),

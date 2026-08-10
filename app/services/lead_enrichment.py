@@ -27,6 +27,7 @@ responda SOMENTE com um objeto JSON (sem texto antes ou depois, sem markdown), c
   "setor": string ou null — escolha um destes se possível: {SETORES_CONHECIDOS}, senão descreva livremente ou use null,
   "segmento": string ou null — classifique o papel da empresa na cadeia logística, escolhendo exatamente uma destas
     opções: {SEGMENTOS_CONHECIDOS},
+  "cidade": string ou null — cidade da sede/planta principal,
   "uf": string ou null — sigla de 2 letras do estado brasileiro da sede/planta principal,
   "faixa_funcionarios": string ou null — escolha exatamente uma destas faixas: {FAIXAS_CONHECIDAS},
   "faixa_faturamento": string ou null — estime o faturamento anual e escolha exatamente uma destas faixas:

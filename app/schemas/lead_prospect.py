@@ -12,6 +12,7 @@ class LeadProspectCreate(BaseModel):
     cnpj: str | None = Field(default=None, max_length=14)
     setor: str | None = None
     segmento: SegmentoLead | None = None
+    cidade: str | None = None
     uf: str | None = Field(default=None, max_length=2)
     regiao: str | None = None
     faixa_funcionarios: str | None = None
@@ -32,6 +33,7 @@ class LeadProspectUpdate(BaseModel):
     cnpj: str | None = Field(default=None, max_length=14)
     setor: str | None = None
     segmento: SegmentoLead | None = None
+    cidade: str | None = None
     uf: str | None = Field(default=None, max_length=2)
     regiao: str | None = None
     faixa_funcionarios: str | None = None
@@ -53,6 +55,7 @@ class LeadProspectRead(BaseModel):
     cnpj: str | None
     setor: str | None
     segmento: str | None
+    cidade: str | None
     uf: str | None
     regiao: str | None
     faixa_funcionarios: str | None
@@ -103,6 +106,7 @@ class LeadEnrichmentSuggestion(BaseModel):
     automaticamente, sempre revisadas pelo usuário antes de aplicar ao lead."""
     setor: str | None = None
     segmento: str | None = None
+    cidade: str | None = None
     uf: str | None = None
     faixa_funcionarios: str | None = None
     faixa_faturamento: str | None = None

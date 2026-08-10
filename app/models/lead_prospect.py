@@ -51,6 +51,7 @@ class LeadProspect(Base, TenantMixin, TimestampMixin):
     cnpj: Mapped[str | None] = mapped_column(String(14), index=True)
     setor: Mapped[str | None] = mapped_column(String(80))
     segmento: Mapped[str | None] = mapped_column(String(120))
+    cidade: Mapped[str | None] = mapped_column(String(120))
     uf: Mapped[str | None] = mapped_column(String(2))
     regiao: Mapped[str | None] = mapped_column(String(20))
     faixa_funcionarios: Mapped[str | None] = mapped_column(String(50))

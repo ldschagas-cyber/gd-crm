@@ -502,7 +502,7 @@ function LeadsTab({ setTab }) {
 }
 
 const ENRICH_FIELD_LABELS = {
-  setor: 'Setor', segmento: 'Segmento', uf: 'UF', faixa_funcionarios: 'Faixa de funcionários',
+  setor: 'Setor', segmento: 'Segmento', cidade: 'Cidade', uf: 'UF', faixa_funcionarios: 'Faixa de funcionários',
   faixa_faturamento: 'Faixa de faturamento', site: 'Site', telefone: 'Telefone', linkedin: 'LinkedIn',
   email: 'E-mail', contato_sugerido: 'Contato sugerido', dor_sugerida: 'Dor sugerida',
 }
@@ -705,7 +705,9 @@ function LeadRow({ lead, pesquisadorNome, selected, onToggleSelect, onEdit, onPr
       </td>
       <td>
         <div className="row-sub" style={{ marginTop: 0 }}>{lead.faixa_funcionarios || '—'}</div>
-        <div className="row-sub">{lead.uf ? `${lead.uf} · ${lead.regiao || UF_REGIAO[lead.uf]}` : (lead.regiao || '—')}</div>
+        <div className="row-sub">
+          {lead.cidade ? `${lead.cidade}, ` : ''}{lead.uf ? `${lead.uf} · ${lead.regiao || UF_REGIAO[lead.uf]}` : (lead.regiao || '—')}
+        </div>
       </td>
       <td>
         <div className="gam-cell">
@@ -746,6 +748,7 @@ function LeadDrawer({ lead, users, onClose, onSubmit, submitting, error }) {
     empresa: lead?.empresa ?? '',
     setor: lead?.setor ?? '',
     segmento: lead?.segmento ?? '',
+    cidade: lead?.cidade ?? '',
     uf: lead?.uf ?? '',
     regiao: lead?.regiao ?? '',
     faixa_funcionarios: lead?.faixa_funcionarios ?? '',
@@ -774,6 +777,7 @@ function LeadDrawer({ lead, users, onClose, onSubmit, submitting, error }) {
       empresa: form.empresa.trim(),
       setor: form.setor || null,
       segmento: form.segmento || null,
+      cidade: form.cidade || null,
       uf: form.uf || null,
       regiao: form.regiao || null,
       faixa_funcionarios: form.faixa_funcionarios || null,
@@ -826,6 +830,11 @@ function LeadDrawer({ lead, users, onClose, onSubmit, submitting, error }) {
                   {SEGMENTOS.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
+            </div>
+
+            <div className="f-group">
+              <label className="f-label">Cidade</label>
+              <input className="f-input" value={form.cidade} onChange={set('cidade')} placeholder="Ex.: Jundiaí" />
             </div>
 
             <div className="f-row">
@@ -1024,8 +1033,8 @@ function ImportDrawer({ onClose, onDone }) {
         </div>
         <div className="drawer-body">
           <div className="import-cols">
-            Colunas esperadas: <code>empresa*</code> <code>setor</code> <code>segmento</code> <code>uf</code>{' '}
-            <code>regiao</code> <code>faixa_funcionarios</code> <code>faixa_faturamento</code> <code>origem</code>{' '}
+            Colunas esperadas: <code>empresa*</code> <code>setor</code> <code>segmento</code> <code>cidade</code>{' '}
+            <code>uf</code> <code>regiao</code> <code>faixa_funcionarios</code> <code>faixa_faturamento</code> <code>origem</code>{' '}
             <code>telefone</code> <code>site</code> <code>linkedin</code> <code>email</code> <code>contato_sugerido</code>{' '}
             <code>dor_sugerida</code> <code>status</code> <code>pesquisado_por</code>
             <br />
