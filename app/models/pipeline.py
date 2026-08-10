@@ -22,6 +22,15 @@ class StageColorMode(str, enum.Enum):
     SELO = "selo"
 
 
+class FunilMarco(str, enum.Enum):
+    """Aponta uma etapa de Pipeline como o marco "Diagnóstico" ou "Proposta" do funil
+    de metas (ver docs/PLANO_METAS_FUNIL.md) — desacoplado do nome da etapa, que é
+    livre e editável por tenant. Nenhum marco padrão pra "Reunião" aqui: reunião é
+    contada via TimelineEvent tipo=reuniao, não por etapa de pipeline."""
+    DIAGNOSTICO = "diagnostico"
+    PROPOSTA = "proposta"
+
+
 class Pipeline(Base, TenantMixin, TimestampMixin):
     __tablename__ = "pipelines"
 
@@ -50,5 +59,6 @@ class PipelineStage(Base, TenantMixin):
     tipo: Mapped[str] = mapped_column(String(20), nullable=False, default=StageType.ABERTA.value)
     sla_horas: Mapped[int | None] = mapped_column(Integer)
     probabilidade: Mapped[int | None] = mapped_column(Integer)
+    marco_funil: Mapped[str | None] = mapped_column(String(20))
 
     pipeline: Mapped["Pipeline"] = relationship(back_populates="stages")

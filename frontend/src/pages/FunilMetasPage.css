@@ -1,0 +1,62 @@
+/* Metas do Funil — controle de mudança de fase por percentual (Anexo 1).
+   Composição em cima de dataTable.css (stat-strip, card, status-pill, segmented, drawer) —
+   só o que é específico de funil/percentual mora aqui. */
+
+.fm-modo-hint { font-size: 12px; color: var(--ink-faint); }
+
+.fm-sub { font-size: 11.5px; margin-top: 4px; font-weight: 600; color: var(--ink-faint); }
+.fm-tile-nome { font-size: 15px !important; }
+
+/* status semântico — separado do accent da marca, sempre pareado com número/rótulo */
+.fm-status-ok { color: var(--good); }
+.fm-status-atencao { color: var(--warning); }
+.fm-status-critico { color: var(--critical); }
+.status-pill.fm-status-pill-ok { background: var(--success-bg); color: var(--good); }
+.status-pill.fm-status-pill-atencao { background: var(--warning-bg); color: var(--warning); }
+.status-pill.fm-status-pill-critico { background: var(--danger-bg); color: var(--critical); }
+
+.fm-alert {
+  display: flex; gap: 12px; align-items: flex-start; border-radius: var(--r-card);
+  padding: 14px 16px; margin-bottom: 20px;
+  border: 1px solid color-mix(in srgb, var(--critical) 35%, var(--border));
+  background: color-mix(in srgb, var(--critical) 8%, var(--card-bg));
+}
+.fm-alert-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--critical); flex: none; margin-top: 4px; }
+.fm-alert h3 { margin: 0 0 3px; font-size: 13.5px; font-weight: 700; color: var(--critical); }
+.fm-alert p { margin: 0; font-size: 12.8px; color: var(--ink-dim); line-height: 1.55; }
+.fm-alert p b { color: var(--ink); }
+
+.fm-funnel { padding: 6px 18px 18px; display: flex; flex-direction: column; }
+.fm-row {
+  display: grid; grid-template-columns: 180px 1fr 150px 190px; align-items: center; gap: 14px;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.fm-row:last-child { border-bottom: none; }
+.fm-name b { font-size: 13px; font-weight: 650; }
+.fm-track { position: relative; height: 18px; background: var(--paper); border-radius: 6px; overflow: hidden; }
+.fm-meta-fill { position: absolute; inset: 0; border-radius: 6px; background: color-mix(in srgb, var(--ink-faint) 22%, transparent); }
+.fm-real-fill { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 6px; transition: width 350ms ease; }
+.fm-nums { text-align: right; font-family: var(--font-mono); font-size: 12px; }
+.fm-nums .real { font-size: 15px; font-weight: 700; color: var(--ink); }
+.fm-nums .of { color: var(--ink-faint); font-weight: 500; }
+.fm-pct-cell { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.fm-real-pct { font-family: var(--font-mono); font-size: 14px; font-weight: 700; }
+.fm-diff { font-size: 10.5px; font-weight: 600; white-space: nowrap; }
+.fm-muted { color: var(--ink-faint); font-size: 12px; }
+
+.fm-ref { color: var(--ink-dim); font-size: 12px; line-height: 1.45; max-width: 320px; }
+tr.fm-row-critico td:first-child { box-shadow: inset 3px 0 0 var(--critical); }
+tr.fm-row-atencao td:first-child { box-shadow: inset 3px 0 0 var(--warning); }
+
+.fm-derived {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--ink-faint);
+  text-transform: none; letter-spacing: normal;
+}
+.fm-pct-input { display: flex; align-items: center; gap: 8px; }
+.fm-pct-input .f-input { max-width: 100px; }
+.fm-suffix { font-size: 12.5px; color: var(--ink-faint); }
+
+@media (max-width: 900px) {
+  .fm-row { grid-template-columns: 1fr; gap: 6px; }
+  .fm-nums, .fm-pct-cell { align-items: flex-start; text-align: left; }
+}
