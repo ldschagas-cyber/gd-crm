@@ -52,6 +52,7 @@ class Company(Base, TenantMixin, TimestampMixin, SoftDeleteMixin):
     nome_fantasia: Mapped[str | None] = mapped_column(String(255))
     cnpj: Mapped[str | None] = mapped_column(String(14))
     site: Mapped[str | None] = mapped_column(String(255))
+    linkedin: Mapped[str | None] = mapped_column(String(255))
     telefone: Mapped[str | None] = mapped_column(String(20))
     email: Mapped[str | None] = mapped_column(String(255))
     endereco: Mapped[str | None] = mapped_column(String(255))
@@ -94,6 +95,12 @@ class Company(Base, TenantMixin, TimestampMixin, SoftDeleteMixin):
     # Dossiê Comercial — descoberta, texto livre.
     problemas_encontrados: Mapped[str | None] = mapped_column(Text)
     hipoteses: Mapped[str | None] = mapped_column(Text)
+
+    # Contato indicado na Pesquisa de Leads (nome/cargo em texto livre, ex.: "Ana Paula —
+    # Gerente de Compras") — não é um Contato de verdade (sem e-mail/telefone estruturado),
+    # só um ponto de partida pro vendedor até cadastrar o contato real. Só chega aqui por
+    # cópia automática em LeadProspectService.promote(); também editável na empresa.
+    contato_sugerido: Mapped[str | None] = mapped_column(String(255))
 
     # Dossiê Comercial — Inteligência Comercial (mesmo JSON de LeadProspect.inteligencia_comercial).
     # Só chega aqui por cópia automática em LeadProspectService.promote(); não há endpoint de

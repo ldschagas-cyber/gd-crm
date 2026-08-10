@@ -154,10 +154,17 @@ class LeadProspectService:
             raise ConflictError("Esta pesquisa já foi promovida a empresa")
         company = Company(
             razao_social=lead.empresa, cnpj=lead.cnpj, segmento=lead.segmento, setor=lead.setor, uf=lead.uf,
-            site=lead.site, telefone=lead.telefone, porte=lead.faixa_funcionarios,
+            site=lead.site, linkedin=lead.linkedin, telefone=lead.telefone, porte=lead.faixa_funcionarios,
             # faixa_faturamento não é copiada: é uma faixa (texto), não um número, e
             # Company.faturamento_estimado é Numeric — sem base pra converter uma faixa
             # num valor exato sem inventar dado. Fica só como texto na Pesquisa de Leads.
+            #
+            # dor_sugerida vira problemas_encontrados: mesmo conceito (hipótese de dor),
+            # só muda de nome porque no Dossiê Comercial esse campo já existia com outro
+            # rótulo. contato_sugerido tem campo próprio em Company (não é Contato de
+            # verdade, ver comentário no model).
+            contato_sugerido=lead.contato_sugerido,
+            problemas_encontrados=lead.dor_sugerida,
             status=CompanyStatus.LEAD.value, origem=lead.origem or "Pesquisa de Leads",
             inteligencia_comercial=lead.inteligencia_comercial,
             # Central de Leads: toda promoção entra no funil como "novo" — ver
