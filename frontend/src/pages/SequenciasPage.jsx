@@ -4,18 +4,25 @@ import {
   cloneSequence, createSequence, deleteSequence, listSequenceEnrollments, listSequences, updateSequence,
 } from '../api/sequences'
 import { listEmailTemplates } from '../api/emailTemplates'
+import { listMessageTemplates } from '../api/messageTemplates'
 import { TIPO_LABEL, TaskTypeIcon } from '../components/TaskTypeIcon'
 import '../styles/dataTable.css'
 import './SequenciasPage.css'
 
 const ENROLL_STATUS_LABEL = { ativa: 'ativa', pausada: 'pausada', concluida: 'concluída', cancelada: 'cancelada' }
+const CANAIS_MESSAGE_TEMPLATE = ['whatsapp', 'linkedin_conexao', 'linkedin_mensagem']
 
 function emptyStep(lastDia) {
-  return { dia_offset: lastDia + 3, tipo: 'ligacao', template_id: null, instrucoes: '' }
+  return { dia_offset: lastDia + 3, tipo: 'ligacao', template_id: null, message_template_id: null, instrucoes: '' }
 }
 
 function usaTemplate(tipo) {
   return tipo === 'email'
+}
+
+// tipo do step === canal do MessageTemplate (whatsapp/linkedin_conexao/linkedin_mensagem)
+function usaMessageTemplate(tipo) {
+  return CANAIS_MESSAGE_TEMPLATE.includes(tipo)
 }
 
 function IconInfo() {
@@ -152,7 +159,10 @@ function SequenceDrawer({ sequence, onClose, onSubmit, submitting, error }) {
   const [pausarResposta, setPausarResposta] = useState(sequence?.pausar_em_resposta ?? true)
   const [steps, setSteps] = useState(
     sequence
-      ? sequence.steps.map((s) => ({ dia_offset: s.dia_offset, tipo: s.tipo, template_id: s.template_id, instrucoes: s.instrucoes ?? '' }))
+      ? sequence.steps.map((s) => ({
+          dia_offset: s.dia_offset, tipo: s.tipo, template_id: s.template_id,
+          message_template_id: s.message_template_id, instrucoes: s.instrucoes ?? '',
+        }))
       : [emptyStep(-3)]
   )
   const [touched, setTouched] = useState(false)
@@ -160,6 +170,9 @@ function SequenceDrawer({ sequence, onClose, onSubmit, submitting, error }) {
 
   const templatesQuery = useQuery({ queryKey: ['email-templates', 'list'], queryFn: () => listEmailTemplates({ size: 100 }) })
   const templates = templatesQuery.data?.items ?? []
+
+  const messageTemplatesQuery = useQuery({ queryKey: ['message-templates', 'list'], queryFn: () => listMessageTemplates({ size: 100 }) })
+  const messageTemplates = messageTemplatesQuery.data?.items ?? []
 
   const enrollmentsQuery = useQuery({
     queryKey: ['sequences', sequence?.id, 'enrollments'],
@@ -199,7 +212,8 @@ function SequenceDrawer({ sequence, onClose, onSubmit, submitting, error }) {
       steps: steps.map((s) => ({
         dia_offset: Number(s.dia_offset) || 0, tipo: s.tipo,
         template_id: usaTemplate(s.tipo) ? (s.template_id || null) : null,
-        instrucoes: usaTemplate(s.tipo) ? null : (s.instrucoes?.trim() || null),
+        message_template_id: usaMessageTemplate(s.tipo) ? (s.message_template_id || null) : null,
+        instrucoes: (usaTemplate(s.tipo) || usaMessageTemplate(s.tipo)) ? null : (s.instrucoes?.trim() || null),
       })),
     })
   }
@@ -256,7 +270,10 @@ function SequenceDrawer({ sequence, onClose, onSubmit, submitting, error }) {
                     </div>
                     <div className="step-tipo">
                       <TaskTypeIcon tipo={step.tipo} />
-                      <select value={step.tipo} onChange={(e) => updateStep(idx, { tipo: e.target.value })}>
+                      <select
+                        value={step.tipo}
+                        onChange={(e) => updateStep(idx, { tipo: e.target.value, template_id: null, message_template_id: null })}
+                      >
                         {Object.entries(TIPO_LABEL).map(([k, label]) => <option key={k} value={k}>{label}</option>)}
                       </select>
                     </div>
@@ -267,6 +284,16 @@ function SequenceDrawer({ sequence, onClose, onSubmit, submitting, error }) {
                       <select value={step.template_id ?? ''} onChange={(e) => updateStep(idx, { template_id: e.target.value || null })}>
                         <option value="">Sem modelo (rascunho manual)</option>
                         {templates.map((t) => <option key={t.id} value={t.id}>{t.nome}</option>)}
+                      </select>
+                    ) : usaMessageTemplate(step.tipo) ? (
+                      <select
+                        value={step.message_template_id ?? ''}
+                        onChange={(e) => updateStep(idx, { message_template_id: e.target.value || null })}
+                      >
+                        <option value="">Sem modelo (roteiro manual)</option>
+                        {messageTemplates.filter((t) => t.canal === step.tipo).map((t) => (
+                          <option key={t.id} value={t.id}>{t.nome}</option>
+                        ))}
                       </select>
                     ) : (
                       <input

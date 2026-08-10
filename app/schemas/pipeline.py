@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from app.models.pipeline import StageColorMode, StageType
+from app.models.pipeline import FunilMarco, StageColorMode, StageType
 from app.schemas.common import ORMModel
 
 
@@ -13,6 +13,9 @@ class StageCreate(BaseModel):
     tipo: StageType = StageType.ABERTA
     sla_horas: int | None = None
     probabilidade: int | None = Field(default=None, ge=0, le=100)
+    # Marca esta etapa como o "Diagnóstico"/"Proposta" do funil de metas (Anexo 1 —
+    # ver docs/PLANO_METAS_FUNIL.md). Opcional, nenhuma etapa nasce marcada.
+    marco_funil: FunilMarco | None = None
 
 
 class StageRead(ORMModel):
@@ -23,6 +26,7 @@ class StageRead(ORMModel):
     tipo: str
     sla_horas: int | None
     probabilidade: int | None
+    marco_funil: str | None
 
 
 class PipelineCreate(BaseModel):

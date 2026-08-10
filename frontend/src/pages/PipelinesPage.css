@@ -30,7 +30,7 @@
 .pipeline-head-actions { margin-left: auto; display: flex; gap: 8px; flex: none; }
 
 .stage-list-cols, .stage-row {
-  display: grid; grid-template-columns: 22px minmax(160px, 280px) 90px 90px 120px 80px 220px 40px;
+  display: grid; grid-template-columns: 22px minmax(160px, 280px) 90px 90px 120px 130px 80px 220px 40px;
   align-items: center; gap: 16px; padding: 12px 20px; justify-content: start;
 }
 .stage-list-cols {
@@ -38,9 +38,17 @@
   font-size: 10.5px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-faint); font-weight: 650;
 }
 .stage-list-cols > :nth-child(3), .stage-list-cols > :nth-child(4),
-.stage-list-cols > :nth-child(5), .stage-list-cols > :nth-child(6) { text-align: center; }
+.stage-list-cols > :nth-child(5), .stage-list-cols > :nth-child(6),
+.stage-list-cols > :nth-child(7) { text-align: center; }
 .stage-row > :nth-child(3), .stage-row > :nth-child(4),
-.stage-row > :nth-child(5), .stage-row > :nth-child(6) { justify-self: center; }
+.stage-row > :nth-child(5), .stage-row > :nth-child(6),
+.stage-row > :nth-child(7) { justify-self: center; }
+.marco-select {
+  font: inherit; font-size: 12.3px; color: var(--ink); background: var(--field-bg);
+  border: 1px solid var(--border-field); border-radius: var(--r-field); padding: 5px 6px;
+  max-width: 118px;
+}
+.marco-select:focus { outline: none; border-color: var(--azul); box-shadow: 0 0 0 3px var(--focus-ring); }
 .stage-row { border-bottom: 1px solid var(--border); }
 .stage-list > .stage-row:last-child { border-bottom: none; }
 .stage-row.terminal { background: color-mix(in srgb, var(--paper) 55%, transparent); }
@@ -83,6 +91,8 @@ input.stage-name-input:focus { border-color: var(--azul); outline: none; box-sha
 
 @media (max-width: 1100px) {
   .stage-list-cols, .stage-row { grid-template-columns: 18px minmax(0, 1fr) 80px; }
-  .stage-list-cols > :nth-child(4), .stage-list-cols > :nth-child(5), .stage-list-cols > :nth-child(6), .stage-list-cols > :nth-child(7),
-  .stage-row > :nth-child(4), .stage-row > :nth-child(5), .stage-row > :nth-child(6), .stage-row > :nth-child(7) { display: none; }
+  .stage-list-cols > :nth-child(4), .stage-list-cols > :nth-child(5), .stage-list-cols > :nth-child(6),
+  .stage-list-cols > :nth-child(7), .stage-list-cols > :nth-child(8),
+  .stage-row > :nth-child(4), .stage-row > :nth-child(5), .stage-row > :nth-child(6),
+  .stage-row > :nth-child(7), .stage-row > :nth-child(8) { display: none; }
 }

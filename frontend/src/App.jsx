@@ -3,6 +3,7 @@ import LoginPage from './pages/LoginPage.jsx'
 import DashboardPage from './pages/DashboardPage.jsx'
 import PesquisaLeadsPage from './pages/PesquisaLeadsPage.jsx'
 import CentralLeadsPage from './pages/CentralLeadsPage.jsx'
+import FunilMetasPage from './pages/FunilMetasPage.jsx'
 import BuscarEmpresasPage from './pages/BuscarEmpresasPage.jsx'
 import EmpresasPage from './pages/EmpresasPage.jsx'
 import CompanyDetailPage from './pages/CompanyDetailPage.jsx'
@@ -17,6 +18,7 @@ import TaskQueuePage from './pages/TaskQueuePage.jsx'
 import SequenciasPage from './pages/SequenciasPage.jsx'
 import WorkflowsPage from './pages/WorkflowsPage.jsx'
 import ModelosEmailPage from './pages/ModelosEmailPage.jsx'
+import ModelosMensagemPage from './pages/ModelosMensagemPage.jsx'
 import SnippetsPage from './pages/SnippetsPage.jsx'
 import FormulariosRastreioPage from './pages/FormulariosRastreioPage.jsx'
 import ConfiguracoesPage from './pages/ConfiguracoesPage.jsx'
@@ -41,6 +43,7 @@ export default function App() {
         <Route path="/" element={<DashboardPage />} />
         <Route path="/pesquisa-leads" element={<PesquisaLeadsPage />} />
         <Route path="/central-leads" element={<CentralLeadsPage />} />
+        <Route path="/metas-funil" element={<FunilMetasPage />} />
         <Route path="/buscar-empresas" element={<BuscarEmpresasPage />} />
         <Route path="/empresas" element={<EmpresasPage />} />
         <Route path="/empresas/:id" element={<CompanyDetailPage />} />
@@ -55,6 +58,7 @@ export default function App() {
         <Route path="/sequencias" element={<SequenciasPage />} />
         <Route path="/workflows" element={<WorkflowsPage />} />
         <Route path="/modelos-email" element={<ModelosEmailPage />} />
+        <Route path="/modelos-mensagem" element={<ModelosMensagemPage />} />
         <Route path="/snippets" element={<SnippetsPage />} />
         <Route path="/formularios" element={<FormulariosRastreioPage />} />
         <Route path="/usuarios" element={<UsuariosPage />} />

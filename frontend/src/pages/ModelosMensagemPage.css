@@ -1,0 +1,27 @@
+.var-chip {
+  display: inline-flex; font-family: var(--font-mono); font-size: 10.5px; background: var(--paper);
+  border: 1px solid var(--border); color: var(--ink-dim); padding: 2px 6px; border-radius: 5px; margin: 1px 3px 1px 0;
+}
+.preview-note { font-size: 10.5px; color: var(--ink-faint); margin-top: 10px; }
+.f-hint { font-size: 11px; color: var(--ink-faint); }
+
+.canal-filter { display: flex; gap: 6px; flex-wrap: wrap; }
+.canal-pill {
+  font-size: 12.5px; font-weight: 600; color: var(--ink-dim); background: var(--card-bg);
+  border: 1px solid var(--border); border-radius: 100px; padding: 6px 12px; cursor: pointer;
+}
+.canal-pill.active { background: var(--indigo); color: #fff; border-color: var(--indigo); }
+
+.canal-tag { display: inline-flex; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 100px; white-space: nowrap; }
+.canal-tag.whatsapp { background: rgba(37, 163, 90, 0.12); color: #1e8e4d; }
+.canal-tag.linkedin_conexao, .canal-tag.linkedin_mensagem { background: rgba(0, 119, 168, 0.12); color: var(--azul); }
+
+.canal-select { display: flex; gap: 8px; flex-wrap: wrap; }
+.canal-opt {
+  flex: 1; min-width: 140px; display: flex; align-items: center; gap: 8px; border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 9px 12px; cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--ink-dim);
+}
+.canal-opt input { accent-color: var(--indigo); }
+.canal-opt.sel { border-color: var(--indigo); background: color-mix(in srgb, var(--indigo) 6%, var(--card-bg)); color: var(--ink); }
+.canal-opt.whatsapp.sel { border-color: #1e8e4d; background: rgba(37, 163, 90, 0.08); color: #1e8e4d; }
+.canal-opt.linkedin_conexao.sel, .canal-opt.linkedin_mensagem.sel { border-color: var(--azul); background: rgba(0, 119, 168, 0.08); color: var(--azul); }

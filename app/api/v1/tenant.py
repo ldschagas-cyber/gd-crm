@@ -6,9 +6,11 @@ from app.core.database import get_db
 from app.core.deps import get_current_user, require_roles
 from app.models.user import User, UserRole
 from app.schemas.company import LeadScoreRules
+from app.schemas.funil_metas import FunilMetasConfig
 from app.schemas.lead_prospect import IcpScoringRules
 from app.schemas.tenant import TenantRead, TenantUpdate
 from app.services.company import CompanyService
+from app.services.funil_metas import FunilMetasService
 from app.services.lead_prospect import LeadProspectService
 from app.services.tenant import TenantService
 
@@ -57,3 +59,20 @@ def update_lead_score_rules(
     db: Session = Depends(get_db),
 ):
     return CompanyService(db).update_lead_score_rules(data)
+
+
+@router.get("/funil-metas")
+def get_funil_metas(_: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Config do controle de fase por percentual (Anexo 1) — meta de empresas
+    pesquisadas e % esperado de cada etapa em relação à anterior. Ver
+    docs/PLANO_METAS_FUNIL.md."""
+    return FunilMetasService(db).get_config()
+
+
+@router.put("/funil-metas")
+def update_funil_metas(
+    data: FunilMetasConfig,
+    _: User = Depends(require_roles(UserRole.ADMIN.value, UserRole.GESTOR.value)),
+    db: Session = Depends(get_db),
+):
+    return FunilMetasService(db).update_config(data)
