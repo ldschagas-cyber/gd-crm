@@ -170,6 +170,7 @@ export default function CompanyDetailPage() {
           <dl className="key-facts">
             <div className="fact"><dt>CNPJ</dt><dd>{company.cnpj ?? '—'}</dd></div>
             <div className="fact"><dt>Site</dt><dd>{company.site ? <a href={company.site.startsWith('http') ? company.site : `https://${company.site}`} target="_blank" rel="noopener noreferrer">{company.site}</a> : '—'}</dd></div>
+            <div className="fact"><dt>LinkedIn</dt><dd>{company.linkedin ? <a href={company.linkedin.startsWith('http') ? company.linkedin : `https://${company.linkedin}`} target="_blank" rel="noopener noreferrer">{company.linkedin}</a> : '—'}</dd></div>
             <div className="fact">
               <dt>Telefone</dt>
               <dd>
@@ -266,7 +267,10 @@ export default function CompanyDetailPage() {
                   </div>
                 ))}
                 {contactsQuery.data && contactsQuery.data.items.length === 0 && (
-                  <p className="state-msg">Nenhum contato ainda.</p>
+                  <p className="state-msg">
+                    Nenhum contato ainda.
+                    {company.contato_sugerido && <> Sugestão da pesquisa: <b>{company.contato_sugerido}</b>.</>}
+                  </p>
                 )}
               </div>
               <div className="add-row-btn" onClick={() => setShowNewContact(true)}>+ Novo contato</div>

@@ -491,12 +491,14 @@ export function CompanyModal({ company, users, usersError, onClose, onSubmit, su
     segmento: company?.segmento ?? '',
     setor: company?.setor ?? '',
     site: company?.site ?? '',
+    linkedin: company?.linkedin ?? '',
     num_funcionarios: company?.num_funcionarios ?? '',
     faturamento_estimado: company?.faturamento_estimado ?? '',
     telefone: company?.telefone ?? '',
     email: company?.email ?? '',
     responsavel_id: company?.responsavel_id ?? '',
     contexto_rapido: company?.contexto_rapido ?? '',
+    contato_sugerido: company?.contato_sugerido ?? '',
     origem: company?.origem ?? '',
   })
   // Empresa pode já ter uma origem gravada fora da lista fixa (importação, formulário
@@ -551,6 +553,16 @@ export function CompanyModal({ company, users, usersError, onClose, onSubmit, su
             <div className="field">
               <label htmlFor="site">Site</label>
               <input id="site" value={form.site} onChange={set('site')} placeholder="https://..." />
+            </div>
+          </div>
+          <div className="field-row">
+            <div className="field">
+              <label htmlFor="linkedin">LinkedIn</label>
+              <input id="linkedin" value={form.linkedin} onChange={set('linkedin')} placeholder="linkedin.com/company/…" />
+            </div>
+            <div className="field">
+              <label htmlFor="contato_sugerido">Contato sugerido</label>
+              <input id="contato_sugerido" value={form.contato_sugerido} onChange={set('contato_sugerido')} placeholder="Ex.: Ana Paula — Gerente de Compras" />
             </div>
           </div>
           <div className="field-row">

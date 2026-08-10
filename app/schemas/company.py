@@ -13,6 +13,7 @@ class CompanyBase(BaseModel):
     nome_fantasia: str | None = None
     cnpj: str | None = Field(default=None, max_length=14)
     site: str | None = None
+    linkedin: str | None = None
     telefone: str | None = None
     email: str | None = None
     endereco: str | None = None
@@ -26,6 +27,7 @@ class CompanyBase(BaseModel):
     origem: str | None = None
     responsavel_id: UUID | None = None
     contexto_rapido: str | None = None
+    contato_sugerido: str | None = None
 
 
 class CompanyCreate(CompanyBase):
@@ -36,6 +38,7 @@ class CompanyUpdate(BaseModel):
     razao_social: str | None = None
     nome_fantasia: str | None = None
     site: str | None = None
+    linkedin: str | None = None
     telefone: str | None = None
     email: str | None = None
     endereco: str | None = None
@@ -49,6 +52,7 @@ class CompanyUpdate(BaseModel):
     origem: str | None = None
     responsavel_id: UUID | None = None
     contexto_rapido: str | None = None
+    contato_sugerido: str | None = None
 
 
 class CompanyDossierUpdate(BaseModel):
@@ -79,6 +83,7 @@ class CompanyRead(ORMModel):
     nome_fantasia: str | None
     cnpj: str | None
     site: str | None
+    linkedin: str | None
     telefone: str | None
     email: str | None
     endereco: str | None
@@ -102,6 +107,7 @@ class CompanyRead(ORMModel):
     tms: str | None
     problemas_encontrados: str | None
     hipoteses: str | None
+    contato_sugerido: str | None
     # JSON bruto de CommercialIntelligenceRecord — só chega aqui por cópia automática na
     # promoção do LeadProspect (ver LeadProspectService.promote()); sem endpoint próprio.
     inteligencia_comercial: str | None
