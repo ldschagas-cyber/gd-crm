@@ -1,0 +1,725 @@
+<title>Modelos de mensagem (WhatsApp/LinkedIn) — Argos</title>
+<style>
+  /* Font note: real product should self-host IBM Plex Sans/Mono; CDN fonts are blocked
+     in this artifact sandbox, so a close system-grotesque stack stands in here. */
+  :root {
+    --font-display: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Cascadia Code", "SFMono-Regular", "Consolas", ui-monospace, monospace;
+
+    --indigo: #2D3561;
+    --indigo-600: #3B4478;
+    --amber: #C9A84C;
+    --azul: #0077A8;
+    --marfim: #F5F1EB;
+    --whats: #25A35A;
+
+    --paper: var(--marfim);
+    --panel: var(--indigo);
+    --panel-fg: #F1EEE6;
+    --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12);
+    --panel-active-bg: rgba(201, 168, 76, 0.14);
+
+    --ink: #22243A;
+    --ink-dim: #5B5E78;
+    --ink-faint: #8B8EA6;
+    --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF;
+    --accent: var(--amber);
+    --link: var(--azul);
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+
+    --good: #0ca30c;
+    --warning: #fab219;
+    --serious: #ec835a;
+    --critical: #d03b3b;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+      --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+      --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+      --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+    --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+    --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+    --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+  }
+  :root[data-theme="light"] {
+    --paper: #F5F1EB; --panel: #2D3561; --panel-fg: #F1EEE6; --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12); --panel-active-bg: rgba(201, 168, 76, 0.14);
+    --ink: #22243A; --ink-dim: #5B5E78; --ink-faint: #8B8EA6; --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF; --amber: #C9A84C; --azul: #0077A8; --link: #0077A8;
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; font-family: var(--font-display); color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; }
+  button, input, select, textarea { font-family: inherit; }
+  a { color: inherit; }
+  ::selection { background: rgba(201,168,76,.3); }
+  :focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; border-radius: 4px; }
+
+  .shell { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+
+  /* ---------------- Sidebar ---------------- */
+  .sidebar { background: var(--panel); color: var(--panel-fg); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+  .sb-brand { display: flex; align-items: center; gap: 10px; padding: 20px 18px 16px; }
+  .monogram { width: 34px; height: 34px; border-radius: 9px; flex: none; background: var(--amber); color: var(--indigo); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+  .sb-brand strong { display: block; font-size: 14.5px; font-weight: 650; line-height: 1.2; }
+  .sb-brand span { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--panel-fg-dim); margin-top: 2px; }
+  .sb-nav { flex: 1; overflow-y: auto; padding: 10px 12px; }
+  .sb-group + .sb-group { margin-top: 18px; }
+  .sb-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--panel-fg-dim); padding: 0 10px; margin-bottom: 6px; }
+  .sb-item { display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: 8px; margin-bottom: 2px; font-size: 13.6px; font-weight: 500; color: var(--panel-fg-dim); text-decoration: none; cursor: pointer; border: 1px solid transparent; position: relative; }
+  .sb-item svg { width: 17px; height: 17px; flex: none; opacity: 0.9; }
+  .sb-item:hover { background: rgba(241, 238, 230, 0.06); color: var(--panel-fg); }
+  .sb-item.active { background: var(--panel-active-bg); color: var(--panel-fg); font-weight: 650; }
+  .sb-item.active::before { content: ""; position: absolute; left: -12px; top: 6px; bottom: 6px; width: 3px; background: var(--amber); border-radius: 2px; }
+  .sb-item .chip { margin-left: auto; font-family: var(--font-mono); font-size: 10px; background: rgba(241,238,230,0.12); color: var(--panel-fg-dim); padding: 1px 6px; border-radius: 100px; }
+  .sb-item .badge-new { margin-left: auto; font-family: var(--font-mono); font-size: 9px; letter-spacing: .03em; background: rgba(37,163,90,0.18); color: #4fd688; padding: 1px 6px; border-radius: 100px; }
+  .sb-user { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-top: 1px solid var(--panel-border); }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; flex: none; background: rgba(201,168,76,0.18); color: var(--amber); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; border: 1px solid rgba(201,168,76,0.3); }
+  .sb-user-meta { min-width: 0; flex: 1; }
+  .sb-user-meta strong { display: block; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-user-meta span { display: block; font-size: 11px; color: var(--panel-fg-dim); }
+
+  /* ---------------- Main column ---------------- */
+  .main-col { display: flex; flex-direction: column; min-width: 0; }
+  .content { padding: 22px 28px 48px; display: flex; flex-direction: column; gap: 16px; }
+
+  .page-head { display: flex; align-items: flex-start; gap: 16px; }
+  .page-head h1 { margin: 0; font-size: 20px; font-weight: 650; letter-spacing: -0.01em; }
+  .page-head p { margin: 3px 0 0; font-size: 12.5px; color: var(--ink-dim); }
+  .page-head p .mono { font-family: var(--font-mono); color: var(--ink); font-weight: 500; }
+  .page-actions { margin-left: auto; display: flex; gap: 8px; flex: none; }
+
+  .proto-banner { display: flex; gap: 10px; padding: 10px 14px; background: color-mix(in srgb, var(--amber) 14%, var(--card-bg)); border: 1px solid var(--border); border-radius: 10px; font-size: 12px; color: var(--ink-dim); align-items: center; }
+  .proto-banner strong { color: var(--ink); }
+
+  .btn-primary { display: flex; align-items: center; gap: 7px; background: var(--indigo); color: var(--panel-fg); border: 1px solid var(--indigo); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-primary:hover { background: var(--indigo-600); }
+  .btn-primary:disabled { opacity: .45; cursor: not-allowed; }
+  .btn-primary svg { width: 14px; height: 14px; }
+  .btn-ghost { display: flex; align-items: center; gap: 7px; background: var(--card-bg); color: var(--ink); border: 1px solid var(--border); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-ghost:hover { border-color: var(--ink-faint); }
+  .btn-ghost svg { width: 14px; height: 14px; }
+  .btn-danger { display: flex; align-items: center; gap: 7px; background: var(--critical); color: #fff; border: 1px solid var(--critical); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-danger:hover { filter: brightness(0.94); }
+  .btn-whats { display: flex; align-items: center; gap: 7px; background: var(--whats); color: #fff; border: 1px solid var(--whats); font-size: 13px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+  .btn-whats:hover { filter: brightness(0.95); }
+  .btn-whats svg { width: 14px; height: 14px; }
+
+  /* ---------------- Tabs (top-level prototype switcher) ---------------- */
+  .proto-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--border); }
+  .proto-tab { padding: 9px 4px; font-size: 13px; font-weight: 600; color: var(--ink-faint); background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; margin-right: 14px; }
+  .proto-tab.active { color: var(--ink); border-bottom-color: var(--amber); }
+  .proto-view { display: none; flex-direction: column; gap: 16px; }
+  .proto-view.active { display: flex; }
+
+  .help-card { display: flex; gap: 11px; padding: 14px 16px; background: color-mix(in srgb, var(--azul) 6%, var(--card-bg)); border: 1px solid var(--border); border-radius: 12px; }
+  .help-card svg { width: 17px; height: 17px; color: var(--azul); flex: none; margin-top: 1px; }
+  .help-card p { margin: 0; font-size: 12.5px; color: var(--ink-dim); line-height: 1.5; }
+  .help-card p strong { color: var(--ink); }
+  .help-card code { font-family: var(--font-mono); font-size: 11px; background: var(--paper); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; }
+
+  .stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
+  .stat-tile { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; box-shadow: var(--shadow); }
+  .stat-tile .t { font-size: 11px; color: var(--ink-faint); font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+  .stat-tile .v { font-size: 19px; font-weight: 700; margin-top: 4px; font-family: var(--font-mono); }
+
+  .channel-filter { display: flex; gap: 6px; flex-wrap: wrap; }
+  .ch-pill { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--ink-dim); background: var(--card-bg); border: 1px solid var(--border); border-radius: 100px; padding: 6px 12px; cursor: pointer; }
+  .ch-pill svg { width: 13px; height: 13px; }
+  .ch-pill.active { background: var(--indigo); color: var(--panel-fg); border-color: var(--indigo); }
+  .ch-pill[data-ch="whatsapp"].active { background: var(--whats); border-color: var(--whats); }
+
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+  .table-scroll { overflow-x: auto; }
+  table.data { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 820px; }
+  table.data th { text-align: left; font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); font-weight: 600; padding: 10px 16px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  table.data td { padding: 11px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  table.data tbody tr:last-child td { border-bottom: none; }
+  table.data tbody tr:hover { background: color-mix(in srgb, var(--paper) 55%, transparent); }
+  .row-title { font-weight: 600; color: var(--ink); cursor: pointer; }
+  .row-title:hover { color: var(--link); }
+  .row-sub { font-size: 11.5px; color: var(--ink-faint); margin-top: 1px; max-width: 380px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .ch-tag { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 100px; white-space: nowrap; }
+  .ch-tag svg { width: 12px; height: 12px; }
+  .ch-tag.whatsapp { background: rgba(37,163,90,0.12); color: var(--whats); }
+  .ch-tag.linkedin_conexao, .ch-tag.linkedin_mensagem { background: rgba(0,119,168,0.12); color: var(--azul); }
+
+  .var-chip { display: inline-flex; font-family: var(--font-mono); font-size: 10.5px; background: var(--paper); border: 1px solid var(--border); color: var(--ink-dim); padding: 2px 6px; border-radius: 5px; margin: 1px 3px 1px 0; }
+  .usage-badge { font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 100px; white-space: nowrap; }
+  .usage-badge.used { background: rgba(0,119,168,0.12); color: var(--azul); }
+  .usage-badge.unused { background: var(--paper); color: var(--ink-faint); border: 1px solid var(--border); }
+
+  .row-actions { display: flex; gap: 2px; justify-content: flex-end; }
+  .icon-btn { width: 26px; height: 26px; border-radius: 7px; border: none; background: transparent; color: var(--ink-faint); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .icon-btn:hover { background: var(--paper); color: var(--ink); }
+  .icon-btn.danger:hover { background: rgba(208,59,59,0.1); color: var(--critical); }
+  .icon-btn svg { width: 14px; height: 14px; }
+
+  /* ---------------- Drawer ---------------- */
+  .scrim { position: fixed; inset: 0; background: rgba(20,23,43,.4); opacity: 0; pointer-events: none; transition: opacity .18s ease; z-index: 40; }
+  .scrim.show { opacity: 1; pointer-events: auto; }
+  .drawer { position: fixed; top: 0; right: 0; height: 100%; width: min(600px, 100vw); background: var(--card-bg); box-shadow: -8px 0 40px rgba(20,23,43,.25); z-index: 41; display: flex; flex-direction: column; transform: translateX(100%); transition: transform .22s cubic-bezier(.4,0,.2,1); }
+  .drawer.show { transform: translateX(0); }
+  .drawer-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 24px 16px; border-bottom: 1px solid var(--border); }
+  .drawer-head h2 { margin: 0 0 3px; font-size: 16.5px; font-weight: 700; }
+  .drawer-head p { margin: 0; font-size: 12.5px; color: var(--ink-dim); }
+  .drawer-close { width: 30px; height: 30px; border-radius: 8px; border: none; background: transparent; color: var(--ink-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; flex: none; }
+  .drawer-close:hover { background: var(--paper); color: var(--ink); }
+  .drawer-close svg { width: 16px; height: 16px; }
+  .drawer-body { flex: 1; overflow-y: auto; padding: 18px 24px 24px; display: flex; flex-direction: column; gap: 16px; }
+  .drawer-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 24px; border-top: 1px solid var(--border); }
+
+  .f-group { display: flex; flex-direction: column; gap: 6px; }
+  .f-label { font-size: 12.5px; font-weight: 600; color: var(--ink-dim); display: flex; justify-content: space-between; }
+  .f-label .req { color: var(--critical); }
+  .f-label .opt { font-weight: 400; color: var(--ink-faint); }
+  .f-input, .f-textarea, .f-select { border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; background: var(--card-bg); color: var(--ink); width: 100%; outline: none; font-size: 13px; transition: border-color .12s ease, box-shadow .12s ease; }
+  .f-input:focus, .f-textarea:focus, .f-select:focus { border-color: var(--azul); box-shadow: 0 0 0 3px rgba(0,119,168,.14); }
+  .f-input.err, .f-textarea.err { border-color: var(--critical); }
+  .f-err { font-size: 11.5px; color: var(--critical); display: none; }
+  .f-err.show { display: block; }
+  .f-textarea { resize: vertical; min-height: 110px; font-family: inherit; line-height: 1.55; }
+  .f-hint { font-size: 11px; color: var(--ink-faint); }
+
+  .channel-select { display: flex; gap: 8px; flex-wrap: wrap; }
+  .channel-opt { flex: 1; min-width: 140px; display: flex; align-items: center; gap: 8px; border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 12px; cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--ink-dim); }
+  .channel-opt svg { width: 16px; height: 16px; flex: none; }
+  .channel-opt.sel { border-color: var(--indigo); background: color-mix(in srgb, var(--indigo) 6%, var(--card-bg)); color: var(--ink); }
+  .channel-opt[data-ch="whatsapp"].sel { border-color: var(--whats); background: rgba(37,163,90,0.08); color: var(--whats); }
+  .channel-opt[data-ch="linkedin_conexao"].sel, .channel-opt[data-ch="linkedin_mensagem"].sel { border-color: var(--azul); background: rgba(0,119,168,0.08); color: var(--azul); }
+
+  .var-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
+  .var-btn { font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--azul); background: rgba(0,119,168,0.08); border: 1px solid rgba(0,119,168,0.25); border-radius: 100px; padding: 4px 10px; cursor: pointer; }
+  .var-btn:hover { background: rgba(0,119,168,0.16); }
+
+  .preview-card { background: var(--paper); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .preview-label { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-faint); font-weight: 700; margin-bottom: 8px; }
+  .preview-body { font-size: 12.8px; color: var(--ink-dim); line-height: 1.6; white-space: pre-wrap; }
+  .preview-note { font-size: 10.5px; color: var(--ink-faint); margin-top: 10px; }
+  .var-fill { color: var(--azul); font-weight: 600; }
+
+  .toast { position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 12px); background: var(--ink); color: var(--paper); font-size: 13.5px; padding: 10px 16px; border-radius: 8px; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: opacity 180ms ease, transform 180ms ease; z-index: 60; max-width: 88vw; display: flex; align-items: center; gap: 8px; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+  .toast svg { width: 15px; height: 15px; color: #4fd688; flex: none; }
+
+  /* ---------------- Tab B: task mock ---------------- */
+  .agenda-date-label { padding: 12px 20px 8px; font-size: 12px; font-weight: 700; color: var(--ink-dim); background: color-mix(in srgb, var(--paper) 45%, transparent); border-bottom: 1px solid var(--border); }
+  .task-row { display: flex; align-items: flex-start; gap: 12px; padding: 13px 20px; border-bottom: 1px solid var(--border); }
+  .task-row:last-child { border-bottom: none; }
+  .task-check { width: 20px; height: 20px; border-radius: 50%; border: 1.6px solid var(--border); background: var(--card-bg); flex: none; margin-top: 1px; cursor: pointer; }
+  .task-body { flex: 1; min-width: 0; }
+  .task-title { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+  .task-meta-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
+  .task-meta-item { display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--ink-faint); }
+  .task-meta-item.mono { font-family: var(--font-mono); }
+  .link-chip { font-size: 11.5px; color: var(--link); }
+  .task-msg-btn { display: flex; align-items: center; gap: 6px; margin-top: 9px; font-size: 12px; font-weight: 700; color: var(--indigo); background: color-mix(in srgb, var(--indigo) 8%, var(--card-bg)); border: 1px solid var(--border); border-radius: 8px; padding: 6px 11px; cursor: pointer; }
+  :root[data-theme="dark"] .task-msg-btn, @media (prefers-color-scheme: dark) { }
+  .task-msg-btn svg { width: 13px; height: 13px; }
+  .task-side { display: flex; align-items: center; gap: 10px; flex: none; margin-left: 8px; }
+  .task-side .avatar { width: 24px; height: 24px; font-size: 10px; }
+
+  .msg-panel { display: none; margin: 6px 20px 14px 52px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .msg-panel.open { display: block; }
+  .msg-panel-head { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: var(--paper); border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 700; color: var(--ink-dim); }
+  .msg-panel-head svg { width: 14px; height: 14px; }
+  .msg-panel-head .tpl-name { margin-left: auto; font-weight: 500; color: var(--ink-faint); font-size: 11px; }
+  .msg-panel-body { padding: 14px 16px; background: var(--card-bg); }
+  .msg-text { font-size: 13.3px; line-height: 1.65; color: var(--ink); white-space: pre-wrap; }
+  .msg-var { color: var(--azul); font-weight: 600; }
+  .msg-panel-foot { display: flex; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--border); background: var(--card-bg); flex-wrap: wrap; }
+
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar { position: relative; height: auto; }
+    .sb-nav, .sb-user { display: none; }
+    .page-head { flex-wrap: wrap; }
+    .msg-panel { margin-left: 20px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .toast, .drawer, .scrim { transition: none; }
+  }
+</style>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="monogram">A</div>
+      <div><strong>Argos</strong><span>Gestão comercial</span></div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-group">
+        <a class="sb-item" href="#"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="2.5" width="6.2" height="6.2" rx="1.3"/><rect x="11.3" y="2.5" width="6.2" height="4.4" rx="1.3"/><rect x="11.3" y="9.4" width="6.2" height="8.1" rx="1.3"/><rect x="2.5" y="11.2" width="6.2" height="6.3" rx="1.3"/></svg>Dashboard</a>
+        <a class="sb-item" href="#"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17.5V3.8a.8.8 0 01.8-.8h6.4a.8.8 0 01.8.8v13.7"/><path d="M13 17.5V8.3a.8.8 0 01.8-.8h3.4a.8.8 0 01.8.8v9.2"/></svg>Empresas</a>
+        <a class="sb-item" href="#"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="6.6" r="3.1"/><path d="M3.6 17c.7-3.4 3.2-5.2 6.4-5.2s5.7 1.8 6.4 5.2"/></svg>Contatos</a>
+        <a class="sb-item" href="#"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2.2"/><path d="M6.6 10.2l2 2 4.6-4.9"/></svg>Tarefas</a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Automação · Fase 2</div>
+        <a class="sb-item" href="#"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4h5.5l1.5 2h5v10H4z"/><path d="M8 9h4M8 12h6"/></svg>Sequências</a>
+        <a class="sb-item" href="#"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="1.8"/><path d="M6 7h8M6 10h8M6 13h5"/></svg>Modelos de e-mail</a>
+        <div class="sb-item active">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 17l1.1-3.4a6.9 6.9 0 113 2.7z"/><path d="M7.3 8.3c.2 2.4 2 4.2 4.4 4.4"/></svg>
+          Modelos de mensagem
+          <span class="badge-new">novo</span>
+        </div>
+      </div>
+    </nav>
+    <div class="sb-user">
+      <div class="avatar">AD</div>
+      <div class="sb-user-meta"><strong>Administrador</strong><span>Admin · GD Conecta</span></div>
+    </div>
+  </aside>
+
+  <div class="main-col">
+    <div class="content">
+      <div class="page-head">
+        <div>
+          <h1>Modelos de mensagem</h1>
+          <p><span class="mono" id="headTotal">6</span> modelos · WhatsApp e LinkedIn, prontos pra copiar e colar</p>
+        </div>
+      </div>
+
+      <div class="proto-banner">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" style="width:15px;height:15px;flex:none;"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M10 8v4M10 14.6h.01"/></svg>
+        <span><strong>Protótipo — não conectado ao sistema real.</strong> Mostra as duas telas propostas: cadastro dos modelos (aba 1) e como o vendedor vê a mensagem pronta numa tarefa (aba 2). "Copiar" já funciona de verdade.</span>
+      </div>
+
+      <div class="proto-tabs">
+        <button class="proto-tab active" data-tab="cadastro">1 · Cadastro de modelos</button>
+        <button class="proto-tab" data-tab="tarefa">2 · Como o vendedor vê (Tarefas)</button>
+      </div>
+
+      <!-- ====================== TAB 1: CADASTRO ====================== -->
+      <div class="proto-view active" id="view-cadastro">
+        <div class="page-actions" style="margin-left:0;">
+          <button class="btn-primary" id="newTplBtn">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 4v12M4 10h12"/></svg>
+            Novo modelo
+          </button>
+        </div>
+
+        <div class="help-card">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="7.3"/><path d="M10 9v4.2M10 6.6h.01"/></svg>
+          <p>Variáveis disponíveis: <code>{{nome}}</code> <code>{{empresa}}</code> <code>{{cargo}}</code> <code>{{responsavel}}</code> <code>{{setor}}</code> — substituídas pelos dados reais do contato quando a tarefa é gerada por uma Sequência. Um modelo em uso não pode ser excluído.</p>
+        </div>
+
+        <div class="stat-strip">
+          <div class="stat-tile"><div class="t">Total</div><div class="v" id="statTotal">6</div></div>
+          <div class="stat-tile"><div class="t">WhatsApp</div><div class="v" id="statWhats">3</div></div>
+          <div class="stat-tile"><div class="t">LinkedIn</div><div class="v" id="statLinkedin">3</div></div>
+        </div>
+
+        <div class="channel-filter" id="channelFilter">
+          <button class="ch-pill active" data-ch="">Todos</button>
+          <button class="ch-pill" data-ch="whatsapp"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2.5a7.5 7.5 0 00-6.4 11.4L2.5 17.5l3.7-1.1A7.5 7.5 0 1010 2.5z" opacity=".18"/><path d="M4 17l1.1-3.4a6.9 6.9 0 113 2.7z" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>WhatsApp</button>
+          <button class="ch-pill" data-ch="linkedin_conexao"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2.4"/><circle cx="7" cy="7.4" r=".9" fill="currentColor" stroke="none"/><path d="M7 10v4M10.5 14v-2.6a1.6 1.6 0 013.2 0V14"/></svg>LinkedIn (conexão)</button>
+          <button class="ch-pill" data-ch="linkedin_mensagem"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2.4"/><circle cx="7" cy="7.4" r=".9" fill="currentColor" stroke="none"/><path d="M7 10v4M10.5 14v-2.6a1.6 1.6 0 013.2 0V14"/></svg>LinkedIn (mensagem)</button>
+        </div>
+
+        <div class="card">
+          <div class="table-scroll">
+            <table class="data">
+              <thead>
+                <tr>
+                  <th>Modelo</th>
+                  <th>Canal</th>
+                  <th>Variáveis</th>
+                  <th>Usado em</th>
+                  <th style="text-align:right;">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="listBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================== TAB 2: VISÃO DO VENDEDOR ====================== -->
+      <div class="proto-view" id="view-tarefa">
+        <div class="help-card">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="7.3"/><path d="M10 9v4.2M10 6.6h.01"/></svg>
+          <p>Quando uma etapa de Sequência do tipo WhatsApp ou LinkedIn usa um modelo, a Tarefa gerada mostra o texto <strong>já mesclado</strong> com os dados do contato — não mais como um "roteiro" solto. O vendedor abre, copia e cola direto na conversa. Clique em <strong>"Ver mensagem"</strong> nas tarefas abaixo.</p>
+        </div>
+
+        <div class="card">
+          <div class="agenda-date-label">Hoje · 10 de agosto</div>
+          <div id="taskListBody"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div>
+      <h2 id="drawerTitle">Novo modelo</h2>
+      <p id="drawerSub">Escolha o canal e escreva o texto, com variáveis dinâmicas</p>
+    </div>
+    <button class="drawer-close" id="drawerClose"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5L5 15M5 5l10 10"/></svg></button>
+  </div>
+  <div class="drawer-body">
+    <div class="f-group">
+      <label class="f-label">Canal <span class="req">*</span></label>
+      <div class="channel-select" id="channelSelect">
+        <label class="channel-opt" data-ch="whatsapp">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 17l1.1-3.4a6.9 6.9 0 113 2.7z"/><path d="M7.3 8.3c.2 2.4 2 4.2 4.4 4.4"/></svg>
+          WhatsApp
+        </label>
+        <label class="channel-opt" data-ch="linkedin_conexao">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2.4"/><circle cx="7" cy="7.4" r=".9" fill="currentColor" stroke="none"/><path d="M7 10v4M10.5 14v-2.6a1.6 1.6 0 013.2 0V14"/></svg>
+          LinkedIn (nota de conexão)
+        </label>
+        <label class="channel-opt" data-ch="linkedin_mensagem">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2.4"/><circle cx="7" cy="7.4" r=".9" fill="currentColor" stroke="none"/><path d="M7 10v4M10.5 14v-2.6a1.6 1.6 0 013.2 0V14"/></svg>
+          LinkedIn (mensagem)
+        </label>
+      </div>
+      <span class="f-hint" id="channelHint">WhatsApp e LinkedIn (mensagem) não têm limite curto de caracteres. A nota de conexão do LinkedIn é limitada a ~300 caracteres pelo próprio LinkedIn.</span>
+    </div>
+
+    <div class="f-group">
+      <label class="f-label">Nome do modelo <span class="req">*</span></label>
+      <input class="f-input" id="fldNome" placeholder="Ex.: D9 — primeiro contato (Lead Frio)" />
+      <span class="f-err" id="errNome">Informe o nome do modelo.</span>
+    </div>
+
+    <div class="var-buttons" id="varButtons"></div>
+
+    <div class="f-group">
+      <label class="f-label" id="corpoLabel">Texto da mensagem <span class="req">*</span></label>
+      <textarea class="f-textarea" id="fldCorpo" placeholder="Escreva a mensagem — use os botões acima para inserir variáveis."></textarea>
+      <span class="f-err" id="errCorpo">Informe o texto da mensagem.</span>
+    </div>
+
+    <div class="preview-card">
+      <div class="preview-label">Prévia com dados de exemplo</div>
+      <div class="preview-body" id="pvCorpo"></div>
+      <div class="preview-note">Exemplo: Marcos Vinícius Ferreira · Grupo Andrade · Diretor de Operações · setor Distribuição · responsável Felipe Nogueira.</div>
+    </div>
+  </div>
+  <div class="drawer-foot">
+    <button class="btn-ghost" id="drawerCancel">Cancelar</button>
+    <button class="btn-primary" id="drawerSave">Salvar modelo</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var toastEl = document.getElementById('toast');
+  var toastTimer;
+  function showToast(msg, ok) {
+    toastEl.innerHTML = (ok ? '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4.5 10l3.5 3.5L15.5 6"/></svg>' : '') + '<span>' + msg + '</span>';
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 3200);
+  }
+  document.querySelectorAll('.sb-item[href="#"]').forEach(function (el) {
+    el.addEventListener('click', function (e) { e.preventDefault(); showToast('Tela ainda não foi prototipada aqui.'); });
+  });
+
+  function escapeHtml(s) { return (s || '').replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+
+  /* ---------------- top-level tabs ---------------- */
+  document.querySelectorAll('.proto-tab').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.proto-tab').forEach(function (b) { b.classList.remove('active'); });
+      document.querySelectorAll('.proto-view').forEach(function (v) { v.classList.remove('active'); });
+      btn.classList.add('active');
+      document.getElementById('view-' + btn.getAttribute('data-tab')).classList.add('active');
+    });
+  });
+
+  var VARS = ['nome', 'empresa', 'cargo', 'responsavel', 'setor'];
+  var PREVIEW_SAMPLE = { nome: 'Marcos Vinícius Ferreira', empresa: 'Grupo Andrade', cargo: 'Diretor de Operações', responsavel: 'Felipe Nogueira', setor: 'Distribuição' };
+  function mergeVars(text) {
+    return escapeHtml(text).replace(/\{\{(\w+)\}\}/g, function (m, key) {
+      return '<span class="var-fill">' + escapeHtml(PREVIEW_SAMPLE[key] || m) + '</span>';
+    });
+  }
+  function extractVars(text) {
+    var found = {};
+    (text || '').replace(/\{\{(\w+)\}\}/g, function (m, key) { found[key] = true; });
+    return Object.keys(found);
+  }
+
+  var CH_LABEL = { whatsapp: 'WhatsApp', linkedin_conexao: 'LinkedIn (conexão)', linkedin_mensagem: 'LinkedIn (mensagem)' };
+  var CH_ICON = {
+    whatsapp: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 17l1.1-3.4a6.9 6.9 0 113 2.7z"/><path d="M7.3 8.3c.2 2.4 2 4.2 4.4 4.4"/></svg>',
+    linkedin_conexao: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2.4"/><circle cx="7" cy="7.4" r=".9" fill="currentColor" stroke="none"/><path d="M7 10v4M10.5 14v-2.6a1.6 1.6 0 013.2 0V14"/></svg>',
+    linkedin_mensagem: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2.4"/><circle cx="7" cy="7.4" r=".9" fill="currentColor" stroke="none"/><path d="M7 10v4M10.5 14v-2.6a1.6 1.6 0 013.2 0V14"/></svg>'
+  };
+
+  var seq = 20;
+  var TEMPLATES = [
+    { id: 'm1', canal: 'whatsapp', nome: 'D2 — acompanhamento do e-mail (Top 80)',
+      corpo: 'Oi {{nome}}, tudo bem? Te mandei um e-mail sobre um novo serviço da GD Conecta que usa os dados que o OnSupply já gera para gerar um diagnóstico de frete. Vi que você é a pessoa certa pra falar — faz sentido eu te ligar essa semana?',
+      usos: ['Sequência "Top 80 — carteira ativa" (etapa 3)'] },
+    { id: 'm2', canal: 'whatsapp', nome: 'D11 — envio do case (Top 80)',
+      corpo: '{{nome}}, separei o case da Netzsch pra você ver o que o Diagnóstico entrega na prática: [link]. Se quiser, consigo te mostrar como ficaria com os dados de {{empresa}}.',
+      usos: ['Sequência "Top 80 — carteira ativa" (etapa 6)'] },
+    { id: 'm3', canal: 'whatsapp', nome: 'D9 — primeiro contato (Lead Frio)',
+      corpo: 'Oi {{nome}}, aqui é o {{responsavel}}, da GD Conecta. Te mandei um e-mail essa semana sobre Governança de Frete baseada em dados — não sei se chegou a ver. Resumindo: a gente ajuda empresas como a {{empresa}} a saber se o frete pago está dentro do mercado, usando dados que vocês já têm. Faz sentido uma conversa rápida?',
+      usos: ['Sequência "Prospecção fria — Indústria" (etapa 4)'] },
+    { id: 'm4', canal: 'linkedin_conexao', nome: 'D0 — nota de conexão (Lead Frio)',
+      corpo: 'Olá {{nome}}, acompanho o trabalho da {{empresa}} no setor de {{setor}} e gostaria de me conectar.',
+      usos: ['Sequência "Prospecção fria — Indústria" (etapa 1)'] },
+    { id: 'm5', canal: 'linkedin_mensagem', nome: 'D0 — mensagem após aceite (Lead Frio)',
+      corpo: 'Obrigado por aceitar, {{nome}}! Trabalho com Governança de Frete baseada em dados na GD Conecta — ajudamos empresas de {{setor}} a entender se o frete pago está dentro do mercado, usando dados que o TMS ou ERP já gera. Não é pitch de venda, é só uma pergunta genuína: hoje na {{empresa}}, vocês têm essa visibilidade?',
+      usos: ['Sequência "Prospecção fria — Indústria" (etapa 2)'] },
+    { id: 'm6', canal: 'linkedin_mensagem', nome: 'D12 — reforço com pedido de agenda (Lead Frio)',
+      corpo: 'Oi {{nome}}, voltando ao papo sobre Governança de Frete — separei um case (Netzsch) que mostra na prática o tipo de resultado que costumamos entregar. Se fizer sentido, consigo te mostrar em 20 minutos como isso funcionaria pra {{empresa}}. Você teria um horário essa semana ou semana que vem?',
+      usos: [] }
+  ];
+
+  function countByChannel(ch) { return TEMPLATES.filter(function (t) { return ch === 'whatsapp' ? t.canal === 'whatsapp' : t.canal !== 'whatsapp'; }).length; }
+  function recalcStats() {
+    document.getElementById('headTotal').textContent = TEMPLATES.length;
+    document.getElementById('statTotal').textContent = TEMPLATES.length;
+    document.getElementById('statWhats').textContent = countByChannel('whatsapp');
+    document.getElementById('statLinkedin').textContent = countByChannel('linkedin');
+  }
+
+  var activeFilter = '';
+  document.querySelectorAll('#channelFilter .ch-pill').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('#channelFilter .ch-pill').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      activeFilter = btn.getAttribute('data-ch');
+      renderList();
+    });
+  });
+
+  function rowHtml(t) {
+    var vars = extractVars(t.corpo);
+    var preview = t.corpo.length > 78 ? t.corpo.slice(0, 78) + '…' : t.corpo;
+    return '' +
+      '<tr data-id="' + t.id + '">' +
+        '<td><div class="row-title" data-act="edit">' + escapeHtml(t.nome) + '</div><div class="row-sub">' + escapeHtml(preview) + '</div></td>' +
+        '<td><span class="ch-tag ' + t.canal + '">' + CH_ICON[t.canal] + CH_LABEL[t.canal] + '</span></td>' +
+        '<td>' + vars.map(function (v) { return '<span class="var-chip">{{' + v + '}}</span>'; }).join('') + '</td>' +
+        '<td><span class="usage-badge ' + (t.usos.length ? 'used' : 'unused') + '">' + (t.usos.length ? t.usos.length + ' local' + (t.usos.length === 1 ? '' : 'is') : 'sem uso') + '</span></td>' +
+        '<td><div class="row-actions">' +
+          '<button class="icon-btn" data-act="edit" title="Editar"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M11 4.5L15.5 9 6 18.5H1.5V14z"/></svg></button>' +
+          '<button class="icon-btn danger" data-act="del" title="Excluir"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 6h12"/><path d="M7.5 6V4.6a1 1 0 011-1h3a1 1 0 011 1V6"/><path d="M6 6l.7 9.4a1 1 0 001 .9h4.6a1 1 0 001-.9L14 6"/></svg></button>' +
+        '</div></td>' +
+      '</tr>';
+  }
+
+  function renderList() {
+    var tbody = document.getElementById('listBody');
+    var items = TEMPLATES.filter(function (t) { return !activeFilter || t.canal === activeFilter; });
+    tbody.innerHTML = items.map(rowHtml).join('') || '<tr><td colspan="5" style="text-align:center; color:var(--ink-faint); padding:24px;">Nenhum modelo nesse canal.</td></tr>';
+    tbody.querySelectorAll('[data-act="edit"]').forEach(function (el) { el.addEventListener('click', function () { openDrawer(el.closest('tr').getAttribute('data-id')); }); });
+    tbody.querySelectorAll('[data-act="del"]').forEach(function (el) { el.addEventListener('click', function () { deleteTpl(el.closest('tr').getAttribute('data-id')); }); });
+  }
+
+  /* ---------------- drawer ---------------- */
+  var drawer = document.getElementById('drawer'), scrim = document.getElementById('scrim');
+  var editingId = null, selectedChannel = 'whatsapp';
+  var fldCorpo = document.getElementById('fldCorpo');
+  var varButtonsEl = document.getElementById('varButtons');
+  varButtonsEl.innerHTML = VARS.map(function (v) { return '<button type="button" class="var-btn" data-var="' + v + '">{{' + v + '}}</button>'; }).join('');
+  varButtonsEl.querySelectorAll('.var-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var token = '{{' + btn.getAttribute('data-var') + '}}';
+      var start = fldCorpo.selectionStart || fldCorpo.value.length;
+      var end = fldCorpo.selectionEnd || fldCorpo.value.length;
+      fldCorpo.value = fldCorpo.value.slice(0, start) + token + fldCorpo.value.slice(end);
+      fldCorpo.focus();
+      fldCorpo.selectionStart = fldCorpo.selectionEnd = start + token.length;
+      updatePreview();
+    });
+  });
+  function updatePreview() { document.getElementById('pvCorpo').innerHTML = mergeVars(fldCorpo.value); }
+  fldCorpo.addEventListener('input', updatePreview);
+
+  var CH_HINT = {
+    whatsapp: 'Texto livre. Placeholders como [link] ficam pro vendedor completar na hora.',
+    linkedin_conexao: 'A nota de conexão do LinkedIn é limitada a ~300 caracteres pelo próprio LinkedIn.',
+    linkedin_mensagem: 'Mensagem enviada pelo chat do LinkedIn depois da conexão aceita — sem limite curto.'
+  };
+  document.querySelectorAll('#channelSelect .channel-opt').forEach(function (opt) {
+    opt.addEventListener('click', function () {
+      selectedChannel = opt.getAttribute('data-ch');
+      document.querySelectorAll('#channelSelect .channel-opt').forEach(function (o) { o.classList.remove('sel'); });
+      opt.classList.add('sel');
+      document.getElementById('channelHint').textContent = CH_HINT[selectedChannel];
+      document.getElementById('corpoLabel').innerHTML = (selectedChannel === 'linkedin_conexao' ? 'Nota de conexão' : 'Texto da mensagem') + ' <span class="req">*</span>';
+    });
+  });
+
+  function openDrawer(id) {
+    editingId = id || null;
+    var t = id ? TEMPLATES.filter(function (x) { return x.id === id; })[0] : null;
+    document.getElementById('drawerTitle').textContent = t ? 'Editar modelo' : 'Novo modelo';
+    document.getElementById('drawerSub').textContent = t ? 'Atualize o conteúdo de "' + t.nome + '"' : 'Escolha o canal e escreva o texto, com variáveis dinâmicas';
+    ['Nome', 'Corpo'].forEach(function (f) {
+      document.getElementById('err' + f).classList.remove('show');
+      document.getElementById('fld' + f).classList.remove('err');
+    });
+    document.getElementById('fldNome').value = t ? t.nome : '';
+    fldCorpo.value = t ? t.corpo : '';
+    var ch = t ? t.canal : 'whatsapp';
+    document.querySelectorAll('#channelSelect .channel-opt').forEach(function (o) { o.classList.toggle('sel', o.getAttribute('data-ch') === ch); });
+    selectedChannel = ch;
+    document.getElementById('channelHint').textContent = CH_HINT[ch];
+    document.getElementById('corpoLabel').innerHTML = (ch === 'linkedin_conexao' ? 'Nota de conexão' : 'Texto da mensagem') + ' <span class="req">*</span>';
+    updatePreview();
+    drawer.classList.add('show'); scrim.classList.add('show');
+    setTimeout(function () { document.getElementById('fldNome').focus(); }, 220);
+  }
+  function closeDrawer() { drawer.classList.remove('show'); scrim.classList.remove('show'); }
+  document.getElementById('newTplBtn').addEventListener('click', function () { openDrawer(null); });
+  document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+  document.getElementById('drawerCancel').addEventListener('click', closeDrawer);
+  scrim.addEventListener('click', closeDrawer);
+
+  document.getElementById('drawerSave').addEventListener('click', function () {
+    var nome = document.getElementById('fldNome').value.trim();
+    var corpo = fldCorpo.value.trim();
+    var okNome = !!nome, okCorpo = !!corpo;
+    document.getElementById('fldNome').classList.toggle('err', !okNome);
+    document.getElementById('errNome').classList.toggle('show', !okNome);
+    fldCorpo.classList.toggle('err', !okCorpo);
+    document.getElementById('errCorpo').classList.toggle('show', !okCorpo);
+    if (!okNome || !okCorpo) return;
+
+    if (editingId) {
+      var idx = TEMPLATES.findIndex(function (x) { return x.id === editingId; });
+      TEMPLATES[idx] = Object.assign({}, TEMPLATES[idx], { nome: nome, corpo: corpo, canal: selectedChannel });
+      showToast('Modelo "' + nome + '" atualizado.', true);
+    } else {
+      seq++;
+      TEMPLATES.push({ id: 'm' + seq, canal: selectedChannel, nome: nome, corpo: corpo, usos: [] });
+      showToast('Modelo "' + nome + '" criado.', true);
+    }
+    closeDrawer();
+    renderList(); recalcStats();
+  });
+
+  function deleteTpl(id) {
+    var t = TEMPLATES.filter(function (x) { return x.id === id; })[0];
+    if (!t) return;
+    if (t.usos.length > 0) { showToast('Não é possível excluir: em uso em ' + t.usos.length + ' sequência(s).'); return; }
+    TEMPLATES = TEMPLATES.filter(function (x) { return x.id !== id; });
+    renderList(); recalcStats();
+    showToast('Modelo "' + t.nome + '" excluído.', true);
+  }
+
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDrawer(); });
+
+  recalcStats();
+  renderList();
+
+  /* ==================================================================
+     TAB 2 — como a Tarefa aparece pro vendedor, com texto já mesclado
+     ================================================================== */
+  var CONTACT = { nome: 'Marcos Vinícius Ferreira', empresa: 'Grupo Andrade', cargo: 'Diretor de Operações', responsavel: 'Felipe Nogueira', setor: 'Distribuição', whatsapp: '5511998887766', linkedin: 'https://linkedin.com/in/marcos-ferreira-exemplo' };
+
+  function renderMerged(text) {
+    return escapeHtml(text).replace(/\{\{(\w+)\}\}/g, function (m, key) {
+      return '<span class="msg-var">' + escapeHtml(CONTACT[key] || m) + '</span>';
+    });
+  }
+  function plainMerged(text) {
+    return text.replace(/\{\{(\w+)\}\}/g, function (m, key) { return CONTACT[key] || m; });
+  }
+
+  var TASKS = [
+    { id: 'tk1', titulo: 'WhatsApp — D9 primeiro contato', tipo: 'whatsapp', hora: '09:30', tplId: 'm3' },
+    { id: 'tk2', titulo: 'LinkedIn — nota de conexão D0', tipo: 'linkedin_conexao', hora: '11:00', tplId: 'm4' },
+    { id: 'tk3', titulo: 'Ligar para confirmar interesse', tipo: 'ligacao', hora: '15:00', tplId: null }
+  ];
+  var TASK_TYPE_ICON = {
+    whatsapp: CH_ICON.whatsapp,
+    linkedin_conexao: CH_ICON.linkedin_conexao,
+    ligacao: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 3.5c1.6 5.6 6.4 10.4 12 12l1.8-2.6a1 1 0 00-.5-1.5l-3-1.1a1 1 0 00-1.1.3l-1 1.2a10 10 0 01-5.5-5.5l1.2-1a1 1 0 00.3-1.1l-1.1-3a1 1 0 00-1.5-.5L4 3.5z"/></svg>'
+  };
+  var TASK_TYPE_LABEL = { whatsapp: 'WhatsApp', linkedin_conexao: 'LinkedIn (conexão)', ligacao: 'Ligação' };
+
+  function taskRowHtml(t) {
+    var tpl = t.tplId ? TEMPLATES.filter(function (x) { return x.id === t.tplId; })[0] : null;
+    var msgBtn = tpl ? (
+      '<button class="task-msg-btn" data-act="toggle-msg" data-id="' + t.id + '">' +
+        '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="14" height="12" rx="1.8"/><path d="M6 8h8M6 11h5"/></svg>' +
+        'Ver mensagem' +
+      '</button>'
+    ) : '';
+    return '' +
+      '<div class="task-row">' +
+        '<div class="task-check"></div>' +
+        '<div class="task-body">' +
+          '<div class="task-title">' + escapeHtml(t.titulo) + '</div>' +
+          '<div class="task-meta-row">' +
+            '<span class="task-meta-item mono">' + t.hora + '</span>' +
+            '<span class="task-meta-item">' + TASK_TYPE_ICON[t.tipo] + TASK_TYPE_LABEL[t.tipo] + '</span>' +
+            '<span class="task-meta-item link-chip">' + escapeHtml(CONTACT.empresa) + ' · ' + escapeHtml(CONTACT.nome) + '</span>' +
+          '</div>' +
+          msgBtn +
+          (tpl ? '<div class="msg-panel" id="panel-' + t.id + '">' +
+            '<div class="msg-panel-head">' + CH_ICON[tpl.canal] + CH_LABEL[tpl.canal] + ' — pronto pra copiar<span class="tpl-name">modelo: ' + escapeHtml(tpl.nome) + '</span></div>' +
+            '<div class="msg-panel-body"><div class="msg-text" id="msgtext-' + t.id + '">' + renderMerged(tpl.corpo) + '</div></div>' +
+            '<div class="msg-panel-foot">' +
+              '<button class="btn-primary" data-act="copy" data-id="' + t.id + '"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="6.5" y="6.5" width="10" height="11" rx="1.8"/><path d="M4.5 13.5h-1a1 1 0 01-1-1V4.8a1 1 0 011-1h8a1 1 0 011 1v1"/></svg>Copiar mensagem</button>' +
+              (tpl.canal === 'whatsapp' ? '<a class="btn-whats" target="_blank" rel="noopener" href="https://wa.me/' + CONTACT.whatsapp + '?text=' + encodeURIComponent(plainMerged(tpl.corpo)) + '"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2.5a7.5 7.5 0 00-6.4 11.4L2.5 17.5l3.7-1.1A7.5 7.5 0 1010 2.5z" opacity=".22"/><path d="M4 17l1.1-3.4a6.9 6.9 0 113 2.7z" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>Abrir no WhatsApp</a>' : '') +
+              (tpl.canal.indexOf('linkedin') === 0 ? '<a class="btn-ghost" target="_blank" rel="noopener" href="' + CONTACT.linkedin + '"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2.4"/></svg>Abrir perfil no LinkedIn</a>' : '') +
+            '</div>' +
+          '</div>' : '') +
+        '</div>' +
+        '<div class="task-side"><span class="avatar" title="Felipe Nogueira">FN</span></div>' +
+      '</div>';
+  }
+
+  function renderTasks() {
+    document.getElementById('taskListBody').innerHTML = TASKS.map(taskRowHtml).join('');
+    document.querySelectorAll('[data-act="toggle-msg"]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.getElementById('panel-' + btn.getAttribute('data-id')).classList.toggle('open');
+      });
+    });
+    document.querySelectorAll('[data-act="copy"]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.getAttribute('data-id');
+        var t = TASKS.filter(function (x) { return x.id === id; })[0];
+        var tpl = TEMPLATES.filter(function (x) { return x.id === t.tplId; })[0];
+        var text = plainMerged(tpl.corpo);
+        function done() { showToast('Mensagem copiada — cole na conversa.', true); }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text); done(); });
+        } else {
+          fallbackCopy(text); done();
+        }
+      });
+    });
+  }
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+
+  renderTasks();
+})();
+</script>
