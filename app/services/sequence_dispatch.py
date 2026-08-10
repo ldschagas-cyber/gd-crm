@@ -16,6 +16,7 @@ from app.models.company import Company
 from app.models.contact import Contact
 from app.models.deal import Deal
 from app.models.email_template import EmailTemplate
+from app.models.message_template import MessageTemplate
 from app.models.sequence import Sequence, SequenceEnrollment
 from app.models.task import Task
 from app.models.timeline import TimelineEvent
@@ -56,20 +57,34 @@ def resolve_company_id(db: Session, company_id: UUID | None, deal_id: UUID | Non
     return None
 
 
-def render_template(template: EmailTemplate, contact: Contact, company: Company | None, responsavel: User | None) -> tuple[str, str]:
-    valores = {
+def build_merge_valores(contact: Contact, company: Company | None, responsavel: User | None) -> dict[str, str]:
+    """Valores disponíveis pra {{variável}} — usado tanto por e-mail quanto por
+    WhatsApp/LinkedIn, pra manter as duas famílias de modelo consistentes."""
+    return {
         "nome": contact.nome,
         "empresa": (company.nome_fantasia or company.razao_social) if company else "",
         "cargo": contact.cargo or "",
         "responsavel": responsavel.nome if responsavel else "",
+        "setor": (company.setor or company.segmento or "") if company else "",
         "contexto_pessoal": contact.contexto_pessoal or "",
         "contexto_rapido": (company.contexto_rapido or "") if company else "",
     }
 
-    def _sub(texto: str) -> str:
-        return VAR_RE.sub(lambda m: valores.get(m.group(1), m.group(0)), texto)
 
-    return _sub(template.assunto), _sub(template.corpo)
+def merge_vars(texto: str, valores: dict[str, str]) -> str:
+    return VAR_RE.sub(lambda m: valores.get(m.group(1), m.group(0)), texto)
+
+
+def render_template(template: EmailTemplate, contact: Contact, company: Company | None, responsavel: User | None) -> tuple[str, str]:
+    valores = build_merge_valores(contact, company, responsavel)
+    return merge_vars(template.assunto, valores), merge_vars(template.corpo, valores)
+
+
+def render_message_template(template: MessageTemplate, contact: Contact, company: Company | None,
+                             responsavel: User | None) -> str:
+    """Mesma mescla de variáveis do e-mail, só que pro corpo único de WhatsApp/LinkedIn."""
+    valores = build_merge_valores(contact, company, responsavel)
+    return merge_vars(template.corpo, valores)
 
 
 def has_active_email_integration(db: Session, user_id: UUID) -> bool:
@@ -139,7 +154,23 @@ def _titulo_para_step(db: Session, sequence: Sequence, step) -> str:
         template = db.get(EmailTemplate, step.template_id)
         if template:
             return f"{base} — {sequence.nome}: {template.nome}"
+    if step.message_template_id:
+        message_template = db.get(MessageTemplate, step.message_template_id)
+        if message_template:
+            return f"{base} — {sequence.nome}: {message_template.nome}"
     return f"{base} — {sequence.nome}"
+
+
+def _descricao_para_step(db: Session, step, contact: Contact | None, company: Company | None,
+                          responsavel: User | None) -> str | None:
+    """Texto que vai em Task.descricao: pra WhatsApp/LinkedIn com modelo, já vem
+    mesclado com os dados reais do contato — pronto pro vendedor copiar e colar.
+    Sem modelo (ou sem contato pra mesclar), cai pro roteiro livre de sempre."""
+    if step.message_template_id and contact:
+        message_template = db.get(MessageTemplate, step.message_template_id)
+        if message_template:
+            return render_message_template(message_template, contact, company, responsavel)
+    return step.instrucoes
 
 
 def advance_due_steps(db: Session, tenant_id: UUID, enrollment: SequenceEnrollment) -> int:
@@ -156,6 +187,9 @@ def advance_due_steps(db: Session, tenant_id: UUID, enrollment: SequenceEnrollme
     steps = sorted(sequence.steps, key=lambda s: s.ordem)
     responsavel_id = _resolve_responsavel(db, enrollment, sequence)
     contact = resolve_contact(db, enrollment.contact_id, enrollment.deal_id)
+    company_id = resolve_company_id(db, enrollment.company_id, enrollment.deal_id, contact)
+    company = db.get(Company, company_id) if company_id else None
+    responsavel = db.get(User, responsavel_id)
     hoje = date.today()
     dias_decorridos = (datetime.now(timezone.utc) - enrollment.iniciado_em).days
 
@@ -165,18 +199,15 @@ def advance_due_steps(db: Session, tenant_id: UUID, enrollment: SequenceEnrollme
         enviado = False
         if step.tipo == "email" and step.template_id:
             template = db.get(EmailTemplate, step.template_id)
-            company_id = resolve_company_id(db, enrollment.company_id, enrollment.deal_id, contact)
             if template and contact and contact.email and company_id:
-                assunto, corpo = render_template(
-                    template, contact, db.get(Company, company_id), db.get(User, responsavel_id),
-                )
+                assunto, corpo = render_template(template, contact, company, responsavel)
                 enviado = send_step_email(db, responsavel_id, contact, assunto, corpo)
                 if enviado:
                     log_email_sent(db, tenant_id, company_id, contact.id, enrollment.deal_id, assunto, responsavel_id)
         if not enviado:
             db.add(Task(
                 tenant_id=tenant_id, titulo=_titulo_para_step(db, sequence, step), tipo=step.tipo,
-                descricao=step.instrucoes,
+                descricao=_descricao_para_step(db, step, contact, company, responsavel),
                 responsavel_id=responsavel_id,
                 company_id=enrollment.company_id, contact_id=enrollment.contact_id, deal_id=enrollment.deal_id,
                 data=hoje,

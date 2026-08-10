@@ -51,6 +51,12 @@ class TaskRead(ORMModel):
     concluida_em: datetime | None
     resultado_ligacao: str | None
     created_at: datetime
+    # Preenchidos a partir do contato vinculado (quando houver) — usados no
+    # front pra montar os atalhos "Abrir no WhatsApp" / "Abrir perfil no LinkedIn"
+    # na mensagem pronta pra copiar (tipo whatsapp/linkedin_conexao/linkedin_mensagem).
+    contato_nome: str | None = None
+    contato_whatsapp: str | None = None
+    contato_linkedin: str | None = None
 
 
 class TaskComplete(BaseModel):

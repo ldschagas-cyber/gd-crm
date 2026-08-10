@@ -16,6 +16,26 @@ import '../styles/dataTable.css'
 import './TarefasPage.css'
 
 const PRIO_LABEL = { alta: 'Alta', media: 'Média', baixa: 'Baixa' }
+const MESSAGE_TASK_TYPES = ['whatsapp', 'linkedin_conexao', 'linkedin_mensagem']
+
+async function copyText(text) {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text)
+      return
+    } catch {
+      // segue pro fallback abaixo (ex.: página não está em contexto seguro)
+    }
+  }
+  const ta = document.createElement('textarea')
+  ta.value = text
+  ta.style.position = 'fixed'
+  ta.style.opacity = '0'
+  document.body.appendChild(ta)
+  ta.select()
+  try { document.execCommand('copy') } catch { /* melhor esforço — sem clipboard, usuário seleciona manualmente */ }
+  document.body.removeChild(ta)
+}
 
 function initials(nome) {
   if (!nome) return '?'
@@ -205,6 +225,18 @@ export default function TarefasPage() {
 function TaskRow({ task, companiesById, usersById, onComplete, onEdit, onDelete }) {
   const overdue = task.status === 'pendente' && dayDiff(task.data) < 0
   const done = task.status === 'concluida'
+  const [msgOpen, setMsgOpen] = useState(false)
+  const [copiado, setCopiado] = useState(false)
+  // Tarefa de WhatsApp/LinkedIn gerada por Sequência com modelo já vem com o texto
+  // mesclado (nome/empresa/etc.) em descricao — mostra painel de copiar/colar em
+  // vez do resumo de uma linha só.
+  const isMensagem = MESSAGE_TASK_TYPES.includes(task.tipo) && Boolean(task.descricao)
+
+  async function handleCopy() {
+    await copyText(task.descricao)
+    setCopiado(true)
+    setTimeout(() => setCopiado(false), 2000)
+  }
 
   return (
     <div className={`task-row${overdue ? ' overdue' : ''}${done ? ' done' : ''}`}>
@@ -218,7 +250,7 @@ function TaskRow({ task, companiesById, usersById, onComplete, onEdit, onDelete 
       </button>
       <div className="task-body">
         <div className="task-title">{task.titulo}</div>
-        {task.descricao && <div className="task-descricao" title={task.descricao}>{task.descricao}</div>}
+        {task.descricao && !isMensagem && <div className="task-descricao" title={task.descricao}>{task.descricao}</div>}
         <div className="task-meta-row">
           <span className="task-meta-item mono">{task.hora ? task.hora.slice(0, 5) : 'Dia todo'}</span>
           <span className="task-meta-item"><TaskTypeChip tipo={task.tipo} /></span>
@@ -226,6 +258,34 @@ function TaskRow({ task, companiesById, usersById, onComplete, onEdit, onDelete 
           {overdue && <span className="overdue-pill">Atrasada {Math.abs(dayDiff(task.data))}d</span>}
           {task.company_id && <span className="task-meta-item link-chip">{companiesById[task.company_id] ?? '—'}</span>}
         </div>
+
+        {isMensagem && (
+          <button type="button" className="task-msg-toggle" onClick={() => setMsgOpen((v) => !v)}>
+            {msgOpen ? 'Ocultar mensagem' : 'Ver mensagem'}
+          </button>
+        )}
+        {isMensagem && msgOpen && (
+          <div className="msg-panel">
+            <div className="msg-panel-text">{task.descricao}</div>
+            <div className="msg-panel-actions">
+              <button type="button" className="btn-ghost" onClick={handleCopy}>{copiado ? 'Copiado ✓' : 'Copiar mensagem'}</button>
+              {task.tipo === 'whatsapp' && task.contato_whatsapp && (
+                <a
+                  className="btn-whats"
+                  target="_blank" rel="noopener noreferrer"
+                  href={`https://wa.me/${task.contato_whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(task.descricao)}`}
+                >
+                  Abrir no WhatsApp
+                </a>
+              )}
+              {task.tipo.startsWith('linkedin') && task.contato_linkedin && (
+                <a className="btn-ghost" target="_blank" rel="noopener noreferrer" href={task.contato_linkedin}>
+                  Abrir perfil no LinkedIn
+                </a>
+              )}
+            </div>
+          </div>
+        )}
       </div>
       <div className="task-side">
         <span className="avatar" title={usersById[task.responsavel_id] ?? ''}>{initials(usersById[task.responsavel_id])}</span>

@@ -18,6 +18,7 @@ import TaskQueuePage from './pages/TaskQueuePage.jsx'
 import SequenciasPage from './pages/SequenciasPage.jsx'
 import WorkflowsPage from './pages/WorkflowsPage.jsx'
 import ModelosEmailPage from './pages/ModelosEmailPage.jsx'
+import ModelosMensagemPage from './pages/ModelosMensagemPage.jsx'
 import SnippetsPage from './pages/SnippetsPage.jsx'
 import FormulariosRastreioPage from './pages/FormulariosRastreioPage.jsx'
 import ConfiguracoesPage from './pages/ConfiguracoesPage.jsx'
@@ -57,6 +58,7 @@ export default function App() {
         <Route path="/sequencias" element={<SequenciasPage />} />
         <Route path="/workflows" element={<WorkflowsPage />} />
         <Route path="/modelos-email" element={<ModelosEmailPage />} />
+        <Route path="/modelos-mensagem" element={<ModelosMensagemPage />} />
         <Route path="/snippets" element={<SnippetsPage />} />
         <Route path="/formularios" element={<FormulariosRastreioPage />} />
         <Route path="/usuarios" element={<UsuariosPage />} />

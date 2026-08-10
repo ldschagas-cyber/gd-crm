@@ -7,18 +7,24 @@ from pydantic import BaseModel, Field, model_validator
 from app.schemas.common import ORMModel
 
 TIPOS_STEP = {"ligacao", "email", "whatsapp", "linkedin_conexao", "linkedin_mensagem", "tarefa_manual", "followup"}
+TIPOS_COM_MESSAGE_TEMPLATE = {"whatsapp", "linkedin_conexao", "linkedin_mensagem"}
 
 
 class SequenceStepIn(BaseModel):
     dia_offset: int = Field(ge=0)
     tipo: str
-    template_id: UUID | None = None
+    template_id: UUID | None = None  # modelo de e-mail — só quando tipo="email"
+    message_template_id: UUID | None = None  # modelo de WhatsApp/LinkedIn
     instrucoes: str | None = None
 
     @model_validator(mode="after")
     def valida_tipo(self):
         if self.tipo not in TIPOS_STEP:
             raise ValueError(f"Tipo de etapa inválido: {self.tipo}")
+        if self.template_id is not None and self.tipo != "email":
+            raise ValueError("template_id só é válido para etapas do tipo email")
+        if self.message_template_id is not None and self.tipo not in TIPOS_COM_MESSAGE_TEMPLATE:
+            raise ValueError(f"message_template_id só é válido para etapas do tipo {sorted(TIPOS_COM_MESSAGE_TEMPLATE)}")
         return self
 
 
@@ -28,6 +34,7 @@ class SequenceStepRead(ORMModel):
     dia_offset: int
     tipo: str
     template_id: UUID | None
+    message_template_id: UUID | None
     instrucoes: str | None
 
 
