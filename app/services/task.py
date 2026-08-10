@@ -5,6 +5,7 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import NotFoundError
+from app.models.contact import Contact
 from app.models.task import Task, TaskStatus
 from app.models.timeline import TimelineType
 from app.repositories.task import TaskRepository
@@ -19,6 +20,21 @@ class TaskService:
         self.repo = TaskRepository(db)
         self.timeline = TimelineService(db)
 
+    def _attach_contato(self, tasks: "list[Task]") -> "list[Task]":
+        """Anexa nome/whatsapp/linkedin do contato vinculado a cada tarefa (em lote,
+        pra não gerar 1 query por linha) — usado pra montar os atalhos de copiar/
+        abrir mensagem de WhatsApp e LinkedIn na tela de Tarefas."""
+        ids = {t.contact_id for t in tasks if t.contact_id}
+        if not ids:
+            return tasks
+        contatos = {c.id: c for c in self.db.query(Contact).filter(Contact.id.in_(ids)).all()}
+        for t in tasks:
+            contato = contatos.get(t.contact_id) if t.contact_id else None
+            t.contato_nome = contato.nome if contato else None
+            t.contato_whatsapp = contato.whatsapp if contato else None
+            t.contato_linkedin = contato.linkedin if contato else None
+        return tasks
+
     def list(self, params: PageParams, responsavel_id: UUID | None = None,
              status: str | None = None, tipo: str | None = None,
              company_id: UUID | None = None, prioridade: str | None = None,
@@ -27,8 +43,9 @@ class TaskService:
              contact_id: UUID | None = None) -> tuple[list[Task], int]:
         filters = self._filters(responsavel_id, status, tipo, company_id, prioridade, busca,
                                 data_inicio, data_fim, deal_id, contact_id)
-        return self.repo.list(*filters, offset=params.offset, limit=params.size,
-                              order_by=Task.data)
+        items, total = self.repo.list(*filters, offset=params.offset, limit=params.size,
+                                      order_by=Task.data)
+        return self._attach_contato(items), total
 
     def list_for_export(self, responsavel_id: UUID | None = None, status: str | None = None,
                         tipo: str | None = None, company_id: UUID | None = None,
@@ -70,6 +87,7 @@ class TaskService:
         task = self.repo.get(task_id)
         if task is None:
             raise NotFoundError("Tarefa não encontrada")
+        self._attach_contato([task])
         return task
 
     def create(self, data: TaskCreate) -> Task:

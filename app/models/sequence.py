@@ -37,6 +37,11 @@ class SequenceStep(Base):
     dia_offset: Mapped[int] = mapped_column(Integer, nullable=False)
     tipo: Mapped[str] = mapped_column(String(20), nullable=False)
     template_id: Mapped[uuid.UUID | None] = mapped_column(PGUUID(as_uuid=True), ForeignKey("email_templates.id"))
+    # Modelo de WhatsApp/LinkedIn — coluna separada de `template_id` porque este
+    # tem FK pra email_templates; um step só usa uma das duas, conforme `tipo`.
+    message_template_id: Mapped[uuid.UUID | None] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("message_templates.id")
+    )
     instrucoes: Mapped[str | None] = mapped_column(Text)
 
     sequence: Mapped[Sequence] = relationship(back_populates="steps")

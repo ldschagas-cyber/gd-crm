@@ -52,7 +52,8 @@ class SequenceService:
     def _build_steps(self, steps_in: "list[SequenceStepIn]") -> "list[SequenceStep]":
         return [
             SequenceStep(ordem=idx, dia_offset=s.dia_offset, tipo=s.tipo,
-                        template_id=s.template_id, instrucoes=s.instrucoes)
+                        template_id=s.template_id, message_template_id=s.message_template_id,
+                        instrucoes=s.instrucoes)
             for idx, s in enumerate(steps_in)
         ]
 
@@ -81,7 +82,8 @@ class SequenceService:
             created_by=get_current_user_id(),
             steps=[
                 SequenceStep(ordem=s.ordem, dia_offset=s.dia_offset, tipo=s.tipo,
-                            template_id=s.template_id, instrucoes=s.instrucoes)
+                            template_id=s.template_id, message_template_id=s.message_template_id,
+                            instrucoes=s.instrucoes)
                 for s in original.steps
             ],
         )

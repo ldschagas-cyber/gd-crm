@@ -41,6 +41,7 @@ const NAV_GROUPS = [
       { to: '/sequencias', label: 'Sequências', icon: IconSequence },
       { to: '/workflows', label: 'Workflows', icon: IconWorkflow },
       { to: '/modelos-email', label: 'Modelos de e-mail', icon: IconEmailTemplate },
+      { to: '/modelos-mensagem', label: 'Modelos de mensagem', icon: IconMessageTemplate },
       { to: '/snippets', label: 'Snippets', icon: IconSnippet },
       { to: '/formularios', label: 'Formulários', icon: IconForm },
     ],
@@ -258,6 +259,15 @@ function IconWorkflow() {
     </svg>
   )
 }
+function IconMessageTemplate() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <path d="M4 17l1.1-3.4a6.9 6.9 0 113 2.7z" />
+      <path d="M7.3 8.3c.2 2.4 2 4.2 4.4 4.4" />
+    </svg>
+  )
+}
+
 function IconEmailTemplate() {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
