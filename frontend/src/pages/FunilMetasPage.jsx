@@ -1,9 +1,14 @@
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getFunilMetasResumo } from '../api/funilMetas'
 import { getFunilMetasConfig, updateFunilMetasConfig } from '../api/tenant'
 import '../styles/dataTable.css'
 import './FunilMetasPage.css'
+
+function formatCurrency(v) {
+  return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })
+}
 
 // Ordem fixa das etapas (espelha app/schemas/funil_metas.py) — "pesquisadas" é a base,
 // as demais têm % esperado da etapa anterior configurável.
@@ -174,7 +179,19 @@ export default function FunilMetasPage() {
                           <div className="fm-real-fill" style={{ width: `${realW}%`, background: COLORS[i] }} />
                         </div>
                       </div>
-                      <div className="fm-nums"><div className="real">{fmt(e.real)}</div><div className="of">meta {fmt(e.meta)}</div></div>
+                      <div className="fm-nums">
+                        <div className="real">{fmt(e.real)}</div><div className="of">meta {fmt(e.meta)}</div>
+                        {e.chave === 'propostas' && resumoQuery.data?.propostas_valor_aberto != null && (
+                          <Link to="/previsao-comercial" className="fm-revenue-chip" title="Ver detalhamento em Previsão Comercial">
+                            {formatCurrency(resumoQuery.data.propostas_valor_aberto)} em aberto →
+                          </Link>
+                        )}
+                        {e.chave === 'fechados' && resumoQuery.data?.fechados_valor_realizado != null && (
+                          <Link to="/previsao-comercial" className="fm-revenue-chip" title="Ver detalhamento em Previsão Comercial">
+                            {formatCurrency(resumoQuery.data.fechados_valor_realizado)} realizado →
+                          </Link>
+                        )}
+                      </div>
                       <div className="fm-pct-cell">
                         {i === 0 ? <span className="fm-muted">topo</span> : (
                           <>
@@ -190,6 +207,19 @@ export default function FunilMetasPage() {
                 })}
               </div>
             </div>
+
+            {resumoQuery.data?.propostas_valor_aberto != null && (
+              <div className="fm-revenue-callout">
+                <div>
+                  <h3>Quer ver isso em receita, não em contagem?</h3>
+                  <p>
+                    Previsão Comercial mostra a mesma etapa "Propostas enviadas" em R$, ponderada por probabilidade e
+                    quebrada por vendedor — inclui o Commit que cada um confirmou pra este mês.
+                  </p>
+                </div>
+                <Link to="/previsao-comercial" className="btn-primary">Ver por vendedor →</Link>
+              </div>
+            )}
 
             <div className="card">
               <div className="card-head">

@@ -121,6 +121,12 @@ export default function NegociosPage() {
   const updateMutation = useMutation({ mutationFn: ({ id, data }) => updateDeal(id, data), onSuccess: () => { setEditingDeal(null); invalidateDeals() } })
   const moveMutation = useMutation({ mutationFn: ({ id, stageId }) => moveDealStage(id, stageId), onSuccess: invalidateDeals })
   const closeMutation = useMutation({ mutationFn: ({ id, data }) => closeDeal(id, data), onSuccess: () => { setLosingDeal(null); invalidateDeals() } })
+  // Commit (Previsão Comercial) — toggle isolado, não passa pelo modal de edição:
+  // o vendedor confirma/desconfirma o fechamento do mês direto no card ou na lista.
+  const commitMutation = useMutation({ mutationFn: ({ id, commit }) => updateDeal(id, { commit }), onSuccess: invalidateDeals })
+  function toggleCommit(deal) {
+    commitMutation.mutate({ id: deal.id, commit: !deal.commit })
+  }
 
   const ganhoStageId = pipeline?.stages.find((s) => s.tipo === 'ganho')?.id
 
@@ -211,6 +217,7 @@ export default function NegociosPage() {
             onEdit={setEditingDeal}
             onWon={markWon}
             onLost={setLosingDeal}
+            onToggleCommit={toggleCommit}
           />
         )}
 
@@ -228,6 +235,7 @@ export default function NegociosPage() {
             onEdit={setEditingDeal}
             onWon={markWon}
             onLost={setLosingDeal}
+            onToggleCommit={toggleCommit}
           />
         )}
       </div>
@@ -269,7 +277,7 @@ export default function NegociosPage() {
   )
 }
 
-function DealsBoard({ query, filters, companiesById, usersById, colorMode, stageTintById, onDropStage, onOpen, onEdit, onWon, onLost }) {
+function DealsBoard({ query, filters, companiesById, usersById, colorMode, stageTintById, onDropStage, onOpen, onEdit, onWon, onLost, onToggleCommit }) {
   const [dragOverStage, setDragOverStage] = useState(null)
   if (query.isLoading) return <p className="state-msg">Carregando…</p>
   if (query.isError) return <p className="state-msg error">Não foi possível carregar o board agora.</p>
@@ -323,8 +331,20 @@ function DealsBoard({ query, filters, companiesById, usersById, colorMode, stage
                   <div className="kb-card-value">{formatCurrency(d.valor_previsto)}</div>
                   {isStalled(d, stage) && <span className="stalled-tag" title={`Sem interação há mais de ${stage.sla_horas}h`}>⚠ Negócio parado</span>}
                   <div className="kb-card-foot">
-                    <span className="kb-card-prob">{d.probabilidade != null ? `${d.probabilidade}%` : ''}</span>
+                    <span className="kb-card-prob">
+                      {d.probabilidade != null ? `${d.probabilidade}%` : ''}
+                      {d.commit && <span className="kb-card-commit" title="Commit deste mês (Previsão Comercial)">★ Commit</span>}
+                    </span>
                     <div className="kb-card-tools" onClick={(e) => e.stopPropagation()}>
+                      {d.status === 'aberto' && (
+                        <button
+                          className={`commit-star${d.commit ? ' active' : ''}`}
+                          title={d.commit ? 'Remover do Commit' : 'Marcar como Commit deste mês'}
+                          onClick={() => onToggleCommit(d)}
+                        >
+                          {d.commit ? '★' : '☆'}
+                        </button>
+                      )}
                       <button title="Editar" onClick={() => onEdit(d)}>✎</button>
                       {d.status === 'aberto' && <button className="won" title="Marcar como ganho" onClick={() => onWon(d)}>✓</button>}
                       {d.status === 'aberto' && <button className="lost" title="Marcar como perdido" onClick={() => onLost(d)}>✕</button>}
@@ -351,7 +371,7 @@ function DealsBoard({ query, filters, companiesById, usersById, colorMode, stage
   )
 }
 
-function DealsList({ query, page, setPage, companiesById, usersById, stages, colorMode, stageTintById, onOpen, onEdit, onWon, onLost }) {
+function DealsList({ query, page, setPage, companiesById, usersById, stages, colorMode, stageTintById, onOpen, onEdit, onWon, onLost, onToggleCommit }) {
   const stagesById = Object.fromEntries(stages.map((s) => [s.id, s.nome]))
   const stageObjById = Object.fromEntries(stages.map((s) => [s.id, s]))
   const total = query.data?.total ?? 0
@@ -426,6 +446,15 @@ function DealsList({ query, page, setPage, companiesById, usersById, stages, col
                   <td>{usersById[d.responsavel_id] ?? '—'}</td>
                   <td>{d.data_prev_fechamento ? new Date(d.data_prev_fechamento + 'T00:00:00').toLocaleDateString('pt-BR') : '—'}</td>
                   <td className="actions-col" onClick={(e) => e.stopPropagation()}>
+                    {d.status === 'aberto' && (
+                      <button
+                        className={`row-action commit-star${d.commit ? ' active' : ''}`}
+                        title={d.commit ? 'Remover do Commit' : 'Marcar como Commit deste mês'}
+                        onClick={() => onToggleCommit(d)}
+                      >
+                        {d.commit ? '★' : '☆'}
+                      </button>
+                    )}
                     <button className="row-action" title="Editar" onClick={() => onEdit(d)}>✎</button>
                     {d.status === 'aberto' && <button className="row-action" title="Ganho" onClick={() => onWon(d)}>✓</button>}
                     {d.status === 'aberto' && <button className="row-action" title="Perdido" onClick={() => onLost(d)}>✕</button>}
@@ -583,6 +612,7 @@ function EditDealModal({ deal, companies, users, onClose, onSubmit, submitting, 
     valor_previsto: deal.valor_previsto ?? '',
     probabilidade: deal.probabilidade ?? '',
     data_prev_fechamento: deal.data_prev_fechamento ?? '',
+    commit: deal.commit ?? false,
   })
 
   function set(field) {
@@ -597,6 +627,7 @@ function EditDealModal({ deal, companies, users, onClose, onSubmit, submitting, 
       valor_previsto: form.valor_previsto === '' ? null : Number(form.valor_previsto),
       probabilidade: form.probabilidade === '' ? null : parseInt(form.probabilidade, 10),
       data_prev_fechamento: form.data_prev_fechamento || null,
+      commit: form.commit,
     })
   }
 
@@ -635,6 +666,10 @@ function EditDealModal({ deal, companies, users, onClose, onSubmit, submitting, 
               <input id="origem" value={companies.find((c) => c.id === deal.company_id)?.origem || 'Sem origem'} disabled />
             </div>
           </div>
+          <label className="field-checkbox">
+            <input type="checkbox" checked={form.commit} onChange={(e) => setForm((f) => ({ ...f, commit: e.target.checked }))} />
+            Commit — confirmo que este negócio fecha no mês previsto
+          </label>
           {error && <p className="state-msg error">Não foi possível salvar. Confira os dados e tente de novo.</p>}
           <div className="modal-actions">
             <button type="button" className="btn-ghost" onClick={onClose}>Cancelar</button>

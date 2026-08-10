@@ -66,7 +66,25 @@ class FunilMetasService:
             raise AppException("Modo inválido — use 'coorte' ou 'atividade'")
         start, end = self._periodo_bounds(mes)
         reais = self._reais_atividade(start, end) if modo == "atividade" else self._reais_coorte(start, end)
-        return self._montar_resumo(modo, mes, self.get_config(), reais)
+        resumo = self._montar_resumo(modo, mes, self.get_config(), reais)
+        resumo.propostas_valor_aberto = self._valor_propostas_aberto()
+        resumo.fechados_valor_realizado = self._valor_fechados_periodo(start, end)
+        return resumo
+
+    # ---- ponte com Previsão Comercial (docs/PLANO_PREVISAO_COMERCIAL.md §3) ----------
+    def _valor_propostas_aberto(self) -> float | None:
+        stage_ids = self._stage_ids_for_marco("proposta")
+        if not stage_ids:
+            return None
+        deals, _ = self.deals.list(Deal.stage_id.in_(stage_ids), Deal.status == DealStatus.ABERTO.value, limit=100_000)
+        return round(sum(float(d.valor_previsto or 0) for d in deals), 2)
+
+    def _valor_fechados_periodo(self, start: datetime, end: datetime) -> float:
+        deals, _ = self.deals.list(
+            Deal.status == DealStatus.GANHO.value, Deal.data_fechamento >= start, Deal.data_fechamento < end,
+            limit=100_000,
+        )
+        return round(sum(float(d.valor_previsto or 0) for d in deals), 2)
 
     def _periodo_bounds(self, mes: str) -> tuple[datetime, datetime]:
         try:

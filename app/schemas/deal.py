@@ -29,6 +29,10 @@ class DealUpdate(BaseModel):
     valor_previsto: float | None = None
     probabilidade: int | None = Field(default=None, ge=0, le=100)
     data_prev_fechamento: date | None = None
+    # Previsão Comercial (ver docs/PLANO_PREVISAO_COMERCIAL.md) — o vendedor confirma que
+    # fecha este mês. Campo isolado de propósito: dá pra togglar sem reenviar o resto do
+    # formulário (PUT já ignora campos não enviados via exclude_unset).
+    commit: bool | None = None
 
 
 class DealStageMove(BaseModel):
@@ -55,5 +59,6 @@ class DealRead(ORMModel):
     status: str
     motivo_perda: str | None
     data_fechamento: datetime | None
+    commit: bool
     created_at: datetime
     ultima_interacao: datetime

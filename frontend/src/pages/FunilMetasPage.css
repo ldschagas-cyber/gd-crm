@@ -56,6 +56,23 @@ tr.fm-row-atencao td:first-child { box-shadow: inset 3px 0 0 var(--warning); }
 .fm-pct-input .f-input { max-width: 100px; }
 .fm-suffix { font-size: 12.5px; color: var(--ink-faint); }
 
+/* Ponte com Previsão Comercial (docs/PLANO_PREVISAO_COMERCIAL.md §3) — chip de R$ nas
+   linhas Propostas/Fechados do funil de contagem, e callout logo abaixo do card do funil. */
+.fm-revenue-chip {
+  display: block; margin-top: 3px; font-family: var(--font-mono); font-size: 10.5px; font-weight: 700;
+  color: var(--amber-dark); background: var(--amber-light); border-radius: var(--r-pill);
+  padding: 2px 8px; white-space: nowrap; text-decoration: none; width: fit-content; margin-left: auto;
+}
+.fm-revenue-chip:hover { filter: brightness(0.96); }
+
+.fm-revenue-callout {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  background: var(--card-bg); border: 1px solid var(--amber); border-radius: var(--r-card);
+  padding: 14px 18px; margin-bottom: 18px; box-shadow: var(--shadow);
+}
+.fm-revenue-callout h3 { margin: 0 0 3px; font-family: var(--font-brand); font-size: 13.5px; font-weight: 700; }
+.fm-revenue-callout p { margin: 0; font-size: 12.5px; color: var(--ink-dim); line-height: 1.5; max-width: 520px; }
+
 @media (max-width: 900px) {
   .fm-row { grid-template-columns: 1fr; gap: 6px; }
   .fm-nums, .fm-pct-cell { align-items: flex-start; text-align: left; }

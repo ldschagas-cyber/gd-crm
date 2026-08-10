@@ -88,6 +88,7 @@ export default function DealDetailPage() {
         valor_previsto: deal.valor_previsto ?? '',
         probabilidade: deal.probabilidade ?? '',
         data_prev_fechamento: deal.data_prev_fechamento ?? '',
+        commit: deal.commit ?? false,
       })
     }
   }, [deal])
@@ -105,6 +106,7 @@ export default function DealDetailPage() {
       valor_previsto: form.valor_previsto === '' ? null : Number(form.valor_previsto),
       probabilidade: form.probabilidade === '' ? null : Number(form.probabilidade),
       data_prev_fechamento: form.data_prev_fechamento || null,
+      commit: form.commit,
     })
   }
 
@@ -156,6 +158,12 @@ export default function DealDetailPage() {
           <div className="stat-tile"><div className="t">Probabilidade</div><div className="v">{deal.probabilidade != null ? `${deal.probabilidade}%` : '—'}</div></div>
           <div className="stat-tile"><div className="t">Previsão de fechamento</div><div className="v">{deal.data_prev_fechamento ? new Date(`${deal.data_prev_fechamento}T00:00:00`).toLocaleDateString('pt-BR') : '—'}</div></div>
           <div className="stat-tile"><div className="t">Origem</div><div className="v" style={{ fontSize: 15 }}>{deal.origem ?? '—'}</div></div>
+          <div className="stat-tile">
+            <div className="t">Commit</div>
+            <div className="v" style={{ fontSize: 15, color: deal.commit ? 'var(--amber-dark)' : 'var(--ink-faint)' }}>
+              {deal.commit ? '★ Confirmado' : 'Não confirmado'}
+            </div>
+          </div>
         </div>
 
         <div className="grid-main">
@@ -249,6 +257,10 @@ export default function DealDetailPage() {
                     <input className="f-input" value={deal.origem ?? 'Sem origem'} disabled />
                     <span className="f-hint">Herdada da empresa — edite a origem em Empresas para mudar.</span>
                   </div>
+                  <label className="field-checkbox" style={{ marginBottom: 14 }}>
+                    <input type="checkbox" checked={form.commit} onChange={(e) => setForm((f) => ({ ...f, commit: e.target.checked }))} />
+                    Commit — confirmo que este negócio fecha no mês previsto
+                  </label>
                   <button className="btn-primary btn-sm" disabled={updateMutation.isPending} onClick={handleSaveDetails} style={{ width: 'fit-content' }}>
                     {updateMutation.isPending ? 'Salvando…' : 'Salvar alterações'}
                   </button>

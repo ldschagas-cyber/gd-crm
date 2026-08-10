@@ -1,0 +1,945 @@
+<title>Metas do Funil + Previsão Comercial — protótipo de integração</title>
+<style>
+/* ---------- tokens (espelha frontend/src/styles/tokens.css — Manual da Marca Argos V1) ---------- */
+:root{
+  --font-display:'IBM Plex Sans','Segoe UI','Helvetica Neue',ui-sans-serif,system-ui,sans-serif;
+  --font-mono:'IBM Plex Mono','Cascadia Code','SFMono-Regular','Consolas',ui-monospace,monospace;
+  --font-brand:'Space Grotesk','IBM Plex Sans',ui-sans-serif,system-ui,sans-serif;
+
+  --panel:#232748; --indigo:#2B2F5E; --indigo-600:#3A3F78;
+  --amber:#D9B654; --amber-dark:#C4A244; --amber-light:#F7EFD8;
+  --paper:#F4F4F2; --surface:#FAFAF8;
+  --panel-fg:#F1EEE6; --panel-fg-dim:#A9ADC9;
+  --panel-border:rgba(241,238,230,.12); --panel-active-bg:rgba(255,255,255,.07); --panel-hover-bg:rgba(255,255,255,.04);
+  --ink:#1B1D33; --ink-dim:#5C5F74; --ink-faint:#8A8D9C; --ink-disabled:#B4B4AE;
+  --border:#EAEAE6; --border-field:#D8D8D2; --field-bg:#fff; --card-bg:#fff;
+  --accent:var(--amber); --link:var(--indigo);
+  --danger:#B4453C; --danger-bg:#F8E7E5; --success:#2E7D5B; --success-bg:#E4F1EA;
+  --info:#2F6BA8; --info-bg:#E6EFF7; --azul:var(--info);
+  --focus-ring:rgba(217,182,84,.45); --shadow:0 1px 2px rgba(27,29,51,.06),0 12px 32px -12px rgba(27,29,51,.14);
+  --good:var(--success); --warning:#B36A21; --warning-bg:#FAEDE0; --serious:var(--warning); --critical:var(--danger);
+  --seq-1:#86b6ef; --seq-2:#5598e7; --seq-3:#2a78d6; --seq-4:#1c5cab; --seq-5:#104281; --seq-6:#0a2d5c;
+  --r-field:3px; --r-card:6px; --r-pill:999px; --sidebar-w:240px; --control-h:38px;
+}
+@media (prefers-color-scheme:dark){:root{
+  --paper:#14172A; --panel:#10121F; --panel-fg:#F1EEE6; --panel-fg-dim:#9AA0C0;
+  --panel-border:rgba(241,238,230,.10); --panel-active-bg:rgba(255,255,255,.08); --panel-hover-bg:rgba(255,255,255,.05);
+  --surface:#1B1E33; --ink:#EDEAE2; --ink-dim:#A6A9C2; --ink-faint:#82869e; --ink-disabled:#5c5f74;
+  --border:rgba(241,238,230,.12); --border-field:rgba(241,238,230,.18);
+  --field-bg:#1B1E33; --card-bg:#1B1E33; --amber:#D9B85E; --amber-dark:#C4A244; --amber-light:rgba(217,184,94,.16);
+  --info:#4CB2DE; --azul:var(--info); --link:var(--info);
+  --danger:#E2766D; --danger-bg:rgba(181,52,44,.16); --success:#4FBE86; --success-bg:rgba(46,125,91,.18);
+  --warning:#E0A455; --warning-bg:rgba(179,106,33,.18); --good:var(--success); --serious:var(--warning); --critical:var(--danger);
+  --focus-ring:rgba(217,184,94,.4); --shadow:0 1px 2px rgba(0,0,0,.3),0 20px 40px -16px rgba(0,0,0,.55);
+}}
+:root[data-theme="dark"]{
+  --paper:#14172A; --panel:#10121F; --panel-fg:#F1EEE6; --panel-fg-dim:#9AA0C0;
+  --panel-border:rgba(241,238,230,.10); --panel-active-bg:rgba(255,255,255,.08); --panel-hover-bg:rgba(255,255,255,.05);
+  --surface:#1B1E33; --ink:#EDEAE2; --ink-dim:#A6A9C2; --ink-faint:#82869e; --ink-disabled:#5c5f74;
+  --border:rgba(241,238,230,.12); --border-field:rgba(241,238,230,.18);
+  --field-bg:#1B1E33; --card-bg:#1B1E33; --amber:#D9B85E; --amber-dark:#C4A244; --amber-light:rgba(217,184,94,.16);
+  --info:#4CB2DE; --azul:var(--info); --link:var(--info);
+  --danger:#E2766D; --danger-bg:rgba(181,52,44,.16); --success:#4FBE86; --success-bg:rgba(46,125,91,.18);
+  --warning:#E0A455; --warning-bg:rgba(179,106,33,.18); --good:var(--success); --serious:var(--warning); --critical:var(--danger);
+  --focus-ring:rgba(217,184,94,.4); --shadow:0 1px 2px rgba(0,0,0,.3),0 20px 40px -16px rgba(0,0,0,.55);
+}
+:root[data-theme="light"]{
+  --paper:#F4F4F2; --panel:#232748; --panel-fg:#F1EEE6; --panel-fg-dim:#A9ADC9;
+  --panel-border:rgba(241,238,230,.12); --panel-active-bg:rgba(255,255,255,.07); --panel-hover-bg:rgba(255,255,255,.04);
+  --surface:#FAFAF8; --ink:#1B1D33; --ink-dim:#5C5F74; --ink-faint:#8A8D9C; --ink-disabled:#B4B4AE;
+  --border:#EAEAE6; --border-field:#D8D8D2; --field-bg:#fff; --card-bg:#fff;
+  --amber:#D9B654; --amber-dark:#C4A244; --amber-light:#F7EFD8; --info:#2F6BA8; --azul:var(--info); --link:var(--indigo);
+  --danger:#B4453C; --danger-bg:#F8E7E5; --success:#2E7D5B; --success-bg:#E4F1EA;
+  --warning:#B36A21; --warning-bg:#FAEDE0; --good:var(--success); --serious:var(--warning); --critical:var(--danger);
+  --focus-ring:rgba(217,182,84,.45); --shadow:0 1px 2px rgba(27,29,51,.05),0 10px 24px -14px rgba(27,29,51,.2);
+}
+
+*{box-sizing:border-box;}
+body{margin:0;font-family:var(--font-display);color:var(--ink);background:var(--paper);font-size:14px;}
+.proto-badge{position:sticky;top:0;z-index:30;background:var(--panel);color:var(--panel-fg-dim);
+  font-size:11px;padding:6px 16px;text-align:center;letter-spacing:.02em;border-bottom:1px solid var(--panel-border);}
+.proto-badge b{color:var(--amber);font-weight:700;}
+
+.shell{display:flex;min-height:100vh;}
+.sidebar{width:var(--sidebar-w);flex:none;background:var(--panel);color:var(--panel-fg);padding:18px 12px;display:flex;flex-direction:column;gap:18px;}
+.sb-brand{display:flex;align-items:center;gap:10px;padding:2px 8px 10px;border-bottom:1px solid var(--panel-border);margin-bottom:4px;}
+.monogram{width:30px;height:30px;border-radius:8px;background:var(--amber);color:var(--panel);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex:none;}
+.sb-brand strong{display:block;font-family:var(--font-brand);font-size:14px;font-weight:700;}
+.sb-brand span{display:block;font-size:10.5px;color:var(--panel-fg-dim);}
+.sb-group{display:flex;flex-direction:column;gap:1px;}
+.sb-label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--panel-fg-dim);padding:8px 10px 4px;font-weight:700;}
+.sb-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:8px;font-size:12.8px;color:var(--panel-fg-dim);
+  text-decoration:none;font-weight:500;cursor:pointer;border:0;background:transparent;width:100%;text-align:left;font-family:inherit;}
+.sb-item svg{width:15px;height:15px;flex:none;}
+.sb-item.active{background:var(--panel-active-bg);color:var(--panel-fg);font-weight:650;}
+.sb-item:hover:not(.active){background:var(--panel-hover-bg);}
+
+.main-col{flex:1;min-width:0;}
+.content{padding:24px 28px 48px;max-width:1240px;}
+
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:6px;}
+.topbar-title h1{margin:0;font-family:var(--font-brand);font-size:21px;font-weight:700;letter-spacing:-.01em;}
+.topbar-title p{margin:2px 0 0;color:var(--ink-dim);font-size:13px;}
+.back-link{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--ink-dim);
+  background:none;border:0;cursor:pointer;padding:0 0 8px;font-family:inherit;}
+.back-link:hover{color:var(--link);}
+.back-link svg{width:13px;height:13px;}
+.page-actions{display:flex;gap:8px;}
+.btn-ghost{display:inline-flex;align-items:center;gap:8px;min-height:var(--control-h);padding:9px 16px;font:inherit;font-size:13px;font-weight:600;
+  color:var(--indigo);background:var(--card-bg);border:1px solid var(--indigo);border-radius:var(--r-field);cursor:pointer;}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;min-height:var(--control-h);padding:9px 16px;font:inherit;font-size:13px;font-weight:600;
+  color:#fff;background:var(--indigo);border:1px solid var(--indigo);border-radius:var(--r-field);cursor:pointer;}
+.btn-primary:hover{background:var(--indigo-600);}
+
+.compare-toggle{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+  background:var(--card-bg);border:1px solid var(--border);border-radius:var(--r-card);padding:12px 16px;margin:14px 0 20px;box-shadow:var(--shadow);}
+.compare-toggle .ct-label{font-size:12.5px;color:var(--ink-dim);}
+.compare-toggle .ct-label b{color:var(--ink);}
+.segmented{display:inline-flex;gap:3px;padding:3px;background:var(--paper);border:1px solid var(--border);border-radius:10px;flex:none;}
+.segmented button{border:none;background:transparent;padding:7px 13px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--ink-dim);cursor:pointer;font-family:inherit;}
+.segmented button.active{background:var(--indigo);color:#fff;}
+.segmented button .sub{display:block;font-size:9px;font-weight:700;opacity:.75;text-transform:uppercase;letter-spacing:.03em;}
+
+.filters-bar,.filters-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+.filter-select{appearance:none;font:inherit;font-size:13px;color:var(--ink);background:var(--card-bg);
+  border:1px solid var(--border-field);border-radius:var(--r-field);padding:8px 30px 8px 12px;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%238A8D9C' stroke-width='1.6'%3E%3Cpath d='M5.5 8l4.5 4.5L14.5 8'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;background-size:13px;}
+.fm-modo-hint{font-size:12px;color:var(--ink-faint);}
+
+.stat-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px;}
+.stat-tile{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--r-card);padding:14px 16px;box-shadow:var(--shadow);}
+.stat-tile .t{font-family:var(--font-mono);font-size:9.5px;color:var(--ink-faint);font-weight:500;text-transform:uppercase;letter-spacing:.14em;}
+.stat-tile .v{font-size:20px;font-weight:700;margin-top:6px;font-family:var(--font-mono);color:var(--ink);}
+.stat-tile .v small{font-size:13px;font-weight:500;color:var(--ink-faint);}
+.fm-sub{font-size:11.5px;margin-top:4px;font-weight:600;color:var(--ink-faint);}
+.fm-tile-nome{font-size:15px!important;}
+.fm-status-ok{color:var(--good);} .fm-status-atencao{color:var(--warning);} .fm-status-critico{color:var(--critical);}
+
+.fm-alert{display:flex;gap:12px;align-items:flex-start;border-radius:var(--r-card);padding:14px 16px;margin-bottom:20px;
+  border:1px solid color-mix(in srgb, var(--critical) 35%, var(--border));background:color-mix(in srgb, var(--critical) 8%, var(--card-bg));}
+.fm-alert-dot{width:10px;height:10px;border-radius:50%;background:var(--critical);flex:none;margin-top:4px;}
+.fm-alert h3{margin:0 0 3px;font-family:var(--font-brand);font-size:13.5px;font-weight:700;color:var(--critical);}
+.fm-alert p{margin:0;font-size:12.8px;color:var(--ink-dim);line-height:1.55;}
+.fm-alert p b{color:var(--ink);}
+
+.card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--r-card);box-shadow:var(--shadow);overflow:hidden;margin-bottom:18px;}
+.card-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:15px 18px;border-bottom:1px solid var(--border);}
+.card-head h2,.card-head h3{margin:0;font-family:var(--font-display);font-size:16px;font-weight:600;color:var(--ink);}
+.card-head p{margin:2px 0 0;font-size:12px;color:var(--ink-dim);}
+.card-head .integration-pill{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.03em;background:var(--amber-light);color:var(--amber-dark);border-radius:var(--r-pill);padding:3px 9px;white-space:nowrap;}
+
+.fm-funnel{padding:6px 18px 18px;display:flex;flex-direction:column;}
+.fm-row{display:grid;grid-template-columns:180px 1fr 150px 190px;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);}
+.fm-row:last-child{border-bottom:none;}
+.fm-name b{font-size:13px;font-weight:650;}
+.fm-track{position:relative;height:18px;background:var(--paper);border-radius:6px;overflow:hidden;}
+.fm-meta-fill{position:absolute;inset:0;border-radius:6px;background:color-mix(in srgb, var(--ink-faint) 22%, transparent);}
+.fm-real-fill{position:absolute;top:0;bottom:0;left:0;border-radius:6px;transition:width 350ms ease;}
+.fm-nums{text-align:right;font-family:var(--font-mono);font-size:12px;}
+.fm-nums .real{font-size:15px;font-weight:700;color:var(--ink);}
+.fm-nums .of{color:var(--ink-faint);font-weight:500;}
+.fm-pct-cell{display:flex;flex-direction:column;align-items:flex-end;gap:3px;}
+.fm-real-pct{font-family:var(--font-mono);font-size:14px;font-weight:700;}
+.fm-diff{font-size:10.5px;font-weight:600;white-space:nowrap;}
+.fm-muted{color:var(--ink-faint);font-size:12px;}
+.fm-revenue-chip{display:none;margin-top:5px;justify-content:flex-end;}
+.show-revenue .fm-revenue-chip{display:flex;}
+.fm-revenue-chip span{font-family:var(--font-mono);font-size:10.5px;font-weight:700;color:var(--amber-dark);
+  background:var(--amber-light);border-radius:var(--r-pill);padding:2px 8px;white-space:nowrap;cursor:pointer;}
+
+table.data{width:100%;border-collapse:collapse;font-size:13px;}
+table.data th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-faint);
+  font-weight:700;padding:10px 14px;border-bottom:1px solid var(--border);white-space:nowrap;}
+table.data td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle;}
+table.data tr:last-child td{border-bottom:0;}
+.row-title{font-weight:650;color:var(--ink);}
+.fm-ref{color:var(--ink-dim);font-size:12px;line-height:1.45;max-width:280px;}
+tr.fm-row-critico td:first-child{box-shadow:inset 3px 0 0 var(--critical);}
+tr.fm-row-atencao td:first-child{box-shadow:inset 3px 0 0 var(--warning);}
+.status-pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:650;padding:3px 10px;border-radius:100px;white-space:nowrap;}
+.status-pill.fm-status-pill-ok{background:var(--success-bg);color:var(--good);}
+.status-pill.fm-status-pill-atencao{background:var(--warning-bg);color:var(--warning);}
+.status-pill.fm-status-pill-critico{background:var(--danger-bg);color:var(--critical);}
+.table-scroll{overflow-x:auto;}
+.revenue-col{display:none;}
+.show-revenue .revenue-col{display:table-cell;}
+
+.kpi-mini-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:16px 18px 6px;}
+@media (max-width:760px){.kpi-mini-row{grid-template-columns:1fr;}}
+.kpi-mini{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-card);padding:14px 16px;position:relative;overflow:hidden;}
+.kpi-mini::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--kpi-color,var(--info));}
+.kpi-mini .label{font-size:10.5px;color:var(--ink-dim);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:7px;display:flex;align-items:center;gap:6px;}
+.kpi-mini .label .dot{width:6px;height:6px;border-radius:50%;background:var(--kpi-color,var(--info));}
+.kpi-mini .value{font-size:22px;font-weight:700;font-family:var(--font-mono);}
+.kpi-mini .sub{font-size:11.5px;color:var(--ink-faint);margin-top:4px;}
+.cov-track-mini{position:relative;height:22px;background:var(--paper);border-radius:6px;overflow:hidden;margin:14px 18px 0;}
+.cov-fill{position:absolute;left:0;top:0;bottom:0;border-radius:6px;}
+.cov-fill.pipeline{background:color-mix(in srgb, var(--info) 20%, transparent);z-index:1;}
+.cov-fill.forecast{background:color-mix(in srgb, var(--info) 55%, transparent);z-index:2;}
+.cov-fill.commit{background:var(--amber);z-index:3;}
+.cov-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:var(--ink-dim);padding:9px 18px 16px;}
+.cov-legend span{display:inline-flex;align-items:center;gap:6px;}
+.cov-legend i{width:9px;height:9px;border-radius:2px;display:inline-block;}
+.revenue-foot{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:14px 18px;border-top:1px solid var(--border);background:var(--surface);}
+.revenue-foot p{margin:0;font-size:12px;color:var(--ink-dim);max-width:560px;line-height:1.5;}
+.revenue-foot code{font-family:var(--font-mono);background:var(--paper);padding:1px 5px;border-radius:4px;font-size:10.8px;}
+
+.decision-list{display:flex;flex-direction:column;gap:0;}
+.decision-item{display:flex;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border);}
+.decision-item:last-child{border-bottom:none;}
+.decision-num{width:22px;height:22px;border-radius:50%;background:var(--surface);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--ink-dim);flex:none;margin-top:1px;}
+.decision-body h4{margin:0 0 3px;font-size:13px;font-weight:700;color:var(--ink);}
+.decision-body p{margin:0;font-size:12.5px;color:var(--ink-dim);line-height:1.55;}
+.decision-body code{font-family:var(--font-mono);background:var(--paper);padding:1px 5px;border-radius:4px;font-size:10.8px;}
+
+/* ---------- página Previsão Comercial ---------- */
+.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:8px;}
+@media (max-width:820px){.kpi-row{grid-template-columns:1fr;}}
+.kpi-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--r-card);padding:18px 20px;
+  box-shadow:var(--shadow);position:relative;overflow:hidden;}
+.kpi-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--kpi-color,var(--info));}
+.kpi-card .label{font-size:11.5px;color:var(--ink-dim);font-weight:700;margin-bottom:9px;
+  text-transform:uppercase;letter-spacing:.04em;display:flex;align-items:center;gap:6px;}
+.kpi-card .label .dot{width:7px;height:7px;border-radius:50%;background:var(--kpi-color,var(--info));}
+.kpi-card .value{font-size:27px;font-weight:700;letter-spacing:-.01em;font-variant-numeric:tabular-nums;}
+.kpi-card .sub{font-size:12px;color:var(--ink-faint);margin-top:5px;font-variant-numeric:tabular-nums;}
+
+.coverage-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--r-card);
+  padding:16px 20px 18px;box-shadow:var(--shadow);margin-bottom:18px;}
+.coverage-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:11px;flex-wrap:wrap;gap:6px;}
+.coverage-head h3{margin:0;font-family:var(--font-brand);font-size:13.5px;font-weight:700;}
+.coverage-head .meta-input{font-size:11.5px;color:var(--ink-dim);display:flex;align-items:center;gap:6px;}
+.coverage-head .meta-input input{width:88px;font-family:var(--font-mono);font-size:12px;text-align:right;
+  border:1px solid var(--border-field);background:var(--field-bg);color:var(--ink);border-radius:6px;padding:3px 7px;}
+.cov-track{position:relative;height:30px;background:var(--paper);border-radius:7px;overflow:hidden;}
+.cov-meta-marker{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--critical);z-index:4;}
+.cov-meta-marker::after{content:attr(data-label);position:absolute;top:-17px;left:50%;transform:translateX(-50%);
+  font-size:9.5px;font-weight:700;color:var(--critical);white-space:nowrap;}
+
+.grid-2{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;align-items:start;margin-bottom:18px;}
+@media (max-width:980px){.grid-2{grid-template-columns:1fr;}}
+
+table.seller-tbl{width:100%;border-collapse:collapse;font-size:12.8px;}
+table.seller-tbl th{text-align:right;font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;
+  color:var(--ink-faint);font-weight:700;padding:9px 14px;border-bottom:1px solid var(--border);}
+table.seller-tbl th:first-child,table.seller-tbl td:first-child{text-align:left;}
+table.seller-tbl td{padding:10px 14px;border-bottom:1px solid var(--border);text-align:right;font-variant-numeric:tabular-nums;}
+table.seller-tbl tr:last-child td{border-bottom:0;}
+.seller-name{display:flex;align-items:center;gap:9px;font-weight:650;color:var(--ink);}
+.seller-avatar{width:24px;height:24px;border-radius:50%;background:var(--indigo);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex:none;}
+.commit-cell{font-weight:700;}
+.chip{display:inline-block;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;
+  border-radius:5px;padding:2px 6px;margin-left:6px;}
+.chip.warn{background:var(--danger-bg);color:var(--danger);}
+tfoot td{font-weight:700;border-top:1.5px solid var(--ink-faint);border-bottom:0!important;background:var(--paper);}
+
+.deals-wrap{overflow-x:auto;}
+table.deals-tbl{width:100%;border-collapse:collapse;font-size:12.6px;min-width:760px;}
+table.deals-tbl th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;
+  color:var(--ink-faint);font-weight:700;padding:9px 14px;border-bottom:1px solid var(--border);white-space:nowrap;}
+table.deals-tbl td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:middle;white-space:nowrap;}
+table.deals-tbl tr:last-child td{border-bottom:0;}
+table.deals-tbl tr:hover td{background:var(--paper);}
+.deal-name{font-weight:650;color:var(--ink);}
+.deal-company{font-size:11px;color:var(--ink-faint);margin-top:1px;}
+.stage-badge{display:inline-block;font-size:10.5px;font-weight:600;padding:2.5px 8px;border-radius:100px;
+  background:var(--paper);color:var(--ink-dim);border:1px solid var(--border);}
+.prob-cell{font-family:var(--font-mono);font-variant-numeric:tabular-nums;}
+.prob-bar{display:inline-block;width:34px;height:4px;border-radius:3px;background:var(--border);
+  position:relative;margin-right:7px;vertical-align:middle;overflow:hidden;}
+.prob-bar i{position:absolute;left:0;top:0;bottom:0;background:var(--info);border-radius:3px;}
+.money-cell{font-family:var(--font-mono);font-weight:650;text-align:right;font-variant-numeric:tabular-nums;}
+.deal-status-pill{font-size:10.5px;font-weight:700;padding:2.5px 8px;border-radius:100px;text-transform:uppercase;letter-spacing:.02em;}
+.deal-status-pill.ganho{background:var(--success-bg);color:var(--success);}
+.deal-status-pill.perdido{background:var(--danger-bg);color:var(--danger);}
+
+.commit-toggle{display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;}
+.commit-toggle input{position:absolute;opacity:0;width:0;height:0;}
+.commit-toggle .box{width:17px;height:17px;border-radius:5px;border:1.6px solid var(--border-field);
+  display:flex;align-items:center;justify-content:center;flex:none;transition:.15s;background:var(--field-bg);}
+.commit-toggle input:checked + .box{background:var(--amber);border-color:var(--amber);}
+.commit-toggle .box svg{width:11px;height:11px;stroke:var(--panel);stroke-width:3;fill:none;opacity:0;transition:.15s;}
+.commit-toggle input:checked + .box svg{opacity:1;}
+.commit-toggle span.txt{font-size:11.5px;color:var(--ink-dim);font-weight:600;}
+.commit-toggle input:checked ~ span.txt{color:var(--ink);}
+
+.methodology{font-size:11.5px;color:var(--ink-faint);line-height:1.6;padding:14px 16px;}
+.methodology b{color:var(--ink-dim);}
+.methodology code{font-family:var(--font-mono);background:var(--paper);padding:1px 5px;border-radius:4px;font-size:10.8px;}
+
+.closed-banner{display:flex;align-items:center;gap:12px;background:var(--amber-light);
+  border:1px solid var(--amber);border-radius:var(--r-card);padding:12px 16px;margin-bottom:18px;font-size:12.5px;color:var(--ink);}
+.closed-banner svg{width:18px;height:18px;flex:none;color:var(--amber-dark);stroke:currentColor;fill:none;stroke-width:1.6;}
+.closed-banner b{font-weight:700;}
+.accuracy-row{display:flex;gap:22px;margin-left:auto;flex-wrap:wrap;}
+.accuracy-row .acc-item{text-align:right;}
+.accuracy-row .acc-item .t{font-size:10px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.03em;}
+.accuracy-row .acc-item .v{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;}
+.accuracy-row .acc-item .v.good{color:var(--success);}
+.empty-note{padding:26px 18px;text-align:center;color:var(--ink-faint);font-size:12.5px;}
+.origin-note{font-size:11.5px;color:var(--ink-faint);margin:0 0 16px;}
+</style>
+
+<div class="proto-badge">Protótipo funcional — dados fictícios, mas totais recalculados ao vivo · use o menu à esquerda pra navegar entre as duas telas · <b>não é a aplicação real</b></div>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="monogram">A</div>
+      <div><strong>Argos</strong><span>Gestão comercial</span></div>
+    </div>
+    <div class="sb-group">
+      <button class="sb-item" type="button">DASH_ICON Dashboard</button>
+    </div>
+    <div class="sb-group">
+      <div class="sb-label">Inteligência Comercial</div>
+      <button class="sb-item" type="button">SEARCH_ICON Buscar Empresas</button>
+      <button class="sb-item" type="button">RADAR_ICON Pesquisa de Leads</button>
+      <button class="sb-item" type="button">FUNNEL_ICON Central de Leads</button>
+      <button class="sb-item" type="button" data-page="metas" onclick="showPage('metas')">TARGET_ICON Metas do Funil</button>
+      <button class="sb-item" type="button" data-page="forecast" onclick="showPage('forecast')">FORECAST_ICON Previsão Comercial</button>
+    </div>
+    <div class="sb-group">
+      <div class="sb-label">CRM</div>
+      <button class="sb-item" type="button">BUILD_ICON Empresas</button>
+      <button class="sb-item" type="button">DEAL_ICON Negócios</button>
+      <button class="sb-item" type="button">TASK_ICON Tarefas</button>
+    </div>
+  </aside>
+
+  <div class="main-col">
+    <div class="content">
+
+      <!-- ============ PÁGINA 1 — METAS DO FUNIL ============ -->
+      <div id="page-metas">
+
+        <header class="topbar">
+          <div class="topbar-title">
+            <h1>Metas do Funil</h1>
+            <p>Controle de mudança de fase por percentual — Empresas pesquisadas → Clientes fechados</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn-ghost">⚙ Editar metas</button>
+          </div>
+        </header>
+
+        <div class="compare-toggle">
+          <span class="ct-label">Esta tela existe hoje. <b>Ligue a proposta de integração</b> pra ver o que muda:</span>
+          <div class="segmented" id="compareTabs">
+            <button data-mode="hoje">Como está hoje</button>
+            <button data-mode="integrado" class="active">+ Previsão de Receita</button>
+          </div>
+        </div>
+
+        <div class="filters-bar">
+          <div class="segmented">
+            <button class="active">Atividade do mês</button>
+            <button>Coorte do período</button>
+          </div>
+          <select class="filter-select"><option>Agosto de 2026</option></select>
+          <span class="fm-modo-hint">Conta eventos ocorridos no período, qualquer que seja a origem da empresa.</span>
+        </div>
+
+        <div class="stat-strip">
+          <div class="stat-tile">
+            <div class="t">Empresas pesquisadas</div>
+            <div class="v">245 <small>/ 300</small></div>
+          </div>
+          <div class="stat-tile">
+            <div class="t">Clientes fechados</div>
+            <div class="v">4 <small>/ 10</small></div>
+          </div>
+          <div class="stat-tile">
+            <div class="t">Conversão geral (topo → fechado)</div>
+            <div class="v">1,6%</div>
+            <div class="fm-sub">meta: 3,3%</div>
+          </div>
+          <div class="stat-tile">
+            <div class="t">Etapa mais crítica</div>
+            <div class="v fm-tile-nome">Reuniões marcadas</div>
+            <div class="fm-sub fm-status-critico">20,5 p.p. vs. meta</div>
+          </div>
+        </div>
+
+        <div class="fm-alert">
+          <span class="fm-alert-dot"></span>
+          <div>
+            <h3>Etapa crítica: Reuniões marcadas</h3>
+            <p>Conversão real de <b>39,5%</b> fica <b>20,5 p.p.</b> abaixo da meta interna (60%). 17–31% é a média nacional
+            contato→oportunidade; meta interna está acima da média. Sinal para revisar critério de qualificação ou execução
+            da cadência nesta etapa antes de abrir mais volume no topo do funil — não necessariamente de que a meta esteja errada.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div><h3>Funil de agosto — meta vs. real</h3><p>Barra clara = meta; barra colorida = realizado no período</p></div>
+            <span class="integration-pill" id="chipReceita" style="display:none">+ receita nas etapas de negócio</span>
+          </div>
+          <div class="fm-funnel" id="funnelRows"></div>
+        </div>
+
+        <div class="card" id="forecastCard">
+          <div class="card-head">
+            <div>
+              <h3>Previsão de Receita — Propostas em aberto</h3>
+              <p>Mesma população da etapa "Propostas enviadas" acima (negócios com <code style="font-family:var(--font-mono)">marco_funil = proposta</code>), em R$</p>
+            </div>
+            <span class="integration-pill">seção proposta</span>
+          </div>
+          <div class="kpi-mini-row">
+            <div class="kpi-mini" style="--kpi-color:var(--info)">
+              <div class="label"><span class="dot"></span>Pipeline</div>
+              <div class="value">R$ 146.000</div>
+              <div class="sub">9 negócios em aberto na etapa Proposta</div>
+            </div>
+            <div class="kpi-mini" style="--kpi-color:var(--info)">
+              <div class="label"><span class="dot"></span>Forecast</div>
+              <div class="value">R$ 61.000</div>
+              <div class="sub">42% do pipeline · ponderado por probabilidade</div>
+            </div>
+            <div class="kpi-mini" style="--kpi-color:var(--amber)">
+              <div class="label"><span class="dot"></span>Commit</div>
+              <div class="value">R$ 28.000</div>
+              <div class="sub">19% do pipeline · confirmado pelo vendedor</div>
+            </div>
+          </div>
+          <div class="cov-track-mini">
+            <div class="cov-fill pipeline" style="width:100%"></div>
+            <div class="cov-fill forecast" style="width:41.8%"></div>
+            <div class="cov-fill commit" style="width:19.2%"></div>
+          </div>
+          <div class="cov-legend">
+            <span><i style="background:color-mix(in srgb, var(--info) 20%, transparent)"></i>Pipeline</span>
+            <span><i style="background:color-mix(in srgb, var(--info) 55%, transparent)"></i>Forecast</span>
+            <span><i style="background:var(--amber)"></i>Commit</span>
+          </div>
+          <div class="revenue-foot">
+            <p>Clientes fechados no período (4 negócios) somaram <b style="color:var(--ink)">R$ 52.000</b> em receita realizada — abaixo
+            da meta de 10 fechamentos porque a etapa de Reuniões está estrangulando o topo do funil (ver alerta acima), não porque as
+            propostas em aberto estejam fracas.</p>
+            <button class="btn-primary" onclick="showPage('forecast')">Ver por vendedor →</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div><h3>Anexo 1 — detalhamento dos percentuais</h3><p>Meta, % esperado da etapa anterior e referência de mercado</p></div>
+          </div>
+          <div class="table-scroll">
+            <table class="data">
+              <thead>
+                <tr>
+                  <th>Etapa</th><th>Meta</th><th>% etapa anterior</th><th>Real</th>
+                  <th>% real da etapa anterior</th><th>Diferença</th><th class="revenue-col">Receita (R$)</th>
+                  <th>Status</th><th>Referência de mercado</th>
+                </tr>
+              </thead>
+              <tbody id="anexoRows"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div><h3>Como isso se encaixa — pontos de decisão</h3><p>O que muda de verdade ao ligar as duas telas</p></div>
+          </div>
+          <div class="decision-list">
+            <div class="decision-item">
+              <span class="decision-num">1</span>
+              <div class="decision-body">
+                <h4>Não é a mesma métrica — é complementar</h4>
+                <p>Metas do Funil conta <b>empresas/negócios</b> (contagem, coorte ou período fechado). Previsão Comercial soma <b>R$</b> de
+                negócios <i>hoje abertos</i>, olhando pra frente (<code>data_prev_fechamento</code>). Empilhar as duas num único número
+                misturaria unidade e janela de tempo — por isso a proposta mantém duas leituras lado a lado, não uma fusão.</p>
+              </div>
+            </div>
+            <div class="decision-item">
+              <span class="decision-num">2</span>
+              <div class="decision-body">
+                <h4>O ponto de junção real é <code>marco_funil</code></h4>
+                <p>As duas últimas linhas do funil de contagem ("Propostas enviadas", "Clientes fechados") já são baseadas em <code>Deal</code> —
+                o mesmo dado que a Previsão usa. A proposta reaproveita a etapa marcada como <code>marco_funil = "proposta"</code> (já existe,
+                configurada em Pipeline) para definir a população do card de receita, em vez de inventar um segundo critério de "quais negócios contam".</p>
+              </div>
+            </div>
+            <div class="decision-item">
+              <span class="decision-num">3</span>
+              <div class="decision-body">
+                <h4>Isto é literalmente a extensão que o plano original já previu</h4>
+                <p><code>docs/PLANO_METAS_FUNIL.md §9</code> lista "metas por vendedor/pipeline individual" como fora de escopo da primeira
+                entrega, mas natural depois. A quebra por vendedor do Commit/Forecast é exatamente essa extensão — só que chegando pela
+                porta da receita, não da contagem.</p>
+              </div>
+            </div>
+            <div class="decision-item">
+              <span class="decision-num">4</span>
+              <div class="decision-body">
+                <h4>Menu: "Previsão Comercial" mora perto de "Metas do Funil"</h4>
+                <p>Na proposta anterior eu tinha colocado Previsão Comercial no grupo "CRM" (ao lado de Negócios). Seguindo o padrão já
+                adotado aqui — Central de Leads e Metas do Funil vivem em "Inteligência Comercial" — a Previsão ganhou o mesmo grupo no menu
+                à esquerda deste protótipo. É uma decisão de produto, não técnica — vale confirmar antes de codar.</p>
+              </div>
+            </div>
+            <div class="decision-item">
+              <span class="decision-num">5</span>
+              <div class="decision-body">
+                <h4>Custo incremental é baixo — mas é dois recortes, não um</h4>
+                <p>Endpoint de Metas do Funil ganha 2 campos opcionais (<code>propostas_valor_aberto</code>, <code>fechados_valor_realizado</code>),
+                aditivos, sem mudar o formato de <code>etapas</code>. A tela "por vendedor" continua sendo a página própria
+                <code>Previsão Comercial</code>, ao lado — não cabe espremida dentro do Anexo 1.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ============ PÁGINA 2 — PREVISÃO COMERCIAL ============ -->
+      <div id="page-forecast" style="display:none">
+
+        <button class="back-link" onclick="showPage('metas')">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4.5L6 10l6 5.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Voltar para Metas do Funil
+        </button>
+
+        <header class="topbar">
+          <div class="topbar-title">
+            <h1>Previsão Comercial</h1>
+            <p>Pipeline, forecast ponderado e compromisso de fechamento por vendedor</p>
+          </div>
+          <div id="monthTabs" class="segmented"></div>
+        </header>
+
+        <p class="origin-note">Aberto a partir de "Propostas em aberto" em Metas do Funil — mesma população, agora quebrada por vendedor.</p>
+
+        <div class="filters-row">
+          <select class="filter-select" id="vendorFilter"></select>
+          <select class="filter-select" id="pipelineFilter">
+            <option>Pipeline: Comercial B2B</option>
+          </select>
+        </div>
+
+        <div id="closedBanner"></div>
+
+        <section class="kpi-row" id="kpiRow"></section>
+
+        <div class="coverage-card">
+          <div class="coverage-head">
+            <h3>Cobertura da meta do mês</h3>
+            <div class="meta-input">
+              Meta: R$ <input type="text" id="metaInput" value="150.000" inputmode="numeric" />
+            </div>
+          </div>
+          <div class="cov-track" id="covTrack"></div>
+          <div class="cov-legend">
+            <span><i style="background:color-mix(in srgb, var(--info) 22%, transparent)"></i>Pipeline</span>
+            <span><i style="background:color-mix(in srgb, var(--info) 55%, transparent)"></i>Forecast ponderado</span>
+            <span><i style="background:var(--amber)"></i>Commit</span>
+            <span><i style="background:var(--critical)"></i>Meta do mês</span>
+          </div>
+        </div>
+
+        <section class="grid-2">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3>Pipeline por vendedor</h3>
+                <p id="sellerSub">Negócios previstos para o mês, ponderados por probabilidade</p>
+              </div>
+            </div>
+            <table class="seller-tbl" id="sellerTable"></table>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3>Como os números são calculados</h3>
+                <p>Mesma fórmula já usada hoje no board de Negócios</p>
+              </div>
+            </div>
+            <div class="methodology">
+              <p><b>Pipeline</b> — soma do <code>valor_previsto</code> dos negócios abertos com <code>data_prev_fechamento</code> dentro do mês selecionado.</p>
+              <p><b>Forecast</b> — soma de <code>valor_previsto × probabilidade / 100</code> de cada negócio. É o mesmo cálculo que já aparece no rodapé de cada etapa do Kanban hoje, só que agregado por mês.</p>
+              <p><b>Commit</b> — soma do <code>valor_previsto</code> apenas dos negócios que o vendedor marcou manualmente como compromisso (checkbox <b>Commit</b> na tabela abaixo ou no card do negócio). É o único campo novo — os demais já existem no modelo de dados.</p>
+            </div>
+          </div>
+        </section>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3 id="dealsTitle">Negócios previstos</h3>
+              <p id="dealsSub">Marque Commit nos negócios que o vendedor confirma fechar neste mês</p>
+            </div>
+          </div>
+          <div class="deals-wrap">
+            <table class="deals-tbl" id="dealsTable"></table>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* ======================= navegação entre as 2 páginas ======================= */
+function showPage(name) {
+  document.getElementById('page-metas').style.display = name === 'metas' ? '' : 'none';
+  document.getElementById('page-forecast').style.display = name === 'forecast' ? '' : 'none';
+  document.querySelectorAll('.sidebar button[data-page]').forEach(b => b.classList.toggle('active', b.dataset.page === name));
+  window.scrollTo(0, 0);
+}
+
+/* ======================= página Metas do Funil ======================= */
+const fmt = n => Number(n).toLocaleString('pt-BR');
+function pct1(n){ if(n==null) return '—'; return (Math.round(n*10)/10).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1}); }
+
+const CADEIA = [
+  {chave:'pesquisadas', nome:'Empresas pesquisadas', meta:300, real:245, ref:'Base de prospecção (topo).'},
+  {chave:'decisores', nome:'Decisores identificados', meta:99, real:90, ref:'30–50% é comum em prospecção ativa com ICP bem definido.'},
+  {chave:'contatos', nome:'Contatos realizados', meta:50, real:38, ref:'40–60% dos decisores mapeados costumam ser efetivamente contatados.'},
+  {chave:'reunioes', nome:'Reuniões marcadas', meta:30, real:15, ref:'17–31% é a média nacional contato→oportunidade; meta interna está acima da média.'},
+  {chave:'diagnosticos', nome:'Diagnósticos realizados', meta:20, real:9, ref:'Sem benchmark direto — etapa específica do modelo GD.'},
+  {chave:'propostas', nome:'Propostas enviadas', meta:15, real:7, ref:'Alinhada à faixa saudável de 20–40% por etapa em B2B consultivo.', receita:'R$ 146 mil em aberto'},
+  {chave:'fechados', nome:'Clientes fechados', meta:10, real:4, ref:'6–10% é a média de fechamento em consultorias; meta interna está bem acima.', receita:'R$ 52 mil realizado'},
+];
+const COLORS = ['var(--seq-1)','var(--seq-2)','var(--seq-3)','var(--seq-4)','var(--seq-5)','var(--seq-6)','var(--good)'];
+
+CADEIA.forEach((e,i)=>{
+  if(i===0){ e.pctMetaAnt=null; e.pctRealAnt=null; e.diff=null; e.status = (e.meta===0||e.real>=e.meta)?'ok':(e.real>=e.meta*0.85?'atencao':'critico'); return; }
+  const anterior = CADEIA[i-1];
+  e.pctMetaAnt = Math.round((e.meta/anterior.meta)*100);
+  e.pctRealAnt = anterior.real ? (e.real/anterior.real*100) : 0;
+  e.diff = e.pctRealAnt - e.pctMetaAnt;
+  e.status = e.diff>=-5?'ok':(e.diff>=-15?'atencao':'critico');
+});
+
+const STATUS_LABEL = {ok:'ok', atencao:'atenção', critico:'crítico'};
+const maxScale = Math.max(CADEIA[0].meta, CADEIA[0].real, 1);
+
+function renderFunnel(){
+  document.getElementById('funnelRows').innerHTML = CADEIA.map((e,i)=>{
+    const metaW = (e.meta/maxScale)*100, realW = (e.real/maxScale)*100;
+    return `
+      <div class="fm-row">
+        <div class="fm-name"><b>${e.nome}</b></div>
+        <div class="fm-track-wrap">
+          <div class="fm-track">
+            <div class="fm-meta-fill" style="width:${metaW}%"></div>
+            <div class="fm-real-fill" style="width:${realW}%;background:${COLORS[i]}"></div>
+          </div>
+        </div>
+        <div class="fm-nums">
+          <div class="real">${fmt(e.real)}</div><div class="of">meta ${fmt(e.meta)}</div>
+          ${e.receita ? `<div class="fm-revenue-chip"><span onclick="showPage('forecast')" title="Ver detalhamento em Previsão Comercial">${e.receita} →</span></div>` : ''}
+        </div>
+        <div class="fm-pct-cell">
+          ${i===0 ? '<span class="fm-muted">topo</span>' : `
+            <span class="fm-real-pct fm-status-${e.status}">${pct1(e.pctRealAnt)}%</span>
+            <span class="fm-diff fm-status-${e.status}">${e.diff>=0?'+':'−'}${pct1(Math.abs(e.diff))} p.p. vs. meta ${e.pctMetaAnt}%</span>
+          `}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderAnexo(){
+  document.getElementById('anexoRows').innerHTML = CADEIA.map((e,i)=>`
+    <tr class="${i===0?'':'fm-row-'+e.status}">
+      <td class="row-title">${e.nome}</td>
+      <td>${fmt(e.meta)}</td>
+      <td>${i===0?'—':e.pctMetaAnt+'%'}</td>
+      <td>${fmt(e.real)}</td>
+      <td>${i===0?'—':pct1(e.pctRealAnt)+'%'}</td>
+      <td class="${i===0?'':'fm-status-'+e.status}">${i===0?'—':(e.diff>=0?'+':'−')+pct1(Math.abs(e.diff))+' p.p.'}</td>
+      <td class="revenue-col" style="font-family:var(--font-mono);font-size:12px;">${e.receita ?? '—'}</td>
+      <td>${i===0?'':`<span class="status-pill fm-status-pill-${e.status}">${STATUS_LABEL[e.status]}</span>`}</td>
+      <td class="fm-ref">${e.ref}</td>
+    </tr>`).join('');
+}
+
+renderFunnel();
+renderAnexo();
+
+const compareTabs = document.getElementById('compareTabs');
+compareTabs.addEventListener('click', (ev) => {
+  const btn = ev.target.closest('button');
+  if(!btn) return;
+  [...compareTabs.children].forEach(b=>b.classList.toggle('active', b===btn));
+  const integrado = btn.dataset.mode === 'integrado';
+  document.body.classList.toggle('show-revenue', integrado);
+  document.getElementById('forecastCard').style.display = integrado ? '' : 'none';
+  document.getElementById('chipReceita').style.display = integrado ? '' : 'none';
+});
+document.body.classList.add('show-revenue');
+
+/* ======================= página Previsão Comercial ======================= */
+const fmtMoney = v => v.toLocaleString('pt-BR', {style:'currency', currency:'BRL', maximumFractionDigits:0});
+const fmtMoneyShort = v => 'R$ ' + (v/1000).toLocaleString('pt-BR',{maximumFractionDigits:0}) + ' mil';
+const initials = n => n.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+
+const VENDORS = ['Ana Beatriz Freitas','Carlos Eduardo Nunes','Mariana Souza Lima','Rafael Lima Torres'];
+
+const MONTHS = {
+  jul: {
+    label:'Julho', year:2026, status:'fechado',
+    closedSummary:{ forecastPrevisto: 82000, commitPrevisto: 54000, realizado: 68000 },
+    deals:[
+      {empresa:'Comercial Andrade Ferragens', vendedor:'Ana Beatriz Freitas', valor:30000, status:'ganho'},
+      {empresa:'Grupo Silveira Transportes', vendedor:'Carlos Eduardo Nunes', valor:18000, status:'perdido'},
+      {empresa:'Nova Base Engenharia', vendedor:'Mariana Souza Lima', valor:22000, status:'ganho'},
+      {empresa:'Distribuidora Palmeira', vendedor:'Rafael Lima Torres', valor:12000, status:'perdido'},
+      {empresa:'TechFarma Insumos', vendedor:'Ana Beatriz Freitas', valor:16000, status:'ganho'},
+    ],
+  },
+  ago: {
+    label:'Agosto', year:2026, status:'aberto',
+    deals:[
+      {nome:'Expansão linha industrial', empresa:'Distribuidora Rio Verde', vendedor:'Ana Beatriz Freitas', valor:32000, prob:85, etapa:'Negociação', data:'2026-08-06', commit:true},
+      {nome:'Retrofit parque fabril', empresa:'Metalúrgica Andrade', vendedor:'Ana Beatriz Freitas', valor:8000, prob:90, etapa:'Proposta enviada', data:'2026-08-14', commit:true},
+      {nome:'Licença anual — 40 usuários', empresa:'GrupoNexa Logística', vendedor:'Carlos Eduardo Nunes', valor:28000, prob:45, etapa:'Negociação', data:'2026-08-20', commit:false},
+      {nome:'Piloto módulo financeiro', empresa:'Fresenius Componentes', vendedor:'Carlos Eduardo Nunes', valor:15000, prob:30, etapa:'Qualificação', data:'2026-08-25', commit:false},
+      {nome:'Renovação + upsell', empresa:'Construtora Bellver', vendedor:'Mariana Souza Lima', valor:40000, prob:35, etapa:'Proposta enviada', data:'2026-08-11', commit:false},
+      {nome:'Integração via API', empresa:'Auto Peças Rondon', vendedor:'Mariana Souza Lima', valor:12000, prob:20, etapa:'Primeiro contato', data:'2026-08-28', commit:false},
+      {nome:'Contrato anual', empresa:'Comércio Vitalle', vendedor:'Rafael Lima Torres', valor:22000, prob:10, etapa:'Primeiro contato', data:'2026-08-30', commit:false},
+      {nome:'Expansão 2ª unidade', empresa:'Indústria Kaspar', vendedor:'Rafael Lima Torres', valor:18000, prob:15, etapa:'Qualificação', data:'2026-08-22', commit:false},
+      {nome:'Setup inicial', empresa:'Tech Solutions BR', vendedor:'Ana Beatriz Freitas', valor:15000, prob:30, etapa:'Proposta enviada', data:'2026-08-18', commit:false},
+      {nome:'Substituição de fornecedor', empresa:'Vidraçaria Ideal', vendedor:'Carlos Eduardo Nunes', valor:10000, prob:30, etapa:'Primeiro contato', data:'2026-08-27', commit:false},
+    ],
+  },
+  set: {
+    label:'Setembro', year:2026, status:'aberto',
+    deals:[
+      {nome:'Novo contrato de manutenção', empresa:'Vidros Cortez', vendedor:'Rafael Lima Torres', valor:14000, prob:15, etapa:'Primeiro contato', data:'2026-09-05', commit:false},
+      {nome:'Ampliação de licenças', empresa:'MRV Componentes', vendedor:'Carlos Eduardo Nunes', valor:20000, prob:10, etapa:'Primeiro contato', data:'2026-09-10', commit:false},
+      {nome:'Fase 2 do projeto', empresa:'Construtora Bellver', vendedor:'Mariana Souza Lima', valor:25000, prob:20, etapa:'Qualificação', data:'2026-09-18', commit:false},
+      {nome:'Expansão regional', empresa:'Distribuidora Rio Verde', vendedor:'Ana Beatriz Freitas', valor:18000, prob:25, etapa:'Qualificação', data:'2026-09-22', commit:false},
+      {nome:'Reposição de linha', empresa:'Indústria Kaspar', vendedor:'Rafael Lima Torres', valor:9000, prob:10, etapa:'Primeiro contato', data:'2026-09-28', commit:false},
+    ],
+  },
+};
+
+let currentMonth = 'ago';
+let currentVendor = 'all';
+
+const monthTabsEl = document.getElementById('monthTabs');
+Object.entries(MONTHS).forEach(([key, m]) => {
+  const btn = document.createElement('button');
+  btn.dataset.key = key;
+  btn.innerHTML = `${m.label}<span class="sub">${m.status === 'fechado' ? 'encerrado' : (key==='ago'?'mês atual':'em aberto')}</span>`;
+  btn.onclick = () => { currentMonth = key; renderForecast(); };
+  monthTabsEl.appendChild(btn);
+});
+
+const vendorFilterEl = document.getElementById('vendorFilter');
+vendorFilterEl.innerHTML = `<option value="all">Todos os vendedores</option>` +
+  VENDORS.map(v => `<option value="${v}">${v}</option>`).join('');
+vendorFilterEl.onchange = () => { currentVendor = vendorFilterEl.value; renderForecast(); };
+
+const metaInput = document.getElementById('metaInput');
+metaInput.oninput = renderForecast;
+
+function parseMeta() {
+  const raw = metaInput.value.replace(/\./g,'').replace(/[^\d]/g,'');
+  return Number(raw) || 0;
+}
+
+function computeAggregates(deals) {
+  const pipeline = deals.reduce((s,d) => s + d.valor, 0);
+  const forecast = deals.reduce((s,d) => s + d.valor * (d.prob/100), 0);
+  const commit = deals.filter(d=>d.commit).reduce((s,d) => s + d.valor, 0);
+  return {pipeline, forecast, commit, count: deals.length};
+}
+
+function renderForecast() {
+  const month = MONTHS[currentMonth];
+  const isClosed = month.status === 'fechado';
+
+  [...monthTabsEl.children].forEach(b => b.classList.toggle('active', b.dataset.key === currentMonth));
+
+  const banner = document.getElementById('closedBanner');
+  const kpiRow = document.getElementById('kpiRow');
+  const dealsTitle = document.getElementById('dealsTitle');
+  const dealsSub = document.getElementById('dealsSub');
+  const dealsTable = document.getElementById('dealsTable');
+  const sellerSub = document.getElementById('sellerSub');
+
+  if (isClosed) {
+    const s = month.closedSummary;
+    const accForecast = Math.round(s.realizado / s.forecastPrevisto * 100);
+    const accCommit = Math.round(s.realizado / s.commitPrevisto * 100);
+    banner.innerHTML = `
+      <div class="closed-banner">
+        <svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="7.2"/><path d="M10 9v4.5M10 6.6v.1" stroke-linecap="round"/></svg>
+        <span><b>${month.label}/${month.year} encerrado.</b> Comparativo entre o previsto no início do mês e o que de fato fechou.</span>
+        <div class="accuracy-row">
+          <div class="acc-item"><div class="t">Forecast previsto</div><div class="v">${fmtMoneyShort(s.forecastPrevisto)}</div></div>
+          <div class="acc-item"><div class="t">Commit previsto</div><div class="v">${fmtMoneyShort(s.commitPrevisto)}</div></div>
+          <div class="acc-item"><div class="t">Realizado</div><div class="v good">${fmtMoneyShort(s.realizado)}</div></div>
+          <div class="acc-item"><div class="t">Acerto do forecast</div><div class="v">${accForecast}%</div></div>
+          <div class="acc-item"><div class="t">Acerto do commit</div><div class="v ${accCommit>=100?'good':''}">${accCommit}%</div></div>
+        </div>
+      </div>`;
+
+    kpiRow.innerHTML = kpiCard('Forecast previsto', s.forecastPrevisto, '', '--info') +
+      kpiCard('Commit previsto', s.commitPrevisto, '', '--amber') +
+      kpiCard('Realizado (ganho)', s.realizado, `${accForecast}% do forecast previsto`, '--good');
+
+    document.getElementById('covTrack').innerHTML = '';
+    document.querySelector('.coverage-card').style.display = 'none';
+
+    dealsTitle.textContent = `Negócios de ${month.label}/${month.year} — fechados`;
+    dealsSub.textContent = 'Mês encerrado: sem edição de Commit, apenas o resultado final';
+    sellerSub.textContent = 'Realizado por vendedor';
+
+    const filtered = currentVendor === 'all' ? month.deals : month.deals.filter(d=>d.vendedor===currentVendor);
+    dealsTable.innerHTML = `
+      <thead><tr><th>Negócio</th><th>Vendedor</th><th style="text-align:right">Valor</th><th>Resultado</th></tr></thead>
+      <tbody>${filtered.map(d => `
+        <tr>
+          <td><div class="deal-name">${d.empresa}</div></td>
+          <td>${d.vendedor}</td>
+          <td class="money-cell">${fmtMoney(d.valor)}</td>
+          <td><span class="deal-status-pill ${d.status}">${d.status}</span></td>
+        </tr>`).join('')}
+      </tbody>`;
+
+    const bySeller = {};
+    VENDORS.forEach(v => bySeller[v] = {ganho:0, perdido:0, count:0});
+    month.deals.forEach(d => { bySeller[d.vendedor][d.status] += d.valor; bySeller[d.vendedor].count++; });
+    document.getElementById('sellerTable').innerHTML = `
+      <thead><tr><th>Vendedor</th><th>Negócios</th><th>Ganho</th><th>Perdido</th></tr></thead>
+      <tbody>${VENDORS.map(v => `
+        <tr>
+          <td><div class="seller-name"><span class="seller-avatar">${initials(v)}</span>${v}</div></td>
+          <td>${bySeller[v].count}</td>
+          <td class="commit-cell" style="color:var(--success)">${fmtMoney(bySeller[v].ganho)}</td>
+          <td style="color:var(--danger)">${fmtMoney(bySeller[v].perdido)}</td>
+        </tr>`).join('')}
+      </tbody>`;
+    return;
+  }
+
+  banner.innerHTML = '';
+  document.querySelector('.coverage-card').style.display = '';
+  dealsTitle.textContent = `Negócios previstos para ${month.label}/${month.year}`;
+  dealsSub.textContent = 'Marque Commit nos negócios que o vendedor confirma fechar neste mês';
+  sellerSub.textContent = 'Negócios previstos para o mês, ponderados por probabilidade';
+
+  const filtered = currentVendor === 'all' ? month.deals : month.deals.filter(d=>d.vendedor===currentVendor);
+  const agg = computeAggregates(filtered);
+  const meta = parseMeta();
+
+  kpiRow.innerHTML =
+    kpiCard('Pipeline', agg.pipeline, `${agg.count} negócio${agg.count===1?'':'s'} em aberto`, '--info') +
+    kpiCard('Forecast', agg.forecast, `${agg.pipeline ? Math.round(agg.forecast/agg.pipeline*100) : 0}% do pipeline · ponderado por probabilidade`, '--info') +
+    kpiCard('Commit', agg.commit, `${agg.pipeline ? Math.round(agg.commit/agg.pipeline*100) : 0}% do pipeline · confirmado pelo vendedor`, '--amber');
+
+  const scaleMax = Math.max(agg.pipeline, meta) * 1.08 || 1;
+  const track = document.getElementById('covTrack');
+  const metaPct = Math.min(100, meta / scaleMax * 100);
+  track.innerHTML = `
+    <div class="cov-fill pipeline" style="width:${agg.pipeline/scaleMax*100}%"></div>
+    <div class="cov-fill forecast" style="width:${agg.forecast/scaleMax*100}%"></div>
+    <div class="cov-fill commit" style="width:${agg.commit/scaleMax*100}%"></div>
+    ${meta > 0 ? `<div class="cov-meta-marker" style="left:${metaPct}%" data-label="Meta ${fmtMoneyShort(meta)}"></div>` : ''}
+  `;
+
+  const bySeller = {};
+  VENDORS.forEach(v => bySeller[v] = []);
+  filtered.forEach(d => bySeller[d.vendedor] && bySeller[d.vendedor].push(d));
+  const activeVendors = currentVendor === 'all' ? VENDORS : [currentVendor];
+  document.getElementById('sellerTable').innerHTML = `
+    <thead><tr><th>Vendedor</th><th>Negócios</th><th>Pipeline</th><th>Forecast</th><th>Commit</th></tr></thead>
+    <tbody>${activeVendors.map(v => {
+      const list = bySeller[v] || [];
+      const a = computeAggregates(list);
+      return `
+        <tr>
+          <td><div class="seller-name"><span class="seller-avatar">${initials(v)}</span>${v}</div></td>
+          <td>${a.count}</td>
+          <td>${fmtMoney(a.pipeline)}</td>
+          <td>${fmtMoney(a.forecast)}</td>
+          <td class="commit-cell">${a.commit > 0 ? fmtMoney(a.commit) : '—'}${a.commit === 0 ? '<span class="chip warn">sem commit</span>' : ''}</td>
+        </tr>`;
+    }).join('')}</tbody>
+    <tfoot><tr>
+      <td>Total</td><td>${agg.count}</td><td>${fmtMoney(agg.pipeline)}</td><td>${fmtMoney(agg.forecast)}</td><td>${fmtMoney(agg.commit)}</td>
+    </tr></tfoot>`;
+
+  const sorted = [...filtered].sort((a,b) => new Date(a.data) - new Date(b.data));
+  dealsTable.innerHTML = filtered.length === 0 ? '' : `
+    <thead><tr>
+      <th>Negócio</th><th>Vendedor</th><th>Etapa</th><th>Probabilidade</th>
+      <th style="text-align:right">Valor</th><th>Fechamento</th><th>Commit</th>
+    </tr></thead>
+    <tbody>${sorted.map((d) => {
+      const realIdx = month.deals.indexOf(d);
+      return `
+      <tr>
+        <td><div class="deal-name">${d.nome}</div><div class="deal-company">${d.empresa}</div></td>
+        <td>${d.vendedor}</td>
+        <td><span class="stage-badge">${d.etapa}</span></td>
+        <td class="prob-cell"><span class="prob-bar"><i style="width:${d.prob}%"></i></span>${d.prob}%</td>
+        <td class="money-cell">${fmtMoney(d.valor)}</td>
+        <td>${new Date(d.data+'T00:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}</td>
+        <td>
+          <label class="commit-toggle">
+            <input type="checkbox" ${d.commit ? 'checked' : ''} onchange="toggleCommit(${realIdx}, this.checked)" />
+            <span class="box"><svg viewBox="0 0 20 20"><path d="M4 10.5l4 4 8-9" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="txt">${d.commit ? 'Commit' : 'Marcar'}</span>
+          </label>
+        </td>
+      </tr>`;
+    }).join('')}</tbody>`;
+
+  if (filtered.length === 0) {
+    dealsTable.innerHTML = `<tbody><tr><td class="empty-note">Nenhum negócio previsto para este vendedor neste mês.</td></tr></tbody>`;
+  }
+}
+
+function toggleCommit(idx, checked) {
+  MONTHS[currentMonth].deals[idx].commit = checked;
+  renderForecast();
+}
+
+function kpiCard(label, value, sub, colorVar) {
+  return `
+    <div class="kpi-card" style="--kpi-color:var(${colorVar})">
+      <div class="label"><span class="dot"></span>${label}</div>
+      <div class="value">${fmtMoney(value)}</div>
+      <div class="sub">${sub}</div>
+    </div>`;
+}
+
+renderForecast();
+
+/* ======================= ícones da sidebar ======================= */
+document.querySelectorAll('.sidebar button').forEach(a => {
+  const map = {
+    DASH_ICON:'<rect x="2.5" y="2.5" width="6.2" height="6.2" rx="1.3"/><rect x="11.3" y="2.5" width="6.2" height="4.4" rx="1.3"/><rect x="11.3" y="9.4" width="6.2" height="8.1" rx="1.3"/><rect x="2.5" y="11.2" width="6.2" height="6.3" rx="1.3"/>',
+    SEARCH_ICON:'<circle cx="8.8" cy="8.8" r="5.3"/><path d="M16.5 16.5l-3.8-3.8" stroke-linecap="round"/>',
+    RADAR_ICON:'<circle cx="10" cy="10" r="7"/><circle cx="10" cy="10" r="3.2"/><path d="M10 3v2.4M10 14.6V17M17 10h-2.4M5.4 10H3"/>',
+    FUNNEL_ICON:'<path d="M3 3.5h14l-5.3 6.6v5.4l-3.4 1.7v-7.1z" stroke-linejoin="round"/>',
+    TARGET_ICON:'<circle cx="10" cy="10" r="7"/><circle cx="10" cy="10" r="3.6"/><circle cx="10" cy="10" r=".9" fill="currentColor" stroke="none"/>',
+    FORECAST_ICON:'<path d="M3 15l4-5 3.5 3L17 5"/><path d="M12.5 5H17v4.5"/>',
+    BUILD_ICON:'<path d="M3 17.5V3.8a.8.8 0 01.8-.8h6.4a.8.8 0 01.8.8v13.7"/><path d="M13 17.5V8.3a.8.8 0 01.8-.8h3.4a.8.8 0 01.8.8v9.2"/>',
+    DEAL_ICON:'<path d="M2.5 10.3l3-4.6a1 1 0 01.85-.47h7.3a1 1 0 01.85.47l3 4.6"/><path d="M2.5 10.3v5.2a1 1 0 001 1h13a1 1 0 001-1v-5.2"/><path d="M7.3 10.3a2.7 2.7 0 005.4 0"/>',
+    TASK_ICON:'<rect x="3" y="3" width="14" height="14" rx="2.2"/><path d="M6.6 10.2l2 2 4.6-4.9"/>',
+  };
+  Object.entries(map).forEach(([token, path]) => {
+    if (a.innerHTML.includes(token)) {
+      a.innerHTML = a.innerHTML.replace(token, `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6">${path}</svg>`);
+    }
+  });
+});
+
+showPage('metas');
+</script>
