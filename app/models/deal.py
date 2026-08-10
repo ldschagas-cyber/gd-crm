@@ -3,7 +3,7 @@ import enum
 import uuid
 from datetime import date, datetime
 
-from sqlalchemy import Date, DateTime, ForeignKey, Integer, Numeric, String, func, select
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, Numeric, String, func, select
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, column_property, mapped_column
 
@@ -40,6 +40,10 @@ class Deal(Base, TenantMixin, TimestampMixin):
     status: Mapped[str] = mapped_column(String(20), nullable=False, default=DealStatus.ABERTO.value, index=True)
     motivo_perda: Mapped[str | None] = mapped_column(String(255))
     data_fechamento: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Previsão Comercial (ver docs/PLANO_PREVISAO_COMERCIAL.md) — o vendedor confirma que
+    # este negócio fecha no mês de data_prev_fechamento, distinto da probabilidade ponderada
+    # (que vem da etapa). Default False: nada é commit até alguém marcar manualmente.
+    commit: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
 
 # Data/hora da última interação registrada na timeline deste negócio — usada pra

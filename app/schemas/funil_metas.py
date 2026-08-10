@@ -43,3 +43,10 @@ class FunilMetasResumo(BaseModel):
     modo: str  # "coorte" | "atividade"
     periodo: str  # AAAA-MM
     etapas: list[FunilEtapaResumo]
+    # Ponte com Previsão Comercial (ver docs/PLANO_PREVISAO_COMERCIAL.md §3) — soma de
+    # valor_previsto em R$ pra a etapa "Propostas enviadas" (negócios abertos na(s) etapa(s)
+    # marcada(s) marco_funil="proposta") e pra "Clientes fechados" (negócios ganho no período).
+    # None quando o tenant não tem etapa de proposta marcada — mesmo fallback que o resto do
+    # Anexo 1 já tem pra marco_funil ausente.
+    propostas_valor_aberto: float | None = None
+    fechados_valor_realizado: float | None = None

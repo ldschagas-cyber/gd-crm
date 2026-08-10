@@ -13,6 +13,7 @@ import ContactDetailPage from './pages/ContactDetailPage.jsx'
 import PipelinesPage from './pages/PipelinesPage.jsx'
 import NegociosPage from './pages/NegociosPage.jsx'
 import DealDetailPage from './pages/DealDetailPage.jsx'
+import PrevisaoComercialPage from './pages/PrevisaoComercialPage.jsx'
 import TarefasPage from './pages/TarefasPage.jsx'
 import TaskQueuePage from './pages/TaskQueuePage.jsx'
 import SequenciasPage from './pages/SequenciasPage.jsx'
@@ -44,6 +45,7 @@ export default function App() {
         <Route path="/pesquisa-leads" element={<PesquisaLeadsPage />} />
         <Route path="/central-leads" element={<CentralLeadsPage />} />
         <Route path="/metas-funil" element={<FunilMetasPage />} />
+        <Route path="/previsao-comercial" element={<PrevisaoComercialPage />} />
         <Route path="/buscar-empresas" element={<BuscarEmpresasPage />} />
         <Route path="/empresas" element={<EmpresasPage />} />
         <Route path="/empresas/:id" element={<CompanyDetailPage />} />
