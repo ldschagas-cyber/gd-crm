@@ -199,6 +199,7 @@ def import_lead_prospects_task(job_id: str, tenant_id: str, user_id: str, conten
                 faixa_faturamento=opt_str("faixa_faturamento"),
                 origem=opt_str("origem"),
                 telefone=opt_str("telefone"), site=opt_str("site"), linkedin=opt_str("linkedin"),
+                email=opt_str("email"),
                 contato_sugerido=opt_str("contato_sugerido"), dor_sugerida=opt_str("dor_sugerida"),
                 status=status, pesquisado_por=pesquisador_id,
             ))

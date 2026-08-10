@@ -20,6 +20,7 @@ class LeadProspectCreate(BaseModel):
     site: str | None = None
     telefone: str | None = None
     linkedin: str | None = None
+    email: str | None = None
     dor_sugerida: str | None = None
     contato_sugerido: str | None = None
     status: LeadStatus = LeadStatus.NOVO
@@ -39,6 +40,7 @@ class LeadProspectUpdate(BaseModel):
     site: str | None = None
     telefone: str | None = None
     linkedin: str | None = None
+    email: str | None = None
     dor_sugerida: str | None = None
     contato_sugerido: str | None = None
     status: LeadStatus | None = None
@@ -59,6 +61,7 @@ class LeadProspectRead(BaseModel):
     site: str | None
     telefone: str | None
     linkedin: str | None
+    email: str | None
     dor_sugerida: str | None
     contato_sugerido: str | None
     status: str
@@ -106,6 +109,7 @@ class LeadEnrichmentSuggestion(BaseModel):
     site: str | None = None
     telefone: str | None = None
     linkedin: str | None = None
+    email: str | None = None
     contato_sugerido: str | None = None
     dor_sugerida: str | None = None
     observacoes: str | None = None

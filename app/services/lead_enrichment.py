@@ -34,6 +34,8 @@ responda SOMENTE com um objeto JSON (sem texto antes ou depois, sem markdown), c
   "site": string ou null,
   "telefone": string ou null,
   "linkedin": string ou null — URL do LinkedIn da empresa,
+  "email": string ou null — e-mail geral/institucional da empresa (ex.: contato@empresa.com.br, SAC), SOMENTE
+    se encontrar publicado no site ou fonte oficial; nunca invente,
   "contato_sugerido": string ou null — nome e cargo de um decisor plausível (compras/logística/operações) SOMENTE
     se encontrar essa informação publicamente; nunca invente um nome,
   "dor_sugerida": string ou null — 1-2 frases de hipótese sobre uma possível dor logística/de frete desta empresa,

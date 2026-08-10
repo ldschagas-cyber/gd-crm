@@ -59,6 +59,10 @@ class LeadProspect(Base, TenantMixin, TimestampMixin):
     site: Mapped[str | None] = mapped_column(String(255))
     telefone: Mapped[str | None] = mapped_column(String(20))
     linkedin: Mapped[str | None] = mapped_column(String(255))
+    # E-mail geral/institucional da empresa (ex.: contato@empresa.com.br) — distinto do
+    # e-mail de um Contato específico. Vira Company.email na promoção, mesmo uso que já
+    # existe lá (não é usado por cadência/disparo automático, só informativo).
+    email: Mapped[str | None] = mapped_column(String(255))
     dor_sugerida: Mapped[str | None] = mapped_column(Text)
     contato_sugerido: Mapped[str | None] = mapped_column(String(255))
     status: Mapped[str] = mapped_column(String(20), nullable=False, default=LeadStatus.NOVO.value, index=True)

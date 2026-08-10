@@ -504,7 +504,7 @@ function LeadsTab({ setTab }) {
 const ENRICH_FIELD_LABELS = {
   setor: 'Setor', segmento: 'Segmento', uf: 'UF', faixa_funcionarios: 'Faixa de funcionários',
   faixa_faturamento: 'Faixa de faturamento', site: 'Site', telefone: 'Telefone', linkedin: 'LinkedIn',
-  contato_sugerido: 'Contato sugerido', dor_sugerida: 'Dor sugerida',
+  email: 'E-mail', contato_sugerido: 'Contato sugerido', dor_sugerida: 'Dor sugerida',
 }
 
 function EnrichModal({ lead, result, isPending, error, applying, onRetry, onClose, onApply }) {
@@ -754,6 +754,7 @@ function LeadDrawer({ lead, users, onClose, onSubmit, submitting, error }) {
     telefone: lead?.telefone ?? '',
     site: lead?.site ?? '',
     linkedin: lead?.linkedin ?? '',
+    email: lead?.email ?? '',
     contato_sugerido: lead?.contato_sugerido ?? '',
     dor_sugerida: lead?.dor_sugerida ?? '',
     status: lead?.status ?? 'novo',
@@ -781,6 +782,7 @@ function LeadDrawer({ lead, users, onClose, onSubmit, submitting, error }) {
       telefone: form.telefone || null,
       site: form.site || null,
       linkedin: form.linkedin || null,
+      email: form.email || null,
       contato_sugerido: form.contato_sugerido || null,
       dor_sugerida: form.dor_sugerida || null,
       status: form.status,
@@ -885,9 +887,15 @@ function LeadDrawer({ lead, users, onClose, onSubmit, submitting, error }) {
               </div>
             </div>
 
-            <div className="f-group">
-              <label className="f-label">Contato sugerido</label>
-              <input className="f-input" value={form.contato_sugerido} onChange={set('contato_sugerido')} placeholder="Ex.: Ana Paula — Gerente de Compras" />
+            <div className="f-row">
+              <div className="f-group">
+                <label className="f-label">E-mail</label>
+                <input className="f-input" type="email" value={form.email} onChange={set('email')} placeholder="contato@empresa.com.br" />
+              </div>
+              <div className="f-group">
+                <label className="f-label">Contato sugerido</label>
+                <input className="f-input" value={form.contato_sugerido} onChange={set('contato_sugerido')} placeholder="Ex.: Ana Paula — Gerente de Compras" />
+              </div>
             </div>
 
             <div className="f-group">
@@ -1018,7 +1026,7 @@ function ImportDrawer({ onClose, onDone }) {
           <div className="import-cols">
             Colunas esperadas: <code>empresa*</code> <code>setor</code> <code>segmento</code> <code>uf</code>{' '}
             <code>regiao</code> <code>faixa_funcionarios</code> <code>faixa_faturamento</code> <code>origem</code>{' '}
-            <code>telefone</code> <code>site</code> <code>linkedin</code> <code>contato_sugerido</code>{' '}
+            <code>telefone</code> <code>site</code> <code>linkedin</code> <code>email</code> <code>contato_sugerido</code>{' '}
             <code>dor_sugerida</code> <code>status</code> <code>pesquisado_por</code>
             <br />
             <span className="f-hint">

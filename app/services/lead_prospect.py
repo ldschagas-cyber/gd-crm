@@ -73,7 +73,8 @@ class LeadProspectService:
             regiao=lead.regiao,
             faixa_funcionarios=lead.faixa_funcionarios,
             faixa_faturamento=lead.faixa_faturamento, origem=lead.origem,
-            site=lead.site, telefone=lead.telefone, linkedin=lead.linkedin, dor_sugerida=lead.dor_sugerida,
+            site=lead.site, telefone=lead.telefone, linkedin=lead.linkedin, email=lead.email,
+            dor_sugerida=lead.dor_sugerida,
             contato_sugerido=lead.contato_sugerido, status=lead.status, pesquisado_por=lead.pesquisado_por,
             promoted_company_id=lead.promoted_company_id, created_at=lead.created_at,
             score_icp=score, icp_fit=fit, gamificacao=gamificacao, recebe_bonus=recebe_bonus,
@@ -154,7 +155,8 @@ class LeadProspectService:
             raise ConflictError("Esta pesquisa já foi promovida a empresa")
         company = Company(
             razao_social=lead.empresa, cnpj=lead.cnpj, segmento=lead.segmento, setor=lead.setor, uf=lead.uf,
-            site=lead.site, linkedin=lead.linkedin, telefone=lead.telefone, porte=lead.faixa_funcionarios,
+            site=lead.site, linkedin=lead.linkedin, email=lead.email, telefone=lead.telefone,
+            porte=lead.faixa_funcionarios,
             responsavel_id=responsavel_id,
             # faixa_faturamento não é copiada: é uma faixa (texto), não um número, e
             # Company.faturamento_estimado é Numeric — sem base pra converter uma faixa
