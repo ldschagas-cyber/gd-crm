@@ -1,7 +1,7 @@
 """add message_templates table and sequence_steps.message_template_id
 
 Revision ID: c4d8e2a7f159
-Revises: a8d4f1c6b3e9
+Revises: 5beda113fc7b
 Create Date: 2026-08-10 00:00:00.000000
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 
 revision: str = 'c4d8e2a7f159'
-down_revision: Union[str, None] = 'a8d4f1c6b3e9'
+down_revision: Union[str, None] = '5beda113fc7b'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
