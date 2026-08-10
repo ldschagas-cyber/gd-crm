@@ -26,6 +26,12 @@ const ORIGENS_EMPRESA = [
   'Indicação', 'Prospecção ativa', 'Feira', 'Campanha', 'LinkedIn',
   'Site institucional', 'Formulário do site', 'Pesquisa de Leads', 'Outro',
 ]
+// Mesma lista de PesquisaLeadsPage.jsx — faixa vem de lá na promoção, mas também é
+// editável direto na empresa (ex.: empresa cadastrada sem passar pela Pesquisa de Leads).
+const FAIXAS_FATURAMENTO = [
+  'Até R$ 5 milhões', 'R$ 5–25 milhões', 'R$ 25–100 milhões', 'R$ 100–500 milhões',
+  'R$ 500 milhões – R$ 1 bilhão', 'Acima de R$ 1 bilhão',
+]
 
 const COLUMN_DEFS = [
   { key: 'segmento', label: 'Segmento', default: true },
@@ -494,6 +500,7 @@ export function CompanyModal({ company, users, usersError, onClose, onSubmit, su
     linkedin: company?.linkedin ?? '',
     num_funcionarios: company?.num_funcionarios ?? '',
     faturamento_estimado: company?.faturamento_estimado ?? '',
+    faixa_faturamento: company?.faixa_faturamento ?? '',
     telefone: company?.telefone ?? '',
     email: company?.email ?? '',
     responsavel_id: company?.responsavel_id ?? '',
@@ -506,6 +513,10 @@ export function CompanyModal({ company, users, usersError, onClose, onSubmit, su
   const origemOptions = form.origem && !ORIGENS_EMPRESA.includes(form.origem)
     ? [form.origem, ...ORIGENS_EMPRESA]
     : ORIGENS_EMPRESA
+  // Mesma lógica: faixa pode ter vindo da Pesquisa de Leads com um valor legado.
+  const faixaFaturamentoOptions = form.faixa_faturamento && !FAIXAS_FATURAMENTO.includes(form.faixa_faturamento)
+    ? [form.faixa_faturamento, ...FAIXAS_FATURAMENTO]
+    : FAIXAS_FATURAMENTO
 
   function set(field) {
     return (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
@@ -584,6 +595,14 @@ export function CompanyModal({ company, users, usersError, onClose, onSubmit, su
               <label htmlFor="faturamento_estimado">Faturamento estimado</label>
               <input id="faturamento_estimado" type="number" min="0" step="0.01" value={form.faturamento_estimado} onChange={set('faturamento_estimado')} />
             </div>
+          </div>
+          <div className="field">
+            <label htmlFor="faixa_faturamento">Faixa de faturamento</label>
+            <select id="faixa_faturamento" value={form.faixa_faturamento} onChange={set('faixa_faturamento')}>
+              <option value="">Sem faixa</option>
+              {faixaFaturamentoOptions.map((f) => <option key={f} value={f}>{f}</option>)}
+            </select>
+            <span className="hint-text">Aparece como tag na ficha — use quando não houver o valor exato acima.</span>
           </div>
           <div className="field-row">
             <div className="field">

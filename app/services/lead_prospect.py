@@ -158,11 +158,12 @@ class LeadProspectService:
             razao_social=lead.empresa, cnpj=lead.cnpj, segmento=lead.segmento, setor=lead.setor,
             cidade=lead.cidade, uf=lead.uf,
             site=lead.site, linkedin=lead.linkedin, email=lead.email, telefone=lead.telefone,
-            porte=lead.faixa_funcionarios,
+            porte=lead.faixa_funcionarios, faixa_faturamento=lead.faixa_faturamento,
             responsavel_id=responsavel_id,
-            # faixa_faturamento não é copiada: é uma faixa (texto), não um número, e
-            # Company.faturamento_estimado é Numeric — sem base pra converter uma faixa
-            # num valor exato sem inventar dado. Fica só como texto na Pesquisa de Leads.
+            # faixa_faturamento vira tag (Company.faixa_faturamento), não Company.faturamento_estimado:
+            # é uma faixa (texto), não um número, e faturamento_estimado é Numeric — sem base pra
+            # converter uma faixa num valor exato sem inventar dado. Mesmo raciocínio de
+            # faixa_funcionarios -> porte, um pouco acima.
             #
             # dor_sugerida vira problemas_encontrados: mesmo conceito (hipótese de dor),
             # só muda de nome porque no Dossiê Comercial esse campo já existia com outro

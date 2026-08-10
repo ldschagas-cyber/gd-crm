@@ -62,6 +62,11 @@ class Company(Base, TenantMixin, TimestampMixin, SoftDeleteMixin):
     porte: Mapped[str | None] = mapped_column(String(40))
     num_funcionarios: Mapped[int | None] = mapped_column(Integer)
     faturamento_estimado: Mapped[float | None] = mapped_column(Numeric(15, 2))
+    # Faixa de faturamento em texto (ex.: "R$ 25–100 milhões") vinda da Pesquisa de Leads —
+    # mesmo padrão de `porte`/faixa_funcionarios: não dá pra converter faixa em número exato
+    # sem inventar dado, então fica como tag na ficha até alguém preencher
+    # faturamento_estimado com o valor exato (se/quando descobrir).
+    faixa_faturamento: Mapped[str | None] = mapped_column(String(60))
     status: Mapped[str] = mapped_column(String(20), nullable=False, default=CompanyStatus.LEAD.value, index=True)
     origem: Mapped[str | None] = mapped_column(String(80))
     responsavel_id: Mapped[uuid.UUID | None] = mapped_column(PGUUID(as_uuid=True), ForeignKey("users.id"))

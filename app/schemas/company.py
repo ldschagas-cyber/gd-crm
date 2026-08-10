@@ -24,6 +24,7 @@ class CompanyBase(BaseModel):
     porte: str | None = None
     num_funcionarios: int | None = None
     faturamento_estimado: float | None = None
+    faixa_faturamento: str | None = None
     origem: str | None = None
     responsavel_id: UUID | None = None
     contexto_rapido: str | None = None
@@ -49,6 +50,7 @@ class CompanyUpdate(BaseModel):
     porte: str | None = None
     num_funcionarios: int | None = None
     faturamento_estimado: float | None = None
+    faixa_faturamento: str | None = None
     origem: str | None = None
     responsavel_id: UUID | None = None
     contexto_rapido: str | None = None
@@ -94,6 +96,7 @@ class CompanyRead(ORMModel):
     porte: str | None
     num_funcionarios: int | None
     faturamento_estimado: float | None
+    faixa_faturamento: str | None
     status: str
     origem: str | None
     responsavel_id: UUID | None

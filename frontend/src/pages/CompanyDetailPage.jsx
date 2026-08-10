@@ -158,6 +158,7 @@ export default function CompanyDetailPage() {
               <div className="co-tags">
                 {company.segmento && <span className="tag">{company.segmento}</span>}
                 {company.porte && <span className="tag">{company.porte}</span>}
+                {company.faixa_faturamento && <span className="tag">{company.faixa_faturamento}</span>}
                 {company.origem && <span className="tag">{company.origem}</span>}
               </div>
             </div>
