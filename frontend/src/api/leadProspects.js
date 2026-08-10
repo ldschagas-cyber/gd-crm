@@ -28,8 +28,10 @@ export function deleteLeadProspect(id) {
   return api.delete(`/lead-prospects/${id}`)
 }
 
-export function promoteLeadProspect(id) {
-  return api.post(`/lead-prospects/${id}/promote`).then((res) => res.data)
+export function promoteLeadProspect(id, responsavelId) {
+  return api
+    .post(`/lead-prospects/${id}/promote`, { responsavel_id: responsavelId || null })
+    .then((res) => res.data)
 }
 
 export function importLeadProspects(file) {

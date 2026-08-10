@@ -11,8 +11,8 @@ from app.models.user import User, UserRole
 from app.schemas.common import Page
 from app.schemas.import_job import ImportJobRead
 from app.schemas.lead_prospect import (
-    CommercialIntelligenceResponse, LeadEnrichmentSuggestion, LeadProspectCreate, LeadProspectPageParams,
-    LeadProspectRead, LeadProspectUpdate, MetaProgressResponse, PerformanceReportResponse,
+    CommercialIntelligenceResponse, LeadEnrichmentSuggestion, LeadPromoteRequest, LeadProspectCreate,
+    LeadProspectPageParams, LeadProspectRead, LeadProspectUpdate, MetaProgressResponse, PerformanceReportResponse,
 )
 from app.services.commercial_intelligence import CommercialIntelligenceService
 from app.services.import_job import ImportJobService
@@ -102,8 +102,12 @@ def delete_lead(lead_id: UUID, _: User = Depends(get_current_user), db: Session 
 
 
 @router.post("/{lead_id}/promote", response_model=LeadProspectRead)
-def promote_lead(lead_id: UUID, _: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    return LeadProspectService(db).promote(lead_id)
+def promote_lead(
+    lead_id: UUID, data: LeadPromoteRequest | None = None,
+    _: User = Depends(get_current_user), db: Session = Depends(get_db),
+):
+    responsavel_id = data.responsavel_id if data else None
+    return LeadProspectService(db).promote(lead_id, responsavel_id)
 
 
 @router.post("/{lead_id}/enrich", response_model=LeadEnrichmentSuggestion)

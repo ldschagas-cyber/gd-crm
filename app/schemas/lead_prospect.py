@@ -76,6 +76,13 @@ class LeadProspectRead(BaseModel):
     bonus_valor: float
 
 
+class LeadPromoteRequest(BaseModel):
+    """Corpo opcional de POST /{lead_id}/promote — permite já indicar o
+    responsável da Company recém-criada no ato da promoção (individual ou em
+    lote), sem precisar de um segundo passo em Central de Leads/Empresas."""
+    responsavel_id: UUID | None = None
+
+
 class LeadProspectPageParams(BaseModel):
     """Paginação com teto maior que o PageParams padrão: a lista busca tudo e
     filtra/pagina em memória (icp_fit é calculado, não é coluna) — volume
