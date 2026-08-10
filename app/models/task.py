@@ -33,6 +33,17 @@ class TaskStatus(str, enum.Enum):
     CANCELADA = "cancelada"
 
 
+class ResultadoLigacao(str, enum.Enum):
+    """Desfecho de uma tarefa de ligação, preenchido ao concluir pela fila de
+    execução (Tarefas → Iniciar tarefas). Só faz sentido para tipo=ligacao."""
+    ATENDEU = "atendeu"
+    RECADO_CAIXA_POSTAL = "recado_caixa_postal"
+    NAO_ATENDEU = "nao_atendeu"
+    OCUPADO = "ocupado"
+    NUMERO_ERRADO = "numero_errado"
+    RECUSOU_FALAR = "recusou_falar"
+
+
 class Task(Base, TenantMixin, TimestampMixin):
     __tablename__ = "tasks"
 
@@ -51,3 +62,6 @@ class Task(Base, TenantMixin, TimestampMixin):
     prioridade: Mapped[str] = mapped_column(String(20), nullable=False, default=TaskPriority.MEDIA.value)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default=TaskStatus.PENDENTE.value, index=True)
     concluida_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Só preenchido para tipo=ligacao, gravado junto com a conclusão pela fila de
+    # execução (ver ResultadoLigacao acima).
+    resultado_ligacao: Mapped[str | None] = mapped_column(String(40))

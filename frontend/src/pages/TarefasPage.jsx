@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   completeTask, createTask, deleteTask, exportTasks, listTasks, updateTask,
@@ -7,7 +8,10 @@ import { listCompanies } from '../api/companies'
 import { listContacts } from '../api/contacts'
 import { listDeals } from '../api/deals'
 import { listUsers } from '../api/users'
+import { listSnippets } from '../api/snippets'
 import { TIPO_LABEL, TaskTypeChip } from '../components/TaskTypeIcon'
+import SnippetInsertButton from '../components/SnippetInsertButton'
+import { handleSnippetExpand } from '../utils/snippets'
 import '../styles/dataTable.css'
 import './TarefasPage.css'
 
@@ -34,6 +38,7 @@ function dateLabel(dateStr) {
 }
 
 export default function TarefasPage() {
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [busca, setBusca] = useState('')
   const [responsavelId, setResponsavelId] = useState('')
@@ -82,6 +87,16 @@ export default function TarefasPage() {
   const dates = Object.keys(groups).sort()
   dates.forEach((d) => groups[d].sort((a, b) => (a.hora ?? '').localeCompare(b.hora ?? '')))
 
+  // Fila de execução (Melhoria 1, docs/PLANO_FILA_TAREFAS.md): roda sobre a
+  // lista filtrada atual, na mesma ordem já exibida — só as pendentes, não
+  // faz sentido "executar" uma tarefa já concluída.
+  const pendentes = dates.flatMap((d) => groups[d].filter((t) => t.status === 'pendente'))
+
+  function iniciarFila() {
+    if (pendentes.length === 0) return
+    navigate('/tarefas/executar', { state: { taskIds: pendentes.map((t) => t.id) } })
+  }
+
   return (
     <>
       <header className="topbar">
@@ -91,6 +106,9 @@ export default function TarefasPage() {
         </div>
         <div className="page-actions">
           <button className="btn-ghost" onClick={() => exportTasks(filters)}>Exportar</button>
+          <button className="btn-primary" disabled={pendentes.length === 0} onClick={iniciarFila}>
+            ▸ Iniciar {pendentes.length} tarefa{pendentes.length === 1 ? '' : 's'}
+          </button>
           <button className="btn-primary" onClick={() => setModalTask(null)}>+ Nova tarefa</button>
         </div>
       </header>
@@ -222,6 +240,9 @@ function TaskRow({ task, companiesById, usersById, onComplete, onEdit, onDelete 
 
 export function TaskModal({ task, companies, users, onClose, onSubmit, submitting, error }) {
   const isEdit = Boolean(task?.id)
+  const roteiroRef = useRef(null)
+  const snippetsQuery = useQuery({ queryKey: ['snippets', 'for-task-modal'], queryFn: () => listSnippets({ size: 100 }) })
+  const snippets = snippetsQuery.data?.items ?? []
   const [form, setForm] = useState({
     titulo: task?.titulo ?? '',
     descricao: task?.descricao ?? '',
@@ -248,6 +269,19 @@ export function TaskModal({ task, companies, users, onClose, onSubmit, submittin
 
   function set(field) {
     return (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
+  }
+
+  // Vars pro merge de snippet no roteiro ({{nome}}/{{empresa}}/{{cargo}}/{{responsavel}})
+  // — mesma convenção de Snippets/Modelos de e-mail, preenchidas com o que já
+  // estiver selecionado no formulário (fica em branco, sem mesclar, até selecionar).
+  const selectedContact = (contactsQuery.data?.items ?? []).find((c) => c.id === form.contact_id)
+  const selectedCompany = companies.find((c) => c.id === form.company_id)
+  const selectedResponsavel = users.find((u) => u.id === form.responsavel_id)
+  const roteiroVars = {
+    nome: selectedContact?.nome,
+    empresa: selectedCompany?.razao_social,
+    cargo: selectedContact?.cargo,
+    responsavel: selectedResponsavel?.nome,
   }
 
   function handleSubmit(e) {
@@ -281,13 +315,26 @@ export function TaskModal({ task, companies, users, onClose, onSubmit, submittin
               <input className="f-input" value={form.titulo} onChange={set('titulo')} placeholder="Ex.: Ligar para confirmar reunião" required />
             </div>
             <div className="f-group">
-              <label className="f-label">Descrição / roteiro <span className="opt">opcional</span></label>
+              <label className="f-label">
+                <span>Descrição / roteiro <span className="opt">opcional</span></span>
+                <SnippetInsertButton
+                  targetRef={roteiroRef}
+                  value={form.descricao}
+                  onChange={(v) => setForm((f) => ({ ...f, descricao: v }))}
+                  vars={roteiroVars}
+                />
+              </label>
               <textarea
+                ref={roteiroRef}
                 className="f-input"
                 rows={3}
                 value={form.descricao}
-                onChange={set('descricao')}
-                placeholder="Roteiro / instruções para quem for executar…"
+                onChange={(e) => handleSnippetExpand(e, {
+                  onChange: (v) => setForm((f) => ({ ...f, descricao: v })),
+                  snippets,
+                  vars: roteiroVars,
+                })}
+                placeholder="Roteiro / instruções para quem for executar… — digite #atalho e espaço pra inserir um snippet"
               />
             </div>
             <div className="f-row">
