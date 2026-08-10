@@ -148,13 +148,14 @@ class LeadProspectService:
         lead = self.repo.save(lead)
         return self.to_read(lead)
 
-    def promote(self, lead_id: UUID) -> LeadProspectRead:
+    def promote(self, lead_id: UUID, responsavel_id: UUID | None = None) -> LeadProspectRead:
         lead = self._get_orm(lead_id)
         if lead.promoted_company_id:
             raise ConflictError("Esta pesquisa já foi promovida a empresa")
         company = Company(
             razao_social=lead.empresa, cnpj=lead.cnpj, segmento=lead.segmento, setor=lead.setor, uf=lead.uf,
             site=lead.site, telefone=lead.telefone, porte=lead.faixa_funcionarios,
+            responsavel_id=responsavel_id,
             # faixa_faturamento não é copiada: é uma faixa (texto), não um número, e
             # Company.faturamento_estimado é Numeric — sem base pra converter uma faixa
             # num valor exato sem inventar dado. Fica só como texto na Pesquisa de Leads.

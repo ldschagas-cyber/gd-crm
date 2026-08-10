@@ -60,6 +60,9 @@ function formatDateTime(iso) {
   const p = (n) => String(n).padStart(2, '0')
   return `${p(d.getDate())}/${p(d.getMonth() + 1)} às ${p(d.getHours())}:${p(d.getMinutes())}`
 }
+function isPromotable(lead) {
+  return !lead.promoted_company_id && lead.status !== 'descartado'
+}
 function parseInteligenciaComercial(raw) {
   if (!raw) return null
   try { return JSON.parse(raw) } catch { return null }
@@ -91,6 +94,7 @@ function LeadsTab({ setTab }) {
   const [criteriaOpen, setCriteriaOpen] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
   const [promotingLead, setPromotingLead] = useState(null)
+  const [promoteResponsavelId, setPromoteResponsavelId] = useState('')
   const [enrichingLead, setEnrichingLead] = useState(null)
   const [intelLead, setIntelLead] = useState(null)
   const [selected, setSelected] = useState({})
@@ -98,6 +102,8 @@ function LeadsTab({ setTab }) {
   const [bulkOwnerId, setBulkOwnerId] = useState('')
   const [bulkStatusOpen, setBulkStatusOpen] = useState(false)
   const [bulkStatusValue, setBulkStatusValue] = useState('')
+  const [bulkPromoteOpen, setBulkPromoteOpen] = useState(false)
+  const [bulkPromoteResponsavelId, setBulkPromoteResponsavelId] = useState('')
 
   const usersQuery = useQuery({ queryKey: ['users', 'for-lead-prospects'], queryFn: () => listUsers({ size: 100 }), retry: false })
   const users = usersQuery.data?.items ?? []
@@ -113,7 +119,10 @@ function LeadsTab({ setTab }) {
 
   const createMutation = useMutation({ mutationFn: createLeadProspect, onSuccess: () => { setDrawerLead(undefined); invalidate() } })
   const updateMutation = useMutation({ mutationFn: ({ id, data }) => updateLeadProspect(id, data), onSuccess: () => { setDrawerLead(undefined); invalidate() } })
-  const promoteMutation = useMutation({ mutationFn: promoteLeadProspect, onSuccess: () => { setPromotingLead(null); invalidate() } })
+  const promoteMutation = useMutation({
+    mutationFn: () => promoteLeadProspect(promotingLead.id, promoteResponsavelId),
+    onSuccess: () => { setPromotingLead(null); setPromoteResponsavelId(''); invalidate() },
+  })
   const enrichMutation = useMutation({ mutationFn: enrichLeadProspect })
   const intelMutation = useMutation({ mutationFn: gerarInteligenciaComercial })
   const saveIntelMutation = useMutation({
@@ -131,6 +140,12 @@ function LeadsTab({ setTab }) {
   const bulkStatusMutation = useMutation({
     mutationFn: () => Promise.all(selectedIds.map((id) => updateLeadProspect(id, { status: bulkStatusValue }))),
     onSuccess: () => { setBulkStatusOpen(false); setBulkStatusValue(''); setSelected({}); invalidate() },
+  })
+  const bulkPromoteMutation = useMutation({
+    mutationFn: () => Promise.all(
+      selectedPromotableIds.map((id) => promoteLeadProspect(id, bulkPromoteResponsavelId)),
+    ),
+    onSuccess: () => { setBulkPromoteOpen(false); setBulkPromoteResponsavelId(''); setSelected({}); invalidate() },
   })
 
   function handleEnrich(lead) {
@@ -177,6 +192,10 @@ function LeadsTab({ setTab }) {
   }, [allLeads, busca, status, icpFit, pesquisadoPor, onlyBonus])
 
   const selectedIds = Object.keys(selected).filter((id) => selected[id])
+  const selectedPromotableIds = useMemo(() => {
+    const byId = new Map(allLeads.map((l) => [l.id, l]))
+    return selectedIds.filter((id) => isPromotable(byId.get(id) ?? {}))
+  }, [allLeads, selectedIds])
 
   const stats = useMemo(() => {
     const counts = { A: 0, B: 0, C: 0, semPerfil: 0 }
@@ -262,6 +281,9 @@ function LeadsTab({ setTab }) {
               <div className="link-btn">
                 <a onClick={() => setBulkOwnerOpen(true)}>Alterar proprietário</a>
                 <a onClick={() => setBulkStatusOpen(true)}>Alterar status</a>
+                {selectedPromotableIds.length > 0 && (
+                  <a onClick={() => setBulkPromoteOpen(true)}>Promover para Empresa ({selectedPromotableIds.length})</a>
+                )}
                 <a onClick={handleBulkDelete}>Excluir</a>
               </div>
             </div>
@@ -382,8 +404,41 @@ function LeadsTab({ setTab }) {
         </div>
       )}
 
+      {bulkPromoteOpen && (
+        <div className="scrim show" onClick={() => setBulkPromoteOpen(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <h3>Promover para Empresa</h3>
+            <p className="sub">
+              <strong>{selectedPromotableIds.length}</strong> pesquisa(s) selecionada(s) entrarão no cadastro oficial de Empresas como{' '}
+              <strong>lead</strong>. As demais selecionadas (já promovidas ou descartadas) são ignoradas.
+              {selectedIds.length !== selectedPromotableIds.length && (
+                <> Apenas <strong>{selectedPromotableIds.length}</strong> de {selectedIds.length} selecionadas podem ser promovidas.</>
+              )}
+            </p>
+            <div className="f-group">
+              <label htmlFor="bulk-promote-resp">Responsável pela(s) empresa(s)</label>
+              <select
+                id="bulk-promote-resp"
+                className="f-select"
+                value={bulkPromoteResponsavelId}
+                onChange={(e) => setBulkPromoteResponsavelId(e.target.value)}
+              >
+                <option value="">Sem responsável (definir depois)</option>
+                {users.map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
+              </select>
+            </div>
+            <div className="row">
+              <button className="btn-ghost" onClick={() => setBulkPromoteOpen(false)}>Cancelar</button>
+              <button className="btn-primary" disabled={bulkPromoteMutation.isPending} onClick={() => bulkPromoteMutation.mutate()}>
+                {bulkPromoteMutation.isPending ? 'Promovendo…' : 'Promover'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {promotingLead && (
-        <div className="scrim show" onClick={() => setPromotingLead(null)}>
+        <div className="scrim show" onClick={() => { setPromotingLead(null); setPromoteResponsavelId('') }}>
           <div className="modal-box" onClick={(e) => e.stopPropagation()}>
             <h3>Promover para Empresa</h3>
             <p className="sub">
@@ -391,10 +446,22 @@ function LeadsTab({ setTab }) {
               pesquisa. O registro de pesquisa continua aqui, marcado como &quot;Promovido&quot; — é só a partir de agora que o bônus de quem
               pesquisou se torna válido.
             </p>
+            <div className="f-group">
+              <label htmlFor="promote-resp">Responsável pela empresa</label>
+              <select
+                id="promote-resp"
+                className="f-select"
+                value={promoteResponsavelId}
+                onChange={(e) => setPromoteResponsavelId(e.target.value)}
+              >
+                <option value="">Sem responsável (definir depois)</option>
+                {users.map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
+              </select>
+            </div>
             <div className="row">
-              <button className="btn-ghost" onClick={() => setPromotingLead(null)}>Cancelar</button>
-              <button className="btn-primary" disabled={promoteMutation.isPending} onClick={() => promoteMutation.mutate(promotingLead.id)}>
-                Promover
+              <button className="btn-ghost" onClick={() => { setPromotingLead(null); setPromoteResponsavelId('') }}>Cancelar</button>
+              <button className="btn-primary" disabled={promoteMutation.isPending} onClick={() => promoteMutation.mutate()}>
+                {promoteMutation.isPending ? 'Promovendo…' : 'Promover'}
               </button>
             </div>
           </div>
@@ -613,7 +680,7 @@ function CommercialIntelligenceModal({ lead, result, isPending, error, onRetry, 
 function LeadRow({ lead, pesquisadorNome, selected, onToggleSelect, onEdit, onPromote, onEnrich, onIntel }) {
   const bonusPillClass = lead.recebe_bonus ? 'yes' : (lead.gamificacao > 70 && lead.status !== 'descartado' ? 'pending' : 'no')
   const bonusPillText = lead.recebe_bonus ? `Bônus ${money(lead.bonus_valor)}` : (bonusPillClass === 'pending' ? 'Bônus pendente' : 'Sem bônus')
-  const canPromote = !lead.promoted_company_id && lead.status !== 'descartado'
+  const canPromote = isPromotable(lead)
   const canEnrich = !lead.promoted_company_id && lead.status !== 'descartado'
   const canIntel = !lead.promoted_company_id && lead.status !== 'descartado'
 
