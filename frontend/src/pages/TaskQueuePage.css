@@ -1,0 +1,75 @@
+.tq-shell { display: flex; flex-direction: column; min-height: 100%; }
+
+.tq-top {
+  display: flex; align-items: center; gap: 16px; padding: 14px 24px;
+  border-bottom: 1px solid var(--border); background: var(--card-bg);
+  position: sticky; top: 0; z-index: 5;
+}
+.tq-back { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--ink-dim); background: none; border: none; cursor: pointer; padding: 6px 4px; }
+.tq-back:hover { color: var(--ink); }
+.tq-back svg { width: 15px; height: 15px; }
+.tq-sep { width: 1px; height: 20px; background: var(--border); flex: none; }
+.tq-title { font-size: 14.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tq-title span { font-weight: 500; color: var(--ink-faint); }
+.tq-spacer { flex: 1; }
+.tq-counter { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono, monospace); font-size: 12.5px; color: var(--ink-dim); flex: none; }
+.tq-arrow { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--border); background: var(--card-bg); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ink-dim); }
+.tq-arrow:hover:not(:disabled) { border-color: var(--ink-faint); color: var(--ink); }
+.tq-arrow:disabled { opacity: .4; cursor: not-allowed; }
+.tq-arrow svg { width: 12px; height: 12px; }
+.tq-done { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--ink-dim); cursor: pointer; user-select: none; flex: none; }
+.tq-done input { width: 15px; height: 15px; accent-color: var(--good, #0ca30c); cursor: pointer; }
+.tq-close { width: 30px; height: 30px; border-radius: 8px; border: none; background: transparent; color: var(--ink-dim); cursor: pointer; font-size: 15px; flex: none; }
+.tq-close:hover { background: var(--paper); color: var(--ink); }
+
+.tq-body { display: grid; grid-template-columns: 340px 1fr; gap: 20px; padding: 22px 24px; align-items: start; max-width: 1180px; margin: 0 auto; width: 100%; }
+@media (max-width: 860px) { .tq-body { grid-template-columns: 1fr; } }
+
+.tq-empty { padding: 40px 28px; text-align: center; max-width: 420px; margin: 40px auto; }
+.tq-empty h3 { margin: 0 0 6px; }
+.tq-empty p { margin: 0 0 16px; color: var(--ink-dim); font-size: 13px; }
+
+.tq-context-body, .tq-action-body { padding: 18px 20px; }
+.tq-ctx-name { font-size: 16px; font-weight: 700; }
+.tq-ctx-sub { font-size: 12.5px; color: var(--ink-faint); margin-top: 2px; }
+.tq-ctx-list { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.tq-ctx-list li { font-size: 12.8px; color: var(--ink-dim); }
+.tq-ctx-list a { color: var(--azul, var(--indigo)); text-decoration: none; }
+.tq-ctx-list a:hover { text-decoration: underline; }
+.tq-ctx-empty { color: var(--ink-faint); font-style: italic; }
+.tq-ctx-full-link { display: block; margin-top: 12px; font-size: 12.5px; color: var(--azul, var(--indigo)); text-decoration: none; font-weight: 600; }
+.tq-ctx-full-link:hover { text-decoration: underline; }
+
+.tq-roteiro-wrap { margin-top: 16px; border-top: 1px solid var(--border); padding-top: 14px; }
+.tq-roteiro-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tq-roteiro-head h4 { margin: 0; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--ink-dim); flex: 1; }
+.tq-roteiro-box { width: 100%; background: var(--paper); border: 1px solid var(--border); border-radius: 9px; padding: 11px 12px; font: inherit; font-size: 12.8px; line-height: 1.6; color: var(--ink); resize: vertical; }
+.tq-roteiro-caption { font-size: 11px; color: var(--ink-faint); margin-top: 6px; }
+
+.tq-action-head { display: flex; align-items: center; gap: 10px; padding: 14px 20px; border-bottom: 1px solid var(--border); }
+.tq-action-title { font-size: 13.5px; font-weight: 600; }
+
+.tq-call { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; padding: 18px 0 6px; }
+.tq-call-avatar { width: 60px; height: 60px; border-radius: 50%; background: var(--paper); color: var(--indigo); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; border: 2px solid var(--border); }
+.tq-call-phone { font-family: var(--font-mono, monospace); font-size: 15px; font-weight: 600; }
+.tq-call-status { font-size: 12.5px; color: var(--ink-faint); }
+.tq-call-status.live { color: var(--good, #0ca30c); font-weight: 600; }
+.tq-call-outcome { width: 100%; max-width: 380px; margin-top: 8px; text-align: left; }
+.tq-call-outcome label { font-size: 12px; font-weight: 600; color: var(--ink-dim); display: block; margin-bottom: 6px; }
+.tq-call-outcome select, .tq-call-outcome textarea { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 9px 11px; font: inherit; font-size: 13px; color: var(--ink); background: var(--card-bg); }
+.tq-call-outcome textarea { margin-top: 10px; min-height: 60px; resize: vertical; }
+.tq-call-outcome .btn-primary { margin-top: 12px; width: 100%; justify-content: center; }
+
+.tq-generic-info { font-size: 12.8px; color: var(--ink-dim); background: var(--paper); border: 1px solid var(--border); border-radius: 9px; padding: 12px 13px; margin: 0 0 14px; }
+.tq-generic-info.tq-warning { border-color: color-mix(in srgb, var(--warning, #fab219) 40%, var(--border)); background: color-mix(in srgb, var(--warning, #fab219) 10%, var(--paper)); }
+.tq-generic-info a { color: var(--azul, var(--indigo)); font-weight: 600; }
+
+.tq-mail-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.tq-mail-row .k { width: 44px; flex: none; color: var(--ink-faint); font-weight: 600; }
+.tq-mail-row .v { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tq-mail-toolbar { display: flex; gap: 8px; margin: 12px 0; }
+.tq-mail-chip { font-size: 12px; font-weight: 600; color: var(--ink-dim); background: var(--paper); border: 1px solid var(--border); border-radius: 8px; padding: 6px 11px; cursor: pointer; }
+.tq-mail-chip:hover { border-color: var(--ink-faint); }
+.tq-mail-subject { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; font: inherit; font-size: 13.5px; font-weight: 600; margin-top: 4px; }
+.tq-mail-body { width: 100%; min-height: 180px; border: 1px solid var(--border); border-radius: 8px; padding: 12px 13px; font: inherit; font-size: 13px; line-height: 1.6; margin-top: 10px; resize: vertical; }
+.tq-action-body .btn-primary { margin-top: 14px; }

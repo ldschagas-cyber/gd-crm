@@ -12,7 +12,7 @@ from app.core.database import get_db
 from app.core.deps import get_current_user
 from app.models.user import User
 from app.schemas.common import Page, PageParams
-from app.schemas.task import TaskCreate, TaskRead, TaskUpdate
+from app.schemas.task import TaskComplete, TaskCreate, TaskRead, TaskSendEmail, TaskUpdate
 from app.services.task import TaskService
 
 router = APIRouter(prefix="/tasks", tags=["Tarefas"])
@@ -92,8 +92,20 @@ def update_task(task_id: UUID, data: TaskUpdate, _: User = Depends(get_current_u
 
 
 @router.patch("/{task_id}/complete", response_model=TaskRead)
-def complete_task(task_id: UUID, _: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    return TaskService(db).complete(task_id)
+def complete_task(task_id: UUID, data: TaskComplete = TaskComplete(), _: User = Depends(get_current_user),
+                  db: Session = Depends(get_db)):
+    return TaskService(db).complete(task_id, data.resultado_ligacao, data.observacoes)
+
+
+@router.patch("/{task_id}/uncomplete", response_model=TaskRead)
+def uncomplete_task(task_id: UUID, _: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    return TaskService(db).uncomplete(task_id)
+
+
+@router.post("/{task_id}/send-email", response_model=TaskRead)
+def send_task_email(task_id: UUID, data: TaskSendEmail, _: User = Depends(get_current_user),
+                    db: Session = Depends(get_db)):
+    return TaskService(db).send_email(task_id, data)
 
 
 @router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
