@@ -50,6 +50,16 @@ const NAV_GROUPS = [
 ]
 
 const SIDEBAR_COLLAPSED_KEY = 'argos.sidebarCollapsed'
+const SIDEBAR_GROUPS_COLLAPSED_KEY = 'argos.sidebarCollapsedGroups'
+
+function readCollapsedGroups() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(SIDEBAR_GROUPS_COLLAPSED_KEY) ?? '[]')
+    return new Set(Array.isArray(raw) ? raw : [])
+  } catch {
+    return new Set()
+  }
+}
 
 const NAV_CONTA = [
   { to: '/preferencias', label: 'Preferências' },
@@ -61,11 +71,22 @@ export default function AppShell() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1')
+  const [collapsedGroups, setCollapsedGroups] = useState(readCollapsedGroups)
 
   function toggleCollapsed() {
     setCollapsed((v) => {
       const next = !v
       localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? '1' : '0')
+      return next
+    })
+  }
+
+  function toggleGroup(label) {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev)
+      if (next.has(label)) next.delete(label)
+      else next.add(label)
+      localStorage.setItem(SIDEBAR_GROUPS_COLLAPSED_KEY, JSON.stringify([...next]))
       return next
     })
   }
@@ -92,24 +113,40 @@ export default function AppShell() {
         </div>
 
         <nav className="sb-nav">
-          {NAV_GROUPS.map((group, i) => (
-            <div className="sb-group" key={group.label ?? i}>
-              {group.label && <div className="sb-label">{group.label}</div>}
-              {group.items.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  end={item.end}
-                  className={({ isActive }) => `sb-item${isActive ? ' active' : ''}`}
-                  onClick={() => setSidebarOpen(false)}
-                  title={collapsed ? item.label : undefined}
-                >
-                  <item.icon />
-                  <span className="sb-item-label">{item.label}</span>
-                </NavLink>
-              ))}
-            </div>
-          ))}
+          {NAV_GROUPS.map((group, i) => {
+            const groupCollapsed = Boolean(group.label) && collapsedGroups.has(group.label) && !collapsed
+            return (
+              <div className="sb-group" key={group.label ?? i}>
+                {group.label && (
+                  <button
+                    type="button"
+                    className="sb-label"
+                    onClick={() => toggleGroup(group.label)}
+                    aria-expanded={!groupCollapsed}
+                  >
+                    <span className="sb-label-text">{group.label}</span>
+                    <IconChevron className={`sb-label-chevron${groupCollapsed ? ' collapsed' : ''}`} />
+                  </button>
+                )}
+                <div className={`sb-group-items${groupCollapsed ? ' collapsed' : ''}`}>
+                  {group.items.map((item) => (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      end={item.end}
+                      className={({ isActive }) => `sb-item${isActive ? ' active' : ''}`}
+                      onClick={() => setSidebarOpen(false)}
+                      title={collapsed ? item.label : undefined}
+                      tabIndex={groupCollapsed ? -1 : undefined}
+                    >
+                      <item.icon />
+                      <span className="sb-item-label">{item.label}</span>
+                    </NavLink>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
         </nav>
 
         <button
@@ -179,6 +216,13 @@ export default function AppShell() {
   )
 }
 
+function IconChevron({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M6 8l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
 function IconCollapse({ collapsed }) {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
