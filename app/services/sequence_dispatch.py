@@ -173,6 +173,27 @@ def _descricao_para_step(db: Session, step, contact: Contact | None, company: Co
     return step.instrucoes
 
 
+def cancel_enrollments_on_meeting(db: Session, company_id: UUID | None, contact_id: UUID | None,
+                                   deal_id: UUID | None) -> int:
+    """Cancela inscrições ativas/pausadas em Sequência quando uma reunião é marcada para a
+    mesma empresa/contato/negócio.
+
+    Implementação direta (chamada por TimelineService.registrar() ao gravar um TimelineEvent
+    tipo=reuniao), igual ao que já acontece com a pausa por resposta (`has_replied`, acima) —
+    não passa pelo motor de Workflows porque lá não existe gatilho de "reunião marcada" nem
+    ação de "cancelar inscrição" (o motor tem só gatilhos de Empresa/Contato/Negócio criado
+    e mudança de etapa, e nenhuma ação de desinscrição — ver app/schemas/workflow.py).
+    """
+    from app.repositories.sequence import SequenceEnrollmentRepository
+    enrollments = SequenceEnrollmentRepository(db).list_ativas_ou_pausadas_para_cancelar(
+        company_id, contact_id, deal_id,
+    )
+    for enrollment in enrollments:
+        enrollment.status = "cancelada"
+        enrollment.pausado_motivo = "reuniao_marcada"
+    return len(enrollments)
+
+
 def advance_due_steps(db: Session, tenant_id: UUID, enrollment: SequenceEnrollment) -> int:
     """Cria as Tasks (ou envia o e-mail) das etapas já vencidas de um enrollment.
 

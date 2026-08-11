@@ -46,6 +46,12 @@ class TimelineService:
         from app.services.company import CompanyService
         CompanyService(self.db).advance_funil_on_interaction(company_id, tipo)
 
+        # Reunião marcada encerra a cadência automática: mesma lógica direta da pausa por
+        # resposta (não passa pelo motor de Workflows — ver cancel_enrollments_on_meeting).
+        if tipo == TimelineType.REUNIAO.value:
+            from app.services.sequence_dispatch import cancel_enrollments_on_meeting
+            cancel_enrollments_on_meeting(self.db, company_id, contact_id, deal_id)
+
         return evento
 
     def registrar_from_schema(

@@ -16,10 +16,11 @@ from app.models.form import Form, FormSubmission
 from app.models.site_visit import SiteVisit
 from app.models.snippet import Snippet
 from app.models.call import Call
+from app.models.origem_option import OrigemOption
 
 __all__ = [
     "Base", "Tenant", "User", "Company", "Contact", "Pipeline",
     "PipelineStage", "Deal", "Task", "TimelineEvent", "ImportJob", "AuditLog",
     "UserIntegration", "LeadProspect", "Form", "FormSubmission", "SiteVisit",
-    "Snippet", "Call",
+    "Snippet", "Call", "OrigemOption",
 ]
