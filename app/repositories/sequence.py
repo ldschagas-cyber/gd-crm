@@ -29,3 +29,21 @@ class SequenceEnrollmentRepository(BaseRepository[SequenceEnrollment]):
             SequenceEnrollment.status == "ativa",
         )
         return len(list(self.db.execute(stmt).scalars().all()))
+
+    def list_ativas_ou_pausadas_para_cancelar(
+        self, company_id: UUID | None, contact_id: UUID | None, deal_id: UUID | None,
+    ) -> list[SequenceEnrollment]:
+        """Inscrições ativas/pausadas atingidas por uma reunião marcada (ver
+        sequence_dispatch.cancel_enrollments_on_meeting). Casa pelo alvo mais específico
+        disponível — negócio > contato > empresa — pra não cancelar, por exemplo, a
+        inscrição de outro contato/negócio da mesma empresa que não teve reunião marcada."""
+        if deal_id:
+            condicao = SequenceEnrollment.deal_id == deal_id
+        elif contact_id:
+            condicao = SequenceEnrollment.contact_id == contact_id
+        elif company_id:
+            condicao = SequenceEnrollment.company_id == company_id
+        else:
+            return []
+        stmt = self._base_query().where(SequenceEnrollment.status.in_(("ativa", "pausada")), condicao)
+        return list(self.db.execute(stmt).scalars().all())

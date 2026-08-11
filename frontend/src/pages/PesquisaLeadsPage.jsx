@@ -8,6 +8,7 @@ import {
 } from '../api/leadProspects'
 import { getIcpScoringRules, updateIcpScoringRules } from '../api/tenant'
 import { listUsers } from '../api/users'
+import OrigemSelect from '../components/OrigemSelect.jsx'
 import '../styles/dataTable.css'
 import '../styles/commercialIntel.css'
 import './PesquisaLeadsPage.css'
@@ -25,7 +26,6 @@ const FAIXAS_FATURAMENTO = [
   'Até R$ 5 milhões', 'R$ 5–25 milhões', 'R$ 25–100 milhões',
   'R$ 100–500 milhões', 'R$ 500 milhões – R$ 1 bilhão', 'Acima de R$ 1 bilhão',
 ]
-const ORIGENS = ['Feira', 'Indicação', 'Campanha', 'Prospecção ativa', 'LinkedIn', 'Outro']
 const UF_REGIAO = {
   AC: 'Norte', AP: 'Norte', AM: 'Norte', PA: 'Norte', RO: 'Norte', RR: 'Norte', TO: 'Norte',
   AL: 'Nordeste', BA: 'Nordeste', CE: 'Nordeste', MA: 'Nordeste', PB: 'Nordeste', PE: 'Nordeste',
@@ -889,10 +889,7 @@ function LeadDrawer({ lead, users, onClose, onSubmit, submitting, error }) {
               </div>
               <div className="f-group">
                 <label className="f-label">Origem</label>
-                <select className="f-select" value={form.origem} onChange={set('origem')}>
-                  <option value="">Selecione…</option>
-                  {ORIGENS.map((o) => <option key={o} value={o}>{o}</option>)}
-                </select>
+                <OrigemSelect className="f-select" value={form.origem} onChange={set('origem')} />
               </div>
             </div>
 
