@@ -12,9 +12,11 @@ import './AppShell.css'
 
 const NAV_GROUPS = [
   {
-    label: null,
+    label: 'Gestão',
     items: [
       { to: '/', label: 'Dashboard', end: true, icon: IconDashboard },
+      { to: '/metas-funil', label: 'Metas do Funil', icon: IconTarget },
+      { to: '/previsao-comercial', label: 'Previsão Comercial', icon: IconForecast },
     ],
   },
   {
@@ -23,8 +25,6 @@ const NAV_GROUPS = [
       { to: '/buscar-empresas', label: 'Buscar Empresas', icon: IconSearch },
       { to: '/pesquisa-leads', label: 'Pesquisa de Leads', icon: IconRadar },
       { to: '/central-leads', label: 'Central de Leads', icon: IconFunnel },
-      { to: '/metas-funil', label: 'Metas do Funil', icon: IconTarget },
-      { to: '/previsao-comercial', label: 'Previsão Comercial', icon: IconForecast },
     ],
   },
   {
@@ -43,11 +43,13 @@ const NAV_GROUPS = [
       { to: '/workflows', label: 'Workflows', icon: IconWorkflow },
       { to: '/modelos-email', label: 'Modelos de e-mail', icon: IconEmailTemplate },
       { to: '/modelos-mensagem', label: 'Modelos de mensagem', icon: IconMessageTemplate },
-      { to: '/snippets', label: 'Snippets', icon: IconSnippet },
+      { to: '/snippets', label: 'Respostas rápidas', icon: IconSnippet },
       { to: '/formularios', label: 'Formulários', icon: IconForm },
     ],
   },
 ]
+
+const SIDEBAR_COLLAPSED_KEY = 'argos.sidebarCollapsed'
 
 const NAV_CONTA = [
   { to: '/preferencias', label: 'Preferências' },
@@ -58,6 +60,15 @@ export default function AppShell() {
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1')
+
+  function toggleCollapsed() {
+    setCollapsed((v) => {
+      const next = !v
+      localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? '1' : '0')
+      return next
+    })
+  }
 
   const tenantQuery = useQuery({ queryKey: ['tenant'], queryFn: getTenant, staleTime: Infinity })
   const tenantNome = tenantQuery.data?.nome_fantasia || tenantQuery.data?.razao_social
@@ -69,9 +80,9 @@ export default function AppShell() {
 
   return (
     <SoftphoneProvider>
-    <div className="shell">
+    <div className={`shell${collapsed ? ' sidebar-collapsed' : ''}`}>
       {sidebarOpen && <div className="sidebar-scrim" onClick={() => setSidebarOpen(false)} />}
-      <aside className={`sidebar${sidebarOpen ? ' open' : ''}`}>
+      <aside className={`sidebar${sidebarOpen ? ' open' : ''}${collapsed ? ' collapsed' : ''}`}>
         <div className="sb-brand">
           <ArgosMark size={26} variant="dark" />
           <div>
@@ -91,14 +102,26 @@ export default function AppShell() {
                   end={item.end}
                   className={({ isActive }) => `sb-item${isActive ? ' active' : ''}`}
                   onClick={() => setSidebarOpen(false)}
+                  title={collapsed ? item.label : undefined}
                 >
                   <item.icon />
-                  {item.label}
+                  <span className="sb-item-label">{item.label}</span>
                 </NavLink>
               ))}
             </div>
           ))}
         </nav>
+
+        <button
+          type="button"
+          className="sb-collapse-toggle"
+          onClick={toggleCollapsed}
+          title={collapsed ? 'Expandir menu' : 'Recolher menu'}
+          aria-label={collapsed ? 'Expandir menu' : 'Recolher menu'}
+        >
+          <IconCollapse collapsed={collapsed} />
+          <span className="sb-item-label">Recolher menu</span>
+        </button>
       </aside>
 
       <div className="main-col">
@@ -156,6 +179,15 @@ export default function AppShell() {
   )
 }
 
+function IconCollapse({ collapsed }) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <rect x="2.5" y="3.5" width="15" height="13" rx="1.8" />
+      <path d="M8 3.5v13" />
+      {collapsed ? <path d="M11.5 7l2.3 3-2.3 3" strokeLinecap="round" strokeLinejoin="round" /> : <path d="M13.8 7l-2.3 3 2.3 3" strokeLinecap="round" strokeLinejoin="round" />}
+    </svg>
+  )
+}
 function IconMenu() {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
