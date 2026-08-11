@@ -15,3 +15,7 @@ export function updateUser(id, data) {
 export function setUserStatus(id, status) {
   return api.patch(`/users/${id}/status`, { status }).then((res) => res.data)
 }
+
+export function generateResetLink(id) {
+  return api.post(`/users/${id}/reset-link`).then((res) => res.data)
+}

@@ -17,3 +17,11 @@
 .status-pill[data-status='ativo'] .d { background: var(--good); }
 .status-pill[data-status='inativo'] { background: rgba(180, 69, 60, 0.1); color: var(--critical); }
 .status-pill[data-status='inativo'] .d { background: var(--critical); }
+
+.reset-link-sub { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--ink-dim); }
+.reset-link-box { display: flex; gap: 8px; }
+.reset-link-box input {
+  flex: 1; min-width: 0; font: inherit; font-size: 13px; color: var(--ink);
+  background: var(--paper); border: 1px solid var(--border-field); border-radius: var(--r-field);
+  padding: 9px 11px; min-height: var(--control-h); box-sizing: border-box;
+}
