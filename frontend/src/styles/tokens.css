@@ -75,6 +75,7 @@
 
   /* ---- Layout ---- */
   --sidebar-w: 240px;
+  --sidebar-w-collapsed: 68px;
   --row-h: 44px;      /* altura de linha de tabela / alvo mínimo de toque */
   --control-h: 38px;  /* botão e campo */
   --measure: 46em;    /* largura máxima de texto corrido */

@@ -226,7 +226,7 @@ function ContextCard({ task, company, contact, deal, onUpdated }) {
             value={descricao}
             onChange={(e) => handleSnippetExpand(e, { onChange: setDescricao, snippets, vars })}
             onBlur={handleBlur}
-            placeholder="Roteiro / instruções — digite #atalho e espaço pra inserir um snippet"
+            placeholder="Roteiro / instruções — digite #atalho e espaço pra inserir uma resposta rápida"
           />
           <div className="tq-roteiro-caption">
             {saveMutation.isPending ? 'Salvando…' : 'Salvo no campo Descrição da tarefa.'}
