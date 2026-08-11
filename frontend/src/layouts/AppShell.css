@@ -22,10 +22,23 @@
 .sb-nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 10px 0; }
 .sb-group + .sb-group { margin-top: 18px; }
 .sb-label {
+  display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%;
   font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
   color: var(--panel-fg-dim); padding: 0 18px; margin-bottom: 6px;
   white-space: nowrap;
+  background: none; border: none; cursor: pointer; text-align: left;
 }
+.sb-label:hover { color: #FFFFFF; }
+.sb-label:focus-visible { outline: 2px solid var(--amber); outline-offset: -2px; }
+.sb-label-text { overflow: hidden; text-overflow: ellipsis; }
+.sb-label-chevron { width: 12px; height: 12px; flex: none; transition: transform 0.16s ease; }
+.sb-label-chevron.collapsed { transform: rotate(-90deg); }
+
+.sb-group-items {
+  max-height: 400px; overflow: hidden; opacity: 1;
+  transition: max-height 0.18s ease, opacity 0.18s ease;
+}
+.sb-group-items.collapsed { max-height: 0; opacity: 0; }
 .sb-item {
   display: flex; align-items: center; gap: 10px;
   padding: 10px 18px; margin-bottom: 2px;
@@ -169,8 +182,8 @@
 
   /* No off-canvas mobile o recolher não faz sentido — o hambúrguer já abre/fecha. */
   .sidebar.collapsed .sb-brand div,
-  .sidebar.collapsed .sb-item-label,
-  .sidebar.collapsed .sb-label { display: revert; }
+  .sidebar.collapsed .sb-item-label { display: revert; }
+  .sidebar.collapsed .sb-label { display: flex; }
   .sb-collapse-toggle { display: none; }
 
   .sidebar-scrim {
