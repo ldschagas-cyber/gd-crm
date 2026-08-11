@@ -11,3 +11,7 @@ export function me() {
 export function logout() {
   return api.post('/auth/logout')
 }
+
+export function resetPassword(token, novaSenha) {
+  return api.post('/auth/reset-password', { token, nova_senha: novaSenha }).then((res) => res.data)
+}
