@@ -103,11 +103,10 @@ def delete_lead(lead_id: UUID, _: User = Depends(get_current_user), db: Session 
 
 @router.post("/{lead_id}/promote", response_model=LeadProspectRead)
 def promote_lead(
-    lead_id: UUID, data: LeadPromoteRequest | None = None,
+    lead_id: UUID, data: LeadPromoteRequest,
     _: User = Depends(get_current_user), db: Session = Depends(get_db),
 ):
-    responsavel_id = data.responsavel_id if data else None
-    return LeadProspectService(db).promote(lead_id, responsavel_id)
+    return LeadProspectService(db).promote(lead_id, data.responsavel_id)
 
 
 @router.post("/{lead_id}/enrich", response_model=LeadEnrichmentSuggestion)

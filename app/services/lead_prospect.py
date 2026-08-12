@@ -150,10 +150,14 @@ class LeadProspectService:
         lead = self.repo.save(lead)
         return self.to_read(lead)
 
-    def promote(self, lead_id: UUID, responsavel_id: UUID | None = None) -> LeadProspectRead:
+    def promote(self, lead_id: UUID, responsavel_id: UUID) -> LeadProspectRead:
         lead = self._get_orm(lead_id)
         if lead.promoted_company_id:
             raise ConflictError("Esta pesquisa já foi promovida a empresa")
+        # LeadPromoteRequest já obriga isso via schema (responsavel_id: UUID, não UUID | None) —
+        # checagem aqui é defesa em profundidade pra quem chamar o service direto (ex.: testes).
+        if not responsavel_id:
+            raise AppException("Responsável é obrigatório para promover a empresa")
         company = Company(
             razao_social=lead.empresa, cnpj=lead.cnpj, segmento=lead.segmento, setor=lead.setor,
             cidade=lead.cidade, uf=lead.uf,

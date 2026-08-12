@@ -416,20 +416,25 @@ function LeadsTab({ setTab }) {
               )}
             </p>
             <div className="f-group">
-              <label htmlFor="bulk-promote-resp">Responsável pela(s) empresa(s)</label>
+              <label htmlFor="bulk-promote-resp">Responsável pela(s) empresa(s) *</label>
               <select
                 id="bulk-promote-resp"
                 className="f-select"
+                required
                 value={bulkPromoteResponsavelId}
                 onChange={(e) => setBulkPromoteResponsavelId(e.target.value)}
               >
-                <option value="">Sem responsável (definir depois)</option>
+                <option value="" disabled>Selecione…</option>
                 {users.map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
               </select>
+              <span className="f-hint">Empresa não pode nascer sem dono.</span>
             </div>
             <div className="row">
               <button className="btn-ghost" onClick={() => setBulkPromoteOpen(false)}>Cancelar</button>
-              <button className="btn-primary" disabled={bulkPromoteMutation.isPending} onClick={() => bulkPromoteMutation.mutate()}>
+              <button
+                className="btn-primary" disabled={bulkPromoteMutation.isPending || !bulkPromoteResponsavelId}
+                onClick={() => bulkPromoteMutation.mutate()}
+              >
                 {bulkPromoteMutation.isPending ? 'Promovendo…' : 'Promover'}
               </button>
             </div>
@@ -447,20 +452,25 @@ function LeadsTab({ setTab }) {
               pesquisou se torna válido.
             </p>
             <div className="f-group">
-              <label htmlFor="promote-resp">Responsável pela empresa</label>
+              <label htmlFor="promote-resp">Responsável pela empresa *</label>
               <select
                 id="promote-resp"
                 className="f-select"
+                required
                 value={promoteResponsavelId}
                 onChange={(e) => setPromoteResponsavelId(e.target.value)}
               >
-                <option value="">Sem responsável (definir depois)</option>
+                <option value="" disabled>Selecione…</option>
                 {users.map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
               </select>
+              <span className="f-hint">Empresa não pode nascer sem dono.</span>
             </div>
             <div className="row">
               <button className="btn-ghost" onClick={() => { setPromotingLead(null); setPromoteResponsavelId('') }}>Cancelar</button>
-              <button className="btn-primary" disabled={promoteMutation.isPending} onClick={() => promoteMutation.mutate()}>
+              <button
+                className="btn-primary" disabled={promoteMutation.isPending || !promoteResponsavelId}
+                onClick={() => promoteMutation.mutate()}
+              >
                 {promoteMutation.isPending ? 'Promovendo…' : 'Promover'}
               </button>
             </div>
