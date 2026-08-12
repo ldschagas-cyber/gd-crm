@@ -117,7 +117,7 @@ table.data tbody tr.row-selected { background: var(--surface); box-shadow: inset
 .modal .field-row .field { flex: 1; }
 .modal .field-small { flex: 0 0 70px; }
 .modal label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--ink-dim); }
-/* Checkbox de linha única com rótulo (ex.: Commit em Negócios) — usado dentro e fora de
+/* Checkbox de linha única com rótulo (ex.: Compromisso em Negócios) — usado dentro e fora de
    .modal. Mesma especificidade de `.modal label` (elemento + 1 classe) — precisa vir DEPOIS
    dele no arquivo pra vencer no empate por ordem de declaração. */
 label.field-checkbox {

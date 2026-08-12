@@ -214,7 +214,7 @@ export default function FunilMetasPage() {
                   <h3>Quer ver isso em receita, não em contagem?</h3>
                   <p>
                     Previsão Comercial mostra a mesma etapa "Propostas enviadas" em R$, ponderada por probabilidade e
-                    quebrada por vendedor — inclui o Commit que cada um confirmou pra este mês.
+                    quebrada por vendedor — inclui o Compromisso que cada um confirmou pra este mês.
                   </p>
                 </div>
                 <Link to="/previsao-comercial" className="btn-primary">Ver por vendedor →</Link>

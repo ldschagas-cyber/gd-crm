@@ -70,7 +70,7 @@ td .stalled-tag { margin-top: 3px; margin-left: 4px; }
 .kb-card-tools button.won:hover { color: var(--good); }
 .kb-card-tools button.lost:hover { color: var(--critical); }
 
-/* Commit (Previsão Comercial) — estrela no card do Kanban, na lista (.row-action) e
+/* Compromisso (Previsão Comercial) — estrela no card do Kanban, na lista (.row-action) e
    indicador no rodapé do card quando marcado. */
 .commit-star { font-size: 13px !important; }
 .commit-star.active, .commit-star.active:hover { color: var(--amber-dark) !important; }

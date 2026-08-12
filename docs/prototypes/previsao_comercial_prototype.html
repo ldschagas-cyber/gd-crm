@@ -282,6 +282,26 @@ table.deals-tbl tr:hover td{background:var(--paper);}
 .accuracy-row .acc-item .v.good{color:var(--success);}
 .empty-note{padding:26px 18px;text-align:center;color:var(--ink-faint);font-size:12.5px;}
 .origin-note{font-size:11.5px;color:var(--ink-faint);margin:0 0 16px;}
+
+/* CAC & ROI */
+.roi-formula-note{margin:0;padding:12px 18px;font-family:var(--font-mono);font-size:10.8px;color:var(--ink-faint);
+  background:var(--paper);border-bottom:1px solid var(--border);line-height:1.6;}
+.kpi-mini .value.pos{color:var(--success);}
+.kpi-mini .value.neg{color:var(--danger);}
+.inv-table-wrap{overflow-x:auto;}
+table.inv-tbl{min-width:0;}
+table.inv-tbl td.inv-input-cell{text-align:right;}
+.inv-input{width:104px;text-align:right;font-family:var(--font-mono);font-size:12.5px;color:var(--ink);
+  background:var(--field-bg);border:1px solid var(--border-field);border-radius:var(--r-field);padding:5px 8px;}
+.inv-input:focus{outline:2px solid var(--focus-ring);outline-offset:-1px;}
+.inv-cat-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:6px;}
+.inv-cat-dot.marketing{background:var(--info);}
+.inv-cat-dot.vendas{background:var(--amber);}
+.inv-cat-dot.ferramentas{background:#2a78d6;}
+.inv-cat-dot.outros{background:var(--ink-faint);}
+tr.inv-total td{font-weight:700;background:var(--paper);}
+.btn-add-inv{margin:12px 18px 16px;background:transparent;border:1px dashed var(--border);border-radius:var(--r-field);
+  padding:7px 12px;font-size:12.5px;font-weight:600;color:var(--link);cursor:pointer;}
 </style>
 
 <div class="proto-badge">Protótipo funcional — dados fictícios, mas totais recalculados ao vivo · use o menu à esquerda pra navegar entre as duas telas · <b>não é a aplicação real</b></div>
@@ -403,7 +423,7 @@ table.deals-tbl tr:hover td{background:var(--paper);}
               <div class="sub">42% do pipeline · ponderado por probabilidade</div>
             </div>
             <div class="kpi-mini" style="--kpi-color:var(--amber)">
-              <div class="label"><span class="dot"></span>Commit</div>
+              <div class="label"><span class="dot"></span>Compromisso</div>
               <div class="value">R$ 28.000</div>
               <div class="sub">19% do pipeline · confirmado pelo vendedor</div>
             </div>
@@ -416,7 +436,7 @@ table.deals-tbl tr:hover td{background:var(--paper);}
           <div class="cov-legend">
             <span><i style="background:color-mix(in srgb, var(--info) 20%, transparent)"></i>Pipeline</span>
             <span><i style="background:color-mix(in srgb, var(--info) 55%, transparent)"></i>Forecast</span>
-            <span><i style="background:var(--amber)"></i>Commit</span>
+            <span><i style="background:var(--amber)"></i>Compromisso</span>
           </div>
           <div class="revenue-foot">
             <p>Clientes fechados no período (4 negócios) somaram <b style="color:var(--ink)">R$ 52.000</b> em receita realizada — abaixo
@@ -472,7 +492,7 @@ table.deals-tbl tr:hover td{background:var(--paper);}
               <div class="decision-body">
                 <h4>Isto é literalmente a extensão que o plano original já previu</h4>
                 <p><code>docs/PLANO_METAS_FUNIL.md §9</code> lista "metas por vendedor/pipeline individual" como fora de escopo da primeira
-                entrega, mas natural depois. A quebra por vendedor do Commit/Forecast é exatamente essa extensão — só que chegando pela
+                entrega, mas natural depois. A quebra por vendedor do Compromisso/Forecast é exatamente essa extensão — só que chegando pela
                 porta da receita, não da contagem.</p>
               </div>
             </div>
@@ -494,6 +514,17 @@ table.deals-tbl tr:hover td{background:var(--paper);}
                 <code>Previsão Comercial</code>, ao lado — não cabe espremida dentro do Anexo 1.</p>
               </div>
             </div>
+            <div class="decision-item">
+              <span class="decision-num">6</span>
+              <div class="decision-body">
+                <h4>Mesma lógica se repete pro CAC &amp; ROI — e por isso não virou uma terceira tela</h4>
+                <p>Uma proposta inicial de "Analytics de Receita" separada acabou duplicando quase tudo que já existe aqui: o funil (já é
+                Metas do Funil) e a receita por vendedor (já é Previsão Comercial). A única coisa que faltava de verdade era o lado do
+                <b>custo</b> — nenhum módulo grava investimento comercial hoje. Por isso o cartão "CAC &amp; ROI" (ver página Previsão
+                Comercial, ao lado) só soma uma tabela nova (<code>revenue_investments</code>) e lê <code>clientes fechados</code>/
+                <code>fechados_valor_realizado</code> daqui — mesmo padrão de ponte do item 1.</p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -510,7 +541,7 @@ table.deals-tbl tr:hover td{background:var(--paper);}
         <header class="topbar">
           <div class="topbar-title">
             <h1>Previsão Comercial</h1>
-            <p>Pipeline, forecast ponderado e compromisso de fechamento por vendedor</p>
+            <p>Pipeline, forecast ponderado e compromisso de fechamento por vendedor — com CAC e ROI do mês</p>
           </div>
           <div id="monthTabs" class="segmented"></div>
         </header>
@@ -539,9 +570,39 @@ table.deals-tbl tr:hover td{background:var(--paper);}
           <div class="cov-legend">
             <span><i style="background:color-mix(in srgb, var(--info) 22%, transparent)"></i>Pipeline</span>
             <span><i style="background:color-mix(in srgb, var(--info) 55%, transparent)"></i>Forecast ponderado</span>
-            <span><i style="background:var(--amber)"></i>Commit</span>
+            <span><i style="background:var(--amber)"></i>Compromisso</span>
             <span><i style="background:var(--critical)"></i>Meta do mês</span>
           </div>
+        </div>
+
+        <div class="card" id="cacRoiCard">
+          <div class="card-head">
+            <div><h3>CAC &amp; ROI comercial</h3><p>Custo de aquisição e retorno do investimento no mês selecionado</p></div>
+            <span class="integration-pill">dado vem de Metas do Funil</span>
+          </div>
+          <p class="roi-formula-note">CAC = investimento do mês ÷ clientes fechados (Metas do Funil, etapa "fechados") &nbsp;·&nbsp;
+          ROI = (receita realizada − investimento) ÷ investimento</p>
+          <div class="kpi-mini-row">
+            <div class="kpi-mini" style="--kpi-color:var(--danger)">
+              <div class="label"><span class="dot"></span>Investimento</div>
+              <div class="value" id="cacInvestValue">R$ 0</div>
+              <div class="sub">lançado manualmente na tabela abaixo</div>
+            </div>
+            <div class="kpi-mini" style="--kpi-color:var(--info)">
+              <div class="label"><span class="dot"></span>CAC</div>
+              <div class="value" id="cacValue">R$ 0</div>
+              <div class="sub"><span id="cacClientes">0</span> clientes fechados no mês</div>
+            </div>
+            <div class="kpi-mini" style="--kpi-color:var(--success)">
+              <div class="label"><span class="dot"></span>ROI</div>
+              <div class="value" id="roiValue">0%</div>
+              <div class="sub">receita realizada <span id="roiReceita">R$ 0</span></div>
+            </div>
+          </div>
+          <div class="inv-table-wrap">
+            <table class="deals-tbl inv-tbl" id="invTable"></table>
+          </div>
+          <button class="btn-add-inv" id="invAddBtn" type="button">+ Adicionar lançamento</button>
         </div>
 
         <section class="grid-2">
@@ -565,7 +626,7 @@ table.deals-tbl tr:hover td{background:var(--paper);}
             <div class="methodology">
               <p><b>Pipeline</b> — soma do <code>valor_previsto</code> dos negócios abertos com <code>data_prev_fechamento</code> dentro do mês selecionado.</p>
               <p><b>Forecast</b> — soma de <code>valor_previsto × probabilidade / 100</code> de cada negócio. É o mesmo cálculo que já aparece no rodapé de cada etapa do Kanban hoje, só que agregado por mês.</p>
-              <p><b>Commit</b> — soma do <code>valor_previsto</code> apenas dos negócios que o vendedor marcou manualmente como compromisso (checkbox <b>Commit</b> na tabela abaixo ou no card do negócio). É o único campo novo — os demais já existem no modelo de dados.</p>
+              <p><b>Compromisso</b> — soma do <code>valor_previsto</code> apenas dos negócios que o vendedor marcou manualmente como compromisso (checkbox <b>Compromisso</b> na tabela abaixo ou no card do negócio). É o único campo novo — os demais já existem no modelo de dados.</p>
             </div>
           </div>
         </section>
@@ -574,7 +635,7 @@ table.deals-tbl tr:hover td{background:var(--paper);}
           <div class="card-head">
             <div>
               <h3 id="dealsTitle">Negócios previstos</h3>
-              <p id="dealsSub">Marque Commit nos negócios que o vendedor confirma fechar neste mês</p>
+              <p id="dealsSub">Marque como Compromisso os negócios que o vendedor confirma fechar neste mês</p>
             </div>
           </div>
           <div class="deals-wrap">
@@ -691,6 +752,13 @@ const MONTHS = {
   jul: {
     label:'Julho', year:2026, status:'fechado',
     closedSummary:{ forecastPrevisto: 82000, commitPrevisto: 54000, realizado: 68000 },
+    // clientesFechados/receitaRealizada = mesmo par que FunilMetasResumo devolveria pra
+    // julho (etapa "fechados" + fechados_valor_realizado) — aqui hardcoded pro protótipo.
+    cacRoi:{ clientesFechados: 3, receitaRealizada: 68000, investimentos:[
+      {cat:'marketing', obs:'Tráfego pago + conteúdo', valor: 15000},
+      {cat:'vendas', obs:'Comissões + ferramentas de prospecção', valor: 19000},
+      {cat:'ferramentas', obs:'CRM, enriquecimento de dados, e-mail', valor: 3800},
+    ]},
     deals:[
       {empresa:'Comercial Andrade Ferragens', vendedor:'Ana Beatriz Freitas', valor:30000, status:'ganho'},
       {empresa:'Grupo Silveira Transportes', vendedor:'Carlos Eduardo Nunes', valor:18000, status:'perdido'},
@@ -701,6 +769,12 @@ const MONTHS = {
   },
   ago: {
     label:'Agosto', year:2026, status:'aberto',
+    // mesmos 4 clientes/R$ 52 mil já usados na etapa "fechados" de Metas do Funil (linha 611)
+    cacRoi:{ clientesFechados: 4, receitaRealizada: 52000, investimentos:[
+      {cat:'marketing', obs:'Tráfego pago + conteúdo', valor: 18000},
+      {cat:'vendas', obs:'Comissões + ferramentas de prospecção', valor: 22000},
+      {cat:'ferramentas', obs:'CRM, enriquecimento de dados, e-mail', valor: 4200},
+    ]},
     deals:[
       {nome:'Expansão linha industrial', empresa:'Distribuidora Rio Verde', vendedor:'Ana Beatriz Freitas', valor:32000, prob:85, etapa:'Negociação', data:'2026-08-06', commit:true},
       {nome:'Retrofit parque fabril', empresa:'Metalúrgica Andrade', vendedor:'Ana Beatriz Freitas', valor:8000, prob:90, etapa:'Proposta enviada', data:'2026-08-14', commit:true},
@@ -716,6 +790,11 @@ const MONTHS = {
   },
   set: {
     label:'Setembro', year:2026, status:'aberto',
+    cacRoi:{ clientesFechados: 2, receitaRealizada: 24000, investimentos:[
+      {cat:'marketing', obs:'Tráfego pago + conteúdo', valor: 16500},
+      {cat:'vendas', obs:'Comissões + ferramentas de prospecção', valor: 20000},
+      {cat:'ferramentas', obs:'CRM, enriquecimento de dados, e-mail', valor: 4200},
+    ]},
     deals:[
       {nome:'Novo contrato de manutenção', empresa:'Vidros Cortez', vendedor:'Rafael Lima Torres', valor:14000, prob:15, etapa:'Primeiro contato', data:'2026-09-05', commit:false},
       {nome:'Ampliação de licenças', empresa:'MRV Componentes', vendedor:'Carlos Eduardo Nunes', valor:20000, prob:10, etapa:'Primeiro contato', data:'2026-09-10', commit:false},
@@ -781,22 +860,22 @@ function renderForecast() {
         <span><b>${month.label}/${month.year} encerrado.</b> Comparativo entre o previsto no início do mês e o que de fato fechou.</span>
         <div class="accuracy-row">
           <div class="acc-item"><div class="t">Forecast previsto</div><div class="v">${fmtMoneyShort(s.forecastPrevisto)}</div></div>
-          <div class="acc-item"><div class="t">Commit previsto</div><div class="v">${fmtMoneyShort(s.commitPrevisto)}</div></div>
+          <div class="acc-item"><div class="t">Compromisso previsto</div><div class="v">${fmtMoneyShort(s.commitPrevisto)}</div></div>
           <div class="acc-item"><div class="t">Realizado</div><div class="v good">${fmtMoneyShort(s.realizado)}</div></div>
           <div class="acc-item"><div class="t">Acerto do forecast</div><div class="v">${accForecast}%</div></div>
-          <div class="acc-item"><div class="t">Acerto do commit</div><div class="v ${accCommit>=100?'good':''}">${accCommit}%</div></div>
+          <div class="acc-item"><div class="t">Acerto do compromisso</div><div class="v ${accCommit>=100?'good':''}">${accCommit}%</div></div>
         </div>
       </div>`;
 
     kpiRow.innerHTML = kpiCard('Forecast previsto', s.forecastPrevisto, '', '--info') +
-      kpiCard('Commit previsto', s.commitPrevisto, '', '--amber') +
+      kpiCard('Compromisso previsto', s.commitPrevisto, '', '--amber') +
       kpiCard('Realizado (ganho)', s.realizado, `${accForecast}% do forecast previsto`, '--good');
 
     document.getElementById('covTrack').innerHTML = '';
     document.querySelector('.coverage-card').style.display = 'none';
 
     dealsTitle.textContent = `Negócios de ${month.label}/${month.year} — fechados`;
-    dealsSub.textContent = 'Mês encerrado: sem edição de Commit, apenas o resultado final';
+    dealsSub.textContent = 'Mês encerrado: sem edição de Compromisso, apenas o resultado final';
     sellerSub.textContent = 'Realizado por vendedor';
 
     const filtered = currentVendor === 'all' ? month.deals : month.deals.filter(d=>d.vendedor===currentVendor);
@@ -824,13 +903,14 @@ function renderForecast() {
           <td style="color:var(--danger)">${fmtMoney(bySeller[v].perdido)}</td>
         </tr>`).join('')}
       </tbody>`;
+    renderCacRoi();
     return;
   }
 
   banner.innerHTML = '';
   document.querySelector('.coverage-card').style.display = '';
   dealsTitle.textContent = `Negócios previstos para ${month.label}/${month.year}`;
-  dealsSub.textContent = 'Marque Commit nos negócios que o vendedor confirma fechar neste mês';
+  dealsSub.textContent = 'Marque como Compromisso os negócios que o vendedor confirma fechar neste mês';
   sellerSub.textContent = 'Negócios previstos para o mês, ponderados por probabilidade';
 
   const filtered = currentVendor === 'all' ? month.deals : month.deals.filter(d=>d.vendedor===currentVendor);
@@ -840,7 +920,7 @@ function renderForecast() {
   kpiRow.innerHTML =
     kpiCard('Pipeline', agg.pipeline, `${agg.count} negócio${agg.count===1?'':'s'} em aberto`, '--info') +
     kpiCard('Forecast', agg.forecast, `${agg.pipeline ? Math.round(agg.forecast/agg.pipeline*100) : 0}% do pipeline · ponderado por probabilidade`, '--info') +
-    kpiCard('Commit', agg.commit, `${agg.pipeline ? Math.round(agg.commit/agg.pipeline*100) : 0}% do pipeline · confirmado pelo vendedor`, '--amber');
+    kpiCard('Compromisso', agg.commit, `${agg.pipeline ? Math.round(agg.commit/agg.pipeline*100) : 0}% do pipeline · confirmado pelo vendedor`, '--amber');
 
   const scaleMax = Math.max(agg.pipeline, meta) * 1.08 || 1;
   const track = document.getElementById('covTrack');
@@ -857,7 +937,7 @@ function renderForecast() {
   filtered.forEach(d => bySeller[d.vendedor] && bySeller[d.vendedor].push(d));
   const activeVendors = currentVendor === 'all' ? VENDORS : [currentVendor];
   document.getElementById('sellerTable').innerHTML = `
-    <thead><tr><th>Vendedor</th><th>Negócios</th><th>Pipeline</th><th>Forecast</th><th>Commit</th></tr></thead>
+    <thead><tr><th>Vendedor</th><th>Negócios</th><th>Pipeline</th><th>Forecast</th><th>Compromisso</th></tr></thead>
     <tbody>${activeVendors.map(v => {
       const list = bySeller[v] || [];
       const a = computeAggregates(list);
@@ -867,7 +947,7 @@ function renderForecast() {
           <td>${a.count}</td>
           <td>${fmtMoney(a.pipeline)}</td>
           <td>${fmtMoney(a.forecast)}</td>
-          <td class="commit-cell">${a.commit > 0 ? fmtMoney(a.commit) : '—'}${a.commit === 0 ? '<span class="chip warn">sem commit</span>' : ''}</td>
+          <td class="commit-cell">${a.commit > 0 ? fmtMoney(a.commit) : '—'}${a.commit === 0 ? '<span class="chip warn">sem compromisso</span>' : ''}</td>
         </tr>`;
     }).join('')}</tbody>
     <tfoot><tr>
@@ -878,7 +958,7 @@ function renderForecast() {
   dealsTable.innerHTML = filtered.length === 0 ? '' : `
     <thead><tr>
       <th>Negócio</th><th>Vendedor</th><th>Etapa</th><th>Probabilidade</th>
-      <th style="text-align:right">Valor</th><th>Fechamento</th><th>Commit</th>
+      <th style="text-align:right">Valor</th><th>Fechamento</th><th>Compromisso</th>
     </tr></thead>
     <tbody>${sorted.map((d) => {
       const realIdx = month.deals.indexOf(d);
@@ -894,7 +974,7 @@ function renderForecast() {
           <label class="commit-toggle">
             <input type="checkbox" ${d.commit ? 'checked' : ''} onchange="toggleCommit(${realIdx}, this.checked)" />
             <span class="box"><svg viewBox="0 0 20 20"><path d="M4 10.5l4 4 8-9" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-            <span class="txt">${d.commit ? 'Commit' : 'Marcar'}</span>
+            <span class="txt">${d.commit ? 'Compromisso' : 'Marcar'}</span>
           </label>
         </td>
       </tr>`;
@@ -903,12 +983,62 @@ function renderForecast() {
   if (filtered.length === 0) {
     dealsTable.innerHTML = `<tbody><tr><td class="empty-note">Nenhum negócio previsto para este vendedor neste mês.</td></tr></tbody>`;
   }
+
+  renderCacRoi();
 }
 
 function toggleCommit(idx, checked) {
   MONTHS[currentMonth].deals[idx].commit = checked;
   renderForecast();
 }
+
+const INV_CAT_LABEL = {marketing:'Marketing', vendas:'Vendas', ferramentas:'Ferramentas', outros:'Outros'};
+
+function investTotal(cacRoi) {
+  return cacRoi.investimentos.reduce((s,i) => s + Number(i.valor||0), 0);
+}
+
+function renderCacRoi() {
+  const month = MONTHS[currentMonth];
+  const cacRoi = month.cacRoi;
+  if (!cacRoi) { document.getElementById('cacRoiCard').style.display = 'none'; return; }
+  document.getElementById('cacRoiCard').style.display = '';
+
+  const invest = investTotal(cacRoi);
+  const cac = cacRoi.clientesFechados > 0 ? invest / cacRoi.clientesFechados : 0;
+  const roi = invest > 0 ? ((cacRoi.receitaRealizada - invest) / invest) * 100 : 0;
+
+  document.getElementById('cacInvestValue').textContent = fmtMoney(invest);
+  document.getElementById('cacValue').textContent = fmtMoney(cac);
+  document.getElementById('cacClientes').textContent = cacRoi.clientesFechados;
+  document.getElementById('roiReceita').textContent = fmtMoney(cacRoi.receitaRealizada);
+  const roiEl = document.getElementById('roiValue');
+  roiEl.textContent = (roi >= 0 ? '+' : '') + Math.round(roi) + '%';
+  roiEl.className = 'value ' + (roi >= 0 ? 'pos' : 'neg');
+
+  const invTable = document.getElementById('invTable');
+  invTable.innerHTML = `
+    <thead><tr><th>Categoria</th><th>Observação</th><th style="text-align:right">Valor</th></tr></thead>
+    <tbody>${cacRoi.investimentos.map((inv, idx) => `
+      <tr>
+        <td><span class="inv-cat-dot ${inv.cat}"></span>${INV_CAT_LABEL[inv.cat] || inv.cat}</td>
+        <td>${inv.obs}</td>
+        <td class="inv-input-cell"><input class="inv-input" type="number" min="0" step="100" value="${inv.valor}"
+          onchange="updateInvest(${idx}, this.value)" /></td>
+      </tr>`).join('')}
+    </tbody>
+    <tfoot><tr class="inv-total"><td colspan="2">Total do mês</td><td class="money-cell">${fmtMoney(invest)}</td></tr></tfoot>`;
+}
+
+function updateInvest(idx, value) {
+  MONTHS[currentMonth].cacRoi.investimentos[idx].valor = Number(value) || 0;
+  renderCacRoi();
+}
+
+document.getElementById('invAddBtn').addEventListener('click', () => {
+  MONTHS[currentMonth].cacRoi.investimentos.push({cat:'outros', obs:'Novo lançamento', valor:0});
+  renderCacRoi();
+});
 
 function kpiCard(label, value, sub, colorVar) {
   return `

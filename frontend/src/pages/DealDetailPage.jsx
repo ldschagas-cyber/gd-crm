@@ -159,9 +159,9 @@ export default function DealDetailPage() {
           <div className="stat-tile"><div className="t">Previsão de fechamento</div><div className="v">{deal.data_prev_fechamento ? new Date(`${deal.data_prev_fechamento}T00:00:00`).toLocaleDateString('pt-BR') : '—'}</div></div>
           <div className="stat-tile"><div className="t">Origem</div><div className="v" style={{ fontSize: 15 }}>{deal.origem ?? '—'}</div></div>
           <div className="stat-tile">
-            <div className="t">Commit</div>
+            <div className="t">Compromisso</div>
             <div className="v" style={{ fontSize: 15, color: deal.commit ? 'var(--amber-dark)' : 'var(--ink-faint)' }}>
-              {deal.commit ? '★ Confirmado' : 'Não confirmado'}
+              {deal.commit ? '★ Compromisso' : 'Sem compromisso'}
             </div>
           </div>
         </div>
@@ -259,7 +259,7 @@ export default function DealDetailPage() {
                   </div>
                   <label className="field-checkbox" style={{ marginBottom: 14 }}>
                     <input type="checkbox" checked={form.commit} onChange={(e) => setForm((f) => ({ ...f, commit: e.target.checked }))} />
-                    Commit — confirmo que este negócio fecha no mês previsto
+                    Compromisso — confirmo que este negócio fecha no mês previsto
                   </label>
                   <button className="btn-primary btn-sm" disabled={updateMutation.isPending} onClick={handleSaveDetails} style={{ width: 'fit-content' }}>
                     {updateMutation.isPending ? 'Salvando…' : 'Salvar alterações'}

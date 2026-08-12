@@ -1,14 +1,21 @@
-# Plano — Previsão Comercial (Forecast/Commit) e integração com Metas do Funil
+# Plano — Previsão Comercial (Forecast/Compromisso) e integração com Metas do Funil
 
-Status: **implementado** (backend + frontend, vertical slice completa — ver §7). Protótipo
-funcional em [`docs/prototypes/previsao_comercial_prototype.html`](prototypes/previsao_comercial_prototype.html)
-(inclui a página Previsão Comercial e a integração visual com Metas do Funil, navegáveis no
-mesmo arquivo).
+Status: **§1–7 implementado** (backend + frontend, vertical slice completa — ver §7). **§8 (CAC &
+ROI) é proposta, não implementada.** Protótipo funcional em
+[`docs/prototypes/previsao_comercial_prototype.html`](prototypes/previsao_comercial_prototype.html)
+(inclui a página Previsão Comercial — com o cartão CAC & ROI do §8 — e a integração visual com
+Metas do Funil, navegáveis no mesmo arquivo).
+
+> Este documento absorveu o antigo `PLANO_ANALYTICS_RECEITA.md`. Aquele plano começou propondo
+> uma tela nova de "Analytics de Receita"; checando o que já existia, o funil e a receita por
+> vendedor já eram cobertos aqui e em `PLANO_METAS_FUNIL.md` — a única parte genuinamente nova
+> (CAC/ROI) virou extensão deste documento em vez de um plano/tela à parte (ver §8 e o ponto 6 do
+> §3 acima, na versão navegável do protótipo).
 
 ## 0. Contexto
 
 Pedido: cobrir o item "Forecast" do quadro de Pipeline Comercial — receita prevista,
-probabilidade, data de fechamento, pipeline por vendedor e "commit" — e avaliar se esse
+probabilidade, data de fechamento, pipeline por vendedor e "compromisso" — e avaliar se esse
 processo se encaixa no que já existe em Metas do Funil ([`PLANO_METAS_FUNIL.md`](PLANO_METAS_FUNIL.md)).
 
 ## 1. Análise de viabilidade
@@ -17,7 +24,7 @@ processo se encaixa no que já existe em Metas do Funil ([`PLANO_METAS_FUNIL.md`
 `data_prev_fechamento` e `responsavel_id` — o cálculo de forecast ponderado
 (`valor × probabilidade / 100`) já roda hoje por etapa no Kanban
 ([`NegociosPage.jsx`](../frontend/src/pages/NegociosPage.jsx), coluna "Valor ponderado" do board).
-O único conceito novo é **Commit**: um sinalizador manual, por negócio, com que o vendedor
+O único conceito novo é **Compromisso**: um sinalizador manual, por negócio, com que o vendedor
 assume "esse fecha esse mês" — distinto da probabilidade ponderada (que é inferida da etapa,
 não uma promessa).
 
@@ -31,7 +38,7 @@ Para um conjunto de negócios abertos com `data_prev_fechamento` dentro do mês 
 - **Pipeline** = Σ `valor_previsto`
 - **Forecast** = Σ `valor_previsto × probabilidade / 100` — mesma fórmula já usada no rodapé
   de cada coluna do Kanban, agora agregada por mês/vendedor em vez de por etapa.
-- **Commit** = Σ `valor_previsto` apenas dos negócios com `commit = true`
+- **Compromisso** = Σ `valor_previsto` apenas dos negócios com `commit = true`
 
 Quebra "Pipeline por vendedor": mesmas três somas agrupadas por `responsavel_id`.
 
@@ -65,7 +72,7 @@ Empilhar as duas num único número misturaria unidade e janela de tempo. Em vez
    proposta e não seguia o padrão já adotado pelas telas irmãs.
 3. Isto é a extensão que o próprio [`PLANO_METAS_FUNIL.md` §9](PLANO_METAS_FUNIL.md) já listava
    como fora de escopo da primeira entrega: "metas por vendedor/pipeline individual". A quebra
-   por vendedor do Commit/Forecast é essa extensão, chegando pela porta da receita.
+   por vendedor do Compromisso/Forecast é essa extensão, chegando pela porta da receita.
 4. Front: `FunilMetasPage` mostra os dois valores como um chip discreto sob as linhas
    "Propostas enviadas"/"Clientes fechados" do funil de contagem (só quando não-nulos), com
    link direto para `/previsao-comercial`.
@@ -91,9 +98,9 @@ Empilhar as duas num único número misturaria unidade e janela de tempo. Em vez
   `/previsao-comercial`, item de menu "Previsão Comercial" no grupo Inteligência Comercial
   ([`AppShell.jsx`](../frontend/src/layouts/AppShell.jsx)). Seletor de mês, filtro de vendedor
   (só gestor/admin vê o filtro — vendedor já recebe seu próprio recorte da API), 3 KPIs
-  (Pipeline/Forecast/Commit), tabela por vendedor, lista de negócios do mês com checkbox de
-  Commit editável ali mesmo.
-- Checkbox de Commit também no board de Negócios (ícone de estrela no card do Kanban e na
+  (Pipeline/Forecast/Compromisso), tabela por vendedor, lista de negócios do mês com checkbox de
+  Compromisso editável ali mesmo.
+- Checkbox de Compromisso também no board de Negócios (ícone de estrela no card do Kanban e na
   lista) e na ficha do negócio ([`DealDetailPage.jsx`](../frontend/src/pages/DealDetailPage.jsx))
   — é o vendedor quem marca, nos três lugares onde ele já trabalha, não só na tela nova.
 - [`FunilMetasPage.jsx`](../frontend/src/pages/FunilMetasPage.jsx): chip de receita sob as
@@ -114,3 +121,98 @@ Empilhar as duas num único número misturaria unidade e janela de tempo. Em vez
 ## 7. Verificação
 
 `pytest` (ver `tests/test_forecast.py`), `alembic heads` (head único), `vite build`.
+
+## 8. Extensão proposta — CAC & ROI (não implementada)
+
+Rodando Metas do Funil e Previsão Comercial lado a lado, a única coisa que uma proposta de
+"Analytics de Receita" pedia e que não existe em lugar nenhum do schema é **custo/investimento
+comercial** — sem isso, CAC e ROI são impossíveis de calcular. É a única peça genuinamente nova;
+o resto (funil, receita por vendedor) já é coberto pelas seções 1–7 acima e por
+`PLANO_METAS_FUNIL.md`.
+
+### 8.1 Decisões
+
+1. **Não é uma tela nova.** É um cartão adicional na própria `PrevisaoComercialPage.jsx` — ver
+   mockup no cartão "CAC & ROI comercial" do protótipo, entre "Cobertura da meta do mês" e
+   "Pipeline por vendedor".
+2. **Receita e contagem de clientes vêm de dado que já existe** — não recalcula nada:
+   - Clientes novos do mês = `FunilMetasResumo` etapa `fechados` (modo atividade).
+   - Receita ganha do mês = `FunilMetasResumo.fechados_valor_realizado` (já existe, §3 acima).
+   - O único dado que falta é o lado do custo.
+3. **Investimento é lançamento manual** — sem integração com Ads/folha de pagamento nesta fase.
+4. **CAC e ROI são por mês**, não por vendedor/etapa — custo de aquisição não se fatia por etapa
+   do funil, só ponta a ponta; e como não há responsável dono de um lançamento de investimento,
+   quebrar por vendedor exigiria inventar um rateio arbitrário.
+
+### 8.2 Modelo de dados novo
+
+Só uma tabela — o resto é leitura do que já existe (8.1.2):
+
+```python
+class InvestmentCategory(str, enum.Enum):
+    MARKETING = "marketing"
+    VENDAS = "vendas"
+    FERRAMENTAS = "ferramentas"
+    OUTROS = "outros"
+
+class RevenueInvestment(Base, TenantMixin, TimestampMixin):
+    __tablename__ = "revenue_investments"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    competencia: Mapped[date] = mapped_column(Date, nullable=False, index=True)  # dia 1 do mês
+    categoria: Mapped[str] = mapped_column(String(20), nullable=False)
+    valor: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False)
+    observacao: Mapped[str | None] = mapped_column(String(255))
+    criado_por: Mapped[uuid.UUID] = mapped_column(PGUUID(as_uuid=True), ForeignKey("users.id"))
+```
+
+Migração Alembic nova, mesmo padrão de `add_commit_to_deals` (aditiva, sem backfill).
+
+### 8.3 Fórmulas
+
+- **Investimento do mês** = Σ `RevenueInvestment.valor` onde `competencia` cai no mês consultado.
+- **CAC** = investimento do mês ÷ `FunilMetasResumo` etapa `fechados` (real, modo atividade) do
+  mesmo mês.
+- **ROI** = (`fechados_valor_realizado` − investimento) ÷ investimento.
+
+### 8.4 Backend — endpoints
+
+Serviço novo `app/services/revenue_investment.py` (`RevenueInvestmentService`) — CRUD simples +
+um agregador que chama `FunilMetasService.resumo()` internamente em vez de duplicar suas queries:
+
+- `GET /revenue-investments?competencia_inicio=&competencia_fim=` / `POST` / `PUT .../{id}` /
+  `DELETE .../{id}` — CRUD do lançamento, restrito a `admin`/`gestor` (`require_roles`, mesmo
+  guard de `/dashboards/commercial`).
+- `GET /revenue-investments/cac-roi?mes=AAAA-MM` — devolve `{investimento_total, clientes_novos,
+  receita_realizada, cac, roi}`, calculado a partir de `RevenueInvestment` (soma direta) +
+  `FunilMetasService.resumo("atividade", mes)` (reaproveitado, não reimplementado).
+
+Nenhuma rota nova de funil/conversão — isso já existe em `/funil-metas/resumo`.
+
+### 8.5 Frontend
+
+- Cartão **"CAC & ROI comercial"** dentro de `PrevisaoComercialPage.jsx`, entre o cartão de
+  cobertura de meta (já existe) e a quebra por vendedor (já existe) — mesmo `kpi-mini`/
+  `integration-pill` já usados no cartão "Previsão de Receita" de `FunilMetasPage`.
+  - Selo `integration-pill` "dado vem de Metas do Funil".
+  - Tabela de lançamentos de investimento (mês, categoria, valor) — CRUD inline.
+- Nenhuma mudança em `FunilMetasPage.jsx` além de, opcionalmente, um segundo chip "CAC: R$ X"
+  ao lado do chip de receita que já existe sob a linha "Clientes fechados".
+
+### 8.6 Fora de escopo
+
+- Qualquer recontagem de funil/etapas/conversão — isso é `PLANO_METAS_FUNIL.md`.
+- Qualquer recálculo de receita/pipeline/forecast — isso já é §1–7 deste documento.
+- Integração automática de investimento (Google Ads, Meta Ads, folha de pagamento).
+- LTV e atribuição multi-canal de marketing.
+- CAC/ROI por vendedor ou por origem — extensão natural, não bloqueante, mesmo racional do §9 de
+  `PLANO_METAS_FUNIL.md` pra outras quebras por vendedor.
+
+### 8.7 Sequenciamento sugerido
+
+1. Migração: tabela `revenue_investments`.
+2. `RevenueInvestmentService` — CRUD + `cac_roi(mes)` chamando `FunilMetasService.resumo()`.
+3. Endpoints (`/revenue-investments` CRUD, `/revenue-investments/cac-roi`).
+4. Frontend: cartão "CAC & ROI" em `PrevisaoComercialPage.jsx` + painel de lançamentos.
+5. QA: conferir que nada em Metas do Funil/Previsão Comercial muda de comportamento (mudança é só
+   aditiva — nenhuma query existente é alterada, só reaproveitada).
