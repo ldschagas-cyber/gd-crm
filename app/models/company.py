@@ -68,6 +68,13 @@ class Company(Base, TenantMixin, TimestampMixin, SoftDeleteMixin):
     # faturamento_estimado com o valor exato (se/quando descobrir).
     faixa_faturamento: Mapped[str | None] = mapped_column(String(60))
     status: Mapped[str] = mapped_column(String(20), nullable=False, default=CompanyStatus.LEAD.value, index=True)
+    # Desde quando `status` está no valor atual — gravado em CompanyService.set_status().
+    # Alimenta o SLA Comercial por status (ver docs/PLANO_SLA_COMERCIAL.md e
+    # app/services/activity_sla.py); distinto de `funil_estagio_atualizado_em` abaixo, que é
+    # sobre o estágio da Central de Leads, não sobre `status`. NULL pra empresas que já
+    # existiam antes desta coluna — SLA por status simplesmente não se aplica a elas até a
+    # próxima mudança de status (sem backfill por inferência).
+    status_atualizado_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     origem: Mapped[str | None] = mapped_column(String(80))
     responsavel_id: Mapped[uuid.UUID | None] = mapped_column(PGUUID(as_uuid=True), ForeignKey("users.id"))
     created_by: Mapped[uuid.UUID | None] = mapped_column(PGUUID(as_uuid=True), ForeignKey("users.id"))

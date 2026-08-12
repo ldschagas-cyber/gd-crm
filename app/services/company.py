@@ -84,7 +84,11 @@ class CompanyService:
             raise ConflictError("CNPJ já cadastrado neste tenant")
         payload = data.model_dump()
         payload["status"] = data.status.value
-        company = Company(**payload, created_by=get_current_user_id())
+        # Empresa nasce já "desde quando" está no status inicial — sem isso, uma regra de
+        # SLA Comercial tipo "Novo lead: responder em 24h" nunca dispararia pra leads recém
+        # criados (a imensa maioria: quase nada passa por set_status() logo na criação).
+        company = Company(**payload, created_by=get_current_user_id(),
+                          status_atualizado_em=datetime.now(timezone.utc))
         company = self.repo.add(company)
         self.timeline.registrar(company.id, TimelineType.CADASTRO.value,
                                 "Empresa cadastrada", f"Status inicial: {company.status}")
@@ -107,6 +111,11 @@ class CompanyService:
         company = self.get(company_id)
         anterior = company.status
         company.status = data.status.value
+        # Alimenta o SLA Comercial por status (ver docs/PLANO_SLA_COMERCIAL.md e
+        # app/services/activity_sla.py) — só atualiza quando o status de fato muda, senão um
+        # PUT idempotente reabriria a régua de prazo sem uma transição real ter acontecido.
+        if anterior != company.status:
+            company.status_atualizado_em = datetime.now(timezone.utc)
         company = self.repo.save(company)
         self.timeline.registrar(
             company.id, TimelineType.CADASTRO.value, "Mudança de status",

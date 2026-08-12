@@ -3,6 +3,39 @@
 .period-filter input { width: auto; }
 .period-sep { font-size: 12px; color: var(--ink-faint); }
 
+/* ---- SLA Comercial (docs/PLANO_SLA_COMERCIAL.md) — composição em cima de dataTable.css
+   (stat-strip, card, status-pill, segmented, drawer, f-group) — só o que é específico da
+   aba mora aqui. */
+.view-panel { display: flex; flex-direction: column; gap: 16px; }
+
+.tabs-row .chip {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700; background: var(--danger);
+  color: #fff; padding: 1px 6px; border-radius: var(--r-pill); margin-left: 2px;
+}
+
+.status-pill.sla-ok { background: var(--info-bg); color: var(--info); }
+.status-pill.sla-ok .d { background: var(--info); }
+.status-pill.sla-risco { background: var(--warning-bg); color: var(--warning); }
+.status-pill.sla-risco .d { background: var(--warning); }
+.status-pill.sla-estourado { background: var(--danger-bg); color: var(--critical); }
+.status-pill.sla-estourado .d { background: var(--critical); }
+.status-pill.sla-cumprido { background: var(--success-bg); color: var(--good); }
+.status-pill.sla-cumprido .d { background: var(--good); }
+
+.origin-tag {
+  font-size: 10.5px; font-weight: 650; padding: 2px 8px; border-radius: var(--r-pill);
+  white-space: nowrap; background: var(--paper); color: var(--ink-dim); border: 1px solid var(--border);
+}
+
+.switch { position: relative; display: inline-block; width: 34px; height: 19px; flex: none; }
+.switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+.switch .track { position: absolute; inset: 0; background: var(--border); border-radius: var(--r-pill); cursor: pointer; transition: background 140ms ease; }
+.switch .track::before { content: ""; position: absolute; width: 15px; height: 15px; left: 2px; top: 2px; background: #fff; border-radius: 50%; transition: transform 140ms ease; box-shadow: 0 1px 2px rgba(0,0,0,.25); }
+.switch input:checked + .track { background: var(--good); }
+.switch input:checked + .track::before { transform: translateX(15px); }
+
+.empty-cell.error { color: var(--danger); }
+
 .agenda-date-label {
   padding: 9px 20px; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.06em;
   text-transform: uppercase; color: var(--ink-faint); font-weight: 650;

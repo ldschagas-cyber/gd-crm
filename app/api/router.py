@@ -2,8 +2,8 @@
 from fastapi import APIRouter
 
 from app.api.v1 import (
-    auth, calls, cnae_codes, companies, contacts, dashboards, deals, email_templates, embed, forecast, forms,
-    funil_metas, import_jobs, lead_prospects, me, message_templates, origem_options, pipelines, public,
+    activity_sla, auth, calls, cnae_codes, companies, contacts, dashboards, deals, email_templates, embed, forecast,
+    forms, funil_metas, import_jobs, lead_prospects, me, message_templates, origem_options, pipelines, public,
     public_companies, sequences, site_visits, snippets, tasks, tenant, users, workflows,
 )
 
@@ -18,6 +18,7 @@ api_router.include_router(contacts.router)
 api_router.include_router(pipelines.router)
 api_router.include_router(deals.router)
 api_router.include_router(tasks.router)
+api_router.include_router(activity_sla.router)
 api_router.include_router(import_jobs.router)
 api_router.include_router(dashboards.router)
 api_router.include_router(lead_prospects.router)
