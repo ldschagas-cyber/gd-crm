@@ -33,7 +33,7 @@ from app.services.sequence_dispatch import (
 )
 from app.services.sequence_dispatch import _resolve_responsavel as resolve_sequence_responsavel
 
-COMPANY_REQUIRED = ["razao_social", "cnpj", "cidade", "uf"]
+COMPANY_REQUIRED = ["razao_social", "cnpj", "cidade", "uf", "responsavel"]
 CONTACT_REQUIRED = ["nome", "empresa", "email"]
 LEAD_PROSPECT_REQUIRED = ["empresa"]
 
@@ -59,6 +59,7 @@ def import_companies_task(job_id: str, tenant_id: str, user_id: str, content: st
         db.flush()
         df = _read_table(base64.b64decode(content), filename)
         repo = CompanyRepository(db)
+        users = UserRepository(db)
         erros, importadas = [], 0
         for idx, row in df.iterrows():
             faltando = [c for c in COMPANY_REQUIRED if c not in df.columns or pd.isna(row.get(c))]
@@ -87,12 +88,22 @@ def import_companies_task(job_id: str, tenant_id: str, user_id: str, content: st
                 except ValueError:
                     return None
 
+            # Empresa não pode nascer sem dono (trava decidida com o usuário) — coluna
+            # "responsavel" traz o e-mail do usuário, mesmo padrão de "pesquisado_por"
+            # na importação de Pesquisa de Leads, um pouco abaixo.
+            responsavel_email = str(row["responsavel"]).strip()
+            responsavel = users.get_by_email(responsavel_email)
+            if responsavel is None:
+                erros.append({"linha": int(idx) + 2, "motivo": f"Responsável '{responsavel_email}' não encontrado"})
+                continue
+
             repo.add(Company(
                 razao_social=str(row["razao_social"]).strip(), cnpj=cnpj,
                 cidade=str(row["cidade"]).strip(), uf=str(row["uf"]).strip()[:2],
                 segmento=opt_str("segmento"), telefone=opt_str("telefone"), email=opt_str("email"),
                 porte=opt_str("porte"), num_funcionarios=opt_int("funcionarios"),
                 faturamento_estimado=opt_float("faturamento"), origem=opt_str("origem"),
+                responsavel_id=responsavel.id,
                 created_by=UUID(user_id),
             ))
             importadas += 1

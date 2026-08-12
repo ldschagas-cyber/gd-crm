@@ -613,17 +613,22 @@ export function CompanyModal({ company, users, usersError, onClose, onSubmit, su
             <span className="hint-text">Negócios criados para esta empresa herdam essa origem.</span>
           </div>
           <div className="field">
-            <label htmlFor="responsavel_id">Responsável</label>
+            <label htmlFor="responsavel_id">Responsável{!isEdit && ' *'}</label>
             {usersError ? (
               <p className="hint-text">Só administradores podem ver a lista de usuários.</p>
             ) : (
-              <select id="responsavel_id" value={form.responsavel_id ?? ''} onChange={set('responsavel_id')}>
-                <option value="">Sem responsável</option>
+              <select
+                id="responsavel_id" required={!isEdit}
+                value={form.responsavel_id ?? ''} onChange={set('responsavel_id')}
+              >
+                <option value="" disabled={!isEdit}>{isEdit ? 'Sem responsável' : 'Selecione…'}</option>
                 {users.map((u) => (
                   <option key={u.id} value={u.id}>{u.nome}</option>
                 ))}
               </select>
             )}
+            {/* Empresa nova precisa nascer com dono (trava). Empresas antigas sem
+                responsável continuam editáveis sem forçar o preenchimento agora. */}
           </div>
           <div className="field">
             <label htmlFor="contexto_rapido">Contexto rápido</label>
@@ -696,8 +701,12 @@ function ImportDrawer({ onClose, onDone }) {
         <div className="drawer-body">
           <div className="import-cols">
             Colunas esperadas: <code>razao_social*</code> <code>cnpj*</code> <code>cidade*</code> <code>uf*</code>{' '}
-            <code>segmento</code> <code>telefone</code> <code>email</code> <code>porte</code>{' '}
+            <code>responsavel*</code> <code>segmento</code> <code>telefone</code> <code>email</code> <code>porte</code>{' '}
             <code>funcionarios</code> <code>faturamento</code> <code>origem</code>
+            <br />
+            <span className="f-hint">
+              <code>responsavel</code> é o e-mail do usuário no sistema — toda empresa precisa nascer com um dono.
+            </span>
           </div>
 
           <label className="drop-zone">
