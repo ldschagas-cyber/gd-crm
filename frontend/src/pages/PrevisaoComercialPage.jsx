@@ -4,10 +4,14 @@ import { useAuth } from '../context/AuthContext.jsx'
 import { getForecastResumo } from '../api/forecast'
 import { updateDeal } from '../api/deals'
 import { listUsers } from '../api/users'
+import {
+  createRevenueInvestment, deleteRevenueInvestment, getCacRoi, listRevenueInvestments,
+} from '../api/revenueInvestments'
 import '../styles/dataTable.css'
 import './PrevisaoComercialPage.css'
 
 const GESTAO_PERFIS = new Set(['admin', 'gestor'])
+const CATEGORIA_LABEL = { marketing: 'Marketing', vendas: 'Vendas', ferramentas: 'Ferramentas', outros: 'Outros' }
 
 function formatCurrency(v) {
   return (v ?? 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })
@@ -119,6 +123,8 @@ export default function PrevisaoComercialPage() {
               <span><i className="forecast" />Forecast</span>
               <span><i className="commit" />Compromisso</span>
             </div>
+
+            {isGestao && <CacRoiCard mes={mes} mesLabel={mesLabel} />}
 
             <section className="pc-grid-2">
               <div className="card">
@@ -233,5 +239,137 @@ export default function PrevisaoComercialPage() {
         )}
       </div>
     </>
+  )
+}
+
+// CAC & ROI — extensão de Previsão Comercial (ver docs/PLANO_PREVISAO_COMERCIAL.md §8).
+// `clientes_novos`/`receita_realizada` vêm de FunilMetasResumo (etapa "fechados") via o
+// endpoint /revenue-investments/cac-roi — não recalculados aqui, só o investimento é dado
+// novo. Só admin/gestor chega a montar (guard no pai) — o backend também exige o perfil.
+function CacRoiCard({ mes, mesLabel }) {
+  const queryClient = useQueryClient()
+  const [novo, setNovo] = useState({ categoria: 'marketing', valor: '', observacao: '' })
+
+  const cacRoiQuery = useQuery({
+    queryKey: ['revenue-investments', 'cac-roi', mes],
+    queryFn: () => getCacRoi({ mes }),
+  })
+  const investmentsQuery = useQuery({
+    queryKey: ['revenue-investments', 'list', mes],
+    queryFn: () => listRevenueInvestments({ mes }),
+  })
+
+  function invalidate() {
+    queryClient.invalidateQueries({ queryKey: ['revenue-investments'] })
+  }
+  const createMutation = useMutation({
+    mutationFn: (data) => createRevenueInvestment({ mes, ...data }),
+    onSuccess: () => { invalidate(); setNovo({ categoria: 'marketing', valor: '', observacao: '' }) },
+  })
+  const deleteMutation = useMutation({
+    mutationFn: (id) => deleteRevenueInvestment(id),
+    onSuccess: invalidate,
+  })
+
+  function handleAdd(e) {
+    e.preventDefault()
+    const valor = Number(novo.valor)
+    if (!valor || valor <= 0) return
+    createMutation.mutate({ categoria: novo.categoria, valor, observacao: novo.observacao || undefined })
+  }
+
+  const data = cacRoiQuery.data
+  const investimentos = investmentsQuery.data ?? []
+  const roiColor = data?.roi == null ? 'var(--ink-faint)' : data.roi >= 0 ? 'var(--good)' : 'var(--danger)'
+
+  return (
+    <div className="card" style={{ marginBottom: 18 }}>
+      <div className="card-head">
+        <div><h3>CAC &amp; ROI comercial</h3><p>Custo de aquisição e retorno do investimento em {mesLabel}</p></div>
+        <span className="pc-integration-pill">dado vem de Metas do Funil</span>
+      </div>
+
+      {cacRoiQuery.isLoading && <p className="state-msg">Carregando…</p>}
+      {cacRoiQuery.isError && <p className="state-msg error">Não foi possível calcular CAC/ROI agora.</p>}
+
+      {data && (
+        <section className="stat-strip" style={{ padding: '2px 18px 16px' }}>
+          <div className="stat-tile">
+            <div className="t">Investimento</div>
+            <div className="v">{formatCurrency(data.investimento_total)}</div>
+            <div className="pc-sub">lançado manualmente abaixo</div>
+          </div>
+          <div className="stat-tile">
+            <div className="t">CAC</div>
+            <div className="v">{data.cac != null ? formatCurrency(data.cac) : '—'}</div>
+            <div className="pc-sub">
+              {data.clientes_novos} cliente{data.clientes_novos === 1 ? '' : 's'} fechado{data.clientes_novos === 1 ? '' : 's'} no mês
+            </div>
+          </div>
+          <div className="stat-tile bonus">
+            <div className="t">ROI</div>
+            <div className="v" style={{ color: roiColor }}>
+              {data.roi != null ? `${data.roi >= 0 ? '+' : ''}${Math.round(data.roi)}%` : '—'}
+            </div>
+            <div className="pc-sub">receita realizada {formatCurrency(data.receita_realizada)}</div>
+          </div>
+        </section>
+      )}
+
+      <div className="table-scroll">
+        <table className="data pc-inv-tbl">
+          <thead>
+            <tr><th>Categoria</th><th>Observação</th><th style={{ textAlign: 'right' }}>Valor</th><th /></tr>
+          </thead>
+          <tbody>
+            {investimentos.map((inv) => (
+              <tr key={inv.id}>
+                <td>
+                  <span className="pc-inv-cat"><i className={inv.categoria} />{CATEGORIA_LABEL[inv.categoria] ?? inv.categoria}</span>
+                </td>
+                <td>{inv.observacao || '—'}</td>
+                <td className="pc-money-cell">{formatCurrency(inv.valor)}</td>
+                <td style={{ width: 34 }}>
+                  <button
+                    className="icon-btn danger"
+                    title="Remover lançamento"
+                    disabled={deleteMutation.isPending}
+                    onClick={() => deleteMutation.mutate(inv.id)}
+                  >
+                    ×
+                  </button>
+                </td>
+              </tr>
+            ))}
+            {investimentos.length === 0 && !investmentsQuery.isLoading && (
+              <tr><td colSpan={4} className="state-msg">Nenhum lançamento em {mesLabel}.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <form className="pc-inv-add" onSubmit={handleAdd}>
+        <select
+          className="filter-select"
+          value={novo.categoria}
+          onChange={(e) => setNovo((n) => ({ ...n, categoria: e.target.value }))}
+        >
+          {Object.entries(CATEGORIA_LABEL).map(([value, label]) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
+        </select>
+        <input
+          type="text" placeholder="Observação (opcional)" value={novo.observacao}
+          onChange={(e) => setNovo((n) => ({ ...n, observacao: e.target.value }))}
+        />
+        <input
+          type="number" min="0" step="100" placeholder="Valor" required value={novo.valor}
+          onChange={(e) => setNovo((n) => ({ ...n, valor: e.target.value }))}
+        />
+        <button type="submit" className="pc-inv-add-btn" disabled={createMutation.isPending}>
+          + Adicionar lançamento
+        </button>
+      </form>
+    </div>
   )
 }

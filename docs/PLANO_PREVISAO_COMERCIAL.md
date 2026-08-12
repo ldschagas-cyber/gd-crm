@@ -1,7 +1,6 @@
 # Plano — Previsão Comercial (Forecast/Compromisso) e integração com Metas do Funil
 
-Status: **§1–7 implementado** (backend + frontend, vertical slice completa — ver §7). **§8 (CAC &
-ROI) é proposta, não implementada.** Protótipo funcional em
+Status: **implementado** (backend + frontend, §1–7 e §8 — ver §7 e §8.8). Protótipo funcional em
 [`docs/prototypes/previsao_comercial_prototype.html`](prototypes/previsao_comercial_prototype.html)
 (inclui a página Previsão Comercial — com o cartão CAC & ROI do §8 — e a integração visual com
 Metas do Funil, navegáveis no mesmo arquivo).
@@ -122,7 +121,7 @@ Empilhar as duas num único número misturaria unidade e janela de tempo. Em vez
 
 `pytest` (ver `tests/test_forecast.py`), `alembic heads` (head único), `vite build`.
 
-## 8. Extensão proposta — CAC & ROI (não implementada)
+## 8. Extensão — CAC & ROI
 
 Rodando Metas do Funil e Previsão Comercial lado a lado, a única coisa que uma proposta de
 "Analytics de Receita" pedia e que não existe em lugar nenhum do schema é **custo/investimento
@@ -216,3 +215,43 @@ Nenhuma rota nova de funil/conversão — isso já existe em `/funil-metas/resum
 4. Frontend: cartão "CAC & ROI" em `PrevisaoComercialPage.jsx` + painel de lançamentos.
 5. QA: conferir que nada em Metas do Funil/Previsão Comercial muda de comportamento (mudança é só
    aditiva — nenhuma query existente é alterada, só reaproveitada).
+
+### 8.8 Implementação — o que foi entregue
+
+Backend: migração [`b6d2a91f4c7e`](../alembic/versions/b6d2a91f4c7e_add_revenue_investments.py)
+(`revenue_investments`, aditiva); `RevenueInvestment`/`InvestmentCategory` em
+[`app/models/revenue_investment.py`](../app/models/revenue_investment.py);
+`RevenueInvestmentRepository` (`app/repositories/revenue_investment.py`, sem query própria — só
+`BaseRepository` genérico); `RevenueInvestmentService`
+([`app/services/revenue_investment.py`](../app/services/revenue_investment.py)) — CRUD +
+`cac_roi(mes)`, que chama `FunilMetasService.resumo("atividade", mes)` pra clientes
+fechados/receita realizada e faz só a soma do investimento e a conta de CAC/ROI (`_compute`,
+separada em função pura pra ser testável sem banco, mesmo espírito de `ForecastService._aggregate`
+e `FunilMetasService._montar_resumo`). Endpoints em
+[`app/api/v1/revenue_investments.py`](../app/api/v1/revenue_investments.py) — `GET/POST
+/revenue-investments`, `PUT/DELETE /revenue-investments/{id}`, `GET
+/revenue-investments/cac-roi?mes=`; todos restritos a `admin`/`gestor`
+(`require_roles`, mesmo guard de `/dashboards/commercial`) — vendedor não vê custo.
+`CacRoiResumo.cac`/`.roi` são `None` (não `0`) quando o denominador é zero, pra não confundir
+"indefinido" com "grátis"/"sem retorno".
+
+Frontend: `CacRoiCard` novo dentro de
+[`PrevisaoComercialPage.jsx`](../frontend/src/pages/PrevisaoComercialPage.jsx) — só renderiza pra
+`admin`/`gestor` (mesmo `GESTAO_PERFIS` que já filtra o filtro de vendedor nessa tela), entre a
+legenda de cobertura e o grid "Pipeline por vendedor". Reaproveita `.stat-strip`/`.stat-tile` (já
+usados pelos 3 KPIs Pipeline/Forecast/Compromisso da mesma página) e `table.data`/`.icon-btn`
+(dataTable.css) em vez de CSS novo — só o necessário
+([`PrevisaoComercialPage.css`](../frontend/src/pages/PrevisaoComercialPage.css) ganhou um bloco
+pequeno pro selo de integração, pontinhos de categoria e o formulário inline de lançamento).
+Cliente de API em [`frontend/src/api/revenueInvestments.js`](../frontend/src/api/revenueInvestments.js).
+
+Verificado: `pytest` (46 passed, incluindo os 10 testes novos de `_periodo_bounds`/`_compute` em
+[`tests/test_revenue_investment.py`](../tests/test_revenue_investment.py)); `alembic heads` (head
+único, cadeia linear); import completo do FastAPI app + geração do schema OpenAPI confirmando as
+5 rotas novas registradas sem conflito; `vite build` (279 módulos, sem erro). A migração não foi
+executada contra um Postgres real neste ambiente (sem banco disponível aqui) — só verificada
+estruturalmente (`alembic heads`); rodar `alembic upgrade head` antes de subir para um ambiente com
+dado real.
+
+Não incluído: integração automática de investimento, CAC/ROI por vendedor ou por origem, meta de
+receita persistida — todos já listados como fora de escopo no §8.6.
