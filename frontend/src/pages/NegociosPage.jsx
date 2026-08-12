@@ -121,7 +121,7 @@ export default function NegociosPage() {
   const updateMutation = useMutation({ mutationFn: ({ id, data }) => updateDeal(id, data), onSuccess: () => { setEditingDeal(null); invalidateDeals() } })
   const moveMutation = useMutation({ mutationFn: ({ id, stageId }) => moveDealStage(id, stageId), onSuccess: invalidateDeals })
   const closeMutation = useMutation({ mutationFn: ({ id, data }) => closeDeal(id, data), onSuccess: () => { setLosingDeal(null); invalidateDeals() } })
-  // Commit (Previsão Comercial) — toggle isolado, não passa pelo modal de edição:
+  // Compromisso (Previsão Comercial) — toggle isolado, não passa pelo modal de edição:
   // o vendedor confirma/desconfirma o fechamento do mês direto no card ou na lista.
   const commitMutation = useMutation({ mutationFn: ({ id, commit }) => updateDeal(id, { commit }), onSuccess: invalidateDeals })
   function toggleCommit(deal) {
@@ -333,13 +333,13 @@ function DealsBoard({ query, filters, companiesById, usersById, colorMode, stage
                   <div className="kb-card-foot">
                     <span className="kb-card-prob">
                       {d.probabilidade != null ? `${d.probabilidade}%` : ''}
-                      {d.commit && <span className="kb-card-commit" title="Commit deste mês (Previsão Comercial)">★ Commit</span>}
+                      {d.commit && <span className="kb-card-commit" title="Compromisso deste mês (Previsão Comercial)">★ Compromisso</span>}
                     </span>
                     <div className="kb-card-tools" onClick={(e) => e.stopPropagation()}>
                       {d.status === 'aberto' && (
                         <button
                           className={`commit-star${d.commit ? ' active' : ''}`}
-                          title={d.commit ? 'Remover do Commit' : 'Marcar como Commit deste mês'}
+                          title={d.commit ? 'Remover do Compromisso' : 'Marcar como Compromisso deste mês'}
                           onClick={() => onToggleCommit(d)}
                         >
                           {d.commit ? '★' : '☆'}
@@ -449,7 +449,7 @@ function DealsList({ query, page, setPage, companiesById, usersById, stages, col
                     {d.status === 'aberto' && (
                       <button
                         className={`row-action commit-star${d.commit ? ' active' : ''}`}
-                        title={d.commit ? 'Remover do Commit' : 'Marcar como Commit deste mês'}
+                        title={d.commit ? 'Remover do Compromisso' : 'Marcar como Compromisso deste mês'}
                         onClick={() => onToggleCommit(d)}
                       >
                         {d.commit ? '★' : '☆'}
@@ -668,7 +668,7 @@ function EditDealModal({ deal, companies, users, onClose, onSubmit, submitting, 
           </div>
           <label className="field-checkbox">
             <input type="checkbox" checked={form.commit} onChange={(e) => setForm((f) => ({ ...f, commit: e.target.checked }))} />
-            Commit — confirmo que este negócio fecha no mês previsto
+            Compromisso — confirmo que este negócio fecha no mês previsto
           </label>
           {error && <p className="state-msg error">Não foi possível salvar. Confira os dados e tente de novo.</p>}
           <div className="modal-actions">

@@ -103,7 +103,7 @@ export default function PrevisaoComercialPage() {
                 <div className="pc-sub">{pct(data.forecast_total, data.pipeline_total)}% do pipeline · ponderado por probabilidade</div>
               </div>
               <div className="stat-tile bonus">
-                <div className="t">Commit</div>
+                <div className="t">Compromisso</div>
                 <div className="v" style={{ color: 'var(--amber-dark)' }}>{formatCurrency(data.commit_total)}</div>
                 <div className="pc-sub">{pct(data.commit_total, data.pipeline_total)}% do pipeline · confirmado pelo vendedor</div>
               </div>
@@ -117,7 +117,7 @@ export default function PrevisaoComercialPage() {
             <div className="pc-cov-legend">
               <span><i className="pipeline" />Pipeline</span>
               <span><i className="forecast" />Forecast</span>
-              <span><i className="commit" />Commit</span>
+              <span><i className="commit" />Compromisso</span>
             </div>
 
             <section className="pc-grid-2">
@@ -130,7 +130,7 @@ export default function PrevisaoComercialPage() {
                 ) : (
                   <table className="pc-seller-tbl">
                     <thead>
-                      <tr><th>Vendedor</th><th>Negócios</th><th>Pipeline</th><th>Forecast</th><th>Commit</th></tr>
+                      <tr><th>Vendedor</th><th>Negócios</th><th>Pipeline</th><th>Forecast</th><th>Compromisso</th></tr>
                     </thead>
                     <tbody>
                       {data.por_vendedor.map((v) => (
@@ -145,7 +145,7 @@ export default function PrevisaoComercialPage() {
                           <td>{formatCurrency(v.forecast)}</td>
                           <td className="pc-commit-cell">
                             {v.commit > 0 ? formatCurrency(v.commit) : '—'}
-                            {v.commit === 0 && <span className="pc-chip-warn">sem commit</span>}
+                            {v.commit === 0 && <span className="pc-chip-warn">sem compromisso</span>}
                           </td>
                         </tr>
                       ))}
@@ -170,7 +170,7 @@ export default function PrevisaoComercialPage() {
                 <div className="pc-methodology">
                   <p><b>Pipeline</b> — soma do valor previsto dos negócios abertos com previsão de fechamento dentro do mês selecionado.</p>
                   <p><b>Forecast</b> — soma de valor previsto × probabilidade de cada negócio. É o mesmo cálculo que já aparece no rodapé de cada etapa do Kanban, agora agregado por mês e vendedor.</p>
-                  <p><b>Commit</b> — soma do valor previsto apenas dos negócios que o vendedor marcou manualmente como compromisso de fechamento. Único campo novo — os demais já existiam.</p>
+                  <p><b>Compromisso</b> — soma do valor previsto apenas dos negócios que o vendedor marcou manualmente como compromisso de fechamento. Único campo novo — os demais já existiam.</p>
                 </div>
               </div>
             </section>
@@ -179,7 +179,7 @@ export default function PrevisaoComercialPage() {
               <div className="card-head">
                 <div>
                   <h3>Negócios previstos para {mesLabel}</h3>
-                  <p>Marque Commit nos negócios que o vendedor confirma fechar neste mês</p>
+                  <p>Marque como Compromisso os negócios que o vendedor confirma fechar neste mês</p>
                 </div>
               </div>
               {data.negocios.length === 0 ? (
@@ -190,7 +190,7 @@ export default function PrevisaoComercialPage() {
                     <thead>
                       <tr>
                         <th>Negócio</th><th>Vendedor</th><th>Etapa</th><th>Probabilidade</th>
-                        <th style={{ textAlign: 'right' }}>Valor</th><th>Fechamento</th><th>Commit</th>
+                        <th style={{ textAlign: 'right' }}>Valor</th><th>Fechamento</th><th>Compromisso</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -219,7 +219,7 @@ export default function PrevisaoComercialPage() {
                               <span className="pc-box">
                                 <svg viewBox="0 0 20 20"><path d="M4 10.5l4 4 8-9" strokeLinecap="round" strokeLinejoin="round" /></svg>
                               </span>
-                              <span className="pc-txt">{d.commit ? 'Commit' : 'Marcar'}</span>
+                              <span className="pc-txt">{d.commit ? 'Compromisso' : 'Marcar'}</span>
                             </label>
                           </td>
                         </tr>
