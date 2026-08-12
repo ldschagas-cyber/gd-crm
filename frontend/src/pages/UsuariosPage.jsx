@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { createUser, listUsers, setUserStatus, updateUser } from '../api/users'
+import { createUser, generateResetLink, listUsers, setUserStatus, updateUser } from '../api/users'
 import '../styles/dataTable.css'
 import './UsuariosPage.css'
 
@@ -17,6 +17,7 @@ export default function UsuariosPage() {
   const [busca, setBusca] = useState('')
   const [perfil, setPerfil] = useState('')
   const [modalUser, setModalUser] = useState(undefined) // undefined = fechado, null = criar, obj = editar
+  const [linkModalUser, setLinkModalUser] = useState(null) // usuário para quem estamos gerando o link de reset
 
   const usersQuery = useQuery({
     queryKey: ['users', 'list', { busca, perfil }],
@@ -31,6 +32,17 @@ export default function UsuariosPage() {
   const createMutation = useMutation({ mutationFn: createUser, onSuccess: () => { setModalUser(undefined); invalidate() } })
   const updateMutation = useMutation({ mutationFn: ({ id, data }) => updateUser(id, data), onSuccess: () => { setModalUser(undefined); invalidate() } })
   const statusMutation = useMutation({ mutationFn: ({ id, status }) => setUserStatus(id, status), onSuccess: invalidate })
+  const resetLinkMutation = useMutation({ mutationFn: generateResetLink })
+
+  function openResetLink(u) {
+    setLinkModalUser(u)
+    resetLinkMutation.mutate(u.id)
+  }
+
+  function closeResetLink() {
+    setLinkModalUser(null)
+    resetLinkMutation.reset()
+  }
 
   if (usersQuery.isError) {
     return (
@@ -89,6 +101,7 @@ export default function UsuariosPage() {
                       <td>{u.ultimo_acesso ? new Date(u.ultimo_acesso).toLocaleString('pt-BR') : '—'}</td>
                       <td className="actions-col">
                         <button className="row-action" title="Editar" onClick={() => setModalUser(u)}>✎</button>
+                        <button className="row-action" title="Gerar link de redefinição de senha" onClick={() => openResetLink(u)}>🔗</button>
                         <button
                           className="row-action"
                           title={u.status === 'ativo' ? 'Desativar' : 'Ativar'}
@@ -119,7 +132,57 @@ export default function UsuariosPage() {
           error={createMutation.error || updateMutation.error}
         />
       )}
+
+      {linkModalUser && (
+        <ResetLinkModal
+          user={linkModalUser}
+          result={resetLinkMutation.data}
+          loading={resetLinkMutation.isPending}
+          error={resetLinkMutation.error}
+          onClose={closeResetLink}
+        />
+      )}
     </>
+  )
+}
+
+function ResetLinkModal({ user, result, loading, error, onClose }) {
+  const [copied, setCopied] = useState(false)
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(result.link)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // clipboard indisponível (ex.: contexto não seguro) — usuário copia manualmente do campo
+    }
+  }
+
+  return (
+    <div className="scrim show" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h2>Link de redefinição de senha</h2>
+        <p className="reset-link-sub">
+          Envie este link para <strong>{user.nome}</strong> por um canal seguro (WhatsApp, etc.). Ele vale por{' '}
+          {result ? `${result.expira_em_minutos} minutos` : '…'} e não é enviado automaticamente por e-mail.
+        </p>
+
+        {loading && <p className="state-msg">Gerando link…</p>}
+        {error && <p className="state-msg error">Não foi possível gerar o link. Tente novamente.</p>}
+
+        {result && (
+          <div className="reset-link-box">
+            <input type="text" readOnly value={result.link} onFocus={(e) => e.target.select()} />
+            <button type="button" className="btn-primary" onClick={copy}>{copied ? 'Copiado!' : 'Copiar'}</button>
+          </div>
+        )}
+
+        <div className="modal-actions">
+          <button type="button" className="btn-ghost" onClick={onClose}>Fechar</button>
+        </div>
+      </div>
+    </div>
   )
 }
 

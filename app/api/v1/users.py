@@ -7,7 +7,7 @@ from app.core.database import get_db
 from app.core.deps import get_current_user, require_roles
 from app.models.user import User, UserRole
 from app.schemas.common import Page, PageParams
-from app.schemas.user import UserCreate, UserRead, UserStatusUpdate, UserUpdate
+from app.schemas.user import UserCreate, UserRead, UserResetLinkOut, UserStatusUpdate, UserUpdate
 from app.services.user import UserService
 from sqlalchemy.orm import Session
 
@@ -45,3 +45,9 @@ def update_user(user_id: UUID, data: UserUpdate, _: User = Depends(admin_only),
 def set_status(user_id: UUID, data: UserStatusUpdate, _: User = Depends(admin_only),
                db: Session = Depends(get_db)):
     return UserService(db).set_status(user_id, data)
+
+
+@router.post("/{user_id}/reset-link", response_model=UserResetLinkOut)
+def generate_reset_link(user_id: UUID, _: User = Depends(admin_only), db: Session = Depends(get_db)):
+    link, expira_em_minutos = UserService(db).generate_reset_link(user_id)
+    return UserResetLinkOut(link=link, expira_em_minutos=expira_em_minutos)

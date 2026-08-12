@@ -78,39 +78,39 @@ export default function SnippetsPage() {
     <>
       <header className="topbar">
         <div className="topbar-title">
-          <h1>Snippets</h1>
+          <h1>Respostas rápidas</h1>
           <p>{items.length.toLocaleString('pt-BR')} bloco(s) de texto reutilizáveis</p>
         </div>
-        <button className="btn-primary" onClick={() => setDrawerSnippet(null)}>+ Novo snippet</button>
+        <button className="btn-primary" onClick={() => setDrawerSnippet(null)}>+ Nova resposta rápida</button>
       </header>
 
       <div className="content">
         <button className="info-trigger" onClick={() => setHelpOpen(true)}>
-          <IconInfo /> O que é um snippet
+          <IconInfo /> O que é uma resposta rápida
         </button>
 
         <div className="card">
           <div className="card-head">
             <h2>Experimente</h2>
-            <p>Digite um dos atalhos abaixo e um espaço para ver o snippet se expandir</p>
+            <p>Digite um dos atalhos abaixo e um espaço para ver a resposta rápida se expandir</p>
           </div>
           <div className="demo-body">
             <textarea
               ref={demoRef}
               className="demo-textarea"
-              placeholder="Escreva aqui — ou digite #atalho e um espaço para ver o snippet se expandir…"
+              placeholder="Escreva aqui — ou digite #atalho e um espaço para ver a resposta rápida se expandir…"
               onInput={handleDemoInput}
             />
             <div className="demo-shortcuts">
               {items.map((s) => <span className="demo-shortcut" key={s.id}>#{s.atalho}</span>)}
-              {items.length === 0 && <span className="demo-hint">Nenhum snippet cadastrado ainda.</span>}
+              {items.length === 0 && <span className="demo-hint">Nenhuma resposta rápida cadastrada ainda.</span>}
             </div>
           </div>
         </div>
 
         <div className="card">
-          {listQuery.isLoading && <p className="state-msg">Carregando snippets…</p>}
-          {listQuery.isError && <p className="state-msg error">Não foi possível carregar os snippets agora.</p>}
+          {listQuery.isLoading && <p className="state-msg">Carregando respostas rápidas…</p>}
+          {listQuery.isError && <p className="state-msg error">Não foi possível carregar as respostas rápidas agora.</p>}
 
           {listQuery.data && (
             <div className="table-scroll">
@@ -141,7 +141,7 @@ export default function SnippetsPage() {
                       </td>
                     </tr>
                   ))}
-                  {items.length === 0 && <tr><td colSpan={4} className="empty-cell">Nenhum snippet cadastrado.</td></tr>}
+                  {items.length === 0 && <tr><td colSpan={4} className="empty-cell">Nenhuma resposta rápida cadastrada.</td></tr>}
                 </tbody>
               </table>
             </div>
@@ -166,12 +166,12 @@ export default function SnippetsPage() {
       {helpOpen && (
         <div className="scrim show" onClick={() => setHelpOpen(false)}>
           <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-            <h3><IconInfo />O que é um snippet</h3>
+            <h3><IconInfo />O que é uma resposta rápida</h3>
             <p className="sub">
-              Snippet é um texto curto que você digita uma vez e reusa com um atalho — diferente de Modelos de
-              e-mail (e-mails inteiros usados por Sequências/Cadências), um snippet serve pra inserir rápido em
-              <b> notas, tarefas ou qualquer campo de texto</b> do CRM. Digite <code>#atalho</code> seguido de
-              espaço para expandir.
+              Resposta rápida é um texto curto que você digita uma vez e reusa com um atalho — diferente de Modelos
+              de e-mail (e-mails inteiros usados por Sequências/Cadências), uma resposta rápida serve pra inserir
+              rápido em <b> notas, tarefas ou qualquer campo de texto</b> do CRM. Digite <code>#atalho</code> seguido
+              de espaço para expandir.
             </p>
             <div className="row"><button className="btn-ghost" onClick={() => setHelpOpen(false)}>Fechar</button></div>
           </div>
@@ -225,7 +225,7 @@ function SnippetDrawer({ snippet, existing, onClose, onSubmit, submitting, error
       <div className="drawer show" onClick={(e) => e.stopPropagation()}>
         <div className="drawer-head">
           <div>
-            <h2>{snippet ? 'Editar snippet' : 'Novo snippet'}</h2>
+            <h2>{snippet ? 'Editar resposta rápida' : 'Nova resposta rápida'}</h2>
             <p>Um atalho curto pra inserir esse texto em qualquer lugar</p>
           </div>
           <button className="drawer-close" onClick={onClose}>✕</button>
@@ -240,7 +240,7 @@ function SnippetDrawer({ snippet, existing, onClose, onSubmit, submitting, error
                 onChange={(e) => setNome(e.target.value)}
                 placeholder="Ex.: Modelo de preço padrão"
               />
-              <span className={`f-err${touched && !okNome ? ' show' : ''}`}>Informe o nome do snippet.</span>
+              <span className={`f-err${touched && !okNome ? ' show' : ''}`}>Informe o nome da resposta rápida.</span>
             </div>
 
             <div className="f-group">
@@ -275,7 +275,7 @@ function SnippetDrawer({ snippet, existing, onClose, onSubmit, submitting, error
                 onChange={(e) => setConteudo(e.target.value)}
                 placeholder="Escreva o texto que será inserido…"
               />
-              <span className={`f-err${touched && !okConteudo ? ' show' : ''}`}>Informe o conteúdo do snippet.</span>
+              <span className={`f-err${touched && !okConteudo ? ' show' : ''}`}>Informe o conteúdo da resposta rápida.</span>
             </div>
 
             <div className="preview-card">
@@ -295,7 +295,7 @@ function SnippetDrawer({ snippet, existing, onClose, onSubmit, submitting, error
           </div>
           <div className="drawer-foot">
             <button type="button" className="btn-ghost" onClick={onClose}>Cancelar</button>
-            <button type="submit" className="btn-primary" disabled={submitting}>{submitting ? 'Salvando…' : 'Salvar snippet'}</button>
+            <button type="submit" className="btn-primary" disabled={submitting}>{submitting ? 'Salvando…' : 'Salvar resposta rápida'}</button>
           </div>
         </form>
       </div>

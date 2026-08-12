@@ -31,13 +31,13 @@ export default function SnippetInsertButton({ targetRef, value, onChange, vars }
   return (
     <span className="snippet-insert" ref={wrapRef}>
       <button type="button" className="snippet-insert-btn" onClick={() => setOpen((o) => !o)}>
-        + Inserir snippet
+        + Inserir resposta rápida
       </button>
       {open && (
         <div className="snippet-insert-menu">
           {snippets.length === 0 && (
             <div className="snippet-insert-empty">
-              Nenhum snippet cadastrado ainda — crie um em Snippets.
+              Nenhuma resposta rápida cadastrada ainda — crie uma em Respostas rápidas.
             </div>
           )}
           {snippets.map((s) => (

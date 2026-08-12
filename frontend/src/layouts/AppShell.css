@@ -1,9 +1,13 @@
-.shell { display: grid; grid-template-columns: var(--sidebar-w) 1fr; min-height: 100vh; }
+.shell { display: grid; grid-template-columns: var(--sidebar-w) 1fr; min-height: 100vh; transition: grid-template-columns 0.16s ease; }
+.shell.sidebar-collapsed { grid-template-columns: var(--sidebar-w-collapsed) 1fr; }
 
 .sidebar {
   background: var(--panel); color: var(--panel-fg);
   display: flex; flex-direction: column;
   position: sticky; top: 0; height: 100vh;
+  width: var(--sidebar-w);
+  transition: width 0.16s ease;
+  overflow: hidden;
 }
 .sb-brand { display: flex; align-items: center; gap: 12px; padding: 20px 18px 16px; }
 .sb-brand strong {
@@ -15,12 +19,41 @@
   text-transform: uppercase; color: #7D81A0; margin-top: 2px; /* rótulo/cabeçalho sobre fundo escuro — literal do README, não --panel-fg-dim */
 }
 
-.sb-nav { flex: 1; overflow-y: auto; padding: 10px 0; }
+.sb-nav {
+  flex: 1; overflow-y: auto; overflow-x: hidden; padding: 10px 0;
+  /* Scrollbar discreta e no tom da sidebar — a padrão do SO (cinza claro)
+     destoa muito do fundo azul escuro do painel. */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(241, 238, 230, 0.22) transparent;
+}
+.sb-nav::-webkit-scrollbar { width: 8px; }
+.sb-nav::-webkit-scrollbar-track { background: transparent; }
+.sb-nav::-webkit-scrollbar-thumb {
+  background-color: rgba(241, 238, 230, 0.22);
+  border-radius: 100px;
+  border: 2px solid transparent; /* encolhe visualmente a thumb sem mudar a largura da track */
+  background-clip: padding-box;
+}
+.sb-nav::-webkit-scrollbar-thumb:hover { background-color: rgba(241, 238, 230, 0.38); }
 .sb-group + .sb-group { margin-top: 18px; }
 .sb-label {
+  display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%;
   font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
   color: var(--panel-fg-dim); padding: 0 18px; margin-bottom: 6px;
+  white-space: nowrap;
+  background: none; border: none; cursor: pointer; text-align: left;
 }
+.sb-label:hover { color: #FFFFFF; }
+.sb-label:focus-visible { outline: 2px solid var(--amber); outline-offset: -2px; }
+.sb-label-text { overflow: hidden; text-overflow: ellipsis; }
+.sb-label-chevron { width: 12px; height: 12px; flex: none; transition: transform 0.16s ease; }
+.sb-label-chevron.collapsed { transform: rotate(-90deg); }
+
+.sb-group-items {
+  max-height: 400px; overflow: hidden; opacity: 1;
+  transition: max-height 0.18s ease, opacity 0.18s ease;
+}
+.sb-group-items.collapsed { max-height: 0; opacity: 0; }
 .sb-item {
   display: flex; align-items: center; gap: 10px;
   padding: 10px 18px; margin-bottom: 2px;
@@ -31,6 +64,7 @@
   position: relative;
   cursor: pointer;
   background: none; border: none; width: 100%; text-align: left;
+  white-space: nowrap;
 }
 .sb-item svg { width: 17px; height: 17px; flex: none; opacity: 0.9; }
 .sb-item:hover { background: var(--panel-hover-bg); color: #FFFFFF; }
@@ -41,6 +75,25 @@
   font-weight: 600;
   box-shadow: inset 3px 0 0 var(--amber); /* uso canônico do dourado — linha selecionada */
 }
+
+.sb-collapse-toggle {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 18px; margin: 6px 0 2px;
+  border: none; border-top: 1px solid rgba(255, 255, 255, 0.08); background: none;
+  color: var(--panel-fg-dim); font-size: 13px; cursor: pointer; text-align: left;
+  white-space: nowrap; flex: none;
+}
+.sb-collapse-toggle:hover { color: #FFFFFF; background: var(--panel-hover-bg); }
+.sb-collapse-toggle svg { width: 17px; height: 17px; flex: none; opacity: 0.9; }
+
+/* --- Sidebar recolhida: só ícones, com tooltip nativo (title) em cada item --- */
+.sidebar.collapsed { width: var(--sidebar-w-collapsed); }
+.sidebar.collapsed .sb-brand { padding: 20px 0 16px; justify-content: center; }
+.sidebar.collapsed .sb-brand div { display: none; }
+.sidebar.collapsed .sb-label { display: none; }
+.sidebar.collapsed .sb-item { justify-content: center; padding: 10px 0; }
+.sidebar.collapsed .sb-item-label { display: none; }
+.sidebar.collapsed .sb-collapse-toggle { justify-content: center; padding: 12px 0; }
 
 .avatar {
   width: 30px; height: 30px; border-radius: 50%; flex: none;
@@ -130,9 +183,10 @@
 /* Abaixo de 768px a sidebar de 240px não cabe ao lado do conteúdo — vira
    painel off-canvas (some por padrão, abre por cima como overlay). */
 @media (max-width: 768px) {
-  .shell { grid-template-columns: 1fr; }
+  .shell, .shell.sidebar-collapsed { grid-template-columns: 1fr; }
 
-  .sidebar {
+  .sidebar,
+  .sidebar.collapsed {
     position: fixed; top: 0; left: 0; z-index: 50;
     width: 260px; max-width: 85vw;
     transform: translateX(-100%);
@@ -140,6 +194,12 @@
     box-shadow: var(--shadow);
   }
   .sidebar.open { transform: translateX(0); }
+
+  /* No off-canvas mobile o recolher não faz sentido — o hambúrguer já abre/fecha. */
+  .sidebar.collapsed .sb-brand div,
+  .sidebar.collapsed .sb-item-label { display: revert; }
+  .sidebar.collapsed .sb-label { display: flex; }
+  .sb-collapse-toggle { display: none; }
 
   .sidebar-scrim {
     display: block; position: fixed; inset: 0; z-index: 45;

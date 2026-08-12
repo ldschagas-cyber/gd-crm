@@ -32,6 +32,11 @@ class UserStatusUpdate(BaseModel):
     status: UserStatus
 
 
+class UserResetLinkOut(BaseModel):
+    link: str
+    expira_em_minutos: int
+
+
 class UserRead(ORMModel):
     id: UUID
     nome: str

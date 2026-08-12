@@ -141,9 +141,11 @@ export default function SequenciasPage() {
             <h3><IconInfo />Como funciona a pausa automática</h3>
             <p className="sub">
               Uma sequência dispara tarefas automaticamente conforme dias decorridos (ligação, e-mail, WhatsApp,
-              LinkedIn, follow-up) para quem está inscrito. <b>Pausar quando houver resposta</b> depende da integração de
-              e-mail em Preferências (Microsoft 365/Graph) — sem isso conectado, a sequência não sabe se alguém
-              respondeu, então essa opção hoje não pausa automaticamente nada.
+              LinkedIn, follow-up) para quem está inscrito. <b>Pausar quando houver resposta</b> checa de verdade a
+              caixa de entrada do responsável (requer integração de e-mail em Preferências — Microsoft 365/Graph); sem
+              isso conectado, a sequência não sabe se alguém respondeu e a opção não pausa nada. Além disso, ao marcar
+              uma reunião para a mesma empresa, contato ou negócio, a inscrição é <b>cancelada</b> automaticamente,
+              independente desse toggle.
             </p>
             <div className="row"><button className="btn-ghost" onClick={() => setHelpOpen(false)}>Fechar</button></div>
           </div>
@@ -246,7 +248,7 @@ function SequenceDrawer({ sequence, onClose, onSubmit, submitting, error }) {
               <label className="switch"><input type="checkbox" checked={ativo} onChange={(e) => setAtivo(e.target.checked)} /><span className="track" /><span className="knob" /></label>
             </div>
             <div className="toggle-row">
-              <div><div className="t">Pausar quando houver resposta</div><div className="sub">Requer e-mail conectado em Preferências (Microsoft 365) — hoje não pausa automaticamente</div></div>
+              <div><div className="t">Pausar quando houver resposta</div><div className="sub">Requer e-mail conectado em Preferências (Microsoft 365). Reunião marcada sempre cancela a inscrição, mesmo com isto desligado</div></div>
               <label className="switch"><input type="checkbox" checked={pausarResposta} onChange={(e) => setPausarResposta(e.target.checked)} /><span className="track" /><span className="knob" /></label>
             </div>
 

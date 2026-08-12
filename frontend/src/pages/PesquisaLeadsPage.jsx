@@ -8,6 +8,7 @@ import {
 } from '../api/leadProspects'
 import { getIcpScoringRules, updateIcpScoringRules } from '../api/tenant'
 import { listUsers } from '../api/users'
+import OrigemSelect from '../components/OrigemSelect.jsx'
 import '../styles/dataTable.css'
 import '../styles/commercialIntel.css'
 import './PesquisaLeadsPage.css'
@@ -25,7 +26,6 @@ const FAIXAS_FATURAMENTO = [
   'Até R$ 5 milhões', 'R$ 5–25 milhões', 'R$ 25–100 milhões',
   'R$ 100–500 milhões', 'R$ 500 milhões – R$ 1 bilhão', 'Acima de R$ 1 bilhão',
 ]
-const ORIGENS = ['Feira', 'Indicação', 'Campanha', 'Prospecção ativa', 'LinkedIn', 'Outro']
 const UF_REGIAO = {
   AC: 'Norte', AP: 'Norte', AM: 'Norte', PA: 'Norte', RO: 'Norte', RR: 'Norte', TO: 'Norte',
   AL: 'Nordeste', BA: 'Nordeste', CE: 'Nordeste', MA: 'Nordeste', PB: 'Nordeste', PE: 'Nordeste',
@@ -416,20 +416,25 @@ function LeadsTab({ setTab }) {
               )}
             </p>
             <div className="f-group">
-              <label htmlFor="bulk-promote-resp">Responsável pela(s) empresa(s)</label>
+              <label htmlFor="bulk-promote-resp">Responsável pela(s) empresa(s) *</label>
               <select
                 id="bulk-promote-resp"
                 className="f-select"
+                required
                 value={bulkPromoteResponsavelId}
                 onChange={(e) => setBulkPromoteResponsavelId(e.target.value)}
               >
-                <option value="">Sem responsável (definir depois)</option>
+                <option value="" disabled>Selecione…</option>
                 {users.map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
               </select>
+              <span className="f-hint">Empresa não pode nascer sem dono.</span>
             </div>
             <div className="row">
               <button className="btn-ghost" onClick={() => setBulkPromoteOpen(false)}>Cancelar</button>
-              <button className="btn-primary" disabled={bulkPromoteMutation.isPending} onClick={() => bulkPromoteMutation.mutate()}>
+              <button
+                className="btn-primary" disabled={bulkPromoteMutation.isPending || !bulkPromoteResponsavelId}
+                onClick={() => bulkPromoteMutation.mutate()}
+              >
                 {bulkPromoteMutation.isPending ? 'Promovendo…' : 'Promover'}
               </button>
             </div>
@@ -447,20 +452,25 @@ function LeadsTab({ setTab }) {
               pesquisou se torna válido.
             </p>
             <div className="f-group">
-              <label htmlFor="promote-resp">Responsável pela empresa</label>
+              <label htmlFor="promote-resp">Responsável pela empresa *</label>
               <select
                 id="promote-resp"
                 className="f-select"
+                required
                 value={promoteResponsavelId}
                 onChange={(e) => setPromoteResponsavelId(e.target.value)}
               >
-                <option value="">Sem responsável (definir depois)</option>
+                <option value="" disabled>Selecione…</option>
                 {users.map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
               </select>
+              <span className="f-hint">Empresa não pode nascer sem dono.</span>
             </div>
             <div className="row">
               <button className="btn-ghost" onClick={() => { setPromotingLead(null); setPromoteResponsavelId('') }}>Cancelar</button>
-              <button className="btn-primary" disabled={promoteMutation.isPending} onClick={() => promoteMutation.mutate()}>
+              <button
+                className="btn-primary" disabled={promoteMutation.isPending || !promoteResponsavelId}
+                onClick={() => promoteMutation.mutate()}
+              >
                 {promoteMutation.isPending ? 'Promovendo…' : 'Promover'}
               </button>
             </div>
@@ -889,10 +899,7 @@ function LeadDrawer({ lead, users, onClose, onSubmit, submitting, error }) {
               </div>
               <div className="f-group">
                 <label className="f-label">Origem</label>
-                <select className="f-select" value={form.origem} onChange={set('origem')}>
-                  <option value="">Selecione…</option>
-                  {ORIGENS.map((o) => <option key={o} value={o}>{o}</option>)}
-                </select>
+                <OrigemSelect className="f-select" value={form.origem} onChange={set('origem')} />
               </div>
             </div>
 

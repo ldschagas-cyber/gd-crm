@@ -4,6 +4,7 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 
 from app.core import security
+from app.core.config import settings
 from app.core.exceptions import ConflictError, NotFoundError
 from app.models.user import User
 from app.repositories.user import UserRepository
@@ -59,3 +60,11 @@ class UserService:
         user = self.get(user_id)
         user.status = data.status.value
         return self.repo.save(user)
+
+    def generate_reset_link(self, user_id: UUID) -> tuple[str, int]:
+        """Gera um link de redefinição de senha para o admin enviar manualmente
+        (WhatsApp, etc.) a outro usuário — não há envio de e-mail nesta versão."""
+        user = self.get(user_id)
+        token = security.create_reset_token(user.id, user.tenant_id, user.perfil)
+        link = f"{settings.FRONTEND_URL.rstrip('/')}/redefinir-senha?token={token}"
+        return link, settings.PASSWORD_RESET_EXPIRE_MINUTES

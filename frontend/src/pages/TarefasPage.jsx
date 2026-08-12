@@ -394,7 +394,7 @@ export function TaskModal({ task, companies, users, onClose, onSubmit, submittin
                   snippets,
                   vars: roteiroVars,
                 })}
-                placeholder="Roteiro / instruções para quem for executar… — digite #atalho e espaço pra inserir um snippet"
+                placeholder="Roteiro / instruções para quem for executar… — digite #atalho e espaço pra inserir uma resposta rápida"
               />
             </div>
             <div className="f-row">

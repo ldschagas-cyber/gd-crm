@@ -33,6 +33,10 @@ class CompanyBase(BaseModel):
 
 class CompanyCreate(CompanyBase):
     status: CompanyStatus = CompanyStatus.LEAD
+    # Sobrescreve CompanyBase.responsavel_id (opcional lá): empresa não pode nascer sem
+    # dono — trava decidida com o usuário. CompanyUpdate não herda de CompanyBase, então
+    # segue opcional (não obriga a reafirmar responsável a cada PATCH).
+    responsavel_id: UUID
 
 
 class CompanyUpdate(BaseModel):

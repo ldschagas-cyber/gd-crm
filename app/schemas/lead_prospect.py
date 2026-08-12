@@ -83,10 +83,10 @@ class LeadProspectRead(BaseModel):
 
 
 class LeadPromoteRequest(BaseModel):
-    """Corpo opcional de POST /{lead_id}/promote — permite já indicar o
-    responsável da Company recém-criada no ato da promoção (individual ou em
-    lote), sem precisar de um segundo passo em Central de Leads/Empresas."""
-    responsavel_id: UUID | None = None
+    """Corpo de POST /{lead_id}/promote — indica o responsável da Company recém-criada
+    no ato da promoção (individual ou em lote). Obrigatório: empresa não pode nascer
+    sem dono — trava decidida com o usuário, mesmo raciocínio de CompanyCreate."""
+    responsavel_id: UUID
 
 
 class LeadProspectPageParams(BaseModel):

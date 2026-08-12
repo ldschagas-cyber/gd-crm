@@ -8,6 +8,7 @@ import {
 import { listUsers } from '../api/users'
 import EnrollModal from '../components/EnrollModal.jsx'
 import BulkTaskModal from '../components/BulkTaskModal.jsx'
+import OrigemSelect from '../components/OrigemSelect.jsx'
 import '../styles/dataTable.css'
 import './EmpresasPage.css'
 
@@ -22,10 +23,7 @@ const STATUS_ORDER = ['lead', 'qualificado', 'cliente', 'perdido', 'inativo']
 const SETORES = ['Farma', 'Alimentos', 'Autopeças', 'Etiquetas', 'Plástico', 'Máquinas e Equipamentos',
   'Química', 'Cosmético', 'Serviços', 'Tecnologia', 'Varejo', 'Outro']
 // Negócios criados para a empresa herdam essa origem (não é escolhida de novo lá) — ver DealDrawer.
-const ORIGENS_EMPRESA = [
-  'Indicação', 'Prospecção ativa', 'Feira', 'Campanha', 'LinkedIn',
-  'Site institucional', 'Formulário do site', 'Pesquisa de Leads', 'Outro',
-]
+// A lista de opções em si vem de OrigemSelect (cadastro incremental — ver app/services/origem_option.py).
 // Mesma lista de PesquisaLeadsPage.jsx — faixa vem de lá na promoção, mas também é
 // editável direto na empresa (ex.: empresa cadastrada sem passar pela Pesquisa de Leads).
 const FAIXAS_FATURAMENTO = [
@@ -508,12 +506,7 @@ export function CompanyModal({ company, users, usersError, onClose, onSubmit, su
     contato_sugerido: company?.contato_sugerido ?? '',
     origem: company?.origem ?? '',
   })
-  // Empresa pode já ter uma origem gravada fora da lista fixa (importação, formulário
-  // do site, promoção de lead) — mantém ela selecionável em vez de apagar ao editar.
-  const origemOptions = form.origem && !ORIGENS_EMPRESA.includes(form.origem)
-    ? [form.origem, ...ORIGENS_EMPRESA]
-    : ORIGENS_EMPRESA
-  // Mesma lógica: faixa pode ter vindo da Pesquisa de Leads com um valor legado.
+  // Mesma lógica (agora dentro de OrigemSelect): faixa pode ter vindo da Pesquisa de Leads com um valor legado.
   const faixaFaturamentoOptions = form.faixa_faturamento && !FAIXAS_FATURAMENTO.includes(form.faixa_faturamento)
     ? [form.faixa_faturamento, ...FAIXAS_FATURAMENTO]
     : FAIXAS_FATURAMENTO
@@ -616,24 +609,26 @@ export function CompanyModal({ company, users, usersError, onClose, onSubmit, su
           </div>
           <div className="field">
             <label htmlFor="origem">Origem</label>
-            <select id="origem" value={form.origem} onChange={set('origem')}>
-              <option value="">Sem origem</option>
-              {origemOptions.map((o) => <option key={o} value={o}>{o}</option>)}
-            </select>
+            <OrigemSelect id="origem" value={form.origem} onChange={set('origem')} placeholder="Sem origem" />
             <span className="hint-text">Negócios criados para esta empresa herdam essa origem.</span>
           </div>
           <div className="field">
-            <label htmlFor="responsavel_id">Responsável</label>
+            <label htmlFor="responsavel_id">Responsável{!isEdit && ' *'}</label>
             {usersError ? (
               <p className="hint-text">Só administradores podem ver a lista de usuários.</p>
             ) : (
-              <select id="responsavel_id" value={form.responsavel_id ?? ''} onChange={set('responsavel_id')}>
-                <option value="">Sem responsável</option>
+              <select
+                id="responsavel_id" required={!isEdit}
+                value={form.responsavel_id ?? ''} onChange={set('responsavel_id')}
+              >
+                <option value="" disabled={!isEdit}>{isEdit ? 'Sem responsável' : 'Selecione…'}</option>
                 {users.map((u) => (
                   <option key={u.id} value={u.id}>{u.nome}</option>
                 ))}
               </select>
             )}
+            {/* Empresa nova precisa nascer com dono (trava). Empresas antigas sem
+                responsável continuam editáveis sem forçar o preenchimento agora. */}
           </div>
           <div className="field">
             <label htmlFor="contexto_rapido">Contexto rápido</label>
@@ -706,8 +701,12 @@ function ImportDrawer({ onClose, onDone }) {
         <div className="drawer-body">
           <div className="import-cols">
             Colunas esperadas: <code>razao_social*</code> <code>cnpj*</code> <code>cidade*</code> <code>uf*</code>{' '}
-            <code>segmento</code> <code>telefone</code> <code>email</code> <code>porte</code>{' '}
+            <code>responsavel*</code> <code>segmento</code> <code>telefone</code> <code>email</code> <code>porte</code>{' '}
             <code>funcionarios</code> <code>faturamento</code> <code>origem</code>
+            <br />
+            <span className="f-hint">
+              <code>responsavel</code> é o e-mail do usuário no sistema — toda empresa precisa nascer com um dono.
+            </span>
           </div>
 
           <label className="drop-zone">
