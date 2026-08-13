@@ -153,8 +153,8 @@ export default function WorkflowsPage() {
             <p className="sub">
               Motor evento → condição → ação: quando um gatilho acontece (empresa criada, negócio criado, mudança
               de etapa, resposta recebida…), o workflow verifica as condições e dispara as ações em cadeia. A ação{' '}
-              <b>Executar enriquecimento</b> depende do módulo de IA (Fase 3, ainda não construído) — o workflow
-              pode ser salvo, mas essa ação registra erro até lá.
+              <b>Executar enriquecimento</b> atualiza o Resumo Executivo e a Próxima ação sugerida da empresa via IA
+              (mesmo motor do Dossiê Comercial), sem precisar clicar em "Aplicar".
             </p>
             <div className="row"><button className="btn-ghost" onClick={() => setHelpOpen(false)}>Fechar</button></div>
           </div>
@@ -301,7 +301,7 @@ function WorkflowDrawer({ workflow, onClose, onSubmit, submitting, error }) {
             <div className="section-title"><span>Ações (em ordem)</span></div>
             <div className="action-list">
               {actions.map((a, idx) => (
-                <div className={`action-row${a.tipo_acao === 'executar_enriquecimento' ? ' disabled-action' : ''}`} key={idx}>
+                <div className="action-row" key={idx}>
                   <div className="action-row-top">
                     <span className="action-num">#{idx + 1}</span>
                     <div className="action-tipo">
@@ -422,9 +422,10 @@ function ActionParams({ tipo, parametros, templates, stageOptions, sequences, on
       </div>
     )
   }
-  return (
-    <div className="action-soon-note">
-      ⚠ Depende do módulo de IA (Fase 3) — ainda não implementado. O workflow pode ser salvo, mas essa ação registra erro até lá.
-    </div>
-  )
+  if (tipo === 'executar_enriquecimento') {
+    return (
+      <span className="f-hint">Atualiza o Resumo Executivo e a Próxima ação sugerida da empresa via IA (mesmo motor do Dossiê Comercial). Sem parâmetros — precisa da ANTHROPIC_API_KEY configurada no servidor.</span>
+    )
+  }
+  return null
 }
