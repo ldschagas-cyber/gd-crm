@@ -7,6 +7,7 @@ import {
   avatarUrl, changeMyPassword, connectIntegration, disconnectIntegration, getIntegration,
   removeAvatar, updateMe, uploadAvatar,
 } from '../api/me'
+import { getWhatsappStatus } from '../api/tenant'
 import { initials } from '../utils/avatar'
 import '../styles/dataTable.css'
 import './PreferenciasPage.css'
@@ -268,33 +269,46 @@ function ChamadasTab() {
 }
 
 function WhatsappTab() {
+  const statusQuery = useQuery({ queryKey: ['whatsapp-status'], queryFn: getWhatsappStatus })
+  const configurado = statusQuery.data?.configurado ?? false
+
   return (
     <div className="card section-card">
-      <div className="card-head"><h2>WhatsApp</h2><p>Avaliação da integração com WhatsApp Business API</p></div>
+      <div className="card-head"><h2>WhatsApp</h2><p>Envio automático de etapas de Sequência via Twilio</p></div>
       <div className="section-body">
+        {statusQuery.isLoading && <p className="state-msg">Carregando…</p>}
+        {!statusQuery.isLoading && (
+          <div className="integration-row">
+            <div className="integration-status">
+              <span className={`status-dot${configurado ? ' on' : ''}`} />
+              {configurado ? 'Conectado (Twilio WhatsApp Business API)' : 'Ainda não configurado no servidor'}
+            </div>
+          </div>
+        )}
         <p className="pref-info">
-          Hoje o CRM usa apenas o link <code>wa.me</code> (abre o WhatsApp Web/app manualmente) em Contatos e no
-          detalhe da Empresa — sem envio, recebimento ou registro automático de mensagens.
+          Diferente de E-mail e Calendário, não é uma conexão por pessoa — a GD Conecta tem <strong>um único
+          número</strong> de WhatsApp Business pra empresa toda, configurado pelo administrador do CRM
+          diretamente no servidor (não tem botão "Conectar" aqui).
+        </p>
+        {!configurado && (
+          <p className="pref-info">
+            Pré-requisitos, nessa ordem: (1) conta Meta Business Manager da GD Conecta verificada, (2) um número
+            WhatsApp Sender aprovado nela, (3) o administrador preencher <code>TWILIO_WHATSAPP_FROM</code> (e as
+            credenciais Twilio já usadas em Chamadas) no servidor. Os passos 1 e 2 podem levar semanas — a
+            verificação da Meta é o maior gargalo, não a integração em si.
+          </p>
+        )}
+        <p className="pref-info">
+          Mesmo depois de configurado, o envio automático só acontece pra Modelos de mensagem de WhatsApp que já
+          tiverem um <em>Content Template</em> aprovado pela Meta vinculado (campo "SID do Content Template" em
+          Modelos de mensagem) — mensagem iniciada pela empresa sem template aprovado é rejeitada pela própria
+          API do WhatsApp. Sem esse vínculo, a etapa continua virando Tarefa manual com o texto pronto pra
+          copiar, como hoje.
         </p>
         <p className="pref-info">
-          <strong>O gargalo real não é técnico, é o cadastro no Meta.</strong> Pra ter um número de WhatsApp
-          próprio via API (Twilio ou qualquer provedor), a GD Conecta precisa de uma conta Meta Business Manager
-          verificada (documentos: CNPJ/contrato social, comprovante), 2FA ativo, e um número dedicado que não
-          esteja em uso num WhatsApp pessoal/comum — a verificação do Meta pode levar <strong>semanas</strong>,
-          então esse é o passo com maior lead time, não a integração em si.
-        </p>
-        <p className="pref-info">
-          <strong>Custo:</strong> desde jul/2025 o Meta cobra por mensagem (não mais por "conversa"). No Brasil,
-          hoje: mensagem de marketing ≈ R$0,39, utilitária ≈ R$0,08, autenticação ≈ R$0,09 — mais a taxa própria
-          do Twilio de ≈US$0,005 por mensagem em cima disso. Toda mensagem iniciada pela empresa (não em resposta
-          a um cliente) precisa de um <em>template</em> pré-aprovado pelo Meta, categorizado como
-          marketing/utilitário/autenticação.
-        </p>
-        <p className="pref-info">
-          <strong>Recomendação:</strong> se decidir seguir, o primeiro passo real é abrir a verificação da Meta
-          Business Manager agora (é o item que não dá pra acelerar depois) — a implementação técnica em si
-          (webhook de entrada, envio via API, registro na timeline) é reaproveitável do mesmo padrão já usado
-          para E-mail. Ainda não iniciar a implementação até essa decisão.
+          LinkedIn (conexão/mensagem) não tem — e não vai ter — envio automático: não existe API oficial que
+          cubra prospecção fria sem violar os Termos de Uso do LinkedIn, com risco real de banimento da conta
+          usada. Essas etapas continuam gerando só o texto pronto pra copiar.
         </p>
       </div>
     </div>

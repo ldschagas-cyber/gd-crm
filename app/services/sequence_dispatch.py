@@ -22,6 +22,7 @@ from app.models.task import Task
 from app.models.timeline import TimelineEvent
 from app.models.user import User
 from app.repositories.user_integration import UserIntegrationRepository
+from app.services import twilio_whatsapp
 from app.services.graph_client import GraphClient
 
 VAR_RE = re.compile(r"\{\{(\w+)\}\}")
@@ -92,6 +93,13 @@ def has_active_email_integration(db: Session, user_id: UUID) -> bool:
     return bool(row and row.ativo)
 
 
+def has_active_whatsapp_integration() -> bool:
+    """Diferente do e-mail, não é por usuário: o número WhatsApp Business é
+    único pra empresa toda, configurado globalmente no servidor (ver
+    app/services/twilio_whatsapp.py e app/core/config.py)."""
+    return twilio_whatsapp.is_configured()
+
+
 def has_replied(db: Session, responsavel_id: UUID, contact_email: str, since: datetime) -> bool:
     """Varre a caixa de entrada do responsável por uma mensagem do contato após `since`.
 
@@ -131,6 +139,36 @@ def log_email_sent(db: Session, tenant_id: UUID, company_id: UUID, contact_id: U
     db.add(TimelineEvent(
         tenant_id=tenant_id, company_id=company_id, contact_id=contact_id, deal_id=deal_id,
         tipo="email", titulo=subject, user_id=user_id,
+        evento_meta={"enviado_automatico": True},
+    ))
+
+
+def send_step_whatsapp(contact: Contact | None, message_template: MessageTemplate,
+                        valores: dict[str, str]) -> bool:
+    """Só tenta enviar quando o modelo já tem um Content Template aprovado pela
+    Meta cadastrado (`whatsapp_content_sid`) — sem isso, quem chama nem invoca
+    essa função (fica no fallback de Task). `content_variables` numera as
+    variáveis na mesma ordem em que `MessageTemplateService._extract_vars`
+    encontrou no corpo (`{{1}}`, `{{2}}`... é o formato de placeholder que o
+    Twilio Content Template Builder usa, diferente do `{{nome}}` nomeado que a
+    UI do CRM usa)."""
+    if not contact or not contact.whatsapp or not message_template.whatsapp_content_sid:
+        return False
+    content_variables = {
+        str(i): valores.get(var, "") for i, var in enumerate(message_template.variaveis_disponiveis, start=1)
+    }
+    try:
+        twilio_whatsapp.send_template_message(contact.whatsapp, message_template.whatsapp_content_sid, content_variables)
+    except Exception:
+        return False
+    return True
+
+
+def log_whatsapp_sent(db: Session, tenant_id: UUID, company_id: UUID, contact_id: UUID | None,
+                       deal_id: UUID | None, titulo: str, user_id: UUID) -> None:
+    db.add(TimelineEvent(
+        tenant_id=tenant_id, company_id=company_id, contact_id=contact_id, deal_id=deal_id,
+        tipo="whatsapp", titulo=titulo, user_id=user_id,
         evento_meta={"enviado_automatico": True},
     ))
 
@@ -225,6 +263,14 @@ def advance_due_steps(db: Session, tenant_id: UUID, enrollment: SequenceEnrollme
                 enviado = send_step_email(db, responsavel_id, contact, assunto, corpo)
                 if enviado:
                     log_email_sent(db, tenant_id, company_id, contact.id, enrollment.deal_id, assunto, responsavel_id)
+        elif step.tipo == "whatsapp" and step.message_template_id and has_active_whatsapp_integration():
+            message_template = db.get(MessageTemplate, step.message_template_id)
+            if message_template and message_template.whatsapp_content_sid and contact and contact.whatsapp and company_id:
+                valores = build_merge_valores(contact, company, responsavel)
+                enviado = send_step_whatsapp(contact, message_template, valores)
+                if enviado:
+                    titulo = _titulo_para_step(db, sequence, step)
+                    log_whatsapp_sent(db, tenant_id, company_id, contact.id, enrollment.deal_id, titulo, responsavel_id)
         if not enviado:
             db.add(Task(
                 tenant_id=tenant_id, titulo=_titulo_para_step(db, sequence, step), tipo=step.tipo,

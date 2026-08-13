@@ -24,6 +24,10 @@ export function updateLeadScoreRules(data) {
   return api.put('/tenant/lead-score-rules', data).then((res) => res.data)
 }
 
+export function getWhatsappStatus() {
+  return api.get('/tenant/whatsapp-status').then((res) => res.data)
+}
+
 export function getFunilMetasConfig() {
   return api.get('/tenant/funil-metas').then((res) => res.data)
 }
