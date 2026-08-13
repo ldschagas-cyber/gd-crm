@@ -15,8 +15,10 @@ from app.models.subscription import Assinatura, AssinaturaStatus
 from app.models.task import Task, TaskStatus
 from app.models.timeline import TimelineEvent, TimelineType
 from app.repositories.company import CompanyRepository
+from app.repositories.contact import ContactRepository
 from app.repositories.onboarding import OnboardingChecklistItemRepository
 from app.repositories.subscription import AssinaturaRepository
+from app.repositories.user import UserRepository
 from app.schemas.common import PageParams
 from app.schemas.company import (
     AssinaturaResumoRead, CadenciaInfoRead, CentralLeadRead, CentralLeadsResumo, ClienteRead, ClientesResumo,
@@ -24,6 +26,7 @@ from app.schemas.company import (
     CompanyFunilEstagioUpdate, CompanyIcpRead, CompanyStatusUpdate, CompanyUpdate, CsCheckinCreate,
     CsFaseCountRead, EstagioCountRead, HealthBreakdownItemRead, HealthScoreRead, LeadScoreRules, ProximaAcaoRead,
 )
+from app.services.company_dedupe import find_duplicate_company
 from app.services.engagement_scoring import DEFAULT_ENGAGEMENT_RULES, JANELA_DIAS, calcular_engajamento, temperatura
 from app.services.health_scoring import DEFAULT_HEALTH_RULES, calcular_saude
 from app.services.health_scoring import faixa as health_faixa
@@ -92,8 +95,19 @@ class CompanyService:
         return company
 
     def create(self, data: CompanyCreate) -> Company:
-        if data.cnpj and self.repo.get_by_cnpj(data.cnpj):
-            raise ConflictError("CNPJ já cadastrado neste tenant")
+        # Cascata CNPJ -> domínio corporativo -> nome normalizado+UF (ver
+        # app/services/company_dedupe.py) — cobre também empresas sem CNPJ, que antes não
+        # tinham proteção nenhuma contra duplicidade neste cadastro manual.
+        duplicate = find_duplicate_company(
+            self.repo, razao_social=data.razao_social, uf=data.uf,
+            cnpj=data.cnpj, site=data.site, email=data.email,
+        )
+        if duplicate is not None:
+            if duplicate.responsavel_id == data.responsavel_id:
+                raise ConflictError("Empresa já cadastrada")
+            dono = UserRepository(self.db).get(duplicate.responsavel_id) if duplicate.responsavel_id else None
+            detalhe = f": {dono.nome} ({dono.email})" if dono else ""
+            raise ConflictError(f"Empresa já cadastrada para outro responsável{detalhe}")
         payload = data.model_dump()
         payload["status"] = data.status.value
         # Empresa nasce já "desde quando" está no status inicial — sem isso, uma regra de
@@ -112,9 +126,15 @@ class CompanyService:
 
     def update(self, company_id: UUID, data: CompanyUpdate) -> Company:
         company = self.get(company_id)
-        for field, value in data.model_dump(exclude_unset=True).items():
+        payload = data.model_dump(exclude_unset=True)
+        responsavel_mudou = "responsavel_id" in payload and payload["responsavel_id"] != company.responsavel_id
+        for field, value in payload.items():
             setattr(company, field, value)
         company = self.repo.save(company)
+        if responsavel_mudou:
+            # Contato nunca tem dono independente da empresa — propaga o novo
+            # responsável pra todos os contatos dela (ver app/models/contact.py).
+            ContactRepository(self.db).update_responsavel_for_company(company.id, company.responsavel_id)
         self.timeline.registrar(company.id, TimelineType.CADASTRO.value,
                                 "Dados cadastrais atualizados")
         return company

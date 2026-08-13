@@ -13,6 +13,7 @@ from app.services.company import CompanyService
 from app.services.funil_metas import FunilMetasService
 from app.services.lead_prospect import LeadProspectService
 from app.services.tenant import TenantService
+from app.services import twilio_whatsapp
 
 router = APIRouter(prefix="/tenant", tags=["Tenant"])
 
@@ -59,6 +60,15 @@ def update_lead_score_rules(
     db: Session = Depends(get_db),
 ):
     return CompanyService(db).update_lead_score_rules(data)
+
+
+@router.get("/whatsapp-status")
+def get_whatsapp_status(_: User = Depends(get_current_user)):
+    """Envio automático de WhatsApp em Sequências (app/services/twilio_whatsapp.py)
+    é config de servidor, não por usuário — não tem nada pra "conectar" aqui, só
+    reflete se TWILIO_WHATSAPP_FROM (e o resto das credenciais Twilio) já foi
+    configurado, pra Preferências mostrar o status certo (WhatsappTab)."""
+    return {"configurado": twilio_whatsapp.is_configured()}
 
 
 @router.get("/funil-metas")

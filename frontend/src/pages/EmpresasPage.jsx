@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   createCompany, deleteCompany, exportCompanies, getCompanyFilterOptions, getImportJob,
-  importCompanies, listCompanies, setCompanyStatus, updateCompany,
+  importCompanies, importCompaniesContacts, listCompanies, setCompanyStatus, updateCompany,
 } from '../api/companies'
 import { listUsers } from '../api/users'
 import EnrollModal from '../components/EnrollModal.jsx'
@@ -64,7 +64,7 @@ export default function EmpresasPage() {
   const [showColumnsPopover, setShowColumnsPopover] = useState(false)
   const [selected, setSelected] = useState({})
   const [modalCompany, setModalCompany] = useState(undefined) // undefined = fechado, null = criar, obj = editar
-  const [showImportDrawer, setShowImportDrawer] = useState(false)
+  const [importMode, setImportMode] = useState(null) // null | 'empresas' | 'empresas_contatos'
   const [showBulkEnroll, setShowBulkEnroll] = useState(false)
   const [showBulkTask, setShowBulkTask] = useState(false)
 
@@ -150,8 +150,11 @@ export default function EmpresasPage() {
           <p>{total.toLocaleString('pt-BR')} cadastradas neste tenant</p>
         </div>
         <div className="page-actions">
-          <button className="btn-ghost" onClick={() => setShowImportDrawer(true)}>
+          <button className="btn-ghost" onClick={() => setImportMode('empresas')}>
             <IconImport /> Importar
+          </button>
+          <button className="btn-ghost" onClick={() => setImportMode('empresas_contatos')}>
+            <IconImport /> Importar + Contatos
           </button>
           <button className="btn-ghost" onClick={() => exportCompanies(filters)}>
             <IconExport /> Exportar
@@ -337,7 +340,9 @@ export default function EmpresasPage() {
         />
       )}
 
-      {showImportDrawer && <ImportDrawer onClose={() => setShowImportDrawer(false)} onDone={invalidateCompanies} />}
+      {importMode && (
+        <ImportDrawer mode={importMode} onClose={() => setImportMode(null)} onDone={invalidateCompanies} />
+      )}
 
       {showBulkEnroll && (
         <EnrollModal
@@ -652,19 +657,20 @@ export function CompanyModal({ company, users, usersError, onClose, onSubmit, su
   )
 }
 
-function ImportDrawer({ onClose, onDone }) {
+function ImportDrawer({ mode, onClose, onDone }) {
+  const isCombo = mode === 'empresas_contatos'
   const [file, setFile] = useState(null)
   const [job, setJob] = useState(null)
   const [error, setError] = useState(null)
 
   const uploadMutation = useMutation({
-    mutationFn: importCompanies,
+    mutationFn: isCombo ? importCompaniesContacts : importCompanies,
     onSuccess: (data) => setJob(data),
     onError: () => setError('Não foi possível enviar o arquivo.'),
   })
 
   const pollQuery = useQuery({
-    queryKey: ['import-job', job?.id],
+    queryKey: ['import-job', mode, job?.id],
     queryFn: () => getImportJob(job.id),
     enabled: Boolean(job) && job.status !== 'concluido' && job.status !== 'erro',
     refetchInterval: 1200,
@@ -693,21 +699,42 @@ function ImportDrawer({ onClose, onDone }) {
       <div className="drawer show" onClick={(e) => e.stopPropagation()}>
         <div className="drawer-head">
           <div>
-            <h2>Importar empresas</h2>
+            <h2>{isCombo ? 'Importar empresas + contatos' : 'Importar empresas'}</h2>
             <p>Envie um .csv ou .xlsx — processado em segundo plano pelo worker</p>
           </div>
           <button className="drawer-close" onClick={onClose}>✕</button>
         </div>
         <div className="drawer-body">
-          <div className="import-cols">
-            Colunas esperadas: <code>razao_social*</code> <code>cnpj*</code> <code>cidade*</code> <code>uf*</code>{' '}
-            <code>responsavel*</code> <code>segmento</code> <code>telefone</code> <code>email</code> <code>porte</code>{' '}
-            <code>funcionarios</code> <code>faturamento</code> <code>origem</code>
-            <br />
-            <span className="f-hint">
-              <code>responsavel</code> é o e-mail do usuário no sistema — toda empresa precisa nascer com um dono.
-            </span>
-          </div>
+          {isCombo ? (
+            <div className="import-cols">
+              Colunas esperadas: <code>empresa_razao_social*</code> <code>empresa_cnpj</code>{' '}
+              <code>empresa_cidade*</code> <code>empresa_uf*</code> <code>empresa_site</code>{' '}
+              <code>empresa_segmento</code> <code>empresa_telefone</code> <code>empresa_email</code>{' '}
+              <code>empresa_porte</code> <code>empresa_funcionarios</code> <code>empresa_faturamento</code>{' '}
+              <code>empresa_origem</code> <code>contato_nome*</code> <code>contato_cargo</code>{' '}
+              <code>contato_email*</code> <code>contato_telefone</code> <code>responsavel*</code>
+              <br />
+              <span className="f-hint">
+                Cada linha cria a empresa e o contato juntos. <code>responsavel</code> (e-mail do usuário no
+                sistema) vale pros dois — contato nunca tem dono diferente do dono da empresa. Se a empresa já
+                existir com outro responsável, a linha inteira é rejeitada; se já existir com o mesmo
+                responsável, só o contato é adicionado a ela.
+              </span>
+            </div>
+          ) : (
+            <div className="import-cols">
+              Colunas esperadas: <code>razao_social*</code> <code>cidade*</code> <code>uf*</code>{' '}
+              <code>responsavel*</code> <code>cnpj</code> <code>site</code> <code>segmento</code>{' '}
+              <code>telefone</code> <code>email</code> <code>porte</code> <code>funcionarios</code>{' '}
+              <code>faturamento</code> <code>origem</code>
+              <br />
+              <span className="f-hint">
+                <code>responsavel</code> é o e-mail do usuário no sistema — toda empresa precisa nascer com um
+                dono. <code>cnpj</code> é opcional: sem ele, a duplicidade é checada por domínio (site/e-mail)
+                e depois por nome + UF.
+              </span>
+            </div>
+          )}
 
           <label className="drop-zone">
             <div className="dz-title">{file ? file.name : 'Clique para escolher um arquivo'}</div>
@@ -716,6 +743,13 @@ function ImportDrawer({ onClose, onDone }) {
           </label>
 
           {error && <p className="state-msg error">{error}</p>}
+
+          {job?.status === 'concluido' && (
+            <p className="f-hint">
+              Importação concluída — reenviar o mesmo arquivo não duplica nada: uma empresa já
+              cadastrada aparece como erro na linha{isCombo ? ' (a menos que seja do mesmo responsável, aí o contato é anexado a ela)' : ''}, nunca cria uma segunda empresa.
+            </p>
+          )}
 
           {job && (
             <div className="import-summary">

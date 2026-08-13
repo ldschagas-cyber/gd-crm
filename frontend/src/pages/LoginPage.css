@@ -161,7 +161,7 @@
   margin: 0; color: var(--ink-dim); font-size: 14px; line-height: 1.6;
 }
 
-form { display: flex; flex-direction: column; gap: 20px; }
+.form-card form { display: flex; flex-direction: column; gap: 20px; }
 .field { display: flex; flex-direction: column; gap: 6px; }
 .field label {
   font-size: 12px; font-weight: 600; color: var(--ink-dim);

@@ -18,6 +18,9 @@ class MessageTemplateBase(BaseModel):
     canal: str
     nome: str = Field(min_length=1, max_length=120)
     corpo: str = Field(min_length=1)
+    # Só usado em canal="whatsapp" — SID do Content Template aprovado pela Meta
+    # via Twilio (ver app/models/message_template.py). Opcional em qualquer canal.
+    whatsapp_content_sid: str | None = Field(default=None, max_length=64)
 
     _valida_canal = field_validator("canal")(_valida_canal)
 
@@ -30,6 +33,7 @@ class MessageTemplateUpdate(BaseModel):
     canal: str | None = None
     nome: str | None = Field(default=None, min_length=1, max_length=120)
     corpo: str | None = Field(default=None, min_length=1)
+    whatsapp_content_sid: str | None = Field(default=None, max_length=64)
 
     @field_validator("canal")
     @classmethod
@@ -45,4 +49,5 @@ class MessageTemplateRead(ORMModel):
     nome: str
     corpo: str
     variaveis_disponiveis: list[str]
+    whatsapp_content_sid: str | None
     created_at: datetime

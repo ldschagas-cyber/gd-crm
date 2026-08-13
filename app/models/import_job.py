@@ -13,6 +13,7 @@ from app.models.base import Base, TenantMixin, TimestampMixin, uuid_pk
 class ImportType(str, enum.Enum):
     EMPRESAS = "empresas"
     CONTATOS = "contatos"
+    EMPRESAS_CONTATOS = "empresas_contatos"
     LEAD_PROSPECTS = "lead_prospects"
 
 

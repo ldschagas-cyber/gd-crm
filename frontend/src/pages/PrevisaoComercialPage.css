@@ -91,19 +91,26 @@
 .pc-inv-cat i.ferramentas { background: #2a78d6; }
 .pc-inv-cat i.outros { background: var(--ink-faint); }
 .pc-inv-add {
-  display: flex; align-items: center; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--border);
-  flex-wrap: wrap;
+  /* flex-direction explícito: LoginPage.css define um `form { flex-direction: column }`
+     global (sem escopo) que, sem isso, vaza pra qualquer <form> da app — inclusive este. */
+  display: flex; flex-direction: row; align-items: center; gap: 8px; padding: 12px 18px;
+  border-top: 1px solid var(--border); flex-wrap: nowrap;
 }
 .pc-inv-add input[type="text"], .pc-inv-add input[type="number"] {
   font: inherit; font-size: 13px; color: var(--ink); background: var(--field-bg);
   border: 1px solid var(--border-field); border-radius: var(--r-field); padding: 8px 10px;
 }
-.pc-inv-add input[type="text"] { flex: 1; min-width: 140px; }
-.pc-inv-add input[type="number"] { width: 120px; }
+.pc-inv-add .filter-select { flex: 0 0 160px; }
+.pc-inv-add input[type="text"] { flex: 1 1 auto; min-width: 120px; }
+.pc-inv-add input[type="number"] { flex: 0 0 120px; width: 120px; }
 .pc-inv-add-btn {
   font: inherit; font-size: 12.8px; font-weight: 600; color: var(--link); background: transparent;
   border: 1px dashed var(--border); border-radius: var(--r-field); padding: 8px 12px; cursor: pointer;
-  white-space: nowrap;
+  white-space: nowrap; flex: 0 0 auto;
 }
 .pc-inv-add-btn:hover { background: var(--paper); }
 .pc-inv-add-btn:disabled { opacity: 0.6; cursor: default; }
+@media (max-width: 640px) {
+  .pc-inv-add { flex-wrap: wrap; }
+  .pc-inv-add .filter-select, .pc-inv-add input[type="number"] { flex: 1 1 140px; width: auto; }
+}

@@ -44,6 +44,14 @@ export function importCompanies(file) {
     .then((res) => res.data)
 }
 
+export function importCompaniesContacts(file) {
+  const form = new FormData()
+  form.append('file', file)
+  return api
+    .post('/companies/import-empresas-contatos', form, { headers: { 'Content-Type': 'multipart/form-data' } })
+    .then((res) => res.data)
+}
+
 export function getImportJob(jobId) {
   return api.get(`/companies/import/${jobId}`).then((res) => res.data)
 }

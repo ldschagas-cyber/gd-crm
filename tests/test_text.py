@@ -4,7 +4,7 @@ sub-palavra (hífen/apóstrofo/barra). Função pura, sem dependência de
 app.core.config/database — não precisa do boilerplate de env vars usado nos
 testes de serviço.
 """
-from app.core.text import normalize_company_name
+from app.core.text import dedupe_key, extract_domain, is_personal_email_domain, normalize_company_name
 
 
 def test_conectivos_intermediarios_ficam_minusculos():
@@ -38,6 +38,52 @@ def test_conectivo_como_primeira_palavra_e_capitalizado():
 
 def test_string_vazia_retorna_vazia():
     assert normalize_company_name("") == ""
+
+
+# ---- extract_domain / is_personal_email_domain / dedupe_key (dedupe de empresa) --------
+
+def test_extract_domain_de_email():
+    assert extract_domain("contato@acme.com.br") == "acme.com.br"
+
+
+def test_extract_domain_de_url_com_protocolo_e_www():
+    assert extract_domain("https://www.acme.com.br/contato") == "acme.com.br"
+
+
+def test_extract_domain_de_url_sem_protocolo():
+    assert extract_domain("acme.com.br") == "acme.com.br"
+
+
+def test_extract_domain_remove_porta():
+    assert extract_domain("http://acme.com.br:8080/x") == "acme.com.br"
+
+
+def test_extract_domain_string_vazia_e_none_retornam_none():
+    assert extract_domain("") is None
+    assert extract_domain(None) is None
+
+
+def test_extract_domain_sem_ponto_retorna_none():
+    assert extract_domain("acme") is None
+
+
+def test_is_personal_email_domain():
+    assert is_personal_email_domain("gmail.com") is True
+    assert is_personal_email_domain("acme.com.br") is False
+    assert is_personal_email_domain(None) is False
+
+
+def test_dedupe_key_ignora_acento_caixa_e_sufixo_juridico():
+    assert dedupe_key("Cybelar Comércio e Indústria Ltda.") == dedupe_key("CYBELAR COMERCIO E INDUSTRIA LTDA")
+
+
+def test_dedupe_key_ignora_pontuacao():
+    assert dedupe_key("Acme S.A.") == dedupe_key("ACME SA")
+
+
+def test_dedupe_key_vazio():
+    assert dedupe_key("") == ""
+    assert dedupe_key(None) == ""
 
 
 def test_string_so_com_espacos_retorna_vazia():
