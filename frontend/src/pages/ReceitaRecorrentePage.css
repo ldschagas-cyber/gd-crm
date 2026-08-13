@@ -1,0 +1,76 @@
+/* Receita Recorrente — composição em cima de dataTable.css (stat-strip, card, table,
+   scrim/drawer/modal, status-pill) — só o que é específico de MRR/assinatura mora aqui. */
+
+/* pill de status de assinatura — variantes do .status-pill genérico (dataTable.css) */
+.status-pill[data-status='ativa'] { background: var(--success-bg); color: var(--good); }
+.status-pill[data-status='ativa'] .d { background: var(--good); }
+.status-pill[data-status='pausada'] { background: var(--warning-bg); color: var(--warning); }
+.status-pill[data-status='pausada'] .d { background: var(--warning); }
+.status-pill[data-status='cancelada'] { background: var(--border); color: var(--ink-dim); }
+.status-pill[data-status='cancelada'] .d { background: var(--ink-faint); }
+
+.rr-mrr-cell { font-family: var(--font-mono); font-weight: 700; }
+.rr-mrr-cell .rr-cycle { font-family: var(--font-display); font-weight: 500; font-size: 10.8px; color: var(--ink-faint); margin-left: 4px; }
+
+/* ---------------- Waterfall de MRR ---------------- */
+.rr-waterfall-body { padding: 6px 20px 4px; }
+.rr-waterfall { display: flex; align-items: stretch; gap: 14px; height: 190px; padding-top: 8px; }
+.rr-wf-col { flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 0; }
+.rr-wf-bars { flex: 1; width: 100%; max-width: 46px; display: flex; flex-direction: column; justify-content: center; position: relative; }
+.rr-wf-axis { position: absolute; left: -14px; right: -14px; top: 50%; height: 1px; background: var(--border); }
+.rr-wf-up, .rr-wf-down { width: 100%; display: flex; flex-direction: column; }
+.rr-wf-up { justify-content: flex-end; }
+.rr-wf-seg { width: 100%; border-radius: 3px; margin-bottom: 2px; }
+.rr-wf-down .rr-wf-seg { margin-bottom: 0; margin-top: 2px; }
+.rr-wf-seg.novo { background: var(--info); }
+.rr-wf-seg.expansao { background: var(--good); }
+.rr-wf-seg.contracao { background: var(--warning); }
+.rr-wf-seg.churn { background: var(--critical); }
+.rr-wf-net { margin-top: 9px; font-family: var(--font-mono); font-size: 11px; font-weight: 700; white-space: nowrap; }
+.rr-wf-net.pos { color: var(--good); }
+.rr-wf-net.neg { color: var(--critical); }
+.rr-wf-label { font-size: 11px; color: var(--ink-dim); margin-top: 4px; text-transform: capitalize; }
+
+.rr-legend { display: flex; gap: 16px; flex-wrap: wrap; padding: 0 20px 16px; }
+.rr-legend span { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--ink-dim); }
+.rr-legend i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+.rr-legend i.novo { background: var(--info); }
+.rr-legend i.expansao { background: var(--good); }
+.rr-legend i.contracao { background: var(--warning); }
+.rr-legend i.churn { background: var(--critical); }
+
+/* ---------------- Drawer de assinatura ---------------- */
+.rr-hero {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: var(--paper); border: 1px solid var(--border); border-radius: var(--r-card); padding: 14px 16px;
+}
+.rr-hero-lbl { font-size: 11px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.04em; }
+.rr-hero-big { font-family: var(--font-mono); font-size: 24px; font-weight: 700; color: var(--ink); margin-top: 2px; }
+.rr-hero-sub { font-size: 12px; color: var(--ink-dim); margin-top: 2px; }
+
+.rr-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.rr-inline-form {
+  display: flex; flex-direction: column; gap: 12px; background: var(--paper);
+  border: 1px solid var(--border); border-radius: var(--r-card); padding: 14px 16px;
+}
+.rr-inline-foot { display: flex; gap: 8px; justify-content: flex-end; }
+
+.rr-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-faint); font-weight: 700; margin-bottom: 10px; }
+
+.rr-timeline { display: flex; flex-direction: column; gap: 11px; }
+.rr-tl-item { display: flex; gap: 9px; }
+.rr-tl-dot { width: 7px; height: 7px; border-radius: 50%; margin-top: 5px; flex: none; background: var(--info); }
+.rr-tl-dot.expansao { background: var(--good); }
+.rr-tl-dot.contracao { background: var(--warning); }
+.rr-tl-dot.cancelamento { background: var(--critical); }
+.rr-tl-dot.reativacao { background: var(--info); }
+.rr-tl-title { font-size: 12.5px; color: var(--ink); font-weight: 550; }
+.rr-tl-delta { font-family: var(--font-mono); font-size: 11px; font-weight: 700; margin-left: 6px; }
+.rr-tl-delta.pos { color: var(--good); }
+.rr-tl-delta.neg { color: var(--critical); }
+.rr-tl-date { font-size: 11px; color: var(--ink-faint); margin-top: 1px; }
+
+@media (max-width: 900px) {
+  .rr-waterfall { height: 150px; }
+}

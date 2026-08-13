@@ -9,10 +9,12 @@ import { listTasks, completeTask, createTask } from '../api/tasks'
 import { listTimeline, addTimelineNote } from '../api/timeline'
 import { getContactEmails } from '../api/contacts'
 import { listUsers } from '../api/users'
+import { createAssinatura, listAssinaturas } from '../api/subscriptions'
 import { CompanyModal } from './EmpresasPage.jsx'
 import { ContactModal } from './ContatosPage.jsx'
 import { DealDrawer } from './NegociosPage.jsx'
 import { TaskModal } from './TarefasPage.jsx'
+import { NewSubscriptionModal, SubscriptionDrawer } from './ReceitaRecorrentePage.jsx'
 import EnrollModal from '../components/EnrollModal.jsx'
 import TimelineComposer from '../components/TimelineComposer.jsx'
 import CompanyTabs from '../components/CompanyTabs.jsx'
@@ -50,6 +52,8 @@ export default function CompanyDetailPage() {
   const [showNewDeal, setShowNewDeal] = useState(false)
   const [showNewTask, setShowNewTask] = useState(false)
   const [showEnrollModal, setShowEnrollModal] = useState(false)
+  const [showNewSub, setShowNewSub] = useState(false)
+  const [showSubDrawer, setShowSubDrawer] = useState(false)
   const [timelineFilter, setTimelineFilter] = useState('all')
   const [emailsContactId, setEmailsContactId] = useState('')
 
@@ -59,6 +63,7 @@ export default function CompanyDetailPage() {
   const contactsQuery = useQuery({ queryKey: ['contacts', 'mini', id], queryFn: () => listContacts({ companyId: id, size: 5 }) })
   const dealsQuery = useQuery({ queryKey: ['deals', 'mini', id], queryFn: () => listDeals({ companyId: id, size: 5 }) })
   const tasksQuery = useQuery({ queryKey: ['tasks', 'mini', id], queryFn: () => listTasks({ companyId: id, size: 5 }) })
+  const assinaturasQuery = useQuery({ queryKey: ['assinaturas', 'by-company', id], queryFn: () => listAssinaturas({ companyId: id }) })
   const pipelinesQuery = useQuery({ queryKey: ['pipelines'], queryFn: () => listPipelines({ size: 100 }) })
   const pipelines = pipelinesQuery.data?.items ?? []
   const dealPipeline = pipelines.find((p) => p.is_default) ?? pipelines[0]
@@ -114,11 +119,19 @@ export default function CompanyDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['tasks', 'mini', id] })
     },
   })
+  const createSubMutation = useMutation({
+    mutationFn: createAssinatura,
+    onSuccess: () => {
+      setShowNewSub(false)
+      queryClient.invalidateQueries({ queryKey: ['assinaturas', 'by-company', id] })
+    },
+  })
 
   if (companyQuery.isLoading) return <div className="content"><p className="state-msg">Carregando…</p></div>
   if (companyQuery.isError) return <div className="content"><p className="state-msg error">Empresa não encontrada.</p></div>
 
   const company = companyQuery.data
+  const assinaturaAtiva = (assinaturasQuery.data ?? []).find((a) => a.status === 'ativa') ?? null
   const timelineItems = (timelineQuery.data?.items ?? []).filter(
     (e) => timelineFilter === 'all' || e.tipo === timelineFilter,
   )
@@ -322,6 +335,28 @@ export default function CompanyDetailPage() {
 
             <div className="card">
               <div className="card-head">
+                <div><h3>Assinatura</h3></div>
+                <Link className="link-action" to="/receita-recorrente">Ver receita recorrente</Link>
+              </div>
+              <div className="mini-list">
+                {assinaturaAtiva && (
+                  <div className="mini-row" style={{ cursor: 'pointer' }} onClick={() => setShowSubDrawer(true)}>
+                    <div className="mini-main">
+                      <div className="mini-title">{assinaturaAtiva.nome_plano}</div>
+                      <span className="status-pill" data-status="ativa"><span className="d" />Ativa</span>
+                    </div>
+                    <div className="mini-val">{formatCurrency(assinaturaAtiva.valor_mensal)}</div>
+                  </div>
+                )}
+                {assinaturasQuery.data && !assinaturaAtiva && (
+                  <p className="state-msg">Nenhuma assinatura ativa.</p>
+                )}
+              </div>
+              {!assinaturaAtiva && <div className="add-row-btn" onClick={() => setShowNewSub(true)}>+ Nova assinatura</div>}
+            </div>
+
+            <div className="card">
+              <div className="card-head">
                 <div><h3>Negócios</h3></div>
                 <Link className="link-action" to="/negocios">Ver todos</Link>
               </div>
@@ -426,6 +461,27 @@ export default function CompanyDetailPage() {
           onSubmit={(data) => createTaskMutation.mutate(data)}
           submitting={createTaskMutation.isPending}
           error={createTaskMutation.error}
+        />
+      )}
+
+      {showNewSub && (
+        <NewSubscriptionModal
+          companies={[company]}
+          presetCompanyId={id}
+          users={usersQuery.data?.items ?? []}
+          onClose={() => setShowNewSub(false)}
+          onSubmit={(data) => createSubMutation.mutate(data)}
+          submitting={createSubMutation.isPending}
+          error={createSubMutation.error}
+        />
+      )}
+
+      {showSubDrawer && assinaturaAtiva && (
+        <SubscriptionDrawer
+          assinatura={assinaturaAtiva}
+          companyNome={company.razao_social}
+          onClose={() => setShowSubDrawer(false)}
+          onChanged={() => queryClient.invalidateQueries({ queryKey: ['assinaturas', 'by-company', id] })}
         />
       )}
     </>

@@ -19,10 +19,12 @@ from app.models.call import Call
 from app.models.origem_option import OrigemOption
 from app.models.revenue_investment import RevenueInvestment
 from app.models.activity_sla_rule import ActivitySlaMilestoneHit, ActivitySlaRule
+from app.models.subscription import Assinatura, AssinaturaEvento
 
 __all__ = [
     "Base", "Tenant", "User", "Company", "Contact", "Pipeline",
     "PipelineStage", "Deal", "Task", "TimelineEvent", "ImportJob", "AuditLog",
     "UserIntegration", "LeadProspect", "Form", "FormSubmission", "SiteVisit",
     "Snippet", "Call", "OrigemOption", "RevenueInvestment", "ActivitySlaRule", "ActivitySlaMilestoneHit",
+    "Assinatura", "AssinaturaEvento",
 ]
