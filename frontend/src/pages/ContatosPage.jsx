@@ -485,15 +485,21 @@ function ImportDrawer({ onClose, onDone }) {
         <div className="drawer-head">
           <div>
             <h2>Importar contatos</h2>
-            <p>A coluna "empresa" deve trazer o CNPJ (já cadastrado) — processado em segundo plano</p>
+            <p>Para empresas já cadastradas — a coluna "empresa" aceita CNPJ ou razão social</p>
           </div>
           <button className="drawer-close" onClick={onClose}>✕</button>
         </div>
         <div className="drawer-body">
           <div className="import-cols">
-            Colunas esperadas: <code>nome*</code> <code>empresa*</code> <code>cargo</code>{' '}
-            <code>email</code> <code>telefone</code> <code>whatsapp</code> <code>linkedin</code>{' '}
-            <code>data_nascimento</code> <code>observacoes</code>
+            Colunas esperadas: <code>nome*</code> <code>empresa*</code> <code>email*</code>{' '}
+            <code>responsavel*</code> <code>cargo</code> <code>telefone</code> <code>whatsapp</code>{' '}
+            <code>linkedin</code> <code>data_nascimento</code> <code>observacoes</code>
+            <br />
+            <span className="f-hint">
+              <code>empresa</code> aceita o CNPJ ou a razão social de uma empresa já cadastrada.{' '}
+              <code>responsavel</code> precisa ser o e-mail do responsável já atribuído a essa empresa — o
+              contato nunca fica com dono diferente do dono da empresa.
+            </span>
           </div>
 
           <label className="drop-zone">
@@ -503,6 +509,14 @@ function ImportDrawer({ onClose, onDone }) {
           </label>
 
           {error && <p className="state-msg error">{error}</p>}
+
+          {job?.status === 'concluido' && (
+            <p className="f-hint">
+              Importação concluída — pra enviar de novo (ex.: um arquivo corrigido), escolha o arquivo
+              acima outra vez. Reenviar o mesmo arquivo sem trocar não tem efeito: contatos já
+              importados são reconhecidos e não duplicam.
+            </p>
+          )}
 
           {job && (
             <div className="import-summary">

@@ -6,11 +6,14 @@ from sqlalchemy.orm import Session
 
 from app.models.import_job import ImportJob, ImportStatus, ImportType
 from app.repositories.import_job import ImportJobRepository
-from app.workers.tasks import import_companies_task, import_contacts_task, import_lead_prospects_task
+from app.workers.tasks import (
+    import_companies_contacts_task, import_companies_task, import_contacts_task, import_lead_prospects_task,
+)
 
 _TASK_BY_TYPE = {
     ImportType.EMPRESAS.value: import_companies_task,
     ImportType.CONTATOS.value: import_contacts_task,
+    ImportType.EMPRESAS_CONTATOS.value: import_companies_contacts_task,
     ImportType.LEAD_PROSPECTS.value: import_lead_prospects_task,
 }
 
