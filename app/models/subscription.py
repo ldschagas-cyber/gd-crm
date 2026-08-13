@@ -11,7 +11,7 @@ import enum
 import uuid
 from datetime import date
 
-from sqlalchemy import Date, ForeignKey, Numeric, String, Text
+from sqlalchemy import Date, ForeignKey, Integer, Numeric, String, Text
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -57,6 +57,15 @@ class Assinatura(Base, TenantMixin, TimestampMixin):
     data_cancelamento: Mapped[date | None] = mapped_column(Date)
     motivo_cancelamento: Mapped[str | None] = mapped_column(String(255))
     responsavel_id: Mapped[uuid.UUID | None] = mapped_column(PGUUID(as_uuid=True), ForeignKey("users.id"))
+
+    # Customer Success (ver docs/PLANO_CUSTOMER_SUCCESS.md) — prazo contratual real, distinto
+    # do modelo "evergreen" original (que só terminava por cancelamento explícito). NULL nos
+    # dois pra assinatura sem prazo fixo (mês a mês, sem ciclo de renovação formal) — nesse
+    # caso o Customer Success simplesmente não calcula "renovação em N dias" pra ela.
+    # `data_renovacao` é a próxima data de vencimento do ciclo atual; AssinaturaService.renovar
+    # empurra pra frente em `ciclo_renovacao_meses` meses a cada renovação confirmada.
+    ciclo_renovacao_meses: Mapped[int | None] = mapped_column(Integer)
+    data_renovacao: Mapped[date | None] = mapped_column(Date, index=True)
 
 
 class AssinaturaEvento(Base, TenantMixin, TimestampMixin):

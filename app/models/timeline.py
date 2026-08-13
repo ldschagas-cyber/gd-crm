@@ -18,6 +18,8 @@ class TimelineType(str, enum.Enum):
     CADASTRO = "cadastro"
     PIPELINE = "pipeline"
     NOTA = "nota"
+    # Customer Success — check-in de saúde do cliente (ver app/services/health_scoring.py).
+    CS_CHECKIN = "cs_checkin"
 
 
 class TimelineEvent(Base, TenantMixin, TimestampMixin):

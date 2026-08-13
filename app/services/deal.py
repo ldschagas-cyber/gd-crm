@@ -6,7 +6,7 @@ from sqlalchemy import delete as sa_delete, update as sa_update
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import NotFoundError
-from app.models.deal import Deal, DealStatus
+from app.models.deal import Deal, DealStatus, DealTipo
 from app.models.pipeline import StageType
 from app.models.sequence import SequenceEnrollment
 from app.models.task import Task
@@ -69,6 +69,7 @@ class DealService:
             payload["probabilidade"] = stage.probabilidade
         # Origem não é escolhida no negócio — herda sempre da empresa (ver DealCreate/DealUpdate).
         payload["origem"] = company.origem
+        payload["tipo"] = data.tipo.value
         deal = Deal(**payload)
         deal = self.repo.add(deal)
         # meta.para no formato de move_stage (§3 do PLANO_METAS_FUNIL.md) — permite
@@ -81,7 +82,12 @@ class DealService:
         # Central de Leads: negócio criado é o gatilho automático de "convertido" — só
         # se a empresa já estava sendo acompanhada no funil (import tardio: evita ciclo).
         from app.services.company import CompanyService
-        CompanyService(self.db).advance_funil_on_convertido(deal.company_id)
+        companies = CompanyService(self.db)
+        companies.advance_funil_on_convertido(deal.company_id)
+        # Customer Success: negócio de expansão aberto move o cliente pra "em_expansao"
+        # enquanto a negociação dura (ver docs/PLANO_CUSTOMER_SUCCESS.md §4).
+        if deal.tipo == DealTipo.EXPANSAO.value:
+            companies.advance_cs_on_expansao_aberta(deal.company_id)
 
         pipeline = self.pipelines.get(deal.pipeline_id)
         publish_event(self.db, "negocio_criado", deal.id, {
@@ -114,6 +120,8 @@ class DealService:
             deal.status = DealStatus.PERDIDO.value
             deal.data_fechamento = datetime.now(timezone.utc)
         deal = self.repo.save(deal)
+        if nova.tipo in (StageType.GANHO.value, StageType.PERDIDO.value):
+            self._on_deal_closed(deal)
         self.timeline.registrar(
             deal.company_id, TimelineType.PIPELINE.value, "Movimentação de pipeline",
             f"{anterior.nome if anterior else '-'} -> {nova.nome}", deal_id=deal.id,
@@ -142,9 +150,22 @@ class DealService:
             if terminal.probabilidade is not None:
                 deal.probabilidade = terminal.probabilidade
         deal = self.repo.save(deal)
+        self._on_deal_closed(deal)
         self.timeline.registrar(deal.company_id, TimelineType.PIPELINE.value,
                                 f"Negócio {deal.status}", deal.motivo_perda, deal_id=deal.id)
         return deal
+
+    def _on_deal_closed(self, deal: Deal) -> None:
+        """Gatilhos de Customer Success quando um negócio fecha (ganho ou perdido) —
+        chamado tanto por move_stage (etapa terminal) quanto por close() (fechamento
+        direto). Import tardio: evita ciclo com CompanyService. Ver
+        docs/PLANO_CUSTOMER_SUCCESS.md §4."""
+        from app.services.company import CompanyService
+        companies = CompanyService(self.db)
+        if deal.status == DealStatus.GANHO.value:
+            companies.advance_cs_on_deal_ganho(deal.company_id, deal.tipo, deal.responsavel_id)
+        if deal.tipo == DealTipo.EXPANSAO.value and deal.status in (DealStatus.GANHO.value, DealStatus.PERDIDO.value):
+            companies.advance_cs_on_expansao_fechada(deal.company_id)
 
     def delete(self, deal_id: UUID) -> None:
         deal = self.get(deal_id)

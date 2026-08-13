@@ -14,6 +14,7 @@ import ContactDetailPage from './pages/ContactDetailPage.jsx'
 import PipelinesPage from './pages/PipelinesPage.jsx'
 import NegociosPage from './pages/NegociosPage.jsx'
 import DealDetailPage from './pages/DealDetailPage.jsx'
+import ClientesPage from './pages/ClientesPage.jsx'
 import PrevisaoComercialPage from './pages/PrevisaoComercialPage.jsx'
 import ReceitaRecorrentePage from './pages/ReceitaRecorrentePage.jsx'
 import TarefasPage from './pages/TarefasPage.jsx'
@@ -58,6 +59,7 @@ export default function App() {
         <Route path="/negocios" element={<NegociosPage />} />
         <Route path="/negocios/:id" element={<DealDetailPage />} />
         <Route path="/pipeline" element={<PipelinesPage />} />
+        <Route path="/clientes" element={<ClientesPage />} />
         <Route path="/receita-recorrente" element={<ReceitaRecorrentePage />} />
         <Route path="/tarefas" element={<TarefasPage />} />
         <Route path="/tarefas/executar" element={<TaskQueuePage />} />

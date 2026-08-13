@@ -41,6 +41,20 @@ class FunilEstagio(str, enum.Enum):
     CONVERTIDO = "convertido"
 
 
+class CsFase(str, enum.Enum):
+    """Fase de Customer Success — independente de `CompanyStatus` e de `FunilEstagio`
+    (que regem, respectivamente, lead/cliente/perdido e o funil pré-venda). `None` =
+    empresa nunca teve um negócio ganho (não aparece no módulo de Clientes). Ver
+    docs/PLANO_CUSTOMER_SUCCESS.md §4. `CHURN` só é atingido via cancelamento de
+    `Assinatura` (AssinaturaService.cancelar) — nunca por PATCH direto de fase, pra não
+    existir uma fase "encerrado" que discorde do estado real de cobrança."""
+    IMPLANTACAO = "implantacao"
+    ATIVO = "ativo"
+    EM_RISCO = "em_risco"
+    EM_EXPANSAO = "em_expansao"
+    CHURN = "churn"
+
+
 class Company(Base, TenantMixin, TimestampMixin, SoftDeleteMixin):
     __tablename__ = "companies"
     __table_args__ = (
@@ -82,6 +96,21 @@ class Company(Base, TenantMixin, TimestampMixin, SoftDeleteMixin):
     # Central de Leads — funil pós-promoção (ver FunilEstagio acima). NULL = fora do funil.
     funil_estagio: Mapped[str | None] = mapped_column(String(20), index=True)
     funil_estagio_atualizado_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    # Customer Success — fase pós-venda (ver CsFase acima). NULL = empresa nunca teve um
+    # negócio ganho; passa a ser preenchida automaticamente por DealService quando um
+    # negócio entra em etapa GANHO (ver CompanyService.advance_cs_on_deal_ganho).
+    cs_fase: Mapped[str | None] = mapped_column(String(20), index=True)
+    cs_fase_atualizada_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # CSM responsável pelo pós-venda — separado de `responsavel_id` (o vendedor que fechou
+    # pode não ser quem acompanha o cliente depois). Default automático: quem fechou o
+    # negócio; reatribuível livremente depois.
+    cs_responsavel_id: Mapped[uuid.UUID | None] = mapped_column(PGUUID(as_uuid=True), ForeignKey("users.id"))
+    # Health Score (0-100) — composto de engajamento/uso/satisfação/financeiro, recalculado
+    # a cada check-in ou evento relevante (ver app/services/health_scoring.py). NULL até o
+    # primeiro cálculo (empresa acabou de virar cliente, ainda sem nenhum sinal).
+    health_score: Mapped[int | None] = mapped_column(Integer)
+    health_score_atualizado_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     # Nota curta de personalização, usada em {{contexto_rapido}} nos e-mails automáticos
     # (ver app/services/sequence_dispatch.py:render_template) — equivalente, em nível de

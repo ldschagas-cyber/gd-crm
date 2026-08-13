@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from app.models.deal import DealStatus
+from app.models.deal import DealStatus, DealTipo
 from app.schemas.common import ORMModel
 
 
@@ -20,6 +20,9 @@ class DealCreate(BaseModel):
     data_prev_fechamento: date | None = None
     # Sem `origem` aqui de propósito — o negócio herda a origem da empresa na criação
     # (ver DealService.create), não é escolhida manualmente.
+    # Customer Success (ver docs/PLANO_CUSTOMER_SUCCESS.md) — default novo_negocio pra
+    # todo fluxo comum de Vendas; o drawer de Clientes envia expansao explicitamente.
+    tipo: DealTipo = DealTipo.NOVO_NEGOCIO
 
 
 class DealUpdate(BaseModel):
@@ -60,5 +63,6 @@ class DealRead(ORMModel):
     motivo_perda: str | None
     data_fechamento: datetime | None
     commit: bool
+    tipo: str
     created_at: datetime
     ultima_interacao: datetime

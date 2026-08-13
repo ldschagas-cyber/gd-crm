@@ -1,0 +1,74 @@
+/* Clientes (Customer Success) — kanban por fase, health score, checklist de
+   implantação e renovação/expansão. Reaproveita .stat-strip/.stat-tile/.kanban/
+   .kb-card/.score-panel/.timeline-mini/.info-banner/.funnel-strip/.modal-box/.scrim
+   já definidos em dataTable.css e CentralLeadsPage.css; aqui só o que é específico
+   desta tela. */
+
+.info-banner.warn {
+  background: color-mix(in srgb, var(--warning, #fab219) 12%, var(--card-bg));
+}
+.info-banner.warn svg { color: color-mix(in srgb, var(--warning, #fab219) 55%, var(--ink-dim)); }
+
+.kb-card-mrr { margin-left: auto; font-family: var(--font-mono); font-weight: 700; color: var(--ink); }
+.kb-card-progress { margin-top: 8px; }
+.kb-card-progress .track { height: 5px; border-radius: 100px; background: var(--card-bg); overflow: hidden; }
+.kb-card-progress .fill { height: 100%; border-radius: 100px; background: var(--amber); }
+.kb-card-progress .lbl { font-size: 10.3px; color: var(--ink-faint); margin-top: 4px; }
+
+/* Drawer mais largo que o padrão — 4 abas com bastante conteúdo cada. */
+.cs-drawer { width: min(600px, 100vw) !important; }
+.dr-tabs { display: flex; gap: 2px; padding: 0 22px; border-bottom: 1px solid var(--border); overflow-x: auto; flex: none; }
+.dr-tab {
+  border: none; background: transparent; padding: 12px 3px; margin-right: 18px; font-size: 12.8px;
+  font-weight: 600; color: var(--ink-faint); cursor: pointer; white-space: nowrap; border-bottom: 2px solid transparent;
+}
+.dr-tab:hover { color: var(--ink-dim); }
+.dr-tab.active { color: var(--ink); border-bottom-color: var(--amber); }
+
+.cs-kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.cs-kpi-card { background: var(--paper); border: 1px solid var(--border); border-radius: 10px; padding: 11px 13px; }
+.cs-kpi-card .t { font-size: 10.8px; color: var(--ink-faint); font-weight: 600; }
+.cs-kpi-card .v { font-size: 17px; font-weight: 700; font-family: var(--font-mono); margin-top: 3px; }
+.cs-kpi-card .v.sm { font-size: 13px; }
+.cs-kpi-card .v.good { color: var(--good); }
+.cs-kpi-card .d { font-size: 10.8px; color: var(--ink-dim); margin-top: 2px; }
+
+.score-row .fill.sat { background: var(--plum, #6B5B95); }
+.score-row .fill.fin { background: var(--serious, #ec835a); }
+
+.cs-breakdown-list { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.cs-breakdown-list li { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; color: var(--ink-dim); }
+.cs-breakdown-list li span:last-child { font-family: var(--font-mono); font-weight: 650; color: var(--ink); flex: none; }
+.cs-breakdown-list li span.neg { color: var(--serious, #ec835a); }
+
+.checklist { display: flex; flex-direction: column; gap: 2px; margin-top: 10px; }
+.cl-item { display: flex; align-items: flex-start; gap: 10px; padding: 9px 2px; border-bottom: 1px solid var(--border); }
+.cl-item:last-child { border-bottom: none; }
+.cl-check {
+  width: 18px; height: 18px; border-radius: 5px; border: 1.6px solid var(--border); flex: none; margin-top: 1px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; background: var(--card-bg); padding: 0;
+}
+.cl-check.done { background: var(--good); border-color: var(--good); color: #fff; }
+.cl-check svg { width: 11px; height: 11px; }
+.cl-item .cl-title { font-size: 13px; color: var(--ink); }
+.cl-item.done .cl-title { color: var(--ink-faint); text-decoration: line-through; }
+.cl-item .cl-meta { font-size: 10.8px; color: var(--ink-faint); margin-top: 1px; }
+.cl-progress-track { height: 7px; border-radius: 100px; background: var(--paper); overflow: hidden; border: 1px solid var(--border); margin: 8px 0 0; }
+.cl-progress-fill { height: 100%; border-radius: 100px; background: var(--amber); transition: width 200ms ease; }
+
+.cs-renewal-box { background: var(--paper); border: 1px solid var(--border); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.cs-renewal-top { display: flex; align-items: center; justify-content: space-between; }
+.cs-renewal-top .amt { font-family: var(--font-mono); font-size: 20px; font-weight: 700; }
+.cs-renewal-top .unit { font-size: 12px; color: var(--ink-faint); font-weight: 500; }
+.cs-renewal-countdown { font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 100px; white-space: nowrap; }
+.cs-renewal-countdown.ok { background: rgba(12,163,12,0.14); color: var(--good); }
+.cs-renewal-countdown.soon { background: rgba(250,178,25,0.18); color: var(--warning, #b9821a); }
+.cs-renewal-countdown.urgent { background: rgba(236,131,90,0.16); color: var(--serious, #ec835a); }
+.cs-renewal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; }
+.cs-renewal-grid .k { color: var(--ink-faint); }
+.cs-renewal-grid .v { color: var(--ink); font-weight: 600; margin-top: 1px; text-transform: capitalize; }
+
+@media (max-width: 620px) {
+  .cs-kpi-grid { grid-template-columns: 1fr; }
+  .cs-renewal-grid { grid-template-columns: 1fr; }
+}

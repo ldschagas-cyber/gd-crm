@@ -29,3 +29,7 @@ export function reativarAssinatura(id, data) {
 export function listEventosAssinatura(id) {
   return api.get(`/assinaturas/${id}/eventos`).then((res) => res.data)
 }
+
+export function renovarAssinatura(id, data) {
+  return api.patch(`/assinaturas/${id}/renovar`, data).then((res) => res.data)
+}

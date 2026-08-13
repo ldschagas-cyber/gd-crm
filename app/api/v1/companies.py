@@ -13,14 +13,17 @@ from app.models.import_job import ImportType
 from app.models.user import User
 from app.schemas.common import Page, PageParams
 from app.schemas.company import (
-    CentralLeadRead, CentralLeadsResumo, CompanyAskRequest, CompanyAskResponse, CompanyCreate, CompanyDossierUpdate,
-    CompanyFilterOptions, CompanyFunilEstagioUpdate, CompanyIcpRead, CompanyRead, CompanyStatusUpdate, CompanyUpdate,
+    CentralLeadRead, CentralLeadsResumo, CompanyAskRequest, CompanyAskResponse, CompanyCreate, CompanyCsFaseUpdate,
+    CompanyCsUpdate, CompanyDossierUpdate, CompanyFilterOptions, CompanyFunilEstagioUpdate, CompanyIcpRead,
+    CompanyRead, CompanyStatusUpdate, CompanyUpdate, CsCheckinCreate, HealthScoreRead,
 )
 from app.schemas.import_job import ImportJobRead
+from app.schemas.onboarding import OnboardingItemRead, OnboardingItemStatusUpdate
 from app.schemas.timeline import TimelineEventRead, TimelineNoteCreate
 from app.services.company import CompanyService
 from app.services.company_ai import CompanyAiService
 from app.services.import_job import ImportJobService
+from app.services.onboarding import OnboardingService
 from app.services.timeline import TimelineService
 from app.repositories.timeline import TimelineRepository
 
@@ -220,3 +223,45 @@ def regenerate_company_resumo(company_id: UUID, _: User = Depends(get_current_us
 def ask_company_ai(company_id: UUID, data: CompanyAskRequest, _: User = Depends(get_current_user),
                    db: Session = Depends(get_db)):
     return CompanyAiService(db).perguntar(company_id, data.pergunta)
+
+
+# ---- Customer Success ---------------------------------------------------------
+# Ver docs/PLANO_CUSTOMER_SUCCESS.md. Listagem/resumo agregados do módulo de Clientes
+# ficam em app/api/v1/customer_success.py (prefixo /clientes) — aqui só os
+# sub-recursos por empresa, mesmo padrão de /timeline, /icp, /dossie acima.
+
+@router.patch("/{company_id}/cs", response_model=CompanyRead)
+def set_company_cs(company_id: UUID, data: CompanyCsUpdate, _: User = Depends(get_current_user),
+                   db: Session = Depends(get_db)):
+    return CompanyService(db).set_cs(company_id, data)
+
+
+@router.patch("/{company_id}/cs-fase", response_model=CompanyRead)
+def set_company_cs_fase(company_id: UUID, data: CompanyCsFaseUpdate, _: User = Depends(get_current_user),
+                        db: Session = Depends(get_db)):
+    """Troca manual de fase (drag no kanban / seletor no drawer). `churn` nunca chega
+    aqui — só via cancelamento de Assinatura, ver PATCH /assinaturas/{id}/cancelar."""
+    return CompanyService(db).set_cs_fase(company_id, data)
+
+
+@router.get("/{company_id}/health", response_model=HealthScoreRead)
+def get_company_health(company_id: UUID, _: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    return CompanyService(db).get_health(company_id)
+
+
+@router.post("/{company_id}/checkins", response_model=HealthScoreRead, status_code=status.HTTP_201_CREATED)
+def create_checkin(company_id: UUID, data: CsCheckinCreate, _: User = Depends(get_current_user),
+                   db: Session = Depends(get_db)):
+    return CompanyService(db).register_checkin(company_id, data)
+
+
+@router.get("/{company_id}/onboarding", response_model=list[OnboardingItemRead])
+def list_onboarding(company_id: UUID, _: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    CompanyService(db).get(company_id)  # valida existência/tenant
+    return OnboardingService(db).list_by_company(company_id)
+
+
+@router.patch("/{company_id}/onboarding/{item_id}", response_model=OnboardingItemRead)
+def set_onboarding_item_status(company_id: UUID, item_id: UUID, data: OnboardingItemStatusUpdate,
+                               _: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    return OnboardingService(db).set_item_status(company_id, item_id, data)

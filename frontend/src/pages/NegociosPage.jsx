@@ -52,6 +52,7 @@ export default function NegociosPage() {
   const [page, setPage] = useState(1)
   const [showNewDeal, setShowNewDeal] = useState(false)
   const [presetCompany, setPresetCompany] = useState(null) // { id, nome } — vindo da Central de Leads ("Converter em negócio")
+  const [presetTipo, setPresetTipo] = useState(null) // 'expansao' — vindo do módulo de Clientes (Customer Success)
   const [editingDeal, setEditingDeal] = useState(null)
   const [losingDeal, setLosingDeal] = useState(null)
   const [selectedPipelineId, setSelectedPipelineId] = useState(null)
@@ -78,12 +79,15 @@ export default function NegociosPage() {
   const users = usersQuery.data?.items ?? []
   const usersById = Object.fromEntries(users.map((u) => [u.id, u.nome]))
 
-  // Vindo da Central de Leads (botão "Converter em negócio" no drawer, só aparece
-  // quando o lead está em SQL) — abre o drawer de novo negócio já com a empresa
-  // selecionada. Limpa o state da navegação pra não reabrir num back/refresh.
+  // Vindo da Central de Leads (botão "Converter em negócio", só aparece com o lead em
+  // SQL) ou do módulo de Clientes (botão "Abrir negócio de expansão", ver
+  // docs/PLANO_CUSTOMER_SUCCESS.md §4) — abre o drawer de novo negócio já com a empresa
+  // (e, no segundo caso, o tipo) selecionados. Limpa o state da navegação pra não
+  // reabrir num back/refresh.
   useEffect(() => {
     if (location.state?.presetCompanyId) {
       setPresetCompany({ id: location.state.presetCompanyId, nome: location.state.presetCompanyNome })
+      setPresetTipo(location.state.presetTipo ?? null)
       setShowNewDeal(true)
       navigate(location.pathname, { replace: true, state: null })
     }
@@ -245,8 +249,9 @@ export default function NegociosPage() {
           pipeline={pipeline}
           companies={companiesForSelect}
           presetCompanyId={presetCompany?.id}
+          presetTipo={presetTipo}
           users={users}
-          onClose={() => { setShowNewDeal(false); setPresetCompany(null) }}
+          onClose={() => { setShowNewDeal(false); setPresetCompany(null); setPresetTipo(null) }}
           submitting={createMutation.isPending}
           error={createMutation.error}
           onSubmit={(data) => createMutation.mutate({ ...data, pipeline_id: pipeline.id })}
@@ -495,7 +500,7 @@ function DealsList({ query, page, setPage, companiesById, usersById, stages, col
   )
 }
 
-export function DealDrawer({ pipeline, companies, presetCompanyId, presetContactId, users, onClose, onSubmit, submitting, error }) {
+export function DealDrawer({ pipeline, companies, presetCompanyId, presetContactId, presetTipo, users, onClose, onSubmit, submitting, error }) {
   const [form, setForm] = useState({
     nome: '', company_id: presetCompanyId ?? '', contact_id: presetContactId ?? '', responsavel_id: '',
     stage_id: pipeline.stages.find((s) => s.tipo === 'aberta')?.id ?? '',
@@ -524,6 +529,10 @@ export function DealDrawer({ pipeline, companies, presetCompanyId, presetContact
       valor_previsto: form.valor_previsto === '' ? null : Number(form.valor_previsto),
       probabilidade: form.probabilidade === '' ? null : parseInt(form.probabilidade, 10),
       data_prev_fechamento: form.data_prev_fechamento || null,
+      // Customer Success (ver docs/PLANO_CUSTOMER_SUCCESS.md §4) — não é um campo do
+      // formulário: só chega aqui pré-definido pelo botão "Abrir negócio de expansão"
+      // do módulo de Clientes. Fluxo normal de Vendas nunca passa presetTipo.
+      tipo: presetTipo ?? 'novo_negocio',
     })
   }
 
@@ -534,7 +543,13 @@ export function DealDrawer({ pipeline, companies, presetCompanyId, presetContact
     <div className="scrim show" onClick={onClose}>
       <div className="drawer show" onClick={(e) => e.stopPropagation()}>
         <div className="drawer-head">
-          <div><h2>Novo negócio</h2><p>Pipeline "{pipeline.nome}"</p></div>
+          <div>
+            <h2>Novo negócio</h2>
+            <p>
+              Pipeline "{pipeline.nome}"
+              {presetTipo === 'expansao' && <span className="ia-tag" style={{ marginLeft: 8 }}>↗ Expansão — Customer Success</span>}
+            </p>
+          </div>
           <button className="drawer-close" onClick={onClose}>✕</button>
         </div>
         <form onSubmit={handleSubmit}>
