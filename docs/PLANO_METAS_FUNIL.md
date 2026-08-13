@@ -40,11 +40,11 @@ serviço que some o que já existe. Isso muda a natureza do trabalho de "novo do
 **Custo/risco de implementação:**
 - Baixo para a contagem (dados já existem — ver mapeamento em §3).
 - Médio para dois pontos que precisam de decisão de produto, não só engenharia:
-  1. **Janela temporal**: coorte (as 300 pesquisadas em agosto, quantas delas viraram reunião,
-     mesmo que em setembro?) vs. atividade do período (quantas reuniões aconteceram em agosto,
-     não importa quando a empresa foi pesquisada). São números diferentes e ambos válidos — ver
-     §4. Recomendo **coorte** como leitura principal (é o que o Anexo 1 realmente descreve — um
-     funil de uma leva), com atividade-do-mês como métrica auxiliar mais fácil de calcular.
+  1. **Janela temporal**: análise de cohort (as 300 pesquisadas em agosto, quantas delas viraram
+     reunião, mesmo que em setembro?) vs. atividade do período (quantas reuniões aconteceram em
+     agosto, não importa quando a empresa foi pesquisada). São números diferentes e ambos válidos
+     — ver §4. Recomendo **cohort** como leitura principal (é o que o Anexo 1 realmente descreve
+     — um funil de uma leva), com atividade-do-mês como métrica auxiliar mais fácil de calcular.
   2. **"Decisor identificado" não tem um campo dedicado hoje** — a proposta usa
      `LeadProspect.contato_sugerido` (preenchido) como proxy. Funciona para o MVP; se a
      qualidade do dado nesse campo for ruim na prática, vale promover para um status explícito
@@ -98,17 +98,17 @@ explícita (`marco_funil`) na etapa, em vez de comparar string.
 Toda mudança de estágio de `Deal` já grava `TimelineEvent tipo='pipeline'` com `meta={"de", "para"}`
 ([`app/services/deal.py:116`](../app/services/deal.py)) — é o que permite reconstruir "quando esse
 negócio *primeiro* passou pela etapa X", em vez de só saber onde ele está agora. Sem isso o cálculo
-de coorte (§1) não seria possível sem nova tabela.
+de cohort (§1) não seria possível sem nova tabela.
 
-## 4. Coorte vs. atividade do período
+## 4. Análise de Cohort vs. atividade do período
 
-- **Coorte (recomendado como leitura principal)**: fixa o conjunto de `LeadProspect` criados no
-  período de referência (ex.: agosto/2026) e mede, para *essas mesmas empresas*, quantas
+- **Análise de Cohort (recomendada como leitura principal)**: fixa o conjunto de `LeadProspect`
+  criados no período de referência (ex.: agosto/2026) e mede, para *essas mesmas empresas*, quantas
   avançaram até cada marco — não importa em que mês o marco aconteceu. É o que o Anexo 1
   realmente descreve (uma leva de 300 vira, no fim, 10 clientes). Efeito colateral esperado e
-  saudável: coortes recentes (última semana/mês) vão aparecer com números baixos nas últimas
+  saudável: cohorts recentes (última semana/mês) vão aparecer com números baixos nas últimas
   etapas simplesmente porque o ciclo ainda não correu — a tela deve deixar isso explícito (ex.:
-  "coorte com 12 dias — etapas de fechamento ainda em andamento"), não tratar como alerta.
+  "cohort com 12 dias — etapas de fechamento ainda em andamento"), não tratar como alerta.
 - **Atividade do período (métrica auxiliar)**: conta eventos que aconteceram no mês, não importa
   a origem — "quantas reuniões marcadas em agosto", igual ao que
   [`DesempenhoPesquisaPage`](../frontend/src/pages/DesempenhoPesquisaPage.jsx) já faz para volume
@@ -116,7 +116,7 @@ de coorte (§1) não seria possível sem nova tabela.
   diferentes — não é o "funil de uma leva" do Anexo 1.
 
 Proposta: implementar os dois, com um toggle na tela (o protótipo já simula essa alternância),
-coorte como padrão.
+cohort como padrão.
 
 ## 5. Modelo de dados (aditivo, sem migração de dado histórico)
 
@@ -193,7 +193,7 @@ sem novo domínio, mesmo espírito do endpoint de resumo da Central de Leads:
   dentro de **Indicadores & Metas** (grupo "Inteligência Comercial" do menu, ao lado de Central de
   Leads), reaproveitando os componentes visuais que essa tela já definiu (`goal-card`, `.funnel`,
   `status-pill`, painel lateral "Editar metas").
-- Toggle Coorte/Atividade do mês, seletor de período (mesmo padrão de mês do
+- Toggle Análise de Cohort/Atividade do mês, seletor de período (mesmo padrão de mês do
   `DesempenhoPesquisaPage`).
 - Tabela do Anexo 1 completa (meta, % etapa anterior, real, diferença em p.p., referência de
   mercado, status) — visível na própria tela, não só num documento à parte.
@@ -213,7 +213,7 @@ sem novo domínio, mesmo espírito do endpoint de resumo da Central de Leads:
 
 1. `PipelineStage.marco_funil` (migração aditiva) + seletor na configuração do Pipeline.
 2. `tenants.config.funil_metas` (schema + endpoint `GET/PUT`).
-3. Serviço de resumo (`GET /funil-metas/resumo`), modo atividade primeiro (mais simples), coorte
+3. Serviço de resumo (`GET /funil-metas/resumo`), modo atividade primeiro (mais simples), cohort
    depois.
 4. Frontend: tela dentro de Indicadores & Metas, a partir do protótipo já validado.
 5. QA: conferir que nada em Pipeline/Negócios muda de comportamento (campo novo é opcional e não
@@ -226,16 +226,16 @@ Backend: migração [`5beda113fc7b`](../alembic/versions/5beda113fc7b_add_marco_
 [`app/models/pipeline.py`](../app/models/pipeline.py); seletor de marco em `StageCreate`/`StageRead`
 ([`app/schemas/pipeline.py`](../app/schemas/pipeline.py)) e em `PipelineService.add_stage/update_stage`;
 [`app/services/funil_metas.py`](../app/services/funil_metas.py) novo (`FunilMetasService` —
-`get_config`/`update_config`/`resumo`, os dois modos coorte e atividade implementados, não só o
+`get_config`/`update_config`/`resumo`, os dois modos cohort e atividade implementados, não só o
 MVP de atividade sugerido no §10); endpoints `GET /funil-metas/resumo` e
 `GET/PUT /tenant/funil-metas`. Ajuste em `DealService.create` ([`app/services/deal.py`](../app/services/deal.py)):
 o evento de criação do negócio passou a gravar `meta={"para": stage_id}`, no mesmo formato de
 `move_stage` — sem essa uniformização, negócios criados direto numa etapa marcada não seriam
-contados como "já passaram por ela" na leitura de coorte.
+contados como "já passaram por ela" na leitura de cohort.
 
 Frontend: [`FunilMetasPage.jsx`](../frontend/src/pages/FunilMetasPage.jsx) novo — funil visual
 meta-vs-real, tabela completa do Anexo 1, alerta automático na etapa mais crítica, painel "Editar
-metas" com cascata ao vivo, toggle Coorte/Atividade — + item de menu "Metas do Funil" (grupo
+metas" com cascata ao vivo, toggle Análise de Cohort/Atividade — + item de menu "Metas do Funil" (grupo
 Inteligência Comercial) e rota `/metas-funil`; seletor de marco do funil (Diagnóstico/Proposta)
 adicionado à configuração de etapas em [`PipelinesPage.jsx`](../frontend/src/pages/PipelinesPage.jsx).
 

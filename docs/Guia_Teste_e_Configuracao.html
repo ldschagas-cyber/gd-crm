@@ -1,0 +1,588 @@
+<title>Guia de Configuração e Teste — Argos</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --font-display: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Cascadia Code", "SFMono-Regular", "Consolas", ui-monospace, monospace;
+
+    --indigo: #2D3561;
+    --indigo-600: #3B4478;
+    --amber: #C9A84C;
+    --amber-dark: #A8873A;
+    --azul: #0077A8;
+    --marfim: #F5F1EB;
+
+    --paper: var(--marfim);
+    --panel: var(--indigo);
+    --panel-fg: #F1EEE6;
+    --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12);
+
+    --ink: #22243A;
+    --ink-dim: #5B5E78;
+    --ink-faint: #8B8EA6;
+    --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF;
+    --link: var(--azul);
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+
+    --good: #0ca30c;
+    --good-bg: rgba(12, 163, 12, 0.09);
+    --warning: #b5790c;
+    --warning-bg: rgba(250, 178, 25, 0.14);
+    --critical: #b23a3a;
+    --critical-bg: rgba(208, 59, 59, 0.08);
+    --info-bg: rgba(0, 119, 168, 0.08);
+
+    --r-card: 12px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+      --panel-border: rgba(241, 238, 230, 0.10);
+      --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+      --card-bg: #1B1E33; --amber: #D9B85E; --amber-dark: #C4A244; --azul: #4CB2DE; --link: #4CB2DE;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+      --good: #4FBE86; --good-bg: rgba(79, 190, 134, 0.14);
+      --warning: #E0A455; --warning-bg: rgba(224, 164, 85, 0.16);
+      --critical: #E2766D; --critical-bg: rgba(226, 118, 109, 0.14);
+      --info-bg: rgba(76, 178, 222, 0.12);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+    --panel-border: rgba(241, 238, 230, 0.10);
+    --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+    --card-bg: #1B1E33; --amber: #D9B85E; --amber-dark: #C4A244; --azul: #4CB2DE; --link: #4CB2DE;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.55);
+    --good: #4FBE86; --good-bg: rgba(79, 190, 134, 0.14);
+    --warning: #E0A455; --warning-bg: rgba(224, 164, 85, 0.16);
+    --critical: #E2766D; --critical-bg: rgba(226, 118, 109, 0.14);
+    --info-bg: rgba(76, 178, 222, 0.12);
+  }
+  :root[data-theme="light"] {
+    --paper: #F5F1EB; --panel: #2D3561; --panel-fg: #F1EEE6; --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12);
+    --ink: #22243A; --ink-dim: #5B5E78; --ink-faint: #8B8EA6; --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF; --amber: #C9A84C; --amber-dark: #A8873A; --azul: #0077A8; --link: #0077A8;
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+    --good: #0ca30c; --good-bg: rgba(12, 163, 12, 0.09);
+    --warning: #b5790c; --warning-bg: rgba(250, 178, 25, 0.14);
+    --critical: #b23a3a; --critical-bg: rgba(208, 59, 59, 0.08);
+    --info-bg: rgba(0, 119, 168, 0.08);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; font-family: var(--font-display); color: var(--ink); background: var(--paper);
+    -webkit-font-smoothing: antialiased; line-height: 1.55;
+  }
+  code, .mono { font-family: var(--font-mono); }
+  a { color: var(--link); }
+  h1, h2, h3, h4 { text-wrap: balance; font-weight: 650; letter-spacing: -0.01em; }
+  p { margin: 0 0 12px; color: var(--ink-dim); }
+
+  /* ---------------- shell: sidebar TOC + content ---------------- */
+  .shell { display: grid; grid-template-columns: 250px minmax(0, 1fr); min-height: 100vh; }
+  @media (max-width: 900px) { .shell { grid-template-columns: 1fr; } .toc { display: none; } }
+
+  .toc {
+    background: var(--panel); color: var(--panel-fg-dim); position: sticky; top: 0; height: 100vh;
+    overflow-y: auto; padding: 26px 18px;
+  }
+  .toc-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 26px; padding: 0 6px; }
+  .toc-mark {
+    width: 32px; height: 32px; border-radius: 9px; background: var(--amber); color: var(--indigo);
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex: none;
+  }
+  .toc-brand strong { color: var(--panel-fg); font-size: 14px; display: block; line-height: 1.2; }
+  .toc-brand span {
+    display: block; font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--panel-fg-dim); margin-top: 2px;
+  }
+  .toc-label {
+    font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.09em; text-transform: uppercase;
+    color: var(--panel-fg-dim); padding: 0 6px; margin: 18px 0 6px;
+  }
+  .toc a {
+    display: block; padding: 6px 8px; border-radius: 7px; font-size: 12.8px; color: var(--panel-fg-dim);
+    text-decoration: none; margin-bottom: 1px;
+  }
+  .toc a:hover { background: rgba(241, 238, 230, 0.07); color: var(--panel-fg); }
+  .toc .toc-sub { padding-left: 20px; font-size: 12px; }
+
+  .content { padding: 46px 56px 90px; max-width: 900px; }
+  @media (max-width: 640px) { .content { padding: 30px 20px 60px; } }
+
+  .doc-head { margin-bottom: 40px; }
+  .doc-eyebrow {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--amber-dark); margin-bottom: 10px;
+  }
+  .doc-head h1 { font-size: 32px; margin: 0 0 10px; }
+  .doc-head .lede { font-size: 15.5px; color: var(--ink-dim); max-width: 62ch; margin: 0; }
+
+  section.doc-section { margin-bottom: 54px; scroll-margin-top: 20px; }
+  section.doc-section h2 {
+    font-size: 22px; margin: 0 0 6px; padding-bottom: 12px; border-bottom: 2px solid var(--border);
+    display: flex; align-items: baseline; gap: 10px;
+  }
+  section.doc-section h2 .num { font-family: var(--font-mono); font-size: 14px; color: var(--amber-dark); font-weight: 700; }
+  .section-intro { margin: 14px 0 22px; max-width: 68ch; }
+
+  h3 { font-size: 16px; margin: 30px 0 4px; color: var(--ink); }
+  h3 .num { font-family: var(--font-mono); color: var(--ink-faint); font-weight: 500; margin-right: 6px; }
+
+  /* ---- config checklist cards ---- */
+  .cfg-card {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--r-card);
+    box-shadow: var(--shadow); padding: 18px 20px; margin: 14px 0 22px;
+  }
+  .cfg-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 10px; }
+  .cfg-card-head h4 { margin: 0; font-size: 15px; color: var(--ink); }
+  .cfg-where {
+    font-family: var(--font-mono); font-size: 10.5px; white-space: nowrap; color: var(--azul);
+    background: var(--info-bg); border-radius: 100px; padding: 3px 10px; flex: none;
+  }
+  .cfg-required {
+    display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; padding: 2px 8px; border-radius: 100px;
+    margin-bottom: 10px;
+  }
+  .cfg-required.obrigatorio { background: var(--critical-bg); color: var(--critical); }
+  .cfg-required.recomendado { background: var(--warning-bg); color: var(--warning); }
+  .cfg-required.opcional { background: var(--good-bg); color: var(--good); }
+  .cfg-card p:last-child { margin-bottom: 0; }
+  .cfg-card .why { font-size: 12.8px; color: var(--ink-faint); border-top: 1px dashed var(--border); padding-top: 10px; margin-top: 12px; }
+  .cfg-card .why b { color: var(--ink-dim); }
+
+  /* ---- tables ---- */
+  .table-wrap { overflow-x: auto; margin: 16px 0 22px; border: 1px solid var(--border); border-radius: var(--r-card); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; background: var(--card-bg); }
+  table caption { caption-side: top; text-align: left; font-size: 12px; color: var(--ink-faint); padding: 10px 14px 0; }
+  th {
+    text-align: left; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 600; padding: 10px 14px; border-bottom: 1px solid var(--border);
+    background: var(--paper);
+  }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; color: var(--ink); }
+  tr:last-child td { border-bottom: none; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--font-mono); }
+  td small, .table-wrap small { color: var(--ink-faint); }
+
+  /* ---- numbered walkthrough ---- */
+  .steps { counter-reset: step; margin: 18px 0 0; padding: 0; list-style: none; }
+  .step {
+    counter-increment: step; position: relative; padding: 0 0 26px 46px; border-left: 2px solid var(--border);
+    margin-left: 15px;
+  }
+  .step:last-child { border-left-color: transparent; padding-bottom: 0; }
+  .step::before {
+    content: counter(step); position: absolute; left: -15px; top: 0; width: 30px; height: 30px;
+    border-radius: 50%; background: var(--indigo); color: var(--panel-fg); font-family: var(--font-mono);
+    font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center;
+  }
+  .step h4 { margin: 2px 0 6px; font-size: 15px; color: var(--ink); }
+  .step .step-where {
+    font-family: var(--font-mono); font-size: 11px; color: var(--azul); display: block; margin-bottom: 6px;
+  }
+  .step p { margin: 0 0 6px; font-size: 13.5px; }
+  .step ul { margin: 6px 0 0; padding-left: 18px; font-size: 13.5px; color: var(--ink-dim); }
+  .step li { margin-bottom: 3px; }
+
+  /* ---- callouts ---- */
+  .callout {
+    display: flex; gap: 11px; align-items: flex-start; border-radius: var(--r-card);
+    padding: 13px 16px; font-size: 13px; margin: 16px 0; border: 1px solid transparent;
+  }
+  .callout svg { width: 17px; height: 17px; flex: none; margin-top: 1px; }
+  .callout p { margin: 0; color: inherit; }
+  .callout p + p { margin-top: 6px; }
+  .callout.warn { background: var(--warning-bg); color: var(--warning); border-color: color-mix(in srgb, var(--warning) 30%, transparent); }
+  .callout.info { background: var(--info-bg); color: var(--azul); border-color: color-mix(in srgb, var(--azul) 25%, transparent); }
+  .callout.warn b, .callout.info b { color: var(--ink); }
+
+  /* ---- indicator map ---- */
+  .ind-card {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--r-card);
+    box-shadow: var(--shadow); padding: 16px 18px; margin: 14px 0;
+  }
+  .ind-card h4 { margin: 0 0 4px; font-size: 14.5px; }
+  .ind-card .path { font-family: var(--font-mono); font-size: 11px; color: var(--azul); margin-bottom: 8px; display: block; }
+  .ind-card ul { margin: 6px 0 0; padding-left: 18px; font-size: 13px; color: var(--ink-dim); }
+
+  /* ---- code blocks ---- */
+  pre {
+    background: var(--ink); color: #EDEAE2; border-radius: 10px; padding: 14px 16px; overflow-x: auto;
+    font-family: var(--font-mono); font-size: 12.5px; line-height: 1.6; margin: 12px 0;
+  }
+  :root[data-theme="dark"] pre, :root:not([data-theme="light"]) pre { background: #0B0D18; }
+  code.inline {
+    background: var(--paper); border: 1px solid var(--border); border-radius: 5px; padding: 1px 6px; font-size: 12px;
+  }
+
+  .faq-item { margin: 0 0 20px; }
+  .faq-item h4 { margin: 0 0 5px; font-size: 14.5px; color: var(--ink); }
+  .faq-item p { font-size: 13.5px; margin: 0; }
+
+  .footline {
+    margin-top: 60px; padding-top: 18px; border-top: 1px solid var(--border);
+    font-size: 12px; color: var(--ink-faint);
+  }
+
+  @media print {
+    .toc { display: none; }
+    .shell { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="shell">
+  <nav class="toc">
+    <div class="toc-brand">
+      <div class="toc-mark">A</div>
+      <div><strong>Argos</strong><span>Guia interno</span></div>
+    </div>
+    <div class="toc-label">Neste guia</div>
+    <a href="#antes">0. Antes de começar</a>
+    <a href="#configuracoes">1. Configurações necessárias</a>
+    <a href="#configuracoes" class="toc-sub">1.1 Usuários e perfis</a>
+    <a href="#configuracoes" class="toc-sub">1.2 Pipeline de vendas</a>
+    <a href="#configuracoes" class="toc-sub">1.3 Critérios de pontuação (ICP)</a>
+    <a href="#configuracoes" class="toc-sub">1.4 Metas do Funil</a>
+    <a href="#configuracoes" class="toc-sub">1.5 SLA Comercial</a>
+    <a href="#configuracoes" class="toc-sub">1.6 Dados da empresa</a>
+    <a href="#metas">2. Definição de metas</a>
+    <a href="#roteiro">3. Roteiro de teste</a>
+    <a href="#indicadores">4. Onde ver os indicadores</a>
+    <a href="#faq">5. Perguntas frequentes</a>
+    <a href="#reset">6. Resetar a base de teste</a>
+  </nav>
+
+  <main class="content">
+    <header class="doc-head">
+      <div class="doc-eyebrow">Argos · CRM da GD Conecta</div>
+      <h1>Guia de configuração e teste</h1>
+      <p class="lede">Do tenant vazio até ver os indicadores de receita funcionando. Cobre o que precisa
+      ser configurado antes de operar o CRM de verdade e o roteiro pra popular uma base de teste
+      ponta a ponta — pesquisa de lead até cliente fechado, com CAC e ROI.</p>
+    </header>
+
+    <section class="doc-section" id="antes">
+      <h2><span class="num">0</span> Antes de começar</h2>
+      <p class="section-intro">Ambiente local de desenvolvimento (Docker). Em produção o endereço muda, o resto do guia é igual.</p>
+
+      <div class="table-wrap">
+        <table>
+          <tr><th>Item</th><th>Valor</th></tr>
+          <tr><td>Endereço</td><td><code class="inline">http://localhost:5174/login</code></td></tr>
+          <tr><td>Usuário inicial</td><td><code class="inline">admin@gdconecta.com.br</code></td></tr>
+          <tr><td>Senha inicial</td><td><code class="inline">Admin@123456</code> — troque depois do primeiro acesso</td></tr>
+        </table>
+      </div>
+
+      <p>Todo dado vive dentro de um <b>tenant</b> (a "GD Conecta" criada no seed) — não existe
+      cadastro público, o admin cria os demais usuários por dentro do sistema. Quatro perfis
+      existem, e o que cada um vê muda bastante:</p>
+
+      <div class="table-wrap">
+        <table>
+          <tr><th>Perfil</th><th>Vê</th></tr>
+          <tr><td><code class="inline">admin</code></td><td>Tudo — inclusive Usuários, Configurações, custo/investimento (CAC &amp; ROI)</td></tr>
+          <tr><td><code class="inline">gestor</code></td><td>Igual ao admin nas telas de gestão comercial (Dashboard, Metas do Funil, Previsão Comercial, CAC &amp; ROI); não mexe em Usuários/Configurações</td></tr>
+          <tr><td><code class="inline">vendedor</code></td><td>Só o próprio recorte — próprios negócios, próprio forecast. Não vê custo nem os números da operação inteira</td></tr>
+          <tr><td><code class="inline">visualizador</code></td><td>Leitura, sem criar/editar</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section class="doc-section" id="configuracoes">
+      <h2><span class="num">1</span> Configurações necessárias para operar</h2>
+      <p class="section-intro">Nessa ordem — cada uma depende, direta ou indiretamente, da anterior. As
+      três primeiras são o mínimo pra criar um negócio; as três últimas fazem os indicadores
+      compararem "meta vs. real" em vez de só mostrar contagem crua.</p>
+
+      <h3><span class="num">1.1</span> Usuários e perfis</h3>
+      <div class="cfg-card">
+        <div class="cfg-card-head">
+          <h4>Criar a equipe que vai aparecer em "Responsável"</h4>
+          <span class="cfg-where">ícone <b>Usuários</b> no topo</span>
+        </div>
+        <span class="cfg-required obrigatorio">Obrigatório</span>
+        <p>Sem pelo menos um usuário além do admin, todo negócio/lead fica sempre no mesmo
+        responsável — não dá pra testar filtro por vendedor em Previsão Comercial nem a régua de
+        "vendedor só vê o próprio recorte".</p>
+        <p class="why"><b>Por quê:</b> <code class="inline">Deal.responsavel_id</code> e <code class="inline">Company.responsavel_id</code> são obrigatórios — o formulário de negócio já pede pra escolher alguém da lista.</p>
+      </div>
+
+      <h3><span class="num">1.2</span> Pipeline de vendas</h3>
+      <div class="cfg-card">
+        <div class="cfg-card-head">
+          <h4>Etapas, SLA por etapa, e o Marco do funil</h4>
+          <span class="cfg-where"><code class="inline">/pipeline</code></span>
+        </div>
+        <span class="cfg-required obrigatorio">Obrigatório</span>
+        <p>Um tenant novo não tem pipeline nenhum — a tela de Negócios mostra "Nenhum pipeline
+        configurado" com um link pra cá. Clique em <b>"Criar pipeline padrão"</b>: gera Novo lead →
+        Contato feito → Proposta → Negociação → Fechado-Ganho / Fechado-Perdido.</p>
+        <p>Depois, em cada etapa dá pra configurar:</p>
+        <ul>
+          <li><b>SLA (horas)</b> — prazo sem interação antes de aparecer em "Negócios com SLA estourado" no Dashboard</li>
+          <li><b>Marco do funil</b> — marca a etapa como <code class="inline">Diagnóstico</code> ou <code class="inline">Proposta</code> pro controle de Metas do Funil (ver 1.4)</li>
+        </ul>
+        <p class="why"><b>Por quê:</b> sem marcar uma etapa como <code class="inline">Diagnóstico</code>/<code class="inline">Proposta</code>, essas duas linhas do funil de metas ficam sempre zeradas — não tem como o sistema adivinhar qual etapa do seu pipeline corresponde a qual marco.</p>
+      </div>
+
+      <h3><span class="num">1.3</span> Critérios de pontuação (ICP Score)</h3>
+      <div class="cfg-card">
+        <div class="cfg-card-head">
+          <h4>Pontuação de fit por setor, região e porte</h4>
+          <span class="cfg-where">Pesquisa de Leads → botão <b>"Critérios de pontuação"</b></span>
+        </div>
+        <span class="cfg-required recomendado">Recomendado</span>
+        <p>Define quanto cada característica de uma empresa pesquisada vale em pontos (setor,
+        região, faixa de faturamento, faixa de funcionários) e os três cortes de faixa — A/B/C.
+        Já vem com valores de exemplo; ajuste pro ICP real da operação antes de confiar no score
+        pra priorizar leads.</p>
+        <p class="why"><b>Por quê:</b> sem isso, todo lead pesquisado tem o mesmo score — a
+        priorização em Pesquisa de Leads e Central de Leads perde o sentido.</p>
+      </div>
+
+      <h3><span class="num">1.4</span> Metas do Funil</h3>
+      <div class="cfg-card">
+        <div class="cfg-card-head">
+          <h4>Meta de topo de funil e % esperado de cada etapa</h4>
+          <span class="cfg-where"><code class="inline">/metas-funil</code> → <b>"Editar metas"</b></span>
+        </div>
+        <span class="cfg-required recomendado">Recomendado</span>
+        <p>Detalhado na seção 2 — é o coração da "definição de metas" deste guia.</p>
+      </div>
+
+      <h3><span class="num">1.5</span> SLA Comercial</h3>
+      <div class="cfg-card">
+        <div class="cfg-card-head">
+          <h4>Prazo de resposta por status da empresa</h4>
+          <span class="cfg-where">Tarefas → aba <b>"SLA Comercial"</b></span>
+        </div>
+        <span class="cfg-required opcional">Opcional</span>
+        <p>Regras do tipo "lead novo: responder em 24h" ou "virou cliente: primeira reunião em 7
+        dias" — dispara quando a empresa muda de status (não é a mesma coisa que o SLA por etapa
+        de negócio do item 1.2, que já existe por padrão). Cada regra define o gatilho (status ou
+        marco), o prazo em horas e, opcionalmente, que tipo de tarefa concluída conta como
+        cumprimento.</p>
+        <p class="why"><b>Por quê:</b> mede resposta real — só fecha a régua quando existe uma
+        tarefa <i>concluída</i> dentro do prazo, não só "tempo parado". Sem regra cadastrada, não
+        há o que medir, mas o resto do CRM funciona normalmente.</p>
+      </div>
+
+      <h3><span class="num">1.6</span> Dados da empresa</h3>
+      <div class="cfg-card">
+        <div class="cfg-card-head">
+          <h4>Razão social, CNPJ e afins</h4>
+          <span class="cfg-where">ícone <b>Configurações</b> no topo</span>
+        </div>
+        <span class="cfg-required opcional">Opcional pro teste</span>
+        <p>Cadastro do próprio tenant. Não bloqueia nada funcionalmente — só vale antes de subir
+        pra produção de verdade.</p>
+      </div>
+    </section>
+
+    <section class="doc-section" id="metas">
+      <h2><span class="num">2</span> Definição de metas</h2>
+      <p class="section-intro">O funil de metas segue um princípio simples: <b>você só define a meta do
+      topo e os percentuais esperados entre etapas — o resto é calculado em cascata.</b> Isso evita
+      que a meta absoluta de uma etapa fique dessincronizada da etapa anterior (ex.: dizer "meta de
+      300 pesquisadas" e "meta de 120 reuniões" sem que 120 seja de fato uma fração coerente de 300).</p>
+
+      <h3><span class="num">2.1</span> As 7 etapas do Anexo 1</h3>
+      <p>Valores abaixo são o padrão do sistema (editável em <code class="inline">/metas-funil</code> → Editar metas) — a
+      referência de mercado é só contexto, não trava nada.</p>
+
+      <div class="table-wrap">
+        <table>
+          <caption>Meta absoluta = meta da etapa anterior × % esperado. Só "Empresas pesquisadas" é digitada; o resto é derivado.</caption>
+          <tr><th>#</th><th>Etapa</th><th class="num">Meta</th><th class="num">% da anterior</th><th>Fonte no CRM</th></tr>
+          <tr><td>1</td><td>Empresas pesquisadas</td><td class="num">300</td><td class="num">—</td><td>Pesquisa de Leads</td></tr>
+          <tr><td>2</td><td>Decisores identificados</td><td class="num">100</td><td class="num">33%</td><td>Campo "contato sugerido" preenchido</td></tr>
+          <tr><td>3</td><td>Contatos realizados</td><td class="num">50</td><td class="num">50%</td><td>Ligação/e-mail registrado na timeline</td></tr>
+          <tr><td>4</td><td>Reuniões marcadas</td><td class="num">30</td><td class="num">60%</td><td>Evento "Reunião" na timeline</td></tr>
+          <tr><td>5</td><td>Diagnósticos realizados</td><td class="num">20</td><td class="num">67%</td><td>Negócio na etapa marcada <code class="inline">Diagnóstico</code></td></tr>
+          <tr><td>6</td><td>Propostas enviadas</td><td class="num">15</td><td class="num">75%</td><td>Negócio na etapa marcada <code class="inline">Proposta</code></td></tr>
+          <tr><td>7</td><td>Clientes fechados</td><td class="num">10</td><td class="num">67%</td><td>Negócio marcado como Ganho</td></tr>
+        </table>
+      </div>
+
+      <h3><span class="num">2.2</span> Análise de Cohort vs. Atividade</h3>
+      <p>A tela tem um alternador entre dois modos de leitura — não são a mesma pergunta:</p>
+      <ul style="font-size:13.5px; color:var(--ink-dim); padding-left:20px; margin:6px 0 0;">
+        <li><b>Análise de Cohort</b> (padrão) — pega as empresas pesquisadas <i>num período</i> e acompanha só
+        elas até o fim, o mesmo princípio de cohort analysis usado em produto/growth. Responde
+        "dessas 300 de agosto, quantas viraram cliente?" — cohorts recentes aparecem com números
+        baixos nas últimas etapas porque o ciclo ainda não correu, e isso é esperado, não um alerta.</li>
+        <li><b>Atividade</b> — conta o que aconteceu no período, não importa a origem da empresa.
+        Responde "quantas reuniões aconteceram em agosto?" — mais estável mês a mês, mas mistura
+        leads de origens diferentes.</li>
+      </ul>
+
+      <div class="callout warn">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 2.5l8 14H2l8-14z" stroke-linejoin="round"/><path d="M10 8.3v3.4M10 14.3v.1"/></svg>
+        <div>
+          <p><b>Status por etapa é automático, não é meta separada.</b> Dentro de ~5 p.p. da meta
+          esperada = ok; 5–15 p.p. abaixo = atenção; mais de 15 p.p. abaixo = crítico. Não precisa
+          configurar isso — é calculado a partir dos percentuais da seção 2.1.</p>
+        </div>
+      </div>
+
+      <h3><span class="num">2.3</span> Meta de receita (Previsão Comercial)</h3>
+      <p>O cartão de cobertura em Previsão Comercial tem um campo <b>"Meta"</b> editável — é só um
+      contador visual pra comparar Pipeline/Forecast/Compromisso contra um número que você digita
+      ali na hora. Ele <b>não persiste</b>: sai do lugar se você recarregar a página. Não é uma
+      configuração de tenant como as da seção 1.</p>
+    </section>
+
+    <section class="doc-section" id="roteiro">
+      <h2><span class="num">3</span> Roteiro de teste ponta a ponta</h2>
+      <p class="section-intro">Depois da seção 1 configurada, isto povoa uma leva completa — de
+      empresa pesquisada a cliente fechado com investimento lançado — pra ver todos os indicadores
+      saírem do zero de uma vez.</p>
+
+      <ol class="steps">
+        <li class="step">
+          <span class="step-where">Pesquisa de Leads → "+ Nova pesquisa"</span>
+          <h4>Criar a pesquisa</h4>
+          <p>Preenche empresa, setor, UF e salva. Conta na hora como "Empresas pesquisadas".</p>
+        </li>
+        <li class="step">
+          <span class="step-where">Pesquisa de Leads → ícone ↑ "Promover para Empresa"</span>
+          <h4>Promover a lead</h4>
+          <p>Cria a <code class="inline">Company</code> — some da Pesquisa de Leads. A partir daqui ela existe também em Empresas e Central de Leads.</p>
+        </li>
+        <li class="step">
+          <span class="step-where">Empresas → abrir a empresa → Timeline → aba "Reunião"</span>
+          <h4>Registrar uma reunião</h4>
+          <p>Só título é obrigatório — data/hora são opcionais (só usadas se for sincronizar com Outlook/Teams).</p>
+        </li>
+        <li class="step">
+          <span class="step-where">Negócios → "+ Novo negócio"</span>
+          <h4>Criar o negócio</h4>
+          <p>Empresa = a que você promoveu · Etapa = <code class="inline">Proposta</code> (a que você marcou no passo 1.2) · preenche Valor previsto e Probabilidade.</p>
+          <div class="callout warn" style="margin:10px 0 0">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 2.5l8 14H2l8-14z" stroke-linejoin="round"/><path d="M10 8.3v3.4M10 14.3v.1"/></svg>
+            <p><b>Previsão de fechamento é opcional no formulário, mas obrigatória na prática:</b>
+            sem uma data dentro do mês selecionado em Previsão Comercial, o negócio simplesmente
+            não aparece nos KPIs de Pipeline/Forecast dessa tela.</p>
+          </div>
+        </li>
+        <li class="step">
+          <span class="step-where">Card do negócio → estrela ☆ → ★</span>
+          <h4>Marcar Compromisso <small style="color:var(--ink-faint); font-weight:400;">(opcional)</small></h4>
+          <p>Popula o indicador Compromisso em Previsão Comercial — o vendedor confirmando "esse fecha esse mês".</p>
+        </li>
+        <li class="step">
+          <span class="step-where">Card ou lista do negócio → botão ✓ "Marcar como ganho"</span>
+          <h4>Fechar como Ganho</h4>
+          <p>Grava <code class="inline">data_fechamento = agora</code> automaticamente — já entra no mês corrente sem precisar escolher data. É o que conta pra "Clientes fechados" e alimenta CAC/ROI.</p>
+        </li>
+        <li class="step">
+          <span class="step-where">Previsão Comercial → cartão "CAC &amp; ROI comercial"</span>
+          <h4>Lançar um investimento</h4>
+          <p>Categoria + valor + "Adicionar lançamento". CAC só sai de "—" com pelo menos 1 cliente
+          fechado no mês (passo anterior); ROI só sai de "—" com investimento lançado (este passo).</p>
+        </li>
+      </ol>
+    </section>
+
+    <section class="doc-section" id="indicadores">
+      <h2><span class="num">4</span> Onde ver os indicadores</h2>
+
+      <div class="ind-card">
+        <h4>Dashboard</h4>
+        <span class="path">/</span>
+        <ul>
+          <li>Negócios ativos, receita ganha do mês, SLA de negócio estourado</li>
+        </ul>
+      </div>
+      <div class="ind-card">
+        <h4>Metas do Funil</h4>
+        <span class="path">/metas-funil</span>
+        <ul>
+          <li>As 7 linhas do Anexo 1 — meta vs. real, Análise de Cohort ou Atividade</li>
+          <li>Depende de: passos 1.4 (metas) e todo o roteiro da seção 3</li>
+        </ul>
+      </div>
+      <div class="ind-card">
+        <h4>Previsão Comercial</h4>
+        <span class="path">/previsao-comercial</span>
+        <ul>
+          <li>Pipeline / Forecast / Compromisso — por vendedor, filtrável por mês</li>
+          <li>Cartão CAC &amp; ROI — investimento, custo por cliente, retorno do mês</li>
+          <li>Depende de: passo 1.2 (pipeline) e os passos 4–7 do roteiro</li>
+        </ul>
+      </div>
+      <div class="ind-card">
+        <h4>Central de Leads &amp; Tarefas</h4>
+        <span class="path">/central-leads · /tarefas</span>
+        <ul>
+          <li>Estágio do funil por empresa, score, badge de SLA Comercial (se houver regra cadastrada — passo 1.5)</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="doc-section" id="faq">
+      <h2><span class="num">5</span> Perguntas frequentes</h2>
+
+      <div class="faq-item">
+        <h4>Fiz tudo e um número continua zerado. Por quê?</h4>
+        <p>Na ordem mais provável: (1) mês errado no seletor do topo de Previsão Comercial/Metas do
+        Funil, (2) a etapa do negócio não tem Marco do funil marcado (passo 1.2), (3) o negócio não
+        tem "Previsão de fechamento" dentro do mês selecionado.</p>
+      </div>
+      <div class="faq-item">
+        <h4>CAC mostra "—" mesmo depois de lançar investimento. É bug?</h4>
+        <p>Não — CAC só calcula com pelo menos 1 cliente fechado no mês. "—" é proposital: dividir
+        por zero clientes daria um número enganoso, não "grátis".</p>
+      </div>
+      <div class="faq-item">
+        <h4>Preciso marcar as duas etapas (Diagnóstico e Proposta) no pipeline?</h4>
+        <p>Não — cada uma é independente. Se marcar só "Proposta", a linha "Diagnósticos
+        realizados" simplesmente fica zerada; o resto do funil funciona normalmente.</p>
+      </div>
+      <div class="faq-item">
+        <h4>Um vendedor não-admin não vê o cartão CAC &amp; ROI. É esperado?</h4>
+        <p>Sim, de propósito — custo/investimento é restrito a <code class="inline">admin</code>/<code class="inline">gestor</code>, mesma régua de acesso do Dashboard comercial.</p>
+      </div>
+    </section>
+
+    <section class="doc-section" id="reset">
+      <h2><span class="num">6</span> Resetar a base de teste</h2>
+      <p class="section-intro">Pra recomeçar do zero sem reinstalar nada — mantém o tenant e o usuário
+      admin, apaga todo o resto. Precisa de acesso ao Docker do ambiente (não afeta produção).</p>
+
+      <pre>docker exec gd_crm_api_dev alembic upgrade head   # garante o schema em dia
+
+docker exec gd_crm_db_dev psql -U crm -d gd_crm -v ON_ERROR_STOP=1 -c "
+BEGIN;
+TRUNCATE TABLE
+  audit_logs, calls, companies, contacts, deals, email_templates, form_submissions, forms,
+  import_jobs, lead_prospects, message_templates, origem_options, pipeline_stages, pipelines,
+  revenue_investments, sequence_enrollments, sequence_steps, sequences, site_visits, snippets,
+  tasks, timeline_events, user_integrations, workflow_actions, workflow_execution_logs, workflows
+RESTART IDENTITY CASCADE;
+DELETE FROM users WHERE email &lt;&gt; 'admin@gdconecta.com.br';
+COMMIT;
+"</pre>
+
+      <div class="callout info">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10" cy="10" r="7.5"/><path d="M10 9v4.2M10 6.6v.1"/></svg>
+        <p><code class="inline">cnae_codes</code> (catálogo de setores) e as regras de ICP Score/SLA em
+        <code class="inline">tenants.config</code> não são tocados por este comando — são
+        configuração, não dado de teste. Se quiser zerar isso também, é preciso apagar à parte.</p>
+      </div>
+    </section>
+
+    <p class="footline">Argos — CRM da GD Conecta. Guia gerado a partir do código-fonte em uso;
+    se uma tela mudar de nome ou lugar, este documento pode ficar desatualizado — confira contra
+    o app se algo não bater.</p>
+  </main>
+</div>

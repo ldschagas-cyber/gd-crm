@@ -53,7 +53,7 @@ informado na query é ignorado e substituído pelo do usuário autenticado (mesm
 |---|---|---|
 | Unidade | Contagem (empresas/negócios) | R$ |
 | População | As 7 etapas — a maior parte é `LeadProspect`/`Company`, nem toca `Deal` | Só negócios abertos |
-| Janela | Coorte ou atividade de período fechado (histórico) | Prospectivo — o que fecha *este mês* |
+| Janela | Análise de Cohort ou atividade de período fechado (histórico) | Prospectivo — o que fecha *este mês* |
 
 Empilhar as duas num único número misturaria unidade e janela de tempo. Em vez disso:
 
