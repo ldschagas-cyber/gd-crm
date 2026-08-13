@@ -23,3 +23,9 @@ class MessageTemplate(Base, TenantMixin, TimestampMixin):
     nome: Mapped[str] = mapped_column(String(120), nullable=False)
     corpo: Mapped[str] = mapped_column(Text, nullable=False)
     variaveis_disponiveis: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list)
+    # SID (ex.: "HXxxxxxxxx...") do Content Template cadastrado no Twilio Content
+    # Template Builder, ligado a um template de WhatsApp aprovado pela Meta — só
+    # canal="whatsapp" usa isso. Enquanto vazio (caso de qualquer template ainda não
+    # aprovado), a etapa de Sequência correspondente continua virando Tarefa manual
+    # em vez de envio automático — ver app/services/sequence_dispatch.py.
+    whatsapp_content_sid: Mapped[str | None] = mapped_column(String(64))

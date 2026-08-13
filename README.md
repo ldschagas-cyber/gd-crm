@@ -52,3 +52,28 @@ Negócios, Tarefas, Dashboards (comercial e vendedor). Documentação completa e
 ## Multi-tenant
 O `tenant_id` é derivado **exclusivamente do JWT**. O `BaseRepository` filtra toda
 query pelo tenant atual e o PostgreSQL reforça via **Row-Level Security**.
+
+## Integrações externas (envio automático em Sequências)
+- **E-mail** — Microsoft 365/Graph, OAuth **por usuário** (cada vendedor conecta a
+  própria caixa em Preferências → E-mail/Calendário). Ver `app/models/user_integration.py`,
+  `app/services/graph_client.py`, `app/api/v1/me.py`.
+- **WhatsApp** — Twilio (WhatsApp Business Platform como BSP), config **global do
+  servidor** (`TWILIO_WHATSAPP_FROM` + as credenciais Twilio de Chamadas), não por
+  usuário nem por tenant no banco — a empresa tem um único número, igual ao Twilio
+  Voice já usado em Chamadas. Ver `app/services/twilio_whatsapp.py`. Toda mensagem
+  iniciada pela empresa (o caso de Sequência fria) só pode usar um *Content
+  Template* pré-aprovado pela Meta — por isso o envio automático só é tentado
+  quando o `MessageTemplate` correspondente tem `whatsapp_content_sid` preenchido
+  (SID do template no Twilio Content Template Builder); sem isso, ou sem
+  `TWILIO_WHATSAPP_FROM` configurado, a etapa cai no mesmo fallback de sempre:
+  `Task` manual com o texto já mesclado, pronto pro vendedor copiar.
+- **LinkedIn** (conexão/mensagem) — **deliberadamente não automatizado**. Não
+  existe API oficial do LinkedIn que cubra prospecção fria (Marketing/Sales
+  Navigator APIs têm acesso restrito e não servem esse caso de uso); automatizar
+  via scraping ou APIs não oficiais viola os Termos de Uso e arrisca banir a
+  conta usada, inclusive pessoal. Essas etapas continuam só gerando `Task` com o
+  texto pronto pra copiar — não é um "a fazer", é a decisão final.
+
+Em todos os casos, `app/services/sequence_dispatch.py:advance_due_steps` é quem
+decide entre enviar de verdade ou cair pro fallback de `Task` — nunca falha o
+enrollment inteiro por causa de um provedor fora do ar ou não configurado.

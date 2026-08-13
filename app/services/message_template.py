@@ -46,6 +46,7 @@ class MessageTemplateService:
     def create(self, data: MessageTemplateCreate) -> MessageTemplate:
         template = MessageTemplate(
             canal=data.canal, nome=data.nome, corpo=data.corpo,
+            whatsapp_content_sid=data.whatsapp_content_sid,
             variaveis_disponiveis=_extract_vars(data.corpo),
         )
         return self.repo.add(template)

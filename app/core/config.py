@@ -94,6 +94,16 @@ class Settings(BaseSettings):
     TWILIO_TENANT_ID: str | None = None
     TWILIO_VOICE_WEBHOOK_BASE_URL: str | None = None
 
+    # WhatsApp (envio automático de etapas de Sequência, ver app/services/twilio_whatsapp.py).
+    # Mesma conta Twilio de cima (TWILIO_ACCOUNT_SID/TWILIO_AUTH_TOKEN), produto
+    # diferente: WhatsApp Business Platform via Twilio como BSP. TWILIO_WHATSAPP_FROM
+    # só existe depois de duas aprovações fora do nosso controle — (1) verificação da
+    # Meta Business Manager da GD Conecta e (2) o WhatsApp Sender aprovado nela —
+    # cada uma pode levar semanas; até lá fica vazio e o envio automático não roda
+    # (`twilio_whatsapp.is_configured()` retorna False), sem quebrar nada: a etapa
+    # volta a virar Tarefa manual, igual hoje. Formato esperado: "whatsapp:+55...".
+    TWILIO_WHATSAPP_FROM: str | None = None
+
     # Transcrição de ligações (AssemblyAI) — gravação fica só transitória: baixada,
     # transcrita e apagada (do disco local e do lado do Twilio) depois que a
     # transcrição é confirmada; só o texto é retido na timeline.

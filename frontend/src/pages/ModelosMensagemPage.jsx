@@ -166,6 +166,7 @@ function TemplateDrawer({ template, onClose, onSubmit, submitting, error }) {
   const [canal, setCanal] = useState(template?.canal ?? 'whatsapp')
   const [nome, setNome] = useState(template?.nome ?? '')
   const [corpo, setCorpo] = useState(template?.corpo ?? '')
+  const [whatsappContentSid, setWhatsappContentSid] = useState(template?.whatsapp_content_sid ?? '')
   const [touched, setTouched] = useState(false)
   const corpoRef = useRef(null)
 
@@ -192,7 +193,7 @@ function TemplateDrawer({ template, onClose, onSubmit, submitting, error }) {
     e.preventDefault()
     setTouched(true)
     if (!okNome || !okCorpo) return
-    onSubmit({ canal, nome: nome.trim(), corpo: corpo.trim() })
+    onSubmit({ canal, nome: nome.trim(), corpo: corpo.trim(), whatsapp_content_sid: whatsappContentSid.trim() || null })
   }
 
   return (
@@ -248,6 +249,24 @@ function TemplateDrawer({ template, onClose, onSubmit, submitting, error }) {
               />
               <span className={`f-err${touched && !okCorpo ? ' show' : ''}`}>Informe o texto da mensagem.</span>
             </div>
+
+            {canal === 'whatsapp' && (
+              <div className="f-group">
+                <label className="f-label">SID do Content Template (Twilio) <span className="opt">opcional</span></label>
+                <input
+                  className="f-input"
+                  value={whatsappContentSid}
+                  onChange={(e) => setWhatsappContentSid(e.target.value)}
+                  placeholder="Ex.: HXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                />
+                <span className="f-hint">
+                  Só preencha depois que este texto for aprovado como template pelo Meta e cadastrado no Twilio
+                  Content Template Builder. Sem isso, a etapa de Sequência continua virando Tarefa manual pro
+                  vendedor copiar — enviar automaticamente um texto não aprovado viola a política do WhatsApp e
+                  arrisca banir o número da empresa.
+                </span>
+              </div>
+            )}
 
             <div className="preview-card">
               <div className="preview-label">Prévia com dados de exemplo</div>
