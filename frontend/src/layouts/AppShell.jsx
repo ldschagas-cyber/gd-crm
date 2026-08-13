@@ -37,6 +37,12 @@ const NAV_GROUPS = [
     ],
   },
   {
+    label: 'Receita',
+    items: [
+      { to: '/receita-recorrente', label: 'Receita Recorrente', icon: IconRevenue },
+    ],
+  },
+  {
     label: 'Automação',
     items: [
       { to: '/sequencias', label: 'Sequências', icon: IconSequence },
@@ -301,6 +307,14 @@ function IconForecast() {
   )
 }
 
+function IconRevenue() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <path d="M3 15.5h14M3 15.5V4.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M6 12.5v-3M10 12.5V6.5M14 12.5v-5.5" strokeLinecap="round" />
+    </svg>
+  )
+}
 function IconContact() {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">

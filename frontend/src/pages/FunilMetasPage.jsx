@@ -106,7 +106,7 @@ export default function FunilMetasPage() {
         <div className="filters-bar">
           <div className="segmented">
             <button className={modo === 'atividade' ? 'active' : ''} onClick={() => setModo('atividade')}>Atividade do mês</button>
-            <button className={modo === 'coorte' ? 'active' : ''} onClick={() => setModo('coorte')}>Coorte do período</button>
+            <button className={modo === 'coorte' ? 'active' : ''} onClick={() => setModo('coorte')}>Análise de Cohort</button>
           </div>
           <select className="filter-select" value={mes} onChange={(e) => setMes(e.target.value)}>
             {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
