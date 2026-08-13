@@ -3,7 +3,7 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
-from app.core.exceptions import NotFoundError
+from app.core.exceptions import ConflictError, NotFoundError
 from app.models.contact import Contact
 from app.repositories.company import CompanyRepository
 from app.repositories.contact import ContactRepository
@@ -54,9 +54,17 @@ class ContactService:
         return contact
 
     def create(self, data: ContactCreate) -> Contact:
-        if self.companies.get(data.company_id) is None:
+        company = self.companies.get(data.company_id)
+        if company is None:
             raise NotFoundError("Empresa do contato não encontrada")
-        contact = Contact(**data.model_dump())
+        # Mesmo e-mail na mesma empresa = mesmo contato — evita duplicar quando o
+        # formulário/import é reenviado (ex.: duplo clique em "Salvar", reenvio do mesmo
+        # arquivo de importação). Só se aplica quando há e-mail informado.
+        if data.email and self.repo.get_by_company_and_email(data.company_id, data.email):
+            raise ConflictError("Já existe um contato com este e-mail nesta empresa")
+        # Contato nunca tem dono independente da empresa — responsavel_id não existe em
+        # ContactCreate (ver app/schemas/contact.py), é sempre herdado daqui.
+        contact = Contact(**data.model_dump(), responsavel_id=company.responsavel_id)
         contact = self.repo.add(contact)
         publish_event(self.db, "contato_criado", contact.id, {
             "cargo": contact.cargo, "_entidade_tipo": "contact", "_company_id": str(contact.company_id),

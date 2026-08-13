@@ -104,6 +104,25 @@ def import_companies(
     return job
 
 
+@router.post("/import-empresas-contatos", response_model=ImportJobRead, status_code=status.HTTP_202_ACCEPTED)
+def import_companies_contacts(
+    file: UploadFile = File(...),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Importação combinada: cada linha cria (ou reaproveita, se já cadastrada pro mesmo
+    responsável) a empresa e o contato juntos — ver ImportType.EMPRESAS_CONTATOS e
+    app/workers/tasks.import_companies_contacts_task."""
+    if not file.filename or not file.filename.lower().endswith((".csv", ".xlsx")):
+        raise HTTPException(status_code=422, detail="Envie um arquivo .csv ou .xlsx")
+    content = file.file.read()
+    job = ImportJobService(db).create_and_dispatch(
+        tipo=ImportType.EMPRESAS_CONTATOS.value, filename=file.filename, content=content,
+        tenant_id=user.tenant_id, user_id=user.id,
+    )
+    return job
+
+
 @router.get("/import/{job_id}", response_model=ImportJobRead)
 def get_import_job(job_id: UUID, _: User = Depends(get_current_user), db: Session = Depends(get_db)):
     job = ImportJobService(db).get(job_id)

@@ -35,6 +35,7 @@ class ContactUpdate(BaseModel):
 class ContactRead(ORMModel):
     id: UUID
     company_id: UUID
+    responsavel_id: UUID | None
     nome: str
     cargo: str | None
     email: str | None

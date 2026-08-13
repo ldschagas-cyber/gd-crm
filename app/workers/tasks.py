@@ -1,6 +1,7 @@
 """Tarefas Celery: importação assíncrona de empresas e contatos (Excel/CSV) e automações."""
 import base64
 import io
+import re
 from datetime import date, datetime, timedelta
 from uuid import UUID
 
@@ -10,6 +11,7 @@ from sqlalchemy import select
 from app.core.celery_app import celery_app
 from app.core.context import set_current_tenant, set_current_user
 from app.core.database import SessionLocal
+from app.core.text import dedupe_key
 from app.models.call import Call
 from app.models.company import Company
 from app.models.contact import Contact
@@ -27,14 +29,23 @@ from app.repositories.company import CompanyRepository
 from app.repositories.contact import ContactRepository
 from app.repositories.lead_prospect import LeadProspectRepository
 from app.repositories.user import UserRepository
+from app.services.company_dedupe import find_duplicate_company
 from app.services.sequence_dispatch import (
     advance_due_steps, has_active_email_integration, has_replied, log_email_sent, render_template,
     resolve_company_id, resolve_contact, send_step_email,
 )
 from app.services.sequence_dispatch import _resolve_responsavel as resolve_sequence_responsavel
 
-COMPANY_REQUIRED = ["razao_social", "cnpj", "cidade", "uf", "responsavel"]
-CONTACT_REQUIRED = ["nome", "empresa", "email"]
+# cnpj não é mais obrigatório aqui: a cascata de dedupe (find_duplicate_company) cobre
+# empresas sem CNPJ via domínio/nome+UF — sem isso, listas de prospecção sem CNPJ
+# (comuns) não tinham proteção nenhuma contra duplicidade.
+COMPANY_REQUIRED = ["razao_social", "cidade", "uf", "responsavel"]
+# responsavel agora obrigatório: contato precisa nascer associado a alguém, e precisa
+# bater com o responsável já cadastrado da empresa (ver import_contacts_task).
+CONTACT_REQUIRED = ["nome", "empresa", "email", "responsavel"]
+COMPANY_CONTACT_REQUIRED = [
+    "empresa_razao_social", "empresa_cidade", "empresa_uf", "contato_nome", "contato_email", "responsavel",
+]
 LEAD_PROSPECT_REQUIRED = ["empresa"]
 
 
@@ -45,6 +56,29 @@ def _read_table(content: bytes, filename: str) -> pd.DataFrame:
     if filename.lower().endswith(".csv"):
         return pd.read_csv(io.BytesIO(content), dtype=str)
     return pd.read_excel(io.BytesIO(content), dtype=str)
+
+
+def _looks_like_cnpj(value: str) -> bool:
+    return len(re.sub(r"\D", "", value)) == 14
+
+
+def _find_company_by_cnpj_or_name(companies: CompanyRepository, valor: str) -> Company | None:
+    """Localiza empresa pela coluna 'empresa' de import_contacts_task: CNPJ (14 dígitos,
+    com ou sem máscara) ou razão social (comparação normalizada, ver dedupe_key)."""
+    if _looks_like_cnpj(valor):
+        found = companies.get_by_cnpj(re.sub(r"\D", "", valor))
+        if found:
+            return found
+    key = dedupe_key(valor)
+    if not key:
+        return None
+    return next((c for c in companies.find_by_uf_not_deleted(None) if dedupe_key(c.razao_social) == key), None)
+
+
+def _empresa_ja_cadastrada_erro(users: UserRepository, duplicate: Company) -> str:
+    dono = users.get(duplicate.responsavel_id) if duplicate.responsavel_id else None
+    detalhe = f": {dono.nome} ({dono.email})" if dono else ""
+    return f"Empresa já cadastrada para outro responsável{detalhe}"
 
 
 @celery_app.task(name="app.workers.tasks.import_companies_task")
@@ -66,11 +100,6 @@ def import_companies_task(job_id: str, tenant_id: str, user_id: str, content: st
             if faltando:
                 erros.append({"linha": int(idx) + 2, "motivo": f"Campos obrigatórios ausentes: {faltando}"})
                 continue
-            cnpj = str(row["cnpj"]).strip()
-            if repo.get_by_cnpj(cnpj):
-                erros.append({"linha": int(idx) + 2, "motivo": "CNPJ já cadastrado"})
-                continue
-
             def opt_str(col):
                 return str(row[col]).strip() if col in df.columns and not pd.isna(row.get(col)) else None
 
@@ -97,10 +126,24 @@ def import_companies_task(job_id: str, tenant_id: str, user_id: str, content: st
                 erros.append({"linha": int(idx) + 2, "motivo": f"Responsável '{responsavel_email}' não encontrado"})
                 continue
 
+            razao_social = str(row["razao_social"]).strip()
+            uf = str(row["uf"]).strip()[:2]
+            cnpj = opt_str("cnpj")
+            site = opt_str("site")
+            email = opt_str("email")
+
+            # Cascata CNPJ -> domínio -> nome normalizado+UF (ver app/services/company_dedupe.py).
+            duplicate = find_duplicate_company(repo, razao_social=razao_social, uf=uf, cnpj=cnpj, site=site, email=email)
+            if duplicate is not None:
+                if duplicate.responsavel_id == responsavel.id:
+                    erros.append({"linha": int(idx) + 2, "motivo": "Empresa já cadastrada"})
+                else:
+                    erros.append({"linha": int(idx) + 2, "motivo": _empresa_ja_cadastrada_erro(users, duplicate)})
+                continue
+
             repo.add(Company(
-                razao_social=str(row["razao_social"]).strip(), cnpj=cnpj,
-                cidade=str(row["cidade"]).strip(), uf=str(row["uf"]).strip()[:2],
-                segmento=opt_str("segmento"), telefone=opt_str("telefone"), email=opt_str("email"),
+                razao_social=razao_social, cnpj=cnpj, cidade=str(row["cidade"]).strip(), uf=uf, site=site,
+                segmento=opt_str("segmento"), telefone=opt_str("telefone"), email=email,
                 porte=opt_str("porte"), num_funcionarios=opt_int("funcionarios"),
                 faturamento_estimado=opt_float("faturamento"), origem=opt_str("origem"),
                 responsavel_id=responsavel.id,
@@ -127,7 +170,14 @@ def import_companies_task(job_id: str, tenant_id: str, user_id: str, content: st
 
 @celery_app.task(name="app.workers.tasks.import_contacts_task")
 def import_contacts_task(job_id: str, tenant_id: str, user_id: str, content: str, filename: str):
-    """`content` chega em base64 (o broker Celery serializa em JSON, que não aceita bytes crus)."""
+    """`content` chega em base64 (o broker Celery serializa em JSON, que não aceita bytes crus).
+
+    Importa contatos pra empresas já cadastradas (coluna "empresa" aceita CNPJ ou razão
+    social). Contato nunca tem dono independente da empresa: a coluna "responsavel" só
+    serve pra *validar* que quem está importando conhece o responsável certo da empresa
+    (trava do vendedor B não conseguir associar contato a uma empresa de outro dono) —
+    o valor gravado em Contact.responsavel_id é sempre o da empresa, não o da coluna.
+    """
     set_current_tenant(UUID(tenant_id))
     set_current_user(UUID(user_id))
     db = SessionLocal()
@@ -138,22 +188,143 @@ def import_contacts_task(job_id: str, tenant_id: str, user_id: str, content: str
         df = _read_table(base64.b64decode(content), filename)
         companies = CompanyRepository(db)
         contacts = ContactRepository(db)
+        users = UserRepository(db)
         erros, importadas = [], 0
         for idx, row in df.iterrows():
             faltando = [c for c in CONTACT_REQUIRED if c not in df.columns or pd.isna(row.get(c))]
             if faltando:
                 erros.append({"linha": int(idx) + 2, "motivo": f"Campos obrigatórios ausentes: {faltando}"})
                 continue
-            empresa = companies.get_by_cnpj(str(row["empresa"]).strip())
+
+            empresa = _find_company_by_cnpj_or_name(companies, str(row["empresa"]).strip())
             if empresa is None:
-                erros.append({"linha": int(idx) + 2, "motivo": "Empresa (CNPJ) não localizada"})
+                erros.append({"linha": int(idx) + 2, "motivo": "Empresa não localizada (CNPJ ou razão social)"})
                 continue
-            contacts.add(Contact(
-                company_id=empresa.id, nome=str(row["nome"]).strip(),
-                email=str(row["email"]).strip(),
-                cargo=str(row["cargo"]).strip() if "cargo" in df.columns and not pd.isna(row.get("cargo")) else None,
-                telefone=str(row["telefone"]).strip() if "telefone" in df.columns and not pd.isna(row.get("telefone")) else None,
-            ))
+
+            responsavel_email = str(row["responsavel"]).strip()
+            responsavel = users.get_by_email(responsavel_email)
+            if responsavel is None:
+                erros.append({"linha": int(idx) + 2, "motivo": f"Responsável '{responsavel_email}' não encontrado"})
+                continue
+            if empresa.responsavel_id != responsavel.id:
+                erros.append({"linha": int(idx) + 2, "motivo": "Responsável informado não é o responsável desta empresa"})
+                continue
+
+            email = str(row["email"]).strip()
+            if contacts.get_by_company_and_email(empresa.id, email) is None:
+                contacts.add(Contact(
+                    company_id=empresa.id, nome=str(row["nome"]).strip(), email=email,
+                    cargo=str(row["cargo"]).strip() if "cargo" in df.columns and not pd.isna(row.get("cargo")) else None,
+                    telefone=str(row["telefone"]).strip() if "telefone" in df.columns and not pd.isna(row.get("telefone")) else None,
+                    responsavel_id=empresa.responsavel_id,
+                ))
+            importadas += 1  # conta como sucesso mesmo quando o contato já existia (reaproveitado)
+        job.total_linhas = int(len(df))
+        job.importadas = importadas
+        job.erros = erros
+        job.status = ImportStatus.CONCLUIDO.value
+        db.commit()
+        return {"importadas": importadas, "erros": len(erros)}
+    except Exception as exc:  # noqa: BLE001
+        db.rollback()
+        job = db.get(ImportJob, UUID(job_id))
+        if job:
+            job.status = ImportStatus.ERRO.value
+            job.erros = [{"motivo": str(exc)}]
+            db.commit()
+        raise
+    finally:
+        db.close()
+
+
+@celery_app.task(name="app.workers.tasks.import_companies_contacts_task")
+def import_companies_contacts_task(job_id: str, tenant_id: str, user_id: str, content: str, filename: str):
+    """`content` chega em base64 (o broker Celery serializa em JSON, que não aceita bytes crus).
+
+    Importação combinada: cada linha traz empresa (colunas `empresa_*`) e contato
+    (colunas `contato_*`) juntos — caso comum de listas de prospecção (ex.: Top 80), que
+    já vêm com as duas pontas. Uma única coluna `responsavel` vale pros dois, já que
+    contato nunca tem dono independente da empresa.
+
+    Se a empresa já existir (cascata CNPJ -> domínio -> nome+UF, ver
+    app/services/company_dedupe.py) e for do mesmo responsável, reaproveita (caminho
+    feliz: "contato novo pra empresa já cadastrada"). Se já existir com responsável
+    diferente, rejeita a linha inteira — não anexa contato à conta de outro vendedor.
+    """
+    set_current_tenant(UUID(tenant_id))
+    set_current_user(UUID(user_id))
+    db = SessionLocal()
+    try:
+        job = db.get(ImportJob, UUID(job_id))
+        job.status = ImportStatus.PROCESSANDO.value
+        db.flush()
+        df = _read_table(base64.b64decode(content), filename)
+        companies = CompanyRepository(db)
+        contacts = ContactRepository(db)
+        users = UserRepository(db)
+        erros, importadas = [], 0
+        for idx, row in df.iterrows():
+            faltando = [c for c in COMPANY_CONTACT_REQUIRED if c not in df.columns or pd.isna(row.get(c))]
+            if faltando:
+                erros.append({"linha": int(idx) + 2, "motivo": f"Campos obrigatórios ausentes: {faltando}"})
+                continue
+
+            def opt_str(col):
+                return str(row[col]).strip() if col in df.columns and not pd.isna(row.get(col)) else None
+
+            def opt_int(col):
+                val = opt_str(col)
+                try:
+                    return int(float(val)) if val else None
+                except ValueError:
+                    return None
+
+            def opt_float(col):
+                val = opt_str(col)
+                try:
+                    return float(val) if val else None
+                except ValueError:
+                    return None
+
+            responsavel_email = str(row["responsavel"]).strip()
+            responsavel = users.get_by_email(responsavel_email)
+            if responsavel is None:
+                erros.append({"linha": int(idx) + 2, "motivo": f"Responsável '{responsavel_email}' não encontrado"})
+                continue
+
+            razao_social = str(row["empresa_razao_social"]).strip()
+            uf = str(row["empresa_uf"]).strip()[:2]
+            cnpj = opt_str("empresa_cnpj")
+            site = opt_str("empresa_site")
+            email_empresa = opt_str("empresa_email")
+            contato_email = str(row["contato_email"]).strip()
+
+            duplicate = find_duplicate_company(
+                companies, razao_social=razao_social, uf=uf, cnpj=cnpj, site=site,
+                email=email_empresa, contato_email=contato_email,
+            )
+            if duplicate is not None and duplicate.responsavel_id != responsavel.id:
+                erros.append({"linha": int(idx) + 2, "motivo": _empresa_ja_cadastrada_erro(users, duplicate)})
+                continue
+
+            if duplicate is not None:
+                empresa = duplicate  # mesmo responsável -> reaproveita, caminho feliz
+            else:
+                empresa = companies.add(Company(
+                    razao_social=razao_social, cnpj=cnpj, cidade=str(row["empresa_cidade"]).strip(), uf=uf,
+                    site=site, segmento=opt_str("empresa_segmento"), telefone=opt_str("empresa_telefone"),
+                    email=email_empresa, porte=opt_str("empresa_porte"),
+                    num_funcionarios=opt_int("empresa_funcionarios"),
+                    faturamento_estimado=opt_float("empresa_faturamento"),
+                    origem=opt_str("empresa_origem"), responsavel_id=responsavel.id, created_by=UUID(user_id),
+                ))
+
+            if contacts.get_by_company_and_email(empresa.id, contato_email) is None:
+                contacts.add(Contact(
+                    company_id=empresa.id, nome=str(row["contato_nome"]).strip(), email=contato_email,
+                    cargo=opt_str("contato_cargo"), telefone=opt_str("contato_telefone"),
+                    responsavel_id=empresa.responsavel_id,
+                ))
             importadas += 1
         job.total_linhas = int(len(df))
         job.importadas = importadas
@@ -161,6 +332,14 @@ def import_contacts_task(job_id: str, tenant_id: str, user_id: str, content: str
         job.status = ImportStatus.CONCLUIDO.value
         db.commit()
         return {"importadas": importadas, "erros": len(erros)}
+    except Exception as exc:  # noqa: BLE001
+        db.rollback()
+        job = db.get(ImportJob, UUID(job_id))
+        if job:
+            job.status = ImportStatus.ERRO.value
+            job.erros = [{"motivo": str(exc)}]
+            db.commit()
+        raise
     finally:
         db.close()
 

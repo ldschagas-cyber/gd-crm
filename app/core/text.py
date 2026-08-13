@@ -1,4 +1,6 @@
-"""Utilitários de normalização de texto — hoje, só nome de empresa."""
+"""Utilitários de normalização de texto — nome de empresa (exibição e dedupe) e domínio."""
+import unicodedata
+from urllib.parse import urlparse
 
 # Palavras de ligação: minúsculas, exceto quando forem a primeira palavra.
 CONNECTIVE_WORDS = {
@@ -64,3 +66,70 @@ def normalize_company_name(name: str) -> str:
         return ""
     words = name.lower().split()  # split() já colapsa espaços duplicados e faz trim
     return " ".join(_format_word(w, i == 0) for i, w in enumerate(words))
+
+
+# ---- Dedupe de empresa (import + cadastro manual) — ver app/services/company_dedupe.py ----
+
+# Domínios de e-mail pessoal/gratuito — descartados na cascata de dedupe por domínio
+# corporativo, pois não identificam uma empresa (dois clientes diferentes podem muito
+# bem ter contato em @gmail.com).
+PERSONAL_EMAIL_DOMAINS = {
+    "gmail.com", "hotmail.com", "hotmail.com.br", "outlook.com", "outlook.com.br",
+    "yahoo.com", "yahoo.com.br", "uol.com.br", "bol.com.br", "terra.com.br",
+    "live.com", "icloud.com", "globo.com", "ig.com.br", "msn.com", "r7.com",
+    "zipmail.com.br", "aol.com",
+}
+
+# Tokens de natureza jurídica ignorados na chave de comparação (dedupe_key) — diferente
+# de LEGAL_ENTITY_SUFFIXES acima, que é para formatação de exibição, não comparação.
+_DEDUPE_IGNORED_TOKENS = {"ltda", "me", "mei", "epp", "eireli", "sa"}
+
+
+def extract_domain(value: str | None) -> str | None:
+    """Extrai o domínio (minúsculas, sem 'www.') de uma URL (com ou sem protocolo) ou de
+    um endereço de e-mail. Retorna None quando não dá pra reconhecer um domínio válido.
+
+    Exemplos: "contato@acme.com.br" -> "acme.com.br"; "https://www.acme.com.br/x" ->
+    "acme.com.br"; "acme.com.br" (sem protocolo) -> "acme.com.br"; "acme" -> None.
+    """
+    if not value:
+        return None
+    value = value.strip().lower()
+    if not value:
+        return None
+    if "@" in value:
+        host = value.rsplit("@", 1)[1]
+    else:
+        candidate = value if "//" in value else f"//{value}"
+        host = urlparse(candidate).netloc or value
+        host = host.split(":")[0]  # remove porta, se houver
+    host = host.strip().strip("/")
+    if host.startswith("www."):
+        host = host[4:]
+    if not host or "." not in host:
+        return None
+    return host
+
+
+def is_personal_email_domain(domain: str | None) -> bool:
+    """True se `domain` for um provedor de e-mail pessoal/gratuito (ver
+    PERSONAL_EMAIL_DOMAINS) — usado pra ignorar esses domínios na cascata de dedupe."""
+    return bool(domain) and domain.lower() in PERSONAL_EMAIL_DOMAINS
+
+
+def dedupe_key(name: str | None) -> str:
+    """Gera uma chave de comparação (não de exibição — ver normalize_company_name pra
+    isso) pra detectar empresas com o "mesmo nome": minúsculas, sem acento, sem
+    pontuação, sem naturezas jurídicas comuns (Ltda/ME/EPP/EIRELI/S.A.), espaços
+    colapsados. "" ou None -> "".
+    """
+    if not name:
+        return ""
+    ascii_name = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode("ascii")
+    ascii_name = ascii_name.lower()
+    # "." é removido (não vira espaço) pra "S.A." colapsar em "sa" e cair no filtro de
+    # sufixo jurídico abaixo, em vez de sobrar como dois tokens soltos "s"/"a".
+    ascii_name = ascii_name.replace(".", "")
+    cleaned = "".join(ch if ch.isalnum() or ch.isspace() else " " for ch in ascii_name)
+    words = [w for w in cleaned.split() if w not in _DEDUPE_IGNORED_TOKENS]
+    return " ".join(words)
