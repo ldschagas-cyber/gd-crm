@@ -37,6 +37,12 @@ const NAV_GROUPS = [
     ],
   },
   {
+    label: 'Customer Success',
+    items: [
+      { to: '/clientes', label: 'Clientes', icon: IconCustomerSuccess },
+    ],
+  },
+  {
     label: 'Receita',
     items: [
       { to: '/receita-recorrente', label: 'Receita Recorrente', icon: IconRevenue },
@@ -312,6 +318,14 @@ function IconRevenue() {
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
       <path d="M3 15.5h14M3 15.5V4.5" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M6 12.5v-3M10 12.5V6.5M14 12.5v-5.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+function IconCustomerSuccess() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <circle cx="10" cy="10" r="7.3" />
+      <path d="M6.7 10.3l2.1 2.2 4.5-4.7" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }

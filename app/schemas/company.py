@@ -1,10 +1,10 @@
 """DTOs de empresa."""
-from datetime import datetime
+from datetime import date, datetime
 from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from app.models.company import CompanyStatus, FunilEstagio
+from app.models.company import CompanyStatus, CsFase, FunilEstagio
 from app.schemas.common import ORMModel
 
 
@@ -121,6 +121,12 @@ class CompanyRead(ORMModel):
     # Central de Leads — None enquanto a empresa nunca entrou no funil (ver FunilEstagio).
     funil_estagio: str | None
     funil_estagio_atualizado_em: datetime | None
+    # Customer Success — None enquanto a empresa nunca teve um negócio ganho (ver CsFase).
+    cs_fase: str | None
+    cs_fase_atualizada_em: datetime | None
+    cs_responsavel_id: UUID | None
+    health_score: int | None
+    health_score_atualizado_em: datetime | None
 
 
 class IcpBreakdownItemRead(BaseModel):
@@ -213,3 +219,87 @@ class CentralLeadsResumo(BaseModel):
     por_estagio: list[EstagioCountRead]
     score_medio: int
     parados: int  # sem interação há 7+ dias, exclui 'convertido'
+
+
+# ---- Customer Success -------------------------------------------------------
+# Ver docs/PLANO_CUSTOMER_SUCCESS.md.
+
+class CompanyCsFaseUpdate(BaseModel):
+    """Troca manual de fase (drag-and-drop no kanban ou seletor no drawer). `churn`
+    nunca chega aqui — só é atingido via cancelamento de Assinatura (ver
+    CompanyService.set_cs_fase e AssinaturaService.cancelar)."""
+    cs_fase: CsFase
+
+
+class CompanyCsUpdate(BaseModel):
+    cs_responsavel_id: UUID | None = None
+
+
+class HealthBreakdownItemRead(BaseModel):
+    criterio: str
+    valor: str
+    pontos: int
+
+
+class HealthScoreRead(BaseModel):
+    score: int
+    faixa: str  # 'saudavel' | 'atencao' | 'em_risco'
+    engajamento: int
+    uso: int
+    satisfacao: int
+    financeiro: int
+    precisa_checkin: bool
+    breakdown: list[HealthBreakdownItemRead]
+
+
+class CsCheckinCreate(BaseModel):
+    uso_percebido: int = Field(ge=0, le=100)
+    satisfacao: int = Field(ge=0, le=100)
+    notas: str | None = None
+
+
+class AssinaturaResumoRead(BaseModel):
+    """Recorte da Assinatura ativa (ou mais recente) exibido no drawer de Clientes —
+    evita o frontend ter que combinar duas chamadas pra montar a aba de Renovação."""
+    id: UUID
+    nome_plano: str
+    valor_mensal: float
+    status: str
+    data_inicio: date
+    ciclo_renovacao_meses: int | None
+    data_renovacao: date | None
+
+
+class ClienteRead(BaseModel):
+    """Uma linha do módulo de Clientes — Company enriquecida com Health Score,
+    checklist de implantação e assinatura, análoga a CentralLeadRead pra Central de
+    Leads. Não substitui CompanyRead."""
+    id: UUID
+    razao_social: str
+    nome_fantasia: str | None
+    segmento: str | None
+    uf: str | None
+    cs_fase: str
+    cs_fase_atualizada_em: datetime | None
+    cs_responsavel_id: UUID | None
+    ultima_interacao: datetime
+    health_score: int | None
+    health_faixa: str | None
+    onboarding_progresso: int  # 0-100; 100 quando não há checklist (nada a fazer)
+    assinatura: AssinaturaResumoRead | None
+    expansao_aberta: bool  # existe negócio tipo=expansao aberto
+
+
+class CsFaseCountRead(BaseModel):
+    fase: str
+    total: int
+
+
+class ClientesResumo(BaseModel):
+    total: int  # exclui 'churn'
+    mrr_total: float
+    arr_total: float
+    health_medio: int
+    em_risco: int
+    renovacao_60d: int
+    por_fase: list[CsFaseCountRead]

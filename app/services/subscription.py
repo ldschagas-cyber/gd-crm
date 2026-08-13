@@ -5,6 +5,7 @@ correspondente — é essa garantia que faz o RevenueService (app/services/reven
 derivar os indicadores só somando a coluna delta_mrr por tipo/período, sem tocar direto em
 Assinatura. Ver docs/PLANO_RECEITA_RECORRENTE.md §1 e §3.
 """
+from calendar import monthrange
 from datetime import date
 from uuid import UUID
 
@@ -16,8 +17,18 @@ from app.models.subscription import Assinatura, AssinaturaEvento, AssinaturaStat
 from app.repositories.company import CompanyRepository
 from app.repositories.subscription import AssinaturaEventoRepository, AssinaturaRepository
 from app.schemas.subscription import (
-    AssinaturaCancelar, AssinaturaCreate, AssinaturaReativar, AssinaturaValorUpdate,
+    AssinaturaCancelar, AssinaturaCreate, AssinaturaReativar, AssinaturaRenovar, AssinaturaValorUpdate,
 )
+
+
+def _add_months(d: date, months: int) -> date:
+    """Sem dependência nova (python-dateutil) só por isso — soma meses lidando com
+    estouro de dia (ex.: 31/jan + 1 mês -> 28 ou 29/fev, nunca 03/mar)."""
+    total = d.month - 1 + months
+    ano = d.year + total // 12
+    mes = total % 12 + 1
+    dia = min(d.day, monthrange(ano, mes)[1])
+    return date(ano, mes, dia)
 
 
 class AssinaturaService:
@@ -73,7 +84,13 @@ class AssinaturaService:
             company_id=data.company_id, deal_id=data.deal_id, nome_plano=data.nome_plano,
             valor_mensal=data.valor_mensal, ciclo_cobranca=data.ciclo_cobranca,
             status=AssinaturaStatus.ATIVA.value, data_inicio=data.data_inicio,
-            responsavel_id=data.responsavel_id,
+            responsavel_id=data.responsavel_id, ciclo_renovacao_meses=data.ciclo_renovacao_meses,
+            # Customer Success (ver docs/PLANO_CUSTOMER_SUCCESS.md) — primeira renovação
+            # calculada a partir do início do contrato; None se não há prazo fixo.
+            data_renovacao=(
+                _add_months(data.data_inicio, data.ciclo_renovacao_meses)
+                if data.ciclo_renovacao_meses else None
+            ),
         )
         assinatura = self.repo.add(assinatura)
         self._registrar_evento(
@@ -117,6 +134,39 @@ class AssinaturaService:
             valor_novo=0, delta=-valor_atual, data_evento=data_cancelamento,
             observacao=data.motivo_cancelamento,
         )
+        # Customer Success (ver docs/PLANO_CUSTOMER_SUCCESS.md §4) — único caminho até a
+        # fase "churn": cancelar a assinatura É o cancelamento do cliente, não uma ação
+        # separada. Import tardio: evita ciclo com CompanyService.
+        from app.services.company import CompanyService
+        CompanyService(self.db).advance_cs_on_assinatura_cancelada(assinatura.company_id)
+        return assinatura
+
+    def renovar(self, assinatura_id: UUID, data: AssinaturaRenovar) -> Assinatura:
+        """Confirma a renovação do ciclo atual — empurra `data_renovacao` pra frente em
+        `ciclo_renovacao_meses`. Só se aplica a assinatura com prazo fixo (Customer
+        Success, ver docs/PLANO_CUSTOMER_SUCCESS.md); sem `ciclo_renovacao_meses` não
+        há "renovação" a confirmar (contrato mês a mês, já sempre "em dia")."""
+        assinatura = self.get(assinatura_id)
+        if assinatura.status != AssinaturaStatus.ATIVA.value:
+            raise ConflictError("Só é possível renovar uma assinatura ativa")
+        if not assinatura.ciclo_renovacao_meses:
+            raise ConflictError("Esta assinatura não tem prazo fixo — nada para renovar")
+
+        base = assinatura.data_renovacao or date.today()
+        assinatura.data_renovacao = _add_months(base, assinatura.ciclo_renovacao_meses)
+
+        if data.novo_valor_mensal is not None and data.novo_valor_mensal != float(assinatura.valor_mensal):
+            valor_anterior = float(assinatura.valor_mensal)
+            delta = data.novo_valor_mensal - valor_anterior
+            tipo = TipoEventoAssinatura.EXPANSAO.value if delta > 0 else TipoEventoAssinatura.CONTRACAO.value
+            assinatura.valor_mensal = data.novo_valor_mensal
+            assinatura = self.repo.save(assinatura)
+            self._registrar_evento(
+                assinatura, tipo, valor_anterior=valor_anterior, valor_novo=data.novo_valor_mensal, delta=delta,
+                data_evento=date.today(), observacao=data.observacao or "Reajuste na renovação",
+            )
+        else:
+            assinatura = self.repo.save(assinatura)
         return assinatura
 
     def reativar(self, assinatura_id: UUID, data: AssinaturaReativar) -> Assinatura:

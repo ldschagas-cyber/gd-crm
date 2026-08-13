@@ -19,6 +19,10 @@ class AssinaturaCreate(BaseModel):
     ciclo_cobranca: str = Field(default=CicloCobranca.MENSAL.value, pattern=CICLO_RE)
     data_inicio: date
     responsavel_id: UUID | None = None
+    # Customer Success (ver docs/PLANO_CUSTOMER_SUCCESS.md) — prazo contratual real, em
+    # meses. None = sem prazo fixo (mês a mês); nesse caso `data_renovacao` fica None e
+    # o Customer Success não calcula "renovação em N dias" pra esta assinatura.
+    ciclo_renovacao_meses: int | None = Field(default=None, gt=0)
 
 
 class AssinaturaValorUpdate(BaseModel):
@@ -38,6 +42,14 @@ class AssinaturaReativar(BaseModel):
     observacao: str | None = Field(default=None, max_length=255)
 
 
+class AssinaturaRenovar(BaseModel):
+    """Confirma a renovação do ciclo atual — empurra `data_renovacao` pra frente em
+    `ciclo_renovacao_meses`. Opcionalmente reajusta o valor no mesmo lançamento (vira
+    um evento de expansão/contração normal, ver AssinaturaService.renovar)."""
+    novo_valor_mensal: float | None = Field(default=None, gt=0)
+    observacao: str | None = Field(default=None, max_length=255)
+
+
 class AssinaturaRead(BaseModel):
     model_config = {"from_attributes": True}
 
@@ -52,6 +64,8 @@ class AssinaturaRead(BaseModel):
     data_cancelamento: date | None
     motivo_cancelamento: str | None
     responsavel_id: UUID | None
+    ciclo_renovacao_meses: int | None
+    data_renovacao: date | None
     created_at: datetime
 
 

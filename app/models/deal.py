@@ -17,6 +17,17 @@ class DealStatus(str, enum.Enum):
     PERDIDO = "perdido"
 
 
+class DealTipo(str, enum.Enum):
+    """Distingue negócio novo (funil de vendas comum) de negócio de expansão/upsell
+    aberto para um cliente já ativo — usado pelo Customer Success pra mover a empresa
+    pra fase `em_expansao` enquanto o negócio está aberto (ver
+    docs/PLANO_CUSTOMER_SUCCESS.md §4 e CompanyService.advance_cs_on_expansao_*). Nome
+    deliberadamente distinto de `motivo_perda` (abaixo) pra não confundir "por que este
+    negócio existe" com "por que este negócio foi perdido"."""
+    NOVO_NEGOCIO = "novo_negocio"
+    EXPANSAO = "expansao"
+
+
 class Deal(Base, TenantMixin, TimestampMixin):
     __tablename__ = "deals"
 
@@ -44,6 +55,10 @@ class Deal(Base, TenantMixin, TimestampMixin):
     # este negócio fecha no mês de data_prev_fechamento, distinto da probabilidade ponderada
     # (que vem da etapa). Default False: nada é commit até alguém marcar manualmente.
     commit: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    # Customer Success (ver DealTipo acima). Default novo_negocio pra todo negócio já
+    # existente e pra todo fluxo comum de Vendas — só vira "expansao" quando aberto
+    # explicitamente a partir do drawer de um cliente no módulo de Clientes.
+    tipo: Mapped[str] = mapped_column(String(20), nullable=False, default=DealTipo.NOVO_NEGOCIO.value)
 
 
 # Data/hora da última interação registrada na timeline deste negócio — usada pra

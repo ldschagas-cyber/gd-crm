@@ -9,7 +9,7 @@ from app.core.deps import get_current_user
 from app.models.user import User
 from app.schemas.subscription import (
     AssinaturaCancelar, AssinaturaCreate, AssinaturaEventoRead, AssinaturaReativar, AssinaturaRead,
-    AssinaturaValorUpdate,
+    AssinaturaRenovar, AssinaturaValorUpdate,
 )
 from app.services.subscription import AssinaturaService
 
@@ -44,6 +44,14 @@ def atualizar_valor(assinatura_id: UUID, data: AssinaturaValorUpdate,
 def cancelar_assinatura(assinatura_id: UUID, data: AssinaturaCancelar,
                         _: User = Depends(get_current_user), db: Session = Depends(get_db)):
     return AssinaturaService(db).cancelar(assinatura_id, data)
+
+
+@router.patch("/{assinatura_id}/renovar", response_model=AssinaturaRead)
+def renovar_assinatura(assinatura_id: UUID, data: AssinaturaRenovar,
+                       _: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Customer Success — confirma a renovação do ciclo contratual atual (ver
+    docs/PLANO_CUSTOMER_SUCCESS.md). Só se aplica a assinatura com prazo fixo."""
+    return AssinaturaService(db).renovar(assinatura_id, data)
 
 
 @router.patch("/{assinatura_id}/reativar", response_model=AssinaturaRead)
