@@ -35,6 +35,7 @@ from app.services.sequence_dispatch import (
     resolve_company_id, resolve_contact, send_step_email,
 )
 from app.services.sequence_dispatch import _resolve_responsavel as resolve_sequence_responsavel
+from app.services.workflow_events import publish_event
 
 # cnpj não é mais obrigatório aqui: a cascata de dedupe (find_duplicate_company) cobre
 # empresas sem CNPJ via domínio/nome+UF — sem isso, listas de prospecção sem CNPJ
@@ -431,12 +432,26 @@ def _process_tenant_sequence_enrollments(tenant_id: UUID) -> int:
             sequence = enrollment.sequence
             contact = resolve_contact(db, enrollment.contact_id, enrollment.deal_id)
 
+            # Checagem de resposta só roda pra quem tem pausar_em_resposta ligado — não só
+            # por causa do custo de bater no Graph pra cada enrollment ativo, mas porque isso
+            # também garante que o gatilho `resposta_recebida` (publish_event abaixo) só dispara
+            # uma vez por resposta: assim que dispara, o enrollment sai de "ativa" (vira
+            # "pausada") e some deste loop, então não há re-checagem no próximo dia pra
+            # republicar o mesmo evento. Rodar essa checagem pra todo enrollment ativo,
+            # independente do pausar_em_resposta, exigiria um campo próprio de "já notificado"
+            # pra evitar disparar o mesmo evento repetidamente enquanto o enrollment continua
+            # ativo — fora do escopo desta tarefa.
             if sequence.pausar_em_resposta and enrollment.step_atual > 0 and contact and contact.email:
                 responsavel_id = resolve_sequence_responsavel(db, enrollment, sequence)
                 if (
                     has_active_email_integration(db, responsavel_id)
                     and has_replied(db, responsavel_id, contact.email, enrollment.atualizado_em)
                 ):
+                    publish_event(db, "resposta_recebida", contact.id, {
+                        "cargo": contact.cargo, "canal": "email",
+                        "_entidade_tipo": "contact",
+                        "_company_id": str(contact.company_id) if contact.company_id else None,
+                    })
                     enrollment.status = "pausada"
                     enrollment.pausado_motivo = "resposta_recebida"
                     continue
@@ -640,7 +655,21 @@ def _execute_workflow_action(db, workflow: Workflow, action, entidade_ref: UUID,
         return f"Inscrito na sequência \"{sequence.nome}\""
 
     if action.tipo_acao == "executar_enriquecimento":
-        raise RuntimeError("Ação 'Executar enriquecimento' depende do módulo de IA (Fase 3), ainda não implementado")
+        # Reaproveita o mesmo serviço de IA do Dossiê Comercial (resumo executivo + próxima
+        # ação sugerida) — diferente de app/services/lead_enrichment.py (usado no botão
+        # "Enriquecer com IA" da Pesquisa de Leads), que só monta uma sugestão pro vendedor
+        # revisar e aceitar manualmente e não se aplica aqui: opera sobre LeadProspect, uma
+        # entidade que não existe nos eventos de Workflow (Empresa/Contato/Negócio já
+        # cadastrados). CompanyAiService.regenerate_resumo já grava direto no registro —
+        # é o mesmo caminho usado automaticamente a cada evento relevante da timeline
+        # (ver app/services/company_ai.py:schedule_if_relevant), então aplicar aqui também
+        # sem exigir clique em "Aplicar" é consistente com o resto do sistema.
+        company_id, _, _ = _resolve_workflow_entidades(payload, entidade_ref)
+        if not company_id:
+            return "Sem empresa associada ao evento — ação ignorada"
+        from app.services.company_ai import CompanyAiService
+        CompanyAiService(db).regenerate_resumo(company_id)
+        return "Resumo executivo e próxima ação atualizados via IA"
 
     raise RuntimeError(f"Tipo de ação desconhecido: {action.tipo_acao}")
 
