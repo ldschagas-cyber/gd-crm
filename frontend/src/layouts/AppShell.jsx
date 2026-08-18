@@ -12,14 +12,6 @@ import './AppShell.css'
 
 const NAV_GROUPS = [
   {
-    label: 'Gestão',
-    items: [
-      { to: '/', label: 'Dashboard', end: true, icon: IconDashboard },
-      { to: '/metas-funil', label: 'Metas do Funil', icon: IconTarget },
-      { to: '/previsao-comercial', label: 'Previsão Comercial', icon: IconForecast },
-    ],
-  },
-  {
     label: 'Inteligência Comercial',
     items: [
       { to: '/buscar-empresas', label: 'Buscar Empresas', icon: IconSearch },
@@ -37,6 +29,25 @@ const NAV_GROUPS = [
     ],
   },
   {
+    label: 'Automação',
+    items: [
+      { to: '/sequencias', label: 'Sequências', icon: IconSequence },
+      { to: '/workflows', label: 'Workflows', icon: IconWorkflow },
+      { to: '/modelos-email', label: 'Modelos de e-mail', icon: IconEmailTemplate },
+      { to: '/modelos-mensagem', label: 'Modelos de mensagem', icon: IconMessageTemplate },
+      { to: '/snippets', label: 'Respostas rápidas', icon: IconSnippet },
+      { to: '/formularios', label: 'Formulários', icon: IconForm },
+    ],
+  },
+  {
+    label: 'Gestão',
+    items: [
+      { to: '/', label: 'Dashboard', end: true, icon: IconDashboard },
+      { to: '/metas-funil', label: 'Metas do Funil', icon: IconTarget },
+      { to: '/previsao-comercial', label: 'Previsão Comercial', icon: IconForecast },
+    ],
+  },
+  {
     label: 'Customer Success',
     items: [
       { to: '/clientes', label: 'Clientes', icon: IconCustomerSuccess },
@@ -46,17 +57,6 @@ const NAV_GROUPS = [
     label: 'Receita',
     items: [
       { to: '/receita-recorrente', label: 'Receita Recorrente', icon: IconRevenue },
-    ],
-  },
-  {
-    label: 'Automação',
-    items: [
-      { to: '/sequencias', label: 'Sequências', icon: IconSequence },
-      { to: '/workflows', label: 'Workflows', icon: IconWorkflow },
-      { to: '/modelos-email', label: 'Modelos de e-mail', icon: IconEmailTemplate },
-      { to: '/modelos-mensagem', label: 'Modelos de mensagem', icon: IconMessageTemplate },
-      { to: '/snippets', label: 'Respostas rápidas', icon: IconSnippet },
-      { to: '/formularios', label: 'Formulários', icon: IconForm },
     ],
   },
 ]
