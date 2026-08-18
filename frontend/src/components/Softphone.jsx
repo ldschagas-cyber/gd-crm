@@ -8,7 +8,7 @@ function formatSeconds(total) {
 }
 
 export default function Softphone() {
-  const { status, label, incoming, seconds, error, answer, rejectIncoming, hangup } = useSoftphone()
+  const { status, label, incoming, seconds, answer, rejectIncoming, hangup } = useSoftphone()
 
   if (status === 'incoming' && incoming) {
     return (
@@ -28,14 +28,7 @@ export default function Softphone() {
     )
   }
 
-  if (status === 'idle') {
-    if (!error) return null
-    return (
-      <div className="softphone-bar softphone-error">
-        <span>{error}</span>
-      </div>
-    )
-  }
+  if (status === 'idle') return null
 
   return (
     <div className="softphone-bar softphone-active">
