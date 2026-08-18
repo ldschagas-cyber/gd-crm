@@ -13,12 +13,23 @@ from sqlalchemy.orm import Session
 
 from app.core.context import get_current_user_id
 from app.core.exceptions import ConflictError, NotFoundError
-from app.models.subscription import Assinatura, AssinaturaEvento, AssinaturaStatus, TipoEventoAssinatura
+from app.models.subscription import (
+    Assinatura, AssinaturaEvento, AssinaturaStatus, CicloCobranca, TipoEventoAssinatura,
+)
 from app.repositories.company import CompanyRepository
 from app.repositories.subscription import AssinaturaEventoRepository, AssinaturaRepository
 from app.schemas.subscription import (
     AssinaturaCancelar, AssinaturaCreate, AssinaturaReativar, AssinaturaRenovar, AssinaturaValorUpdate,
 )
+
+
+# Deal.valor_previsto é o valor TOTAL da oportunidade (forecast/pipeline somam como "valor
+# total" e ponderam por probabilidade — ver app/services/forecast.py), não um valor mensal.
+# Para virar MRR ao ganhar o negócio, tratamos esse total como valor ANUAL de contrato e
+# normalizamos dividindo por 12 — a mesma convenção que CicloCobranca.ANUAL já documenta
+# ("valor_mensal já vem normalizado = valor_anual / 12"). Ponto único de ajuste caso o
+# processo comercial passe a lançar valor_previsto com outra recorrência.
+MESES_CONTRATO_PADRAO = 12
 
 
 def _add_months(d: date, months: int) -> date:
@@ -99,6 +110,41 @@ class AssinaturaService:
             data_evento=data.data_inicio, observacao=None,
         )
         return assinatura
+
+    def registrar_negocio_ganho(self, deal) -> "Assinatura | None":
+        """Ponte automática Negócio ganho -> Receita Recorrente. Chamado por
+        DealService quando um negócio entra em GANHO (uma única vez por negócio — a
+        idempotência é garantida por DealService._on_deal_closed, que só dispara na
+        transição para ganho, não a cada re-save de um negócio já fechado).
+
+        `valor_previsto` do negócio é o valor total do contrato, convertido em MRR pela
+        regra de MESES_CONTRATO_PADRAO (ver constante acima). Sem assinatura ativa -> cria
+        a primeira; já havendo uma (segundo negócio ganho do mesmo cliente) -> soma o MRR
+        como evento de expansão, mantendo a regra de "uma assinatura ativa por empresa"
+        (§0.5 do plano) em vez de abrir uma segunda linha bloqueada. Ver
+        docs/PLANO_RECEITA_RECORRENTE.md."""
+        if deal.valor_previsto is None:
+            return None
+        valor_contrato = float(deal.valor_previsto)
+        if valor_contrato <= 0:
+            return None
+        mrr = round(valor_contrato / MESES_CONTRATO_PADRAO, 2)
+        if mrr <= 0:
+            return None
+
+        ativa = self.repo.get_ativa_por_empresa(deal.company_id)
+        if ativa is None:
+            return self.create(AssinaturaCreate(
+                company_id=deal.company_id, deal_id=deal.id, nome_plano=deal.nome[:120],
+                valor_mensal=mrr, ciclo_cobranca=CicloCobranca.ANUAL.value,
+                ciclo_renovacao_meses=MESES_CONTRATO_PADRAO, responsavel_id=deal.responsavel_id,
+                data_inicio=deal.data_fechamento.date() if deal.data_fechamento else date.today(),
+            ))
+        # Cliente já tem assinatura ativa -> negócio ganho é expansão do MRR existente.
+        return self.atualizar_valor(ativa.id, AssinaturaValorUpdate(
+            valor_mensal=round(float(ativa.valor_mensal) + mrr, 2),
+            observacao=f"Expansão automática — negócio ganho: {deal.nome}"[:255],
+        ))
 
     def atualizar_valor(self, assinatura_id: UUID, data: AssinaturaValorUpdate) -> Assinatura:
         assinatura = self.get(assinatura_id)
