@@ -17,6 +17,7 @@ from app.schemas.lead_prospect import (
     LeadProspectPageParams, LeadProspectRead, LeadProspectUpdate, MetaProgressResponse, MetaProgressRow,
     PerformanceReportResponse, PerformanceReportRow,
 )
+from app.services.company_dedupe import find_duplicate_company
 from app.services.icp_scoring import DEFAULT_ICP_RULES, calcular_icp
 from app.services.tenant import TenantService
 
@@ -158,6 +159,22 @@ class LeadProspectService:
         # checagem aqui é defesa em profundidade pra quem chamar o service direto (ex.: testes).
         if not responsavel_id:
             raise AppException("Responsável é obrigatório para promover a empresa")
+        # Reaproveita empresa já existente em vez de criar duplicata, pela mesma cascata de
+        # dedupe (CNPJ -> domínio corporativo -> nome normalizado+UF) que CompanyService.create
+        # e as tasks de import usam — ver app/services/company_dedupe.py. Sem isso, promover
+        # vários leads da mesma empresa gerava N registros em companies (o bug: Adium com 4
+        # cópias, Connectoway com 3). Ao contrário de create, aqui reaproveitamos em silêncio
+        # em vez de rejeitar: o objetivo da promoção é ter a empresa no funil, e ela já está.
+        repo_company = CompanyRepository(self.db)
+        existente = find_duplicate_company(
+            repo_company, razao_social=lead.empresa, uf=lead.uf,
+            cnpj=lead.cnpj, site=lead.site, email=lead.email,
+        )
+        if existente is not None:
+            lead.promoted_company_id = existente.id
+            lead.status = LeadStatus.PROMOVIDO.value
+            lead = self.repo.save(lead)
+            return self.to_read(lead)
         company = Company(
             razao_social=lead.empresa, cnpj=lead.cnpj, segmento=lead.segmento, setor=lead.setor,
             cidade=lead.cidade, uf=lead.uf,
@@ -183,7 +200,7 @@ class LeadProspectService:
             funil_estagio=FunilEstagio.NOVO.value,
             funil_estagio_atualizado_em=datetime.now(timezone.utc),
         )
-        company = CompanyRepository(self.db).add(company)
+        company = repo_company.add(company)
         lead.promoted_company_id = company.id
         lead.status = LeadStatus.PROMOVIDO.value
         lead = self.repo.save(lead)
