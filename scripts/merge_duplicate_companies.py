@@ -36,14 +36,19 @@ O usuário `crm` do Postgres é superusuário e ignora RLS, então abrange todos
 uma vez. O agrupamento automático é sempre por tenant_id — nunca funde tenants diferentes;
 o manual valida que todos os ids do grupo são do mesmo tenant antes de mesclar.
 """
+import os
 import sys
 from collections import defaultdict
 from uuid import UUID
 
 from sqlalchemy import text
 
-from app.core.database import engine
-from app.core.text import dedupe_key
+# Permite rodar como `python scripts/x.py` dentro do container: sem isto, só `scripts/`
+# entra no sys.path e `import app` falha. Adiciona a raiz do projeto (pai de scripts/).
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from app.core.database import engine  # noqa: E402
+from app.core.text import dedupe_key  # noqa: E402
 
 # (tabela, coluna FK) — as 12 referências a companies.id levantadas via information_schema.
 # Manter em sincronia se novas tabelas passarem a referenciar companies.id.

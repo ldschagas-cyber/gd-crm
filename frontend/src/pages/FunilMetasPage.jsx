@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getFunilMetasResumo } from '../api/funilMetas'
@@ -17,6 +17,17 @@ const NOMES = {
   decisores: 'Decisores identificados', contatos: 'Contatos realizados', reunioes: 'Reuniões marcadas',
   diagnosticos: 'Diagnósticos realizados', propostas: 'Propostas enviadas', fechados: 'Clientes fechados',
 }
+// Fases da jornada — enquadram as 7 etapas em blocos legíveis, deixando visível a fronteira
+// lead -> venda. A promoção (lead vira empresa no CRM) fica entre "decisores" e "contatos":
+// as duas primeiras etapas são pesquisa de leads; da terceira em diante é atividade/venda
+// sobre a empresa já promovida. Ver docs/PLANO_METAS_FUNIL.md.
+const FASE_POR_CHAVE = {
+  pesquisadas: 'prospeccao', decisores: 'prospeccao',
+  contatos: 'engajamento', reunioes: 'engajamento',
+  diagnosticos: 'vendas', propostas: 'vendas', fechados: 'vendas',
+}
+const FASES = { prospeccao: 'Prospecção · leads', engajamento: 'Engajamento', vendas: 'Vendas · pipeline' }
+
 // Referência de mercado (Anexo 1) — só exibição, não vem da API (é texto fixo de contexto,
 // não um número calculado). Ver docs/PLANO_METAS_FUNIL.md §2.
 const REFERENCIAS = {
@@ -164,14 +175,21 @@ export default function FunilMetasPage() {
 
             <div className="card">
               <div className="card-head">
-                <div><h3>Funil de {mesLabel} — meta vs. real</h3><p>Barra clara = meta; barra colorida = realizado no período</p></div>
+                <div><h3>Jornada do Lead — da prospecção ao fechamento</h3><p>{mesLabel} · meta vs. real — barra clara = meta, colorida = realizado no período</p></div>
               </div>
               <div className="fm-funnel">
                 {etapas.map((e, i) => {
                   const metaW = (e.meta / maxScale) * 100
                   const realW = (e.real / maxScale) * 100
+                  const fase = FASE_POR_CHAVE[e.chave]
+                  const faseInicia = i === 0 || FASE_POR_CHAVE[etapas[i - 1].chave] !== fase
                   return (
-                    <div className="fm-row" key={e.chave}>
+                    <Fragment key={e.chave}>
+                      {e.chave === 'contatos' && (
+                        <div className="fm-promo-divider"><span>promoção · o lead entra no CRM</span></div>
+                      )}
+                      {faseInicia && <div className="fm-band" data-fase={fase}>{FASES[fase]}</div>}
+                      <div className="fm-row">
                       <div className="fm-name"><b>{e.nome}</b></div>
                       <div className="fm-track-wrap">
                         <div className="fm-track">
@@ -202,7 +220,8 @@ export default function FunilMetasPage() {
                           </>
                         )}
                       </div>
-                    </div>
+                      </div>
+                    </Fragment>
                   )
                 })}
               </div>
