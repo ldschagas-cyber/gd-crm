@@ -28,11 +28,16 @@ Como rodar (dentro do container `api`, que já tem a DATABASE_URL):
 O usuário `crm` é superusuário e ignora RLS — abrange TODOS os tenants. O dry-run imprime
 as contagens por tenant justamente pra você conferir o escopo antes de apagar.
 """
+import os
 import sys
 
 from sqlalchemy import text
 
-from app.core.database import engine
+# Permite rodar como `python scripts/x.py` dentro do container: sem isto, só `scripts/`
+# entra no sys.path e `import app` falha. Adiciona a raiz do projeto (pai de scripts/).
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from app.core.database import engine  # noqa: E402
 
 # Janela do mês a limpar (contatos). AAAA-MM-DD, meia-noite UTC, fim exclusivo.
 INICIO_MES = "2026-08-01"
