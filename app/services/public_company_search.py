@@ -76,8 +76,8 @@ class PublicCompanySearchService:
         cnae_fiscal = e.get("cnae_fiscal")
         return PublicCompanyResult(
             cnpj=e.get("cnpj", ""),
-            razao_social=e.get("razao_social", ""),
-            nome_fantasia=e.get("nome_fantasia") or None,
+            razao_social=normalize_company_name(e.get("razao_social", "")),
+            nome_fantasia=normalize_company_name(e.get("nome_fantasia")) if e.get("nome_fantasia") else None,
             uf=e.get("uf"),
             municipio=e.get("municipio"),
             cnae_fiscal=str(cnae_fiscal) if cnae_fiscal is not None else None,
