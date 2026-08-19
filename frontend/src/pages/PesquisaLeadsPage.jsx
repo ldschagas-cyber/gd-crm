@@ -1185,7 +1185,7 @@ function CriteriaDrawer({ isAdmin, onClose, onSaved }) {
 
               <div className="rule-section-title">Bônus</div>
               <div className="rule-table">
-                <div className="rule-row"><span>Valor por lead qualificado (R$)</span><input type="number" min="0" step="0.5" value={current.bonus_valor} onChange={(e) => setNum(null, 'bonus_valor', e.target.value)} /></div>
+                <div className="rule-row"><span>Valor por lead qualificado (R$)</span><input type="number" min="0" step="0.01" value={current.bonus_valor} onChange={(e) => setNum(null, 'bonus_valor', e.target.value)} /></div>
               </div>
 
               {saveMutation.isError && <p className="state-msg error">Não foi possível salvar os critérios.</p>}

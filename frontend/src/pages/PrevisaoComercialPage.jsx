@@ -363,7 +363,7 @@ function CacRoiCard({ mes, mesLabel }) {
           onChange={(e) => setNovo((n) => ({ ...n, observacao: e.target.value }))}
         />
         <input
-          type="number" min="0" step="100" placeholder="Valor" required value={novo.valor}
+          type="number" min="0" step="0.01" placeholder="Valor" required value={novo.valor}
           onChange={(e) => setNovo((n) => ({ ...n, valor: e.target.value }))}
         />
         <button type="submit" className="pc-inv-add-btn" disabled={createMutation.isPending}>

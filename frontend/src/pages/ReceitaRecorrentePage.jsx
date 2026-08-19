@@ -375,7 +375,7 @@ export function NewSubscriptionModal({ companies, users, presetCompanyId, onClos
           <div className="field-row">
             <div className="field">
               <label htmlFor="rr-valor">Valor mensal (R$) *</label>
-              <input id="rr-valor" type="number" min="1" step="50" required value={form.valor_mensal} onChange={set('valor_mensal')} />
+              <input id="rr-valor" type="number" min="1" step="0.01" required value={form.valor_mensal} onChange={set('valor_mensal')} />
             </div>
             <div className="field">
               <label htmlFor="rr-ciclo">Ciclo de cobrança</label>
@@ -503,7 +503,7 @@ export function SubscriptionDrawer({ assinatura, companyNome, onClose, onChanged
               <div className="f-group">
                 <label className="f-label">Novo valor mensal (R$)</label>
                 <input
-                  className="f-input" type="number" min="1" step="50" value={adjustValor}
+                  className="f-input" type="number" min="1" step="0.01" value={adjustValor}
                   onChange={(e) => setAdjustValor(e.target.value)}
                 />
               </div>
