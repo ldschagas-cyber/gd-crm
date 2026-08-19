@@ -32,17 +32,21 @@
   padding: 12px 0; border-bottom: 1px solid var(--border);
 }
 .fm-row:last-child { border-bottom: none; }
-/* Faixas da jornada (Prospecção / Engajamento / Vendas) + divisor da promoção. */
-.fm-band {
-  margin: 16px 0 2px; padding: 3px 0 3px 10px;
-  border-left: 3px solid color-mix(in srgb, var(--ink-faint) 55%, transparent);
-  font-size: 11.5px; font-weight: 700; color: var(--ink-dim);
+/* Fases da jornada em trilho lateral vertical (cor neutra única) + divisor da promoção. */
+.fm-phase { display: flex; align-items: stretch; gap: 14px; }
+.fm-phase + .fm-phase { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+.fm-rail {
+  width: 30px; flex: none; display: flex; align-items: center; justify-content: center;
+  border-left: 2px solid color-mix(in srgb, var(--ink-faint) 45%, transparent);
 }
-.fm-band:first-child { margin-top: 4px; }
-.fm-band[data-fase="prospeccao"] { border-left-color: color-mix(in srgb, var(--accent, var(--ink-dim)) 60%, transparent); }
-.fm-band[data-fase="vendas"] { border-left-color: color-mix(in srgb, var(--good) 55%, transparent); }
-.fm-promo-divider { display: flex; align-items: center; gap: 10px; margin: 14px 0 4px; color: var(--ink-faint); }
-.fm-promo-divider::before, .fm-promo-divider::after { content: ''; flex: 1; border-top: 1px dashed var(--border); }
+.fm-rail span {
+  writing-mode: vertical-rl; transform: rotate(180deg);
+  font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-faint); white-space: nowrap;
+}
+.fm-rows { flex: 1; min-width: 0; }
+.fm-promo-divider { display: flex; align-items: center; gap: 10px; margin: 12px 0; color: var(--ink-dim); }
+.fm-promo-divider::before, .fm-promo-divider::after { content: ''; flex: 1; border-top: 1px solid var(--border); }
 .fm-promo-divider span { font-size: 11px; font-weight: 600; white-space: nowrap; }
 .fm-name b { font-size: 13px; font-weight: 650; }
 .fm-track { position: relative; height: 18px; background: var(--paper); border-radius: 6px; overflow: hidden; }
