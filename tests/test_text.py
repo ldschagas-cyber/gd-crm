@@ -36,6 +36,24 @@ def test_conectivo_como_primeira_palavra_e_capitalizado():
     assert normalize_company_name("E OUTROS COMERCIO") == "E Outros Comercio"
 
 
+def test_sigla_curta_em_caixa_alta_e_preservada():
+    # Tokens alfabéticos de até 3 letras, já em CAIXA ALTA, são tratados como sigla.
+    assert normalize_company_name("AGC VIDROS DO BRASIL") == "AGC Vidros do Brasil"
+    assert normalize_company_name("ABB WOOD BRASIL") == "ABB Wood Brasil"
+    assert normalize_company_name("FCC DO BRASIL LTDA") == "FCC do Brasil Ltda."
+
+
+def test_sigla_curta_como_primeira_palavra_e_preservada():
+    assert normalize_company_name("GV do Brasil Industria e Comercio de Aço") \
+        == "GV do Brasil Industria e Comercio de Aço"
+    assert normalize_company_name("OL Plastic") == "OL Plastic"
+
+
+def test_conectivo_em_caixa_alta_nao_e_confundido_com_sigla():
+    # "DE" tem <= 3 letras e está em maiúscula, mas é conectivo — vira minúsculo.
+    assert normalize_company_name("FERRO E ACO DE MINAS") == "Ferro e Aco de Minas"
+
+
 def test_string_vazia_retorna_vazia():
     assert normalize_company_name("") == ""
 

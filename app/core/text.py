@@ -9,9 +9,13 @@ CONNECTIVE_WORDS = {
 }
 
 # Siglas conhecidas (≤4 caracteres) mantidas totalmente em maiúsculas.
+# Inclui siglas de clientes vistas na base em CAIXA ALTA (AGC/ABB/FCC/GV/OL) —
+# em nomes 100% maiúsculos não dá pra distinguir sigla de palavra curta por
+# heurística (ACO, ZE, SÃO), então essas ficam na whitelist explícita.
 KNOWN_ACRONYMS = {
     "S.A.", "SA", "ME", "MEI", "EPP", "EIRELI", "CNPJ", "CPF", "CEP",
     "CTE", "NF", "NFE", "XML", "ERP", "TMS", "WMS", "YMS", "API", "TI", "TII",
+    "AGC", "ABB", "FCC", "GV", "OL",
 }
 
 # Naturezas jurídicas com formatação própria (não seguem o Title Case padrão).
@@ -43,13 +47,23 @@ def _title_case(word: str) -> str:
     return "".join(chars)
 
 
-def _format_word(word: str, is_first: bool) -> str:
+def _format_word(word: str, is_first: bool, name_has_lower: bool) -> str:
+    lower = word.lower()
     upper = word.upper()
     if upper in LEGAL_ENTITY_SUFFIXES:
         return LEGAL_ENTITY_SUFFIXES[upper]
     if upper in KNOWN_ACRONYMS:
         return upper
-    if not is_first and word in CONNECTIVE_WORDS:
+    if not is_first and lower in CONNECTIVE_WORDS:
+        return lower
+    # Sigla curta em CAIXA ALTA que se destaca num nome de caixa mista
+    # (ex.: "GV do Brasil", "OL Plastic") é preservada — o autor a escreveu
+    # assim de propósito. Num nome inteiro em CAIXA ALTA (name_has_lower=False)
+    # não dá pra distinguir sigla de palavra curta (ACO, ZE, SÃO), então lá só
+    # as siglas de KNOWN_ACRONYMS (acima) são mantidas. Conectivos em caixa alta
+    # (DA/DE/...) ficam de fora e seguem para o Title Case normal.
+    if name_has_lower and word.isupper() and word.isalpha() and len(word) <= 3 \
+            and lower not in CONNECTIVE_WORDS:
         return word
     return _title_case(word)
 
@@ -57,15 +71,20 @@ def _format_word(word: str, is_first: bool) -> str:
 def normalize_company_name(name: str) -> str:
     """Normaliza um nome de empresa para exibição: Title Case, mantendo
     palavras de ligação em minúsculas (exceto na primeira posição), siglas
-    conhecidas em maiúsculas e naturezas jurídicas formatadas (LTDA -> Ltda.).
+    conhecidas (e siglas curtas em CAIXA ALTA num nome de caixa mista) em
+    maiúsculas e naturezas jurídicas formatadas (LTDA -> Ltda.).
 
     Não corrige acentuação — isso não é responsabilidade desta função.
     Função pura, sem efeitos colaterais.
     """
     if not name:
         return ""
-    words = name.lower().split()  # split() já colapsa espaços duplicados e faz trim
-    return " ".join(_format_word(w, i == 0) for i, w in enumerate(words))
+    # Preserva a caixa original de cada token (não faz .lower() global) para que
+    # _format_word consiga reconhecer siglas em CAIXA ALTA — a comparação com
+    # conectivos/sufixos é feita em minúsculas dentro de _format_word.
+    name_has_lower = any(c.islower() for c in name)
+    words = name.split()  # split() já colapsa espaços duplicados e faz trim
+    return " ".join(_format_word(w, i == 0, name_has_lower) for i, w in enumerate(words))
 
 
 # ---- Dedupe de empresa (import + cadastro manual) — ver app/services/company_dedupe.py ----
