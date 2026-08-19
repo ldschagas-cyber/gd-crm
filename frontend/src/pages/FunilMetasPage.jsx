@@ -27,6 +27,7 @@ const FASE_POR_CHAVE = {
   diagnosticos: 'vendas', propostas: 'vendas', fechados: 'vendas',
 }
 const FASES = { prospeccao: 'Prospecção · leads', engajamento: 'Engajamento', vendas: 'Vendas · pipeline' }
+const FASES_ORDEM = ['prospeccao', 'engajamento', 'vendas']
 
 // Referência de mercado (Anexo 1) — só exibição, não vem da API (é texto fixo de contexto,
 // não um número calculado). Ver docs/PLANO_METAS_FUNIL.md §2.
@@ -178,48 +179,56 @@ export default function FunilMetasPage() {
                 <div><h3>Jornada do Lead — da prospecção ao fechamento</h3><p>{mesLabel} · meta vs. real — barra clara = meta, colorida = realizado no período</p></div>
               </div>
               <div className="fm-funnel">
-                {etapas.map((e, i) => {
-                  const metaW = (e.meta / maxScale) * 100
-                  const realW = (e.real / maxScale) * 100
-                  const fase = FASE_POR_CHAVE[e.chave]
-                  const faseInicia = i === 0 || FASE_POR_CHAVE[etapas[i - 1].chave] !== fase
+                {FASES_ORDEM.map((fase) => {
+                  const itens = etapas.map((e, i) => ({ e, i })).filter(({ e }) => FASE_POR_CHAVE[e.chave] === fase)
+                  if (itens.length === 0) return null
                   return (
-                    <Fragment key={e.chave}>
-                      {e.chave === 'contatos' && (
+                    <Fragment key={fase}>
+                      {fase === 'engajamento' && (
                         <div className="fm-promo-divider"><span>promoção · o lead entra no CRM</span></div>
                       )}
-                      {faseInicia && <div className="fm-band" data-fase={fase}>{FASES[fase]}</div>}
-                      <div className="fm-row">
-                      <div className="fm-name"><b>{e.nome}</b></div>
-                      <div className="fm-track-wrap">
-                        <div className="fm-track">
-                          <div className="fm-meta-fill" style={{ width: `${metaW}%` }} />
-                          <div className="fm-real-fill" style={{ width: `${realW}%`, background: COLORS[i] }} />
+                      <div className="fm-phase">
+                        <div className="fm-rail"><span>{FASES[fase]}</span></div>
+                        <div className="fm-rows">
+                          {itens.map(({ e, i }) => {
+                            const metaW = (e.meta / maxScale) * 100
+                            const realW = (e.real / maxScale) * 100
+                            return (
+                              <div className="fm-row" key={e.chave}>
+                                <div className="fm-name"><b>{e.nome}</b></div>
+                                <div className="fm-track-wrap">
+                                  <div className="fm-track">
+                                    <div className="fm-meta-fill" style={{ width: `${metaW}%` }} />
+                                    <div className="fm-real-fill" style={{ width: `${realW}%`, background: COLORS[i] }} />
+                                  </div>
+                                </div>
+                                <div className="fm-nums">
+                                  <div className="real">{fmt(e.real)}</div><div className="of">meta {fmt(e.meta)}</div>
+                                  {e.chave === 'propostas' && resumoQuery.data?.propostas_valor_aberto != null && (
+                                    <Link to="/previsao-comercial" className="fm-revenue-chip" title="Ver detalhamento em Previsão Comercial">
+                                      {formatCurrency(resumoQuery.data.propostas_valor_aberto)} em aberto →
+                                    </Link>
+                                  )}
+                                  {e.chave === 'fechados' && resumoQuery.data?.fechados_valor_realizado != null && (
+                                    <Link to="/previsao-comercial" className="fm-revenue-chip" title="Ver detalhamento em Previsão Comercial">
+                                      {formatCurrency(resumoQuery.data.fechados_valor_realizado)} realizado →
+                                    </Link>
+                                  )}
+                                </div>
+                                <div className="fm-pct-cell">
+                                  {i === 0 ? <span className="fm-muted">topo</span> : (
+                                    <>
+                                      <span className={`fm-real-pct fm-status-${e.status}`}>{pct1(e.pct_real_etapa_anterior)}%</span>
+                                      <span className={`fm-diff fm-status-${e.status}`}>
+                                        {e.diferenca_pp >= 0 ? '+' : '−'}{pct1(Math.abs(e.diferenca_pp))} p.p. vs. meta {e.pct_meta_etapa_anterior}%
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            )
+                          })}
                         </div>
-                      </div>
-                      <div className="fm-nums">
-                        <div className="real">{fmt(e.real)}</div><div className="of">meta {fmt(e.meta)}</div>
-                        {e.chave === 'propostas' && resumoQuery.data?.propostas_valor_aberto != null && (
-                          <Link to="/previsao-comercial" className="fm-revenue-chip" title="Ver detalhamento em Previsão Comercial">
-                            {formatCurrency(resumoQuery.data.propostas_valor_aberto)} em aberto →
-                          </Link>
-                        )}
-                        {e.chave === 'fechados' && resumoQuery.data?.fechados_valor_realizado != null && (
-                          <Link to="/previsao-comercial" className="fm-revenue-chip" title="Ver detalhamento em Previsão Comercial">
-                            {formatCurrency(resumoQuery.data.fechados_valor_realizado)} realizado →
-                          </Link>
-                        )}
-                      </div>
-                      <div className="fm-pct-cell">
-                        {i === 0 ? <span className="fm-muted">topo</span> : (
-                          <>
-                            <span className={`fm-real-pct fm-status-${e.status}`}>{pct1(e.pct_real_etapa_anterior)}%</span>
-                            <span className={`fm-diff fm-status-${e.status}`}>
-                              {e.diferenca_pp >= 0 ? '+' : '−'}{pct1(Math.abs(e.diferenca_pp))} p.p. vs. meta {e.pct_meta_etapa_anterior}%
-                            </span>
-                          </>
-                        )}
-                      </div>
                       </div>
                     </Fragment>
                   )
