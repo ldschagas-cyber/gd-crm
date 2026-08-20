@@ -57,6 +57,26 @@ def test_resumo_modo_invalido_levanta_app_exception_antes_de_tocar_banco(service
         service.resumo("trimestre", "2026-08")
 
 
+# ---- _periodo_bounds_ano (visão anual agregada) ------------------------------
+
+def test_periodo_bounds_ano(service):
+    start, end = service._periodo_bounds_ano("2026")
+    assert start == datetime(2026, 1, 1, tzinfo=timezone.utc)
+    assert end == datetime(2027, 1, 1, tzinfo=timezone.utc)
+
+
+def test_periodo_bounds_ano_formato_invalido_levanta_app_exception(service):
+    with pytest.raises(AppException, match="Ano inválido"):
+        service._periodo_bounds_ano("20xx")
+
+
+def test_resumo_exige_exatamente_mes_ou_ano(service):
+    with pytest.raises(AppException, match="Informe 'mes'"):
+        service.resumo("atividade")  # nenhum dos dois
+    with pytest.raises(AppException, match="Informe 'mes'"):
+        service.resumo("atividade", "2026-08", ano="2026")  # ambos
+
+
 # ---- _montar_resumo: cascata de metas -----------------------------------------
 
 def test_montar_resumo_cascata_de_metas_bate_com_o_anexo_1(service):
@@ -77,6 +97,22 @@ def test_montar_resumo_cascata_de_metas_bate_com_o_anexo_1(service):
                       "diagnosticos": 20, "propostas": 15, "fechados": 10}
     # Real bateu a meta (derivada) em toda etapa -> nada crítico nem em atenção.
     assert all(e.status == "ok" for e in resumo.etapas)
+
+
+def test_montar_resumo_meta_anual_multiplica_base_por_12(service):
+    """Visão anual: mesma cascata de percentuais, mas a base é multiplicada por 12
+    (meta_mult). 300/mês -> 3600/ano no topo, e o resto deriva igual."""
+    config = {"empresas_pesquisadas_meta": 300, "etapas": [
+        {"chave": c, "pct_etapa_anterior": DEFAULT_PCTS[c]} for c in ETAPAS_CHAVES
+    ]}
+    reais = {"pesquisadas": 0, "decisores": 0, "contatos": 0, "reunioes": 0,
+             "diagnosticos": 0, "propostas": 0, "fechados": 0}
+    resumo = service._montar_resumo("atividade", "2026", config, reais, meta_mult=12)
+
+    metas = {e.chave: e.meta for e in resumo.etapas}
+    assert metas["pesquisadas"] == 3600  # 300 * 12
+    assert metas["decisores"] == round(3600 * 33 / 100)  # cascata segue os mesmos %
+    assert resumo.periodo == "2026"
 
 
 def test_montar_resumo_etapa_muito_abaixo_da_meta_fica_critica(service):
