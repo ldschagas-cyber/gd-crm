@@ -137,8 +137,8 @@ export default function ClientesPage() {
 
         <div className="funnel-strip">
           {FASES.map((f) => (
-            <div key={f.id} className="funnel-step" style={{ background: f.color }} title={f.desc}>
-              {f.nome}{f.terminal && <span className="manual-badge">🔒 manual</span>}
+            <div key={f.id} className="funnel-step" style={{ '--step-color': f.color }} title={f.desc}>
+              <span className="dot" />{f.nome}{f.terminal && <span className="manual-badge">🔒 manual</span>}
               <span className="n">{resumoQuery.data?.por_fase?.find((e) => e.fase === f.id)?.total ?? 0}</span>
             </div>
           ))}

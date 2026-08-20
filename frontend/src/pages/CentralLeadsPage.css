@@ -14,19 +14,15 @@
   cursor: pointer; font-size: 12px; text-decoration: underline; padding: 0;
 }
 
-.funnel-strip { display: flex; align-items: stretch; gap: 2px; margin-bottom: 16px; }
+.funnel-strip { display: flex; align-items: stretch; gap: 6px; margin-bottom: 16px; }
 .funnel-step {
-  flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 8px 6px;
-  font-size: 11.5px; font-weight: 650; color: #fff; position: relative; white-space: nowrap;
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 8px;
+  font-size: 11.5px; font-weight: 650; color: var(--ink); position: relative; white-space: nowrap;
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px;
 }
-.funnel-step:first-child { border-radius: 8px 0 0 8px; }
-.funnel-step:last-child { border-radius: 0 8px 8px 0; }
-.funnel-step .n { font-family: var(--font-mono); background: rgba(255,255,255,.22); border-radius: 100px; padding: 0 6px; font-size: 10.5px; }
-.funnel-step::after {
-  content: ""; position: absolute; right: -7px; top: 0; bottom: 0; width: 14px; background: inherit;
-  clip-path: polygon(0 0, 60% 0, 100% 50%, 60% 100%, 0 100%); z-index: 1;
-}
-.funnel-step:last-child::after { display: none; }
+.funnel-step .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--step-color, var(--border)); flex: none; }
+.funnel-step .n { font-family: var(--font-mono); background: var(--paper); color: var(--ink-dim); border-radius: 100px; padding: 0 6px; font-size: 10.5px; }
+.funnel-step .manual-badge { color: var(--ink-faint); background: var(--paper); border: 1px solid var(--border); }
 
 .manual-badge {
   display: inline-flex; align-items: center; gap: 3px; font-size: 9px; font-weight: 700; letter-spacing: .02em;

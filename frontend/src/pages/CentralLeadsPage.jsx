@@ -130,8 +130,8 @@ export default function CentralLeadsPage() {
 
         <div className="funnel-strip">
           {STAGES.map((s) => (
-            <div key={s.id} className="funnel-step" style={{ background: s.color }} title={s.desc}>
-              {s.nome}{s.manual && <span className="manual-badge">🔒 manual</span>}
+            <div key={s.id} className="funnel-step" style={{ '--step-color': s.color }} title={s.desc}>
+              <span className="dot" />{s.nome}{s.manual && <span className="manual-badge">🔒 manual</span>}
               <span className="n">{resumoQuery.data?.por_estagio?.find((e) => e.estagio === s.id)?.total ?? 0}</span>
             </div>
           ))}
