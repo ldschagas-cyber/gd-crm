@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getFunilMetasResumo } from '../api/funilMetas'
@@ -297,14 +297,36 @@ export default function FunilMetasPage() {
 }
 
 function EditMetasDrawer({ config, onClose, onSave, submitting }) {
-  const [base, setBase] = useState(config?.empresas_pesquisadas_meta ?? 300)
-  const [pcts, setPcts] = useState(() => {
+  // Valores iniciais (config salva) — referência para detectar alterações não salvas.
+  const initialBase = config?.empresas_pesquisadas_meta ?? 300
+  const initialPcts = useMemo(() => {
     const map = {}
     ETAPAS_CHAVES.forEach((c) => {
       map[c] = config?.etapas?.find((e) => e.chave === c)?.pct_etapa_anterior ?? 0
     })
     return map
-  })
+  }, [config])
+
+  const [base, setBase] = useState(initialBase)
+  const [pcts, setPcts] = useState(initialPcts)
+
+  // "Sujo" = algo digitado difere da config salva. Comparado como string porque os inputs
+  // devolvem string e os valores iniciais são número.
+  const dirty = String(base) !== String(initialBase)
+    || ETAPAS_CHAVES.some((c) => String(pcts[c]) !== String(initialPcts[c]))
+
+  // Único caminho de fechamento: só descarta com confirmação quando há alterações;
+  // sem alterações, fecha direto (sem atrito). Usado por clique-fora, ✕, Cancelar e Esc.
+  const requestClose = useCallback(() => {
+    if (dirty && !confirm('Descartar as alterações não salvas?')) return
+    onClose()
+  }, [dirty, onClose])
+
+  useEffect(() => {
+    function onKey(e) { if (e.key === 'Escape') requestClose() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [requestClose])
 
   const metas = useMemo(() => {
     const m = { pesquisadas: Number(base) || 0 }
@@ -324,14 +346,14 @@ function EditMetasDrawer({ config, onClose, onSave, submitting }) {
   }
 
   return (
-    <div className="scrim show" onClick={onClose}>
+    <div className="scrim show" onClick={requestClose}>
       <div className="drawer show" onClick={(e) => e.stopPropagation()}>
         <div className="drawer-head">
           <div>
             <h2>Editar metas do funil</h2>
             <p>Meta absoluta de cada etapa é sempre derivada a partir de "Empresas pesquisadas" e dos percentuais abaixo.</p>
           </div>
-          <button className="drawer-close" onClick={onClose}>✕</button>
+          <button className="drawer-close" onClick={requestClose}>✕</button>
         </div>
         <div className="drawer-body">
           <div className="f-group">
@@ -358,7 +380,7 @@ function EditMetasDrawer({ config, onClose, onSave, submitting }) {
           </p>
         </div>
         <div className="drawer-foot">
-          <button className="btn-ghost" onClick={onClose}>Cancelar</button>
+          <button className="btn-ghost" onClick={requestClose}>Cancelar</button>
           <button className="btn-primary" disabled={submitting} onClick={handleSave}>
             {submitting ? 'Salvando…' : 'Salvar metas'}
           </button>
