@@ -92,9 +92,14 @@ class CommercialIntelligenceService:
         client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
         response = client.messages.create(
             model=settings.ANTHROPIC_MODEL,
-            max_tokens=4096,
+            # 1024 basta para o perfil + argumento; 4096 só inflava o teto de saída.
+            max_tokens=1024,
             system=SYSTEM_PROMPT,
-            tools=[{"type": "web_search_20250305", "name": "web_search"}],
+            # web_search_20260209: variante com dynamic filtering (suportada pelo Sonnet 5),
+            # que corta os tokens de input re-cobrados a cada rodada. max_uses=2: o benchmark
+            # já vem resolvido no contexto, então a pesquisa aqui é mais estreita que a do
+            # enriquecimento (só ERP/porte/atuação/operação), e antes rodava sem teto nenhum.
+            tools=[{"type": "web_search_20260209", "name": "web_search", "max_uses": 2}],
             messages=[{
                 "role": "user",
                 "content": f"Pesquise a empresa: {lead.empresa}.{contexto_benchmark}",

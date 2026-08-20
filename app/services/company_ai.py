@@ -161,17 +161,70 @@ class CompanyAiService:
         return CompanyAskResponse(resposta=data.get("resposta", "").strip(), fontes=data.get("fontes") or [])
 
 
+_redis_client = None
+
+
+def _redis():
+    """Cliente Redis compartilhado (lazy) — usado só para o dedupe de debounce
+    do resumo. Usa REDIS_URL (db 0), separado dos DBs de broker/result do Celery."""
+    global _redis_client
+    if _redis_client is None:
+        import redis
+        _redis_client = redis.from_url(settings.REDIS_URL)
+    return _redis_client
+
+
+def _debounce_key(tenant_id: UUID, company_id: UUID) -> str:
+    return f"resumo_regen:{tenant_id}:{company_id}"
+
+
+def _debounce_reserva_janela(tenant_id: UUID, company_id: UUID, window: int) -> bool:
+    """SET NX: só o PRIMEIRO evento da janela consegue setar a chave e, portanto,
+    é o único que enfileira a task. Os eventos seguintes dentro da janela veem a
+    chave já presente e não agendam nada. TTL um pouco maior que a janela cobre
+    atraso de fila do worker; a task apaga a chave ao rodar (ver
+    `clear_resumo_debounce`), então em operação normal o TTL não é atingido.
+
+    Falha graciosamente (retorna True) se o Redis não responder: melhor uma
+    regeneração a mais do que engolir a atualização do resumo."""
+    try:
+        return bool(_redis().set(_debounce_key(tenant_id, company_id), "1", nx=True, ex=window + 60))
+    except Exception:  # noqa: BLE001 — indisponibilidade do Redis não pode derrubar o commit
+        return True
+
+
+def clear_resumo_debounce(tenant_id: UUID, company_id: UUID) -> None:
+    """Apaga a reserva da janela — chamado no INÍCIO da task de regeneração, para
+    que qualquer evento que chegue durante a chamada de IA (que leva alguns
+    segundos) abra um novo ciclo e seja capturado por uma regeneração seguinte."""
+    try:
+        _redis().delete(_debounce_key(tenant_id, company_id))
+    except Exception:  # noqa: BLE001
+        pass
+
+
 def schedule_resumo_regeneration(db: Session, company_id: UUID) -> None:
     """Agenda a regeneração do resumo pra depois que a transação atual commitar —
     mesmo raciocínio de `workflow_events.publish_event`: o worker roda numa conexão
-    separada e não pode ler um registro que, do ponto de vista dele, ainda não existe."""
+    separada e não pode ler um registro que, do ponto de vista dele, ainda não existe.
+
+    Debounce (coalescing): em vez de disparar uma chamada de IA por evento, agrupa
+    uma rajada de eventos relevantes da mesma empresa numa única regeneração. Como
+    `regenerate_resumo` relê o estado fresco (empresa + timeline + negócios) no
+    momento de rodar, uma execução por janela basta pra refletir todos os eventos."""
     tenant_id = get_current_tenant()
     if tenant_id is None:
         return
 
     def _fire(_session):
         from app.workers.tasks import regenerate_company_summary
-        regenerate_company_summary.delay(str(tenant_id), str(company_id))
+        window = settings.RESUMO_REGEN_DEBOUNCE_SECONDS
+        if window <= 0:
+            regenerate_company_summary.delay(str(tenant_id), str(company_id))
+        elif _debounce_reserva_janela(tenant_id, company_id, window):
+            regenerate_company_summary.apply_async(
+                args=[str(tenant_id), str(company_id)], countdown=window,
+            )
 
     event.listen(db, "after_commit", _fire, once=True)
 

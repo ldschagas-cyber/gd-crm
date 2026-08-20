@@ -65,9 +65,15 @@ class LeadEnrichmentService:
 
         response = client.messages.create(
             model=settings.ANTHROPIC_MODEL,
-            max_tokens=4096,
+            # 1024 basta para o JSON de ~13 campos curtos; 4096 só inflava o teto de saída.
+            max_tokens=1024,
             system=SYSTEM_PROMPT,
-            tools=[{"type": "web_search_20250305", "name": "web_search"}],
+            # web_search_20260209: variante com dynamic filtering (suportada pelo Sonnet 5) —
+            # filtra o conteúdo das páginas antes de injetar no contexto, cortando os tokens
+            # de input que eram re-cobrados a cada rodada do loop. max_uses=3 é o teto de
+            # buscas por enriquecimento: sem ele o modelo podia varrer a web sem limite, o
+            # que multiplicava tanto a taxa de busca (US$10/1000) quanto o contexto acumulado.
+            tools=[{"type": "web_search_20260209", "name": "web_search", "max_uses": 3}],
             messages=[{
                 "role": "user",
                 "content": f"Pesquise a empresa: {lead.empresa}.{contexto}",
