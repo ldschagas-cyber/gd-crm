@@ -127,10 +127,6 @@ export default function FunilMetasPage() {
       <div className="content">
         <div className="filters-bar">
           <div className="segmented">
-            <button className={!anual ? 'active' : ''} onClick={() => setVisao('mensal')}>Mensal</button>
-            <button className={anual ? 'active' : ''} onClick={() => setVisao('anual')}>Anual</button>
-          </div>
-          <div className="segmented">
             <button className={modo === 'atividade' ? 'active' : ''} onClick={() => setModo('atividade')}>Atividade do período</button>
             <button className={modo === 'coorte' ? 'active' : ''} onClick={() => setModo('coorte')}>Análise de Cohort</button>
           </div>
@@ -149,6 +145,10 @@ export default function FunilMetasPage() {
               : 'Conta eventos ocorridos no período, qualquer que seja a origem da empresa.'}
             {anual && ' Meta anual = meta mensal × 12.'}
           </span>
+          <div className="segmented fm-seg-visao">
+            <button className={!anual ? 'active' : ''} onClick={() => setVisao('mensal')}>Mensal</button>
+            <button className={anual ? 'active' : ''} onClick={() => setVisao('anual')}>Anual</button>
+          </div>
         </div>
 
         {resumoQuery.isLoading ? (
