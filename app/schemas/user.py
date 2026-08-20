@@ -15,8 +15,11 @@ class UserCreate(BaseModel):
     telefone: str | None = None
     cargo: str | None = None
     perfil: UserRole = UserRole.VENDEDOR
+    team_id: UUID | None = None
     meta_pesquisa_semanal: int | None = Field(default=None, ge=0)
     meta_pesquisa_mensal: int | None = Field(default=None, ge=0)
+    meta_ligacoes_semanal: int | None = Field(default=None, ge=0)
+    meta_ligacoes_mensal: int | None = Field(default=None, ge=0)
 
 
 class UserUpdate(BaseModel):
@@ -24,8 +27,11 @@ class UserUpdate(BaseModel):
     telefone: str | None = None
     cargo: str | None = None
     perfil: UserRole | None = None
+    team_id: UUID | None = None
     meta_pesquisa_semanal: int | None = Field(default=None, ge=0)
     meta_pesquisa_mensal: int | None = Field(default=None, ge=0)
+    meta_ligacoes_semanal: int | None = Field(default=None, ge=0)
+    meta_ligacoes_mensal: int | None = Field(default=None, ge=0)
 
 
 class UserStatusUpdate(BaseModel):
@@ -48,5 +54,8 @@ class UserRead(ORMModel):
     ultimo_acesso: datetime | None
     created_at: datetime
     avatar_url: str | None
+    team_id: UUID | None
     meta_pesquisa_semanal: int | None
     meta_pesquisa_mensal: int | None
+    meta_ligacoes_semanal: int | None
+    meta_ligacoes_mensal: int | None

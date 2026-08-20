@@ -21,11 +21,13 @@ from app.models.revenue_investment import RevenueInvestment
 from app.models.activity_sla_rule import ActivitySlaMilestoneHit, ActivitySlaRule
 from app.models.subscription import Assinatura, AssinaturaEvento
 from app.models.onboarding import OnboardingChecklistItem
+from app.models.team import Team
+from app.models.sales_target import SalesTarget
 
 __all__ = [
     "Base", "Tenant", "User", "Company", "Contact", "Pipeline",
     "PipelineStage", "Deal", "Task", "TimelineEvent", "ImportJob", "AuditLog",
     "UserIntegration", "LeadProspect", "Form", "FormSubmission", "SiteVisit",
     "Snippet", "Call", "OrigemOption", "RevenueInvestment", "ActivitySlaRule", "ActivitySlaMilestoneHit",
-    "Assinatura", "AssinaturaEvento", "OnboardingChecklistItem",
+    "Assinatura", "AssinaturaEvento", "OnboardingChecklistItem", "Team", "SalesTarget",
 ]

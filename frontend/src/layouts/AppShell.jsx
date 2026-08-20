@@ -16,6 +16,8 @@ const NAV_GROUPS = [
     items: [
       { to: '/', label: 'Dashboard', end: true, icon: IconDashboard },
       { to: '/metas-funil', label: 'Metas do Funil', icon: IconTarget },
+      { to: '/metas-vendas', label: 'Metas de Vendas', icon: IconSalesGoal },
+      { to: '/metas-ligacoes', label: 'Metas de Ligações', icon: IconPhone },
       { to: '/previsao-comercial', label: 'Previsão Comercial', icon: IconForecast },
     ],
   },
@@ -318,6 +320,21 @@ function IconRevenue() {
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
       <path d="M3 15.5h14M3 15.5V4.5" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M6 12.5v-3M10 12.5V6.5M14 12.5v-5.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+function IconSalesGoal() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <circle cx="10" cy="10" r="7" />
+      <path d="M10 6.4v7.2M8.2 12.3c0 .9.8 1.5 1.8 1.5s1.8-.5 1.8-1.4c0-2-3.4-1.2-3.4-3.1 0-.9.8-1.4 1.8-1.4s1.8.6 1.8 1.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+function IconPhone() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <path d="M6.2 3.5c.4 0 .8.3.9.7l.8 2.4c.1.4 0 .8-.3 1L6.5 8.6c.8 1.7 2.2 3.1 3.9 3.9l1-1.1c.3-.3.7-.4 1-.3l2.4.8c.4.1.7.5.7.9v2.4c0 .6-.5 1.1-1.1 1C8.9 16.1 3.9 11.1 3.3 5.7c-.1-.6.4-1.1 1-1.1z" strokeLinejoin="round" />
     </svg>
   )
 }

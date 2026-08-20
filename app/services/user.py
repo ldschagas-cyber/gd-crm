@@ -42,8 +42,11 @@ class UserService:
             telefone=data.telefone,
             cargo=data.cargo,
             perfil=data.perfil.value,
+            team_id=data.team_id,
             meta_pesquisa_semanal=data.meta_pesquisa_semanal,
             meta_pesquisa_mensal=data.meta_pesquisa_mensal,
+            meta_ligacoes_semanal=data.meta_ligacoes_semanal,
+            meta_ligacoes_mensal=data.meta_ligacoes_mensal,
         )
         return self.repo.add(user)
 

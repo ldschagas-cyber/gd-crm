@@ -1,0 +1,37 @@
+.mv-hint { font-size: 12.5px; color: var(--ink-faint); }
+.mv-sub { font-size: 11.5px; color: var(--ink-faint); margin-top: 2px; }
+
+.mv-team-card { margin-bottom: 16px; }
+.mv-team-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.mv-team-totals { display: flex; gap: 22px; }
+.mv-total { display: flex; flex-direction: column; align-items: flex-end; }
+.mv-total-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-faint); }
+.mv-total-val { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.mv-total-val small { color: var(--ink-faint); font-weight: 500; }
+
+.mv-table th:not(:first-child), .mv-table td:not(:first-child) { width: 34%; }
+
+.mv-cell { display: flex; align-items: center; gap: 10px; }
+.mv-real { font-variant-numeric: tabular-nums; font-weight: 600; }
+.mv-of { color: var(--ink-faint); font-weight: 500; }
+.mv-nogoal { font-size: 11.5px; color: var(--ink-faint); }
+
+.mv-pill {
+  padding: 2px 8px; border-radius: 100px; font-weight: 700; font-size: 11.5px;
+  white-space: nowrap; font-variant-numeric: tabular-nums;
+}
+.mv-pill.mv-ok { background: var(--success-bg); color: var(--good); }
+.mv-pill.mv-atencao { background: var(--warning-bg); color: var(--warning); }
+.mv-pill.mv-critico { background: var(--danger-bg); color: var(--critical); }
+
+/* Drawer de edição */
+.mv-edit-list { display: flex; flex-direction: column; gap: 8px; }
+.mv-edit-row {
+  display: grid; grid-template-columns: 1fr 90px 120px; gap: 10px; align-items: center;
+}
+.mv-edit-head { font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--ink-faint); font-weight: 600; padding-bottom: 4px; }
+.mv-edit-name { display: flex; align-items: center; gap: 10px; font-size: 13.5px; }
+.mv-edit-name .avatar { flex: none; }
+.mv-edit-team { color: var(--ink-faint); font-size: 11px; }
+.mv-edit-row .f-input { padding: 7px 9px; }
