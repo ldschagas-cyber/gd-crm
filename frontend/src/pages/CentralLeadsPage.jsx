@@ -11,12 +11,12 @@ import '../styles/dataTable.css'
 import './CentralLeadsPage.css'
 
 const STAGES = [
-  { id: 'novo', nome: 'Novo', color: 'var(--seq-1)', desc: 'Promovido / capturado, ainda sem trabalho comercial' },
-  { id: 'qualificando', nome: 'Qualificando', color: 'var(--seq-2)', desc: 'Discovery em andamento' },
-  { id: 'cadencia', nome: 'Em cadência', color: 'var(--seq-3)', desc: 'Inscrito numa sequência automática de contato' },
-  { id: 'mql', nome: 'MQL', color: 'var(--seq-4)', desc: 'Marketing Qualified — perfil + engajamento cruzaram o corte', manual: true },
-  { id: 'sql', nome: 'SQL', color: 'var(--seq-5)', desc: 'Sales Qualified — vendas aceitou', manual: true },
-  { id: 'convertido', nome: 'Convertido em negócio', color: 'var(--seq-6)', desc: 'Negócio aberto no Pipeline' },
+  { id: 'novo', nome: 'Novo', color: 'var(--hs-blue-soft)', desc: 'Promovido / capturado, ainda sem trabalho comercial' },
+  { id: 'qualificando', nome: 'Qualificando', color: 'var(--hs-blue)', desc: 'Discovery em andamento' },
+  { id: 'cadencia', nome: 'Em cadência', color: 'var(--hs-purple)', desc: 'Inscrito numa sequência automática de contato' },
+  { id: 'mql', nome: 'MQL', color: 'var(--hs-gold)', desc: 'Marketing Qualified — perfil + engajamento cruzaram o corte', manual: true },
+  { id: 'sql', nome: 'SQL', color: 'var(--hs-orange)', desc: 'Sales Qualified — vendas aceitou', manual: true },
+  { id: 'convertido', nome: 'Convertido em negócio', color: 'var(--hs-orange-deep)', desc: 'Negócio aberto no Pipeline' },
 ]
 const STAGE_BY_ID = Object.fromEntries(STAGES.map((s) => [s.id, s]))
 const MANUAL_STAGES = STAGES.filter((s) => s.manual).map((s) => s.id)

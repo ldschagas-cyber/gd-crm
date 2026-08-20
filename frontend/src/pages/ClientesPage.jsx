@@ -13,10 +13,10 @@ import '../styles/dataTable.css'
 import './ClientesPage.css'
 
 const FASES = [
-  { id: 'implantacao', nome: 'Implantação', color: 'var(--seq-1)', desc: 'Negócio ganho — checklist de onboarding em andamento' },
-  { id: 'ativo', nome: 'Ativo', color: 'var(--seq-2)', desc: 'Onboarding concluído — operação estável' },
-  { id: 'em_risco', nome: 'Em risco', color: 'var(--serious, #ec835a)', desc: 'Health Score abaixo do corte ou renovação próxima sem contato' },
-  { id: 'em_expansao', nome: 'Em expansão', color: 'var(--seq-4, #d9a13a)', desc: 'Negócio de upsell aberto para este cliente' },
+  { id: 'implantacao', nome: 'Implantação', color: 'var(--hs-blue)', desc: 'Negócio ganho — checklist de onboarding em andamento' },
+  { id: 'ativo', nome: 'Ativo', color: 'var(--hs-purple)', desc: 'Onboarding concluído — operação estável' },
+  { id: 'em_risco', nome: 'Em risco', color: 'var(--hs-orange)', desc: 'Health Score abaixo do corte ou renovação próxima sem contato' },
+  { id: 'em_expansao', nome: 'Em expansão', color: 'var(--hs-gold)', desc: 'Negócio de upsell aberto para este cliente' },
   { id: 'churn', nome: 'Encerrado', color: 'var(--ink-faint)', desc: 'Contrato cancelado — fica visível para auditoria', terminal: true },
 ]
 const FASE_BY_ID = Object.fromEntries(FASES.map((f) => [f.id, f]))

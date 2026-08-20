@@ -63,6 +63,16 @@
   --seq-5: #104281;
   --seq-6: #0a2d5c;
 
+  /* paleta categórica do Health Score (mesma linguagem do anexo: azul=engajamento,
+     dourado=adoção, roxo=satisfação, laranja=financeiro). Usada nos trilhos de fase
+     da Central de Leads e de Clientes como progressão frio→quente. */
+  --hs-blue: #2f7da6;
+  --hs-blue-soft: #5aa0c0;
+  --hs-purple: #7a6aa6;
+  --hs-gold: #be8a2c;
+  --hs-orange: #c05a2c;
+  --hs-orange-deep: #9a4522;
+
   /* ---- Espaço (base 4) ---- */
   --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
   --sp-6: 24px; --sp-8: 32px; --sp-12: 48px; --sp-16: 64px;
@@ -102,6 +112,7 @@
     --focus-ring: rgba(217, 184, 94, 0.4);
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 20px 40px -16px rgba(0, 0, 0, 0.55);
     --seq-1: #9ec5f4; --seq-2: #6da7ec; --seq-3: #3987e5; --seq-4: #256abf; --seq-5: #184f95; --seq-6: #123a70;
+    --hs-blue: #3e93be; --hs-blue-soft: #6bb1d0; --hs-purple: #8c7cb8; --hs-gold: #d0a03c; --hs-orange: #d26a3c; --hs-orange-deep: #b25636;
   }
 }
 :root[data-theme='dark'] {
@@ -121,6 +132,7 @@
   --focus-ring: rgba(217, 184, 94, 0.4);
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 20px 40px -16px rgba(0, 0, 0, 0.55);
   --seq-1: #9ec5f4; --seq-2: #6da7ec; --seq-3: #3987e5; --seq-4: #256abf; --seq-5: #184f95; --seq-6: #123a70;
+  --hs-blue: #3e93be; --hs-blue-soft: #6bb1d0; --hs-purple: #8c7cb8; --hs-gold: #d0a03c; --hs-orange: #d26a3c; --hs-orange-deep: #b25636;
 }
 :root[data-theme='light'] {
   --paper: #F4F4F2; --panel: #232748; --panel-fg: #F1EEE6; --panel-fg-dim: #A9ADC9;
@@ -139,4 +151,5 @@
   --focus-ring: rgba(217, 182, 84, 0.45);
   --shadow: 0 1px 2px rgba(27, 29, 51, 0.05), 0 10px 24px -14px rgba(27, 29, 51, 0.2);
   --seq-1: #86b6ef; --seq-2: #5598e7; --seq-3: #2a78d6; --seq-4: #1c5cab; --seq-5: #104281; --seq-6: #0a2d5c;
+  --hs-blue: #2f7da6; --hs-blue-soft: #5aa0c0; --hs-purple: #7a6aa6; --hs-gold: #be8a2c; --hs-orange: #c05a2c; --hs-orange-deep: #9a4522;
 }
