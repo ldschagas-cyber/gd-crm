@@ -54,6 +54,12 @@ function mesOptions() {
   }
   return options
 }
+function anoOptions() {
+  const atual = new Date().getFullYear()
+  const options = []
+  for (let a = atual; a >= atual - 4; a -= 1) options.push({ value: String(a), label: String(a) })
+  return options
+}
 function fmt(n) { return Number(n ?? 0).toLocaleString('pt-BR') }
 function pct1(n) {
   if (n == null) return '—'
@@ -63,13 +69,17 @@ function pct1(n) {
 export default function FunilMetasPage() {
   const queryClient = useQueryClient()
   const options = useMemo(mesOptions, [])
+  const anos = useMemo(anoOptions, [])
+  const [visao, setVisao] = useState('mensal')
   const [mes, setMes] = useState(options[0].value)
+  const [ano, setAno] = useState(anos[0].value)
   const [modo, setModo] = useState('atividade')
   const [editOpen, setEditOpen] = useState(false)
+  const anual = visao === 'anual'
 
   const resumoQuery = useQuery({
-    queryKey: ['funil-metas', 'resumo', modo, mes],
-    queryFn: () => getFunilMetasResumo(modo, mes),
+    queryKey: ['funil-metas', 'resumo', modo, anual ? `ano-${ano}` : mes],
+    queryFn: () => getFunilMetasResumo(modo, anual ? { ano } : { mes }),
     retry: false,
   })
   const configQuery = useQuery({ queryKey: ['funil-metas', 'config'], queryFn: getFunilMetasConfig, retry: false })
@@ -92,7 +102,7 @@ export default function FunilMetasPage() {
   }
 
   const etapas = resumoQuery.data?.etapas ?? []
-  const mesLabel = (options.find((o) => o.value === mes)?.label ?? mes).toLowerCase()
+  const periodoLabel = anual ? ano : (options.find((o) => o.value === mes)?.label ?? mes).toLowerCase()
   const top = etapas[0]
   const bottom = etapas[etapas.length - 1]
   const pior = etapas.reduce((acc, e) => (
@@ -117,16 +127,27 @@ export default function FunilMetasPage() {
       <div className="content">
         <div className="filters-bar">
           <div className="segmented">
-            <button className={modo === 'atividade' ? 'active' : ''} onClick={() => setModo('atividade')}>Atividade do mês</button>
+            <button className={!anual ? 'active' : ''} onClick={() => setVisao('mensal')}>Mensal</button>
+            <button className={anual ? 'active' : ''} onClick={() => setVisao('anual')}>Anual</button>
+          </div>
+          <div className="segmented">
+            <button className={modo === 'atividade' ? 'active' : ''} onClick={() => setModo('atividade')}>Atividade do período</button>
             <button className={modo === 'coorte' ? 'active' : ''} onClick={() => setModo('coorte')}>Análise de Cohort</button>
           </div>
-          <select className="filter-select" value={mes} onChange={(e) => setMes(e.target.value)}>
-            {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-          </select>
+          {anual ? (
+            <select className="filter-select" value={ano} onChange={(e) => setAno(e.target.value)}>
+              {anos.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          ) : (
+            <select className="filter-select" value={mes} onChange={(e) => setMes(e.target.value)}>
+              {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          )}
           <span className="fm-modo-hint">
             {modo === 'coorte'
               ? 'Segue as mesmas empresas pesquisadas no período até hoje, mesmo que o marco tenha ocorrido depois.'
               : 'Conta eventos ocorridos no período, qualquer que seja a origem da empresa.'}
+            {anual && ' Meta anual = meta mensal × 12.'}
           </span>
         </div>
 
@@ -176,7 +197,7 @@ export default function FunilMetasPage() {
 
             <div className="card">
               <div className="card-head">
-                <div><h3>Jornada do Lead — da prospecção ao fechamento</h3><p>{mesLabel} · meta vs. real — barra clara = meta, colorida = realizado no período</p></div>
+                <div><h3>Jornada do Lead — da prospecção ao fechamento</h3><p>{periodoLabel} · meta vs. real — barra clara = meta, colorida = realizado no período</p></div>
               </div>
               <div className="fm-funnel">
                 {FASES_ORDEM.map((fase) => {

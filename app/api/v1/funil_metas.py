@@ -15,9 +15,11 @@ gestor = require_roles(UserRole.ADMIN.value, UserRole.GESTOR.value)
 
 @router.get("/resumo", response_model=FunilMetasResumo)
 def get_resumo(
-    mes: str = Query(..., pattern=r"^\d{4}-\d{2}$"),
+    mes: str | None = Query(None, pattern=r"^\d{4}-\d{2}$"),
+    ano: str | None = Query(None, pattern=r"^\d{4}$"),
     modo: str = Query("atividade", pattern="^(atividade|coorte)$"),
     _: User = Depends(gestor),
     db: Session = Depends(get_db),
 ):
-    return FunilMetasService(db).resumo(modo, mes)
+    """Visão mensal (mes=AAAA-MM) ou anual agregada (ano=AAAA) — informe exatamente um."""
+    return FunilMetasService(db).resumo(modo, mes=mes, ano=ano)

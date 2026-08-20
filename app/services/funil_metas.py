@@ -61,12 +61,24 @@ class FunilMetasService:
         return config["funil_metas"]
 
     # ---- resumo -------------------------------------------------------
-    def resumo(self, modo: str, mes: str) -> FunilMetasResumo:
+    def resumo(self, modo: str, mes: str | None = None, *, ano: str | None = None) -> FunilMetasResumo:
+        """Resumo mensal (mes=AAAA-MM) ou anual agregado (ano=AAAA). Na visão anual
+        o realizado é calculado direto sobre o ano inteiro (não somando os 12 meses,
+        pra não contar 2× a mesma empresa em meses diferentes) e a meta-alvo é a
+        mensal × 12 — os percentuais em cascata são taxas de conversão e independem
+        do período. Ver docs/PLANO_METAS_FUNIL.md."""
         if modo not in ("coorte", "atividade"):
             raise AppException("Modo inválido — use 'coorte' ou 'atividade'")
-        start, end = self._periodo_bounds(mes)
+        if (mes is None) == (ano is None):
+            raise AppException("Informe 'mes' (AAAA-MM) ou 'ano' (AAAA), não ambos")
+        if ano is not None:
+            start, end = self._periodo_bounds_ano(ano)
+            periodo, meta_mult = ano, 12
+        else:
+            start, end = self._periodo_bounds(mes)
+            periodo, meta_mult = mes, 1
         reais = self._reais_atividade(start, end) if modo == "atividade" else self._reais_coorte(start, end)
-        resumo = self._montar_resumo(modo, mes, self.get_config(), reais)
+        resumo = self._montar_resumo(modo, periodo, self.get_config(), reais, meta_mult)
         resumo.propostas_valor_aberto = self._valor_propostas_aberto()
         resumo.fechados_valor_realizado = self._valor_fechados_periodo(start, end)
         return resumo
@@ -96,6 +108,15 @@ class FunilMetasService:
         start = datetime(year, month, 1, tzinfo=timezone.utc)
         end = datetime(year + 1, 1, 1, tzinfo=timezone.utc) if month == 12 else datetime(year, month + 1, 1, tzinfo=timezone.utc)
         return start, end
+
+    def _periodo_bounds_ano(self, ano: str) -> tuple[datetime, datetime]:
+        try:
+            year = int(ano)
+            if year < 1:
+                raise ValueError
+        except ValueError:
+            raise AppException("Ano inválido — use o formato AAAA")
+        return datetime(year, 1, 1, tzinfo=timezone.utc), datetime(year + 1, 1, 1, tzinfo=timezone.utc)
 
     def _stage_ids_for_marco(self, marco: str) -> list[UUID]:
         stages, _ = self.stages.list(PipelineStage.marco_funil == marco, limit=1000)
@@ -196,8 +217,8 @@ class FunilMetasService:
                 "reunioes": reunioes, "diagnosticos": diagnosticos, "propostas": propostas,
                 "fechados": fechados}
 
-    def _montar_resumo(self, modo: str, mes: str, config: dict, reais: dict) -> FunilMetasResumo:
-        base_meta = config["empresas_pesquisadas_meta"]
+    def _montar_resumo(self, modo: str, periodo: str, config: dict, reais: dict, meta_mult: int = 1) -> FunilMetasResumo:
+        base_meta = config["empresas_pesquisadas_meta"] * meta_mult
         pcts = {e["chave"]: e["pct_etapa_anterior"] for e in config["etapas"]}
 
         metas = {"pesquisadas": base_meta}
@@ -223,4 +244,4 @@ class FunilMetasService:
                 pct_meta_etapa_anterior=pct_meta_ant, pct_real_etapa_anterior=pct_real_ant,
                 diferenca_pp=diff, status=status,
             ))
-        return FunilMetasResumo(modo=modo, periodo=mes, etapas=etapas_resumo)
+        return FunilMetasResumo(modo=modo, periodo=periodo, etapas=etapas_resumo)

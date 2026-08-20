@@ -41,7 +41,7 @@ class FunilEtapaResumo(BaseModel):
 
 class FunilMetasResumo(BaseModel):
     modo: str  # "coorte" | "atividade"
-    periodo: str  # AAAA-MM
+    periodo: str  # AAAA-MM (visão mensal) ou AAAA (visão anual agregada)
     etapas: list[FunilEtapaResumo]
     # Ponte com Previsão Comercial (ver docs/PLANO_PREVISAO_COMERCIAL.md §3) — soma de
     # valor_previsto em R$ pra a etapa "Propostas enviadas" (negócios abertos na(s) etapa(s)

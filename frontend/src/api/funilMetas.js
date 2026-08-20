@@ -1,5 +1,7 @@
 import { api } from './client'
 
-export function getFunilMetasResumo(modo, mes) {
-  return api.get('/funil-metas/resumo', { params: { modo, mes } }).then((res) => res.data)
+// periodo: { mes: 'AAAA-MM' } para visão mensal ou { ano: 'AAAA' } para visão anual agregada.
+export function getFunilMetasResumo(modo, { mes, ano } = {}) {
+  const params = ano ? { modo, ano } : { modo, mes }
+  return api.get('/funil-metas/resumo', { params }).then((res) => res.data)
 }
