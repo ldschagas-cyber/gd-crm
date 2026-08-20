@@ -737,7 +737,11 @@ def regenerate_company_summary(tenant_id: str, company_id: str):
     set_current_tenant(UUID(tenant_id))
     db = SessionLocal()
     try:
-        from app.services.company_ai import CompanyAiService
+        from app.services.company_ai import CompanyAiService, clear_resumo_debounce
+        # Libera a janela de debounce logo no início: eventos que chegarem durante
+        # a chamada de IA (alguns segundos) abrem um novo ciclo e serão capturados
+        # por uma regeneração seguinte, em vez de serem engolidos por esta.
+        clear_resumo_debounce(UUID(tenant_id), UUID(company_id))
         CompanyAiService(db).regenerate_resumo(UUID(company_id))
         db.commit()
     except Exception:

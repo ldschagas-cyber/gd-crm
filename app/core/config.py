@@ -27,6 +27,12 @@ class Settings(BaseSettings):
     CELERY_BROKER_URL: str = "redis://localhost:6379/1"
     CELERY_RESULT_BACKEND: str = "redis://localhost:6379/2"
 
+    # Janela de debounce (coalescing) da regeneração automática do resumo executivo
+    # do Dossiê (app/services/company_ai.py). Uma rajada de eventos relevantes na
+    # timeline da mesma empresa dentro desta janela vira UMA única chamada de IA, em
+    # vez de uma por evento. 0 desliga o debounce (volta a regenerar a cada evento).
+    RESUMO_REGEN_DEBOUNCE_SECONDS: int = 90
+
     # CORS
     CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000", "http://localhost:5174"]
 
