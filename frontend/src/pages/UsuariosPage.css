@@ -25,3 +25,11 @@
   background: var(--paper); border: 1px solid var(--border-field); border-radius: var(--r-field);
   padding: 9px 11px; min-height: var(--control-h); box-sizing: border-box;
 }
+
+/* Gerenciador de equipes (modal Equipes) */
+.teams-list { display: flex; flex-direction: column; gap: 8px; margin: 6px 0 14px; }
+.team-item { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: center; }
+.team-new {
+  display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: center;
+  padding-top: 12px; border-top: 1px solid var(--border);
+}

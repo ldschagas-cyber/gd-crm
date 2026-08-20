@@ -5,6 +5,8 @@ import DashboardPage from './pages/DashboardPage.jsx'
 import PesquisaLeadsPage from './pages/PesquisaLeadsPage.jsx'
 import CentralLeadsPage from './pages/CentralLeadsPage.jsx'
 import FunilMetasPage from './pages/FunilMetasPage.jsx'
+import MetasVendaPage from './pages/MetasVendaPage.jsx'
+import MetasLigacoesPage from './pages/MetasLigacoesPage.jsx'
 import BuscarEmpresasPage from './pages/BuscarEmpresasPage.jsx'
 import EmpresasPage from './pages/EmpresasPage.jsx'
 import CompanyDetailPage from './pages/CompanyDetailPage.jsx'
@@ -49,6 +51,8 @@ export default function App() {
         <Route path="/pesquisa-leads" element={<PesquisaLeadsPage />} />
         <Route path="/central-leads" element={<CentralLeadsPage />} />
         <Route path="/metas-funil" element={<FunilMetasPage />} />
+        <Route path="/metas-vendas" element={<MetasVendaPage />} />
+        <Route path="/metas-ligacoes" element={<MetasLigacoesPage />} />
         <Route path="/previsao-comercial" element={<PrevisaoComercialPage />} />
         <Route path="/buscar-empresas" element={<BuscarEmpresasPage />} />
         <Route path="/empresas" element={<EmpresasPage />} />

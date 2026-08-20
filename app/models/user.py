@@ -3,7 +3,8 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, Integer, String, UniqueConstraint
+from sqlalchemy import DateTime, ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, TenantMixin, TimestampMixin, uuid_pk
@@ -41,3 +42,12 @@ class User(Base, TenantMixin, TimestampMixin):
     # meta definida (o usuário some da seção de metas se também não tiver pesquisado nada).
     meta_pesquisa_semanal: Mapped[int | None] = mapped_column(Integer)
     meta_pesquisa_mensal: Mapped[int | None] = mapped_column(Integer)
+
+    # Equipe de vendas a que o vendedor pertence (ver Team). None = sem equipe.
+    team_id: Mapped[uuid.UUID | None] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("teams.id"), index=True
+    )
+    # Meta de ligações (Tarefas tipo=ligacao concluídas) — fixa por semana/mês, mesmo
+    # molde de meta_pesquisa. Consumida em Metas de Ligações (ver MetasLigacoesService).
+    meta_ligacoes_semanal: Mapped[int | None] = mapped_column(Integer)
+    meta_ligacoes_mensal: Mapped[int | None] = mapped_column(Integer)
