@@ -61,6 +61,15 @@ const NAV_GROUPS = [
       { to: '/receita-recorrente', label: 'Receita Recorrente', icon: IconRevenue },
     ],
   },
+  {
+    label: 'Financeiro',
+    items: [
+      { to: '/financeiro', label: 'Visão Geral', end: true, icon: IconFinanceiro },
+      { to: '/financeiro/produtos', label: 'Produtos', icon: IconProduto },
+      { to: '/financeiro/propostas', label: 'Propostas', icon: IconProposta },
+      { to: '/financeiro/faturamento', label: 'Faturamento', icon: IconFaturamento },
+    ],
+  },
 ]
 
 const SIDEBAR_COLLAPSED_KEY = 'argos.sidebarCollapsed'
@@ -320,6 +329,42 @@ function IconRevenue() {
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
       <path d="M3 15.5h14M3 15.5V4.5" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M6 12.5v-3M10 12.5V6.5M14 12.5v-5.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function IconFinanceiro() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <circle cx="10" cy="10" r="7" />
+      <path d="M10 6v8M8 8h3a1.5 1.5 0 0 1 0 3H8.5M8 11h3.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function IconProduto() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <path d="M10 2.8 16.5 6v8L10 17.2 3.5 14V6L10 2.8Z" strokeLinejoin="round" />
+      <path d="M3.7 6.2 10 9.5l6.3-3.3M10 9.5v7.6" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function IconProposta() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <path d="M5 2.8h7l3 3v11.4H5V2.8Z" strokeLinejoin="round" />
+      <path d="M12 2.8v3h3M7.5 10h5M7.5 13h5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function IconFaturamento() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <path d="M5 2.8h10v14.4l-2-1.3-1.7 1.3L10 15.9 8.3 17.2 6.6 15.9 5 17.2V2.8Z" strokeLinejoin="round" />
+      <path d="M7.5 7h5M7.5 10h5" strokeLinecap="round" />
     </svg>
   )
 }

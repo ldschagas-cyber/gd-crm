@@ -26,5 +26,11 @@ celery_app.conf.update(
             "task": "app.workers.tasks.process_due_sequence_steps",
             "schedule": crontab(hour=6, minute=0),
         },
+        # Faturamento recorrente (RF-FAT): gera as cobranças da competência no 1º dia do
+        # mês. Idempotente (RN-F02) — seguro reprocessar. Requer o serviço `beat`.
+        "gerar-faturamento-mensal": {
+            "task": "app.workers.tasks.gerar_faturamento_mensal",
+            "schedule": crontab(day_of_month=1, hour=6, minute=30),
+        },
     },
 )

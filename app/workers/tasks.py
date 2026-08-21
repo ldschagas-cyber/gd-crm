@@ -749,3 +749,35 @@ def regenerate_company_summary(tenant_id: str, company_id: str):
         raise
     finally:
         db.close()
+
+
+@celery_app.task(name="app.workers.tasks.gerar_faturamento_mensal")
+def gerar_faturamento_mensal():
+    """Faturamento recorrente mensal (RF-FAT / RN-F01). Cross-tenant como os demais
+    workers: troca o tenant explicitamente e comita por tenant. Idempotente (RN-F02) —
+    reprocessar a mesma competência não duplica cobranças. Dispara o pedido de NF ao
+    contador por tenant (usa o remetente configurado; sem config, apenas não envia)."""
+    db = SessionLocal()
+    try:
+        tenant_ids = [t.id for t in db.execute(select(Tenant)).scalars().all()]
+    finally:
+        db.close()
+
+    from app.services.faturamento import FaturamentoService
+    resultados: dict[str, dict] = {}
+    for tenant_id in tenant_ids:
+        set_current_tenant(tenant_id)
+        db = SessionLocal()
+        try:
+            res = FaturamentoService(db).gerar()
+            db.commit()
+            resultados[str(tenant_id)] = {
+                "competencia": res.competencia, "geradas": res.geradas,
+                "ja_existentes": res.ja_existentes, "nf_solicitadas": res.nf_solicitadas,
+            }
+        except Exception:
+            db.rollback()
+            raise
+        finally:
+            db.close()
+    return resultados

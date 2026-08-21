@@ -1,0 +1,67 @@
+/* Estilos compartilhados do módulo Financeiro (importado pelas 4 telas). */
+
+/* Colunas numéricas alinhadas à direita, com tabular-nums para alinhar os dígitos. */
+.data th.num, .data td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.row-sub { font-size: 12px; color: var(--text-muted, #6b7086); margin-top: 2px; }
+
+/* Cores de destaque dos stat-tiles */
+.stat-tile .v.ok { color: #2e7d5b; }
+.stat-tile .v.bad { color: #b3403a; }
+.stat-tile .v.warn { color: #b07a1f; }
+.stat-tile .sub { font-size: 12px; color: var(--text-muted, #6b7086); margin-top: 4px; }
+
+/* Pílulas de status */
+.fin-pill {
+  display: inline-block; font-size: 11px; font-weight: 600;
+  border-radius: 20px; padding: 2px 10px; white-space: nowrap;
+}
+.fin-pill.p-ok { background: #e2f2ea; color: #2e7d5b; }
+.fin-pill.p-off { background: #eceef3; color: #6b7086; }
+.fin-pill.p-neu { background: #e8e9f2; color: #2D3561; }
+.fin-pill.p-blue { background: #e0eff6; color: #0077A8; }
+.fin-pill.p-gold { background: #f3e9cf; color: #8a6d1f; }
+.fin-pill.p-warn { background: #f7ecd6; color: #b07a1f; }
+.fin-pill.p-bad { background: #f8e3e2; color: #b3403a; }
+.fin-pill.p-vencida { background: #f8e3e2; color: #b3403a; }
+.fin-pill.p-vigencia { background: #f7ecd6; color: #b07a1f; }
+.fin-pill.p-reajuste { background: #eef0f7; color: #2D3561; }
+
+/* Nota informativa (regra de negócio) */
+.fin-note {
+  background: #f2ede2; border-left: 3px solid #C9A84C; border-radius: 6px;
+  padding: 10px 14px; font-size: 12.5px; color: #5a5340; margin-top: 16px;
+}
+
+/* Linha de dois campos no drawer */
+.f-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 640px) { .f-row { grid-template-columns: 1fr; } }
+
+.f-check { display: flex; align-items: center; gap: 8px; font-size: 14px; margin-top: 4px; }
+.f-check input { width: 16px; height: 16px; }
+
+/* Banner de aviso (ex.: retorno do envio de NF ao contador) */
+.fin-banner {
+  border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px;
+}
+.fin-banner.ok { background: #e2f2ea; color: #216a4c; border: 1px solid #bfe3d1; }
+.fin-banner.warn { background: #f7ecd6; color: #8a6d1f; border: 1px solid #e6d4a8; }
+
+/* Itens de proposta no drawer */
+.item-row { display: grid; grid-template-columns: 2fr 1fr 1fr 80px 28px; gap: 8px; align-items: end; margin-bottom: 8px; }
+.item-row .calc { font-size: 12px; color: #6b7086; padding-bottom: 8px; }
+.item-head { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: #6b7086; margin-bottom: 4px; }
+@media (max-width: 640px) { .item-row { grid-template-columns: 1fr 1fr; } }
+
+/* Drawer mais largo para a proposta (grid de itens) */
+.drawer.wide { max-width: 760px; }
+
+/* Botão fantasma pequeno para ações inline em tabela */
+.btn-ghost.sm { padding: 3px 9px; font-size: 12px; margin-left: 4px; }
+
+/* Cartão de prévia/totais */
+.preview-card { background: #f7f8fb; border: 1px solid #e4e7f0; border-radius: 8px; padding: 10px 14px; margin-top: 10px; }
+.preview-label { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: #6b7086; margin-bottom: 4px; }
+.preview-body { font-size: 13px; }
+
+.mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
