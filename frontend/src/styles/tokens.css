@@ -18,8 +18,8 @@
   --amber-light: #F7EFD8;  /* dourado claro — fundo de badge de prioridade */
   --amber-ink: var(--amber-dark); /* alias de compat (nome antigo) */
 
-  --paper: #F4F4F2;        /* n-100 — fundo da aplicação */
-  --surface: #FAFAF8;      /* n-050 — zebra e hover de tabela/lista */
+  --paper: #E8EAF0;        /* n-100 — fundo da aplicação. Recalibrado (era #F4F4F2): canvas mais fundo e levemente frio (viés indigo) pra eleger os cards e cortar o brilho de tela lavada. */
+  --surface: #F1F2F7;      /* n-050 — zebra e hover de tabela/lista. Recalibrado (era #FAFAF8) pra ter contraste real contra o card. */
   --panel-fg: #F1EEE6;
   --panel-fg-dim: #A9ADC9;
   --panel-border: rgba(241, 238, 230, 0.12);
@@ -27,13 +27,13 @@
   --panel-hover-bg: rgba(255, 255, 255, 0.04);  /* hover de item inativo na sidebar */
 
   --ink: #1B1D33;          /* n-900 — texto primário */
-  --ink-dim: #5C5F74;      /* n-600 — texto secundário */
-  --ink-faint: #8A8D9C;    /* legenda/rótulo mono discreto (cabeçalho de tabela etc.) — valor literal do manual, entre n-400 e n-600 */
+  --ink-dim: #565A72;      /* n-600 — texto secundário. Recalibrado (era #5C5F74) um passo mais firme sobre o canvas novo. */
+  --ink-faint: #787C93;    /* legenda/rótulo mono discreto (cabeçalho de tabela etc.). Recalibrado (era #8A8D9C) pra rótulos e vazios saírem do "quase sumindo". */
   --ink-disabled: #B4B4AE; /* n-400 — placeholder e texto desabilitado */
-  --border: #EAEAE6;       /* n-200 — divisor, borda de card */
-  --border-field: #D8D8D2; /* n-300 — borda de campo */
+  --border: #CFD3DE;       /* n-200 — divisor, borda de card. Recalibrado (era #EAEAE6): borda que aparece, dá recorte aos cards sem depender de sombra. */
+  --border-field: #C3C8D6; /* n-300 — borda de campo. Recalibrado (era #D8D8D2) pra campo/select com limite nítido. */
   --field-bg: #FFFFFF;     /* n-000 */
-  --card-bg: #FFFFFF;      /* n-000 */
+  --card-bg: #FCFCFE;      /* n-000 — tira o branco 100% cru (menos glare) sem parecer acinzentado. Era #FFFFFF. */
   --accent: var(--amber);
   --link: var(--indigo);   /* azul-noite — links (regra do manual) */
   --danger: #B4453C;
@@ -135,13 +135,15 @@
   --hs-blue: #3e93be; --hs-blue-soft: #6bb1d0; --hs-purple: #8c7cb8; --hs-gold: #d0a03c; --hs-orange: #d26a3c; --hs-orange-deep: #b25636;
 }
 :root[data-theme='light'] {
-  --paper: #F4F4F2; --panel: #232748; --panel-fg: #F1EEE6; --panel-fg-dim: #A9ADC9;
+  /* Tema claro forçado — espelha o bloco :root. Os 7 tokens de superfície/texto abaixo estão
+     recalibrados junto com o :root (canvas mais fundo + bordas visíveis) pra tirar a "tela lavada". */
+  --paper: #E8EAF0; --panel: #232748; --panel-fg: #F1EEE6; --panel-fg-dim: #A9ADC9;
   --panel-border: rgba(241, 238, 230, 0.12);
   --panel-active-bg: rgba(255, 255, 255, 0.07); --panel-hover-bg: rgba(255, 255, 255, 0.04);
-  --surface: #FAFAF8;
-  --ink: #1B1D33; --ink-dim: #5C5F74; --ink-faint: #8A8D9C; --ink-disabled: #B4B4AE;
-  --border: #EAEAE6; --border-field: #D8D8D2;
-  --field-bg: #FFFFFF; --card-bg: #FFFFFF;
+  --surface: #F1F2F7;
+  --ink: #1B1D33; --ink-dim: #565A72; --ink-faint: #787C93; --ink-disabled: #B4B4AE;
+  --border: #CFD3DE; --border-field: #C3C8D6;
+  --field-bg: #FFFFFF; --card-bg: #FCFCFE;
   --amber: #D9B654; --amber-dark: #C4A244; --amber-light: #F7EFD8;
   --info: #2F6BA8; --azul: var(--info); --link: var(--indigo);
   --danger: #B4453C; --danger-bg: #F8E7E5;
