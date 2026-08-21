@@ -4,6 +4,8 @@ Sem governança nesta fase: o desconto é calculado e registrado (RN-F09), mas n
 fila de alçada/aprovação nem bloqueio de piso. O aceite gera um Contrato em rascunho,
 herdando itens e preços (RF-PROP-07/RF-CONTR-06).
 """
+from __future__ import annotations
+
 from datetime import date
 from uuid import UUID
 
