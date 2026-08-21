@@ -72,7 +72,7 @@ def test_status_abaixo_de_70_pct_e_critico():
 
 def _row(meta_qtd, meta_valor, real_qtd, real_valor):
     return VendedorMetaRow(
-        user_id=uuid4(), nome="V", team_id=None,
+        user_id=uuid4(), nome="V", perfil="vendedor", team_id=None,
         meta_qtd=meta_qtd, meta_valor=meta_valor,
         realizado_qtd=real_qtd, realizado_valor=real_valor,
         status_qtd=_status(real_qtd, meta_qtd), status_valor=_status(real_valor, meta_valor),

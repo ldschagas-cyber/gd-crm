@@ -20,6 +20,7 @@ class SalesTargetInput(BaseModel):
 class VendedorMetaRow(BaseModel):
     user_id: UUID
     nome: str
+    perfil: str
     team_id: UUID | None
     meta_qtd: int | None
     meta_valor: float | None

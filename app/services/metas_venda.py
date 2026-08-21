@@ -99,7 +99,7 @@ class MetasVendaService:
             meta_valor = float(tg.meta_valor) if tg and tg.meta_valor is not None else None
             r_qtd, r_valor = realizado.get(u.id, (0, 0.0))
             return VendedorMetaRow(
-                user_id=u.id, nome=u.nome, team_id=u.team_id,
+                user_id=u.id, nome=u.nome, perfil=u.perfil, team_id=u.team_id,
                 meta_qtd=meta_qtd, meta_valor=meta_valor,
                 realizado_qtd=r_qtd, realizado_valor=round(r_valor, 2),
                 status_qtd=_status(r_qtd, meta_qtd), status_valor=_status(r_valor, meta_valor),

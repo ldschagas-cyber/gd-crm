@@ -11,6 +11,16 @@
 
 .mv-table th:not(:first-child), .mv-table td:not(:first-child) { width: 34%; }
 
+.mv-role {
+  font-size: 10.5px; font-weight: 600; padding: 1px 7px; border-radius: 100px;
+  text-transform: uppercase; letter-spacing: .03em; white-space: nowrap;
+  background: var(--paper); color: var(--ink-faint); border: 1px solid var(--border);
+}
+.mv-role-vendedor { background: var(--success-bg); color: var(--good); border-color: transparent; }
+.mv-role-gestor { background: rgba(47, 107, 168, 0.12); color: var(--azul); border-color: transparent; }
+.mv-role-prospector { background: var(--info-bg); color: var(--info); border-color: transparent; }
+.mv-role-pesquisador { background: var(--warning-bg); color: var(--warning); border-color: transparent; }
+
 .mv-cell { display: flex; align-items: center; gap: 10px; }
 .mv-real { font-variant-numeric: tabular-nums; font-weight: 600; }
 .mv-of { color: var(--ink-faint); font-weight: 500; }
