@@ -222,8 +222,6 @@ function UserModal({ user, teams = [], onClose, onSubmit, submitting, error }) {
     team_id: user?.team_id ?? '',
     meta_pesquisa_semanal: user?.meta_pesquisa_semanal ?? '',
     meta_pesquisa_mensal: user?.meta_pesquisa_mensal ?? '',
-    meta_ligacoes_semanal: user?.meta_ligacoes_semanal ?? '',
-    meta_ligacoes_mensal: user?.meta_ligacoes_mensal ?? '',
   })
 
   function set(field) {
@@ -236,8 +234,6 @@ function UserModal({ user, teams = [], onClose, onSubmit, submitting, error }) {
       team_id: form.team_id || null,
       meta_pesquisa_semanal: form.meta_pesquisa_semanal !== '' ? Number(form.meta_pesquisa_semanal) : null,
       meta_pesquisa_mensal: form.meta_pesquisa_mensal !== '' ? Number(form.meta_pesquisa_mensal) : null,
-      meta_ligacoes_semanal: form.meta_ligacoes_semanal !== '' ? Number(form.meta_ligacoes_semanal) : null,
-      meta_ligacoes_mensal: form.meta_ligacoes_mensal !== '' ? Number(form.meta_ligacoes_mensal) : null,
     }
     if (isEdit) {
       onSubmit({
@@ -306,16 +302,6 @@ function UserModal({ user, teams = [], onClose, onSubmit, submitting, error }) {
             <div className="field">
               <label htmlFor="meta_mensal">Meta de pesquisa mensal</label>
               <input id="meta_mensal" type="number" min="0" value={form.meta_pesquisa_mensal} onChange={set('meta_pesquisa_mensal')} placeholder="Ex.: 80" />
-            </div>
-          </div>
-          <div className="field-row">
-            <div className="field">
-              <label htmlFor="meta_lig_semanal">Meta de ligações semanal</label>
-              <input id="meta_lig_semanal" type="number" min="0" value={form.meta_ligacoes_semanal} onChange={set('meta_ligacoes_semanal')} placeholder="Ex.: 50" />
-            </div>
-            <div className="field">
-              <label htmlFor="meta_lig_mensal">Meta de ligações mensal</label>
-              <input id="meta_lig_mensal" type="number" min="0" value={form.meta_ligacoes_mensal} onChange={set('meta_ligacoes_mensal')} placeholder="Ex.: 200" />
             </div>
           </div>
           {!isEdit && (

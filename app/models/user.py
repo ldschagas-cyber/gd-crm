@@ -49,7 +49,5 @@ class User(Base, TenantMixin, TimestampMixin):
     team_id: Mapped[uuid.UUID | None] = mapped_column(
         PGUUID(as_uuid=True), ForeignKey("teams.id"), index=True
     )
-    # Meta de ligações (Tarefas tipo=ligacao concluídas) — fixa por semana/mês, mesmo
-    # molde de meta_pesquisa. Consumida em Metas de Ligações (ver MetasLigacoesService).
-    meta_ligacoes_semanal: Mapped[int | None] = mapped_column(Integer)
-    meta_ligacoes_mensal: Mapped[int | None] = mapped_column(Integer)
+    # Meta de ligações é por mês (ver CallTarget), definida na tela Metas de Ligações —
+    # não fica mais como coluna fixa aqui.

@@ -18,8 +18,6 @@ class UserCreate(BaseModel):
     team_id: UUID | None = None
     meta_pesquisa_semanal: int | None = Field(default=None, ge=0)
     meta_pesquisa_mensal: int | None = Field(default=None, ge=0)
-    meta_ligacoes_semanal: int | None = Field(default=None, ge=0)
-    meta_ligacoes_mensal: int | None = Field(default=None, ge=0)
 
 
 class UserUpdate(BaseModel):
@@ -30,8 +28,6 @@ class UserUpdate(BaseModel):
     team_id: UUID | None = None
     meta_pesquisa_semanal: int | None = Field(default=None, ge=0)
     meta_pesquisa_mensal: int | None = Field(default=None, ge=0)
-    meta_ligacoes_semanal: int | None = Field(default=None, ge=0)
-    meta_ligacoes_mensal: int | None = Field(default=None, ge=0)
 
 
 class UserStatusUpdate(BaseModel):
@@ -57,5 +53,3 @@ class UserRead(ORMModel):
     team_id: UUID | None
     meta_pesquisa_semanal: int | None
     meta_pesquisa_mensal: int | None
-    meta_ligacoes_semanal: int | None
-    meta_ligacoes_mensal: int | None

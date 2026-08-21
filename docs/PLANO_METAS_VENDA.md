@@ -34,17 +34,21 @@ Duas melhorias de acompanhamento de meta por pessoa, distintas das **Metas do Fu
   gerenciamento de equipes + seleção de equipe no cadastro de usuário
   (`UsuariosPage.jsx`).
 
-## 2. Meta de Ligações (semana e mês) por vendedor
+## 2. Meta de Ligações (semanal e mensal) por vendedor — por mês
 
-- Meta **fixa** por semana/mês, colunas em `users`
-  (`meta_ligacoes_semanal/mensal`), no mesmo molde de `meta_pesquisa_*`.
+- Meta **por mês**, tabela `call_targets` (`user_id`, `mes`, `meta_semanal`,
+  `meta_mensal`), no mesmo modelo do `sales_targets`. Definida na tela Metas de
+  Ligações (drawer com seletor de mês), **não** mais no cadastro do usuário.
 - **Realizado = tarefas `tipo=ligacao` concluídas** por vendedor (mesma fonte que o
   dashboard do vendedor já usa) — não usa `Call` do Twilio nem `TimelineEvent`,
-  evitando dependência de Twilio e contagem dupla. Progresso sempre relativo a
-  "agora" (semana e mês correntes).
+  evitando dependência de Twilio e contagem dupla.
+- O bloco **mensal** usa o mês consultado; o **semanal** usa a semana corrente e só
+  aparece quando o mês consultado é o mês de hoje (a "semana atual" pertence ao mês
+  corrente).
 - Serviço `app/services/metas_ligacoes.py`, API `app/api/v1/metas_ligacoes.py`
-  (`GET /metas-ligacoes/progresso`, admin/gestor), tela `MetasLigacoesPage.jsx`. A
-  meta é definida no cadastro de usuário.
+  (`GET /metas-ligacoes/progresso?mes=`, `PUT /metas-ligacoes/targets?mes=`,
+  admin/gestor), tela `MetasLigacoesPage.jsx`. Migração `f3a7c9e1d5b4` cria
+  `call_targets` e remove as colunas `meta_ligacoes_*` de `users`.
 
 ## Notas de implementação
 - Tabelas novas (`teams`, `sales_targets`) não têm política RLS no Postgres (só as

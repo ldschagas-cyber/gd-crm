@@ -23,11 +23,12 @@ from app.models.subscription import Assinatura, AssinaturaEvento
 from app.models.onboarding import OnboardingChecklistItem
 from app.models.team import Team
 from app.models.sales_target import SalesTarget
+from app.models.call_target import CallTarget
 
 __all__ = [
     "Base", "Tenant", "User", "Company", "Contact", "Pipeline",
     "PipelineStage", "Deal", "Task", "TimelineEvent", "ImportJob", "AuditLog",
     "UserIntegration", "LeadProspect", "Form", "FormSubmission", "SiteVisit",
     "Snippet", "Call", "OrigemOption", "RevenueInvestment", "ActivitySlaRule", "ActivitySlaMilestoneHit",
-    "Assinatura", "AssinaturaEvento", "OnboardingChecklistItem", "Team", "SalesTarget",
+    "Assinatura", "AssinaturaEvento", "OnboardingChecklistItem", "Team", "SalesTarget", "CallTarget",
 ]
