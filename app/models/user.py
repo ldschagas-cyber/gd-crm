@@ -14,6 +14,8 @@ class UserRole(str, enum.Enum):
     ADMIN = "admin"
     GESTOR = "gestor"
     VENDEDOR = "vendedor"
+    PROSPECTOR = "prospector"
+    PESQUISADOR = "pesquisador"
     VISUALIZADOR = "visualizador"
 
 

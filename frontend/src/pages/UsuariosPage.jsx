@@ -5,7 +5,10 @@ import { createTeam, deleteTeam, listTeams, updateTeam } from '../api/teams'
 import '../styles/dataTable.css'
 import './UsuariosPage.css'
 
-const PERFIL_LABEL = { admin: 'Admin', gestor: 'Gestor', vendedor: 'Vendedor', visualizador: 'Visualizador' }
+const PERFIL_LABEL = {
+  admin: 'Admin', gestor: 'Gestor', vendedor: 'Vendedor',
+  prospector: 'Prospector', pesquisador: 'Pesquisador', visualizador: 'Visualizador',
+}
 
 function initials(nome) {
   if (!nome) return '?'

@@ -10,6 +10,10 @@
 .perfil-pill[data-perfil='gestor'] .d { background: var(--azul); }
 .perfil-pill[data-perfil='vendedor'] { background: rgba(46, 125, 91, 0.12); color: var(--good); }
 .perfil-pill[data-perfil='vendedor'] .d { background: var(--good); }
+.perfil-pill[data-perfil='prospector'] { background: var(--info-bg); color: var(--info); }
+.perfil-pill[data-perfil='prospector'] .d { background: var(--info); }
+.perfil-pill[data-perfil='pesquisador'] { background: var(--warning-bg); color: var(--warning); }
+.perfil-pill[data-perfil='pesquisador'] .d { background: var(--warning); }
 .perfil-pill[data-perfil='visualizador'] { background: var(--paper); color: var(--ink-faint); border: 1px solid var(--border); }
 .perfil-pill[data-perfil='visualizador'] .d { background: var(--ink-faint); }
 

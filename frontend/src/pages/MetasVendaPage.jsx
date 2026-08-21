@@ -208,8 +208,11 @@ function EditTargetsDrawer({ mes, mesLabel, resumo, onClose, onSaved }) {
     return m
   }, [teamsQuery.data])
 
-  // Só vendedores e gestores carregam meta de venda.
-  const vendedores = (usersQuery.data?.items ?? []).filter((u) => u.perfil === 'vendedor' || u.perfil === 'gestor')
+  // Carregam meta de venda: quem tem perfil de venda (vendedor/gestor/prospector/
+  // pesquisador) ou já pertence a uma equipe — assim todo membro de equipe aparece,
+  // qualquer que seja o perfil.
+  const PERFIS_VENDA = ['vendedor', 'gestor', 'prospector', 'pesquisador']
+  const vendedores = (usersQuery.data?.items ?? []).filter((u) => PERFIS_VENDA.includes(u.perfil) || u.team_id)
 
   function valueFor(userId, campo) {
     if (form[userId]?.[campo] !== undefined) return form[userId][campo]
