@@ -10,6 +10,10 @@ function money(v) {
   return Number(v ?? 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })
 }
 function fmt(n) { return Number(n ?? 0).toLocaleString('pt-BR') }
+const PERFIL_LABEL = {
+  admin: 'Admin', gestor: 'Gestor', vendedor: 'Vendedor',
+  prospector: 'Prospector', pesquisador: 'Pesquisador', visualizador: 'Visualizador',
+}
 function pct(real, meta) {
   if (!meta) return null
   return Math.round((real / meta) * 100)
@@ -114,7 +118,7 @@ export default function MetasVendaPage() {
                 <div className="v">{equipes.filter((e) => e.team_id).length}</div>
               </div>
               <div className="stat-tile">
-                <div className="t">Vendedores com meta</div>
+                <div className="t">Membros com meta</div>
                 <div className="v">{equipes.reduce((a, e) => a + e.vendedores.filter((v) => v.meta_qtd != null || v.meta_valor != null).length, 0)}</div>
               </div>
             </div>
@@ -127,7 +131,7 @@ export default function MetasVendaPage() {
                   <div className="card-head mv-team-head">
                     <div>
                       <h3>{equipe.nome}</h3>
-                      <p>{equipe.gestor_nome ? `Gestor: ${equipe.gestor_nome}` : 'Sem gestor definido'} · {equipe.vendedores.length} vendedor{equipe.vendedores.length === 1 ? '' : 'es'}</p>
+                      <p>{equipe.gestor_nome ? `Gestor: ${equipe.gestor_nome}` : 'Sem gestor definido'} · {equipe.vendedores.length} membro{equipe.vendedores.length === 1 ? '' : 's'}</p>
                     </div>
                     <div className="mv-team-totals">
                       <div className="mv-total">
@@ -144,7 +148,7 @@ export default function MetasVendaPage() {
                     <table className="data mv-table">
                       <thead>
                         <tr>
-                          <th>Vendedor</th>
+                          <th>Membro</th>
                           <th>Quantidade</th>
                           <th>Valor</th>
                         </tr>
@@ -156,6 +160,7 @@ export default function MetasVendaPage() {
                               <div className="row-resp">
                                 <span className="avatar">{initials(v.nome)}</span>
                                 <span className="row-resp-name">{v.nome}</span>
+                                <span className={`mv-role mv-role-${v.perfil}`}>{PERFIL_LABEL[v.perfil] ?? v.perfil}</span>
                               </div>
                             </td>
                             <td><MetaCell real={v.realizado_qtd} meta={v.meta_qtd} status={v.status_qtd} /></td>
@@ -264,7 +269,7 @@ function EditTargetsDrawer({ mes, mesLabel, resumo, onClose, onSaved }) {
                     <span className="avatar">{initials(u.nome)}</span>
                     <div>
                       <div>{u.nome}</div>
-                      <small className="mv-edit-team">{u.team_id ? teamName[u.team_id] ?? '—' : 'Sem equipe'}</small>
+                      <small className="mv-edit-team">{PERFIL_LABEL[u.perfil] ?? u.perfil} · {u.team_id ? teamName[u.team_id] ?? '—' : 'Sem equipe'}</small>
                     </div>
                   </div>
                   <input className="f-input" type="number" min="0" placeholder="—"
