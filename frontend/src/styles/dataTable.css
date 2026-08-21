@@ -306,8 +306,10 @@ label.field-checkbox {
 
 /* tiras de estatística (Pesquisa de Leads, Desempenho, Negócio-detalhe, ...) */
 .stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
-.stat-tile { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--r-card); padding: 14px 16px; box-shadow: var(--shadow); }
-.stat-tile .t { font-family: var(--font-mono); font-size: 9.5px; color: var(--ink-faint); font-weight: 500; text-transform: uppercase; letter-spacing: .14em; }
+.stat-tile { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--r-card); padding: 14px 16px; box-shadow: var(--shadow); display: flex; flex-direction: column; }
+/* rótulo reserva sempre 2 linhas (min-height) — assim o valor começa na mesma altura em todos os
+   tiles da tira, sem o efeito "sobe e desce" quando um rótulo quebra em duas linhas e o vizinho não. */
+.stat-tile .t { font-family: var(--font-mono); font-size: 9.5px; line-height: 1.35; min-height: 2.7em; color: var(--ink-faint); font-weight: 500; text-transform: uppercase; letter-spacing: .14em; }
 .stat-tile .v { font-size: 20px; font-weight: 700; margin-top: 6px; font-family: var(--font-mono); color: var(--ink); }
 .stat-tile.bonus .v { color: var(--good); }
 
