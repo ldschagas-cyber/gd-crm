@@ -2,10 +2,11 @@
 from fastapi import APIRouter
 
 from app.api.v1 import (
-    activity_sla, auth, calls, cnae_codes, companies, contacts, customer_success, dashboards, deals, email_templates,
-    embed, forecast, forms, funil_metas, import_jobs, lead_prospects, me, message_templates, metas_ligacoes,
-    metas_venda, origem_options, pipelines, public, public_companies, revenue, revenue_investments, sequences,
-    site_visits, snippets, subscriptions, tasks, teams, tenant, users, workflows,
+    activity_sla, auth, calls, cnae_codes, companies, contacts, contratos, customer_success, dashboards, deals,
+    email_templates, embed, faturamento, financeiro, forecast, forms, funil_metas, import_jobs, lead_prospects, me,
+    message_templates, metas_ligacoes, metas_venda, origem_options, pipelines, produtos, propostas, public,
+    public_companies, revenue, revenue_investments, sequences, site_visits, snippets, subscriptions, tasks, teams,
+    tenant, users, workflows,
 )
 
 api_router = APIRouter()
@@ -31,6 +32,11 @@ api_router.include_router(forecast.router)
 api_router.include_router(revenue_investments.router)
 api_router.include_router(subscriptions.router)
 api_router.include_router(revenue.router)
+api_router.include_router(produtos.router)
+api_router.include_router(propostas.router)
+api_router.include_router(contratos.router)
+api_router.include_router(faturamento.router)
+api_router.include_router(financeiro.router)
 api_router.include_router(customer_success.router)
 api_router.include_router(cnae_codes.router)
 api_router.include_router(public_companies.router)
