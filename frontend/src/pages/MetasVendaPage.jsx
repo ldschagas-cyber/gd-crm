@@ -194,7 +194,7 @@ export default function MetasVendaPage() {
 }
 
 function EditTargetsDrawer({ mes, mesLabel, resumo, onClose, onSaved }) {
-  const usersQuery = useQuery({ queryKey: ['users', 'for-metas-venda'], queryFn: () => listUsers({ size: 200 }), retry: false })
+  const usersQuery = useQuery({ queryKey: ['users', 'for-metas-venda'], queryFn: () => listUsers({ size: 100 }), retry: false })
   const teamsQuery = useQuery({ queryKey: ['teams'], queryFn: listTeams, retry: false })
 
   // Metas atuais do mês, extraídas do resumo já carregado (user_id -> {qtd, valor}).
@@ -255,9 +255,11 @@ function EditTargetsDrawer({ mes, mesLabel, resumo, onClose, onSaved }) {
         </div>
         <div className="drawer-body">
           {usersQuery.isLoading ? (
-            <p className="state-msg">Carregando vendedores…</p>
+            <p className="state-msg">Carregando membros…</p>
+          ) : usersQuery.isError ? (
+            <p className="state-msg error">Não foi possível carregar a lista de membros.</p>
           ) : vendedores.length === 0 ? (
-            <p className="state-msg">Nenhum vendedor cadastrado.</p>
+            <p className="state-msg">Nenhum membro elegível a meta de venda. Cadastre vendedores/prospectores ou associe pessoas a uma equipe.</p>
           ) : (
             <div className="mv-edit-list">
               <div className="mv-edit-row mv-edit-head">
