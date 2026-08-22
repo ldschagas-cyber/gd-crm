@@ -34,9 +34,9 @@ export default function PropostasPage() {
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   const listQuery = useQuery({ queryKey: ['propostas', 'list'], queryFn: () => listPropostas({ size: 100 }) })
-  const companiesQuery = useQuery({ queryKey: ['companies', 'for-select'], queryFn: () => listCompanies({ size: 200 }) })
-  const usersQuery = useQuery({ queryKey: ['users', 'for-select'], queryFn: () => listUsers({ size: 200 }) })
-  const produtosQuery = useQuery({ queryKey: ['produtos', 'ativos'], queryFn: () => listProdutos({ size: 200, ativo: true }) })
+  const companiesQuery = useQuery({ queryKey: ['companies', 'for-select'], queryFn: () => listCompanies({ size: 100 }) })
+  const usersQuery = useQuery({ queryKey: ['users', 'for-select'], queryFn: () => listUsers({ size: 100 }) })
+  const produtosQuery = useQuery({ queryKey: ['produtos', 'ativos'], queryFn: () => listProdutos({ size: 100, ativo: true }) })
 
   const items = listQuery.data?.items ?? []
   const companiesById = useMemo(() => Object.fromEntries((companiesQuery.data?.items ?? []).map((c) => [c.id, c.razao_social])), [companiesQuery.data])

@@ -24,7 +24,7 @@ export default function FaturamentoPage() {
   const [banner, setBanner] = useState(null) // {kind:'ok'|'warn', text}
 
   const fatQuery = useQuery({ queryKey: ['faturamento', competencia], queryFn: () => getFaturamento(competencia) })
-  const companiesQuery = useQuery({ queryKey: ['companies', 'for-select'], queryFn: () => listCompanies({ size: 200 }) })
+  const companiesQuery = useQuery({ queryKey: ['companies', 'for-select'], queryFn: () => listCompanies({ size: 100 }) })
   const companiesById = useMemo(() => Object.fromEntries((companiesQuery.data?.items ?? []).map((c) => [c.id, c.razao_social])), [companiesQuery.data])
 
   const cobrancas = fatQuery.data?.cobrancas ?? []
