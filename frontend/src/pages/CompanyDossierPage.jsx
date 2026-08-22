@@ -162,6 +162,11 @@ export default function CompanyDossierPage() {
                   {company.origem && <span className="tag">{company.origem}</span>}
                 </div>
               </div>
+              <div className="co-actions">
+                <button className="btn-ghost" disabled={sdrArgosMutation.isPending} onClick={() => sdrArgosMutation.mutate()}>
+                  {sdrArgosMutation.isPending ? 'SDR Argos rodando…' : 'SDR Argos ↻'}
+                </button>
+              </div>
             </div>
           </section>
 
