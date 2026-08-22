@@ -10,7 +10,7 @@ import '../styles/financeiro.css'
 
 const STATUS = {
   rascunho: { label: 'Rascunho', cls: 'p-neu' },
-  enviada: { label: 'Enviada', cls: 'p-blue' },
+  enviada: { label: 'Liberada', cls: 'p-blue' },
   em_negociacao: { label: 'Em negociação', cls: 'p-neu' },
   aceita: { label: 'Aceita ✓', cls: 'p-ok' },
   recusada: { label: 'Recusada', cls: 'p-bad' },
@@ -18,7 +18,7 @@ const STATUS = {
 }
 // Próximas transições oferecidas como ação (espelha o backend PropostaService._TRANSICOES).
 const ACOES = {
-  rascunho: [['enviada', 'Enviar']],
+  rascunho: [['enviada', 'Liberar']],
   enviada: [['aceita', 'Aceitar'], ['em_negociacao', 'Negociar'], ['recusada', 'Recusar']],
   em_negociacao: [['aceita', 'Aceitar'], ['recusada', 'Recusar']],
 }
