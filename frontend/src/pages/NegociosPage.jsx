@@ -8,6 +8,7 @@ import { getBoard, listPipelines } from '../api/pipelines'
 import { listCompanies } from '../api/companies'
 import { listContacts } from '../api/contacts'
 import { listUsers } from '../api/users'
+import { listProdutos } from '../api/produtos'
 import { buildStageTintMap } from '../utils/stageColor'
 import StageLabel from '../components/StageLabel.jsx'
 import EnrollModal from '../components/EnrollModal.jsx'
@@ -500,12 +501,76 @@ function DealsList({ query, page, setPage, companiesById, usersById, stages, col
   )
 }
 
+// Linhas de produto do negócio — mesmo padrão de itens de Proposta/Contrato (ver
+// app/services/deal.py: DealService._aplicar_itens). Com pelo menos 1 item, o valor
+// previsto do negócio deixa de ser digitado à mão e passa a ser a soma das linhas — é
+// o que resolve a ambiguidade de "esse valor é mensal ou é o contrato anual inteiro"
+// na hora de virar MRR (ver AssinaturaService.mrr_do_negocio).
+function DealItemsEditor({ itens, onChange }) {
+  const produtosQuery = useQuery({ queryKey: ['produtos', 'ativos'], queryFn: () => listProdutos({ size: 200, ativo: true }) })
+  const produtos = produtosQuery.data?.items ?? []
+  const total = itens.reduce((sum, it) => sum + (Number(it.preco) || 0) * (Number(it.quantidade) || 0), 0)
+
+  function addLinha() {
+    const produto = produtos[0]
+    if (!produto) return
+    onChange([...itens, {
+      produto_id: produto.id, descricao: produto.nome,
+      preco: produto.preco_tabela, quantidade: 1, tipo: produto.tipo,
+    }])
+  }
+  function updateLinha(idx, patch) {
+    onChange(itens.map((it, i) => (i === idx ? { ...it, ...patch } : it)))
+  }
+  function setProduto(idx, produtoId) {
+    const produto = produtos.find((p) => p.id === produtoId)
+    if (!produto) return
+    updateLinha(idx, { produto_id: produto.id, descricao: produto.nome, preco: produto.preco_tabela, tipo: produto.tipo })
+  }
+  function removeLinha(idx) {
+    onChange(itens.filter((_, i) => i !== idx))
+  }
+
+  return (
+    <div className="f-group">
+      <label className="f-label">Linhas de produto <span className="opt">opcional</span></label>
+      <span className="f-hint">
+        Com linhas de produto, o valor previsto vira a soma delas — produtos recorrentes contam como MRR mensal
+        ao ganhar o negócio; sem nenhuma linha, o valor previsto digitado abaixo é usado direto como MRR.
+      </span>
+      {itens.map((it, idx) => (
+        <div className="f-row" key={idx} style={{ alignItems: 'center', marginTop: 6 }}>
+          <select className="f-select" value={it.produto_id} onChange={(e) => setProduto(idx, e.target.value)}>
+            {produtos.map((p) => (
+              <option key={p.id} value={p.id}>{p.nome} ({p.tipo === 'recorrente' ? 'recorrente' : 'pontual'})</option>
+            ))}
+          </select>
+          <input
+            className="f-input" type="number" min="1" step="1" style={{ maxWidth: 70 }}
+            value={it.quantidade} onChange={(e) => updateLinha(idx, { quantidade: Number(e.target.value) })}
+          />
+          <input
+            className="f-input" type="number" min="0" step="0.01" style={{ maxWidth: 120 }}
+            value={it.preco} onChange={(e) => updateLinha(idx, { preco: e.target.value })}
+          />
+          <button type="button" className="btn-ghost" onClick={() => removeLinha(idx)}>Remover</button>
+        </div>
+      ))}
+      <div className="row" style={{ marginTop: 8, justifyContent: 'space-between' }}>
+        <button type="button" className="btn-ghost" onClick={addLinha} disabled={!produtos.length}>+ Adicionar produto</button>
+        {itens.length > 0 && <strong>Total: {formatCurrency(total)}</strong>}
+      </div>
+    </div>
+  )
+}
+
 export function DealDrawer({ pipeline, companies, presetCompanyId, presetContactId, presetTipo, users, onClose, onSubmit, submitting, error }) {
   const [form, setForm] = useState({
     nome: '', company_id: presetCompanyId ?? '', contact_id: presetContactId ?? '', responsavel_id: '',
     stage_id: pipeline.stages.find((s) => s.tipo === 'aberta')?.id ?? '',
     valor_previsto: '', probabilidade: '', data_prev_fechamento: '',
   })
+  const [itens, setItens] = useState([])
 
   const contactsQuery = useQuery({
     queryKey: ['contacts', 'for-deal', form.company_id],
@@ -529,6 +594,12 @@ export function DealDrawer({ pipeline, companies, presetCompanyId, presetContact
       valor_previsto: form.valor_previsto === '' ? null : Number(form.valor_previsto),
       probabilidade: form.probabilidade === '' ? null : parseInt(form.probabilidade, 10),
       data_prev_fechamento: form.data_prev_fechamento || null,
+      itens: itens.length
+        ? itens.map((it) => ({
+            produto_id: it.produto_id, descricao: it.descricao,
+            preco: Number(it.preco) || 0, quantidade: Number(it.quantidade) || 1,
+          }))
+        : null,
       // Customer Success (ver docs/PLANO_CUSTOMER_SUCCESS.md §4) — não é um campo do
       // formulário: só chega aqui pré-definido pelo botão "Abrir negócio de expansão"
       // do módulo de Clientes. Fluxo normal de Vendas nunca passa presetTipo.
@@ -587,10 +658,15 @@ export function DealDrawer({ pipeline, companies, presetCompanyId, presetContact
                 </select>
               </div>
             </div>
+            <DealItemsEditor itens={itens} onChange={setItens} />
             <div className="f-row">
               <div className="f-group">
                 <label className="f-label">Valor previsto (R$) <span className="opt">opcional</span></label>
-                <input className="f-input" type="number" min="0" step="0.01" value={form.valor_previsto} onChange={set('valor_previsto')} placeholder="0,00" />
+                <input
+                  className="f-input" type="number" min="0" step="0.01" value={form.valor_previsto}
+                  onChange={set('valor_previsto')} placeholder="0,00" disabled={itens.length > 0}
+                />
+                {itens.length > 0 && <span className="f-hint">Calculado a partir das linhas de produto acima.</span>}
               </div>
               <div className="f-group">
                 <label className="f-label">Probabilidade (%) <span className="opt">opcional</span></label>
@@ -629,6 +705,11 @@ function EditDealModal({ deal, companies, users, onClose, onSubmit, submitting, 
     data_prev_fechamento: deal.data_prev_fechamento ?? '',
     commit: deal.commit ?? false,
   })
+  const [itens, setItens] = useState(
+    (deal.itens ?? []).map((it) => ({
+      produto_id: it.produto_id, descricao: it.descricao, preco: it.preco, quantidade: it.quantidade,
+    })),
+  )
 
   function set(field) {
     return (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
@@ -643,6 +724,10 @@ function EditDealModal({ deal, companies, users, onClose, onSubmit, submitting, 
       probabilidade: form.probabilidade === '' ? null : parseInt(form.probabilidade, 10),
       data_prev_fechamento: form.data_prev_fechamento || null,
       commit: form.commit,
+      itens: itens.map((it) => ({
+        produto_id: it.produto_id, descricao: it.descricao,
+        preco: Number(it.preco) || 0, quantidade: Number(it.quantidade) || 1,
+      })),
     })
   }
 
@@ -661,10 +746,15 @@ function EditDealModal({ deal, companies, users, onClose, onSubmit, submitting, 
               {users.map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
             </select>
           </div>
+          <DealItemsEditor itens={itens} onChange={setItens} />
           <div className="field-row">
             <div className="field">
               <label htmlFor="valor_previsto">Valor previsto (R$)</label>
-              <input id="valor_previsto" type="number" min="0" step="0.01" value={form.valor_previsto} onChange={set('valor_previsto')} />
+              <input
+                id="valor_previsto" type="number" min="0" step="0.01" value={form.valor_previsto}
+                onChange={set('valor_previsto')} disabled={itens.length > 0}
+              />
+              {itens.length > 0 && <span className="f-hint">Calculado a partir das linhas de produto acima.</span>}
             </div>
             <div className="field">
               <label htmlFor="probabilidade">Probabilidade (%)</label>

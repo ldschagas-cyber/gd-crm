@@ -1,12 +1,15 @@
 """Serviço de negócios: criação, movimentação de etapa e fechamento."""
 from datetime import datetime, timezone
+from decimal import Decimal
 from uuid import UUID
 
 from sqlalchemy import delete as sa_delete, update as sa_update
 from sqlalchemy.orm import Session
 
-from app.core.exceptions import NotFoundError
-from app.models.deal import Deal, DealStatus, DealTipo
+from app.core.context import get_current_tenant
+from app.core.exceptions import AppException, NotFoundError
+from app.core.money import dec, money
+from app.models.deal import Deal, DealItem, DealStatus, DealTipo
 from app.models.pipeline import StageType
 from app.models.sequence import SequenceEnrollment
 from app.models.task import Task
@@ -14,8 +17,9 @@ from app.models.timeline import TimelineEvent, TimelineType
 from app.repositories.company import CompanyRepository
 from app.repositories.deal import DealRepository
 from app.repositories.pipeline import PipelineRepository, StageRepository
+from app.repositories.product import ProdutoRepository
 from app.schemas.common import PageParams
-from app.schemas.deal import DealClose, DealCreate, DealStageMove, DealUpdate
+from app.schemas.deal import DealClose, DealCreate, DealItemCreate, DealStageMove, DealUpdate
 from app.services.timeline import TimelineService
 from app.services.workflow_events import publish_event
 
@@ -27,6 +31,7 @@ class DealService:
         self.stages = StageRepository(db)
         self.pipelines = PipelineRepository(db)
         self.companies = CompanyRepository(db)
+        self.produtos = ProdutoRepository(db)
         self.timeline = TimelineService(db)
 
     def list(self, params: PageParams, pipeline_id: UUID | None = None,
@@ -70,7 +75,10 @@ class DealService:
         # Origem não é escolhida no negócio — herda sempre da empresa (ver DealCreate/DealUpdate).
         payload["origem"] = company.origem
         payload["tipo"] = data.tipo.value
+        payload.pop("itens", None)
         deal = Deal(**payload)
+        if data.itens:
+            self._aplicar_itens(deal, data.itens)
         deal = self.repo.add(deal)
         # meta.para no formato de move_stage (§3 do PLANO_METAS_FUNIL.md) — permite
         # reconstruir "em que etapa esse negócio nasceu" com a mesma query que já lê
@@ -99,9 +107,40 @@ class DealService:
 
     def update(self, deal_id: UUID, data: DealUpdate) -> Deal:
         deal = self.get(deal_id)
-        for field, value in data.model_dump(exclude_unset=True).items():
+        payload = data.model_dump(exclude_unset=True)
+        itens_informados = "itens" in payload
+        payload.pop("itens", None)
+        for field, value in payload.items():
             setattr(deal, field, value)
+        if itens_informados:
+            # None não chega aqui (exclude_unset já removeu o campo quando ausente);
+            # lista vazia limpa os itens e volta pro fallback valor_previsto digitado.
+            deal.itens.clear()
+            if data.itens:
+                self._aplicar_itens(deal, data.itens)
+            else:
+                deal.valor_previsto = data.valor_previsto
         return self.repo.save(deal)
+
+    def _aplicar_itens(self, deal: Deal, itens: list[DealItemCreate]) -> None:
+        """Mesmo padrão de PropostaService._aplicar_itens (ver app/services/proposal.py):
+        `valor_previsto` do negócio passa a ser a soma dos itens, substituindo o valor
+        digitado à mão."""
+        total = Decimal("0")
+        for it in itens:
+            produto = self.produtos.get(it.produto_id)
+            if produto is None:
+                raise NotFoundError("Produto do item não encontrado")
+            if not produto.ativo:
+                raise AppException(f'Produto "{produto.nome}" está inativo')
+            preco = dec(it.preco)
+            deal.itens.append(DealItem(
+                tenant_id=get_current_tenant(),  # filho via cascade não passa pelo repo.add
+                produto_id=produto.id, descricao=it.descricao or produto.nome,
+                preco=money(preco), quantidade=it.quantidade,
+            ))
+            total += preco * it.quantidade
+        deal.valor_previsto = float(money(total))
 
     def move_stage(self, deal_id: UUID, data: DealStageMove) -> Deal:
         deal = self.get(deal_id)
