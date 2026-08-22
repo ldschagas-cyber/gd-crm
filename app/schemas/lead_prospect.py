@@ -71,9 +71,6 @@ class LeadProspectRead(BaseModel):
     pesquisado_por: UUID
     promoted_company_id: UUID | None
     created_at: datetime
-    # JSON bruto de CommercialIntelligenceRecord (perfil + benchmark + argumento + gravado_em),
-    # ou None se a Inteligência Comercial nunca foi gravada para este lead. O frontend faz o parse.
-    inteligencia_comercial: str | None
     # calculados a partir de tenants.config.icp_scoring_rules — nunca persistidos
     score_icp: int
     icp_fit: str
@@ -141,9 +138,11 @@ class CommercialIntelligenceBenchmark(BaseModel):
 
 
 class CommercialIntelligenceResponse(BaseModel):
-    """Sugestão gerada por IA — nunca salva automaticamente. Item 'Inteligência
-    Comercial' da Pesquisa de Leads: cruza o perfil pesquisado da empresa com o
-    Benchmark Logístico do GD Diagnóstico para montar um argumento comercial."""
+    """Cruza o perfil pesquisado da empresa com o Benchmark Logístico do GD Diagnóstico
+    para montar um argumento comercial. Gerado pelo SDR Argos (app/services/sdr_argos.py),
+    estritamente pós-promoção — ver docs/PLANO_SDR_AUTONOMO.md (decisão travada nº 3).
+    Historicamente vivia aqui (schemas/lead_prospect.py) de quando era gerado no lead, antes
+    da promoção; os schemas ficaram, só o gerador mudou de lugar."""
     perfil: CommercialIntelligencePerfil
     benchmark: CommercialIntelligenceBenchmark
     argumento: str
@@ -151,9 +150,8 @@ class CommercialIntelligenceResponse(BaseModel):
 
 class CommercialIntelligenceRecord(CommercialIntelligenceResponse):
     """O mesmo resultado acima, mas gravado: é o formato serializado (via
-    model_dump_json) em LeadProspect.inteligencia_comercial e, por cópia na
-    promoção, em Company.inteligencia_comercial. `gravado_em` é definido pelo
-    servidor no momento do PATCH — nunca vem do cliente."""
+    model_dump_json) em Company.inteligencia_comercial pelo SdrArgosService.
+    `gravado_em` é definido pelo servidor no momento da geração — nunca vem do cliente."""
     gravado_em: datetime
 
 

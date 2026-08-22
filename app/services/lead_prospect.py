@@ -13,7 +13,7 @@ from app.repositories.company import CompanyRepository
 from app.repositories.lead_prospect import LeadProspectRepository
 from app.repositories.user import UserRepository
 from app.schemas.lead_prospect import (
-    CommercialIntelligenceRecord, CommercialIntelligenceResponse, IcpScoringRules, LeadProspectCreate,
+    IcpScoringRules, LeadProspectCreate,
     LeadProspectPageParams, LeadProspectRead, LeadProspectUpdate, MetaProgressResponse, MetaProgressRow,
     PerformanceReportResponse, PerformanceReportRow,
 )
@@ -80,7 +80,7 @@ class LeadProspectService:
             contato_sugerido=lead.contato_sugerido, status=lead.status, pesquisado_por=lead.pesquisado_por,
             promoted_company_id=lead.promoted_company_id, created_at=lead.created_at,
             score_icp=score, icp_fit=fit, gamificacao=gamificacao, recebe_bonus=recebe_bonus,
-            bonus_valor=bonus_valor, inteligencia_comercial=lead.inteligencia_comercial,
+            bonus_valor=bonus_valor,
         )
 
     # ---- CRUD ---------------------------------------------------------------
@@ -141,15 +141,6 @@ class LeadProspectService:
     def delete(self, lead_id: UUID) -> None:
         lead = self._get_orm(lead_id)
         self.repo.delete(lead)
-
-    def save_inteligencia_comercial(self, lead_id: UUID, data: CommercialIntelligenceResponse) -> LeadProspectRead:
-        """Grava o resultado (já gerado pelo endpoint de geração) no lead — `gravado_em`
-        é sempre o momento deste PATCH, não o momento em que a IA rodou."""
-        lead = self._get_orm(lead_id)
-        record = CommercialIntelligenceRecord(**data.model_dump(), gravado_em=datetime.now(timezone.utc))
-        lead.inteligencia_comercial = record.model_dump_json()
-        lead = self.repo.save(lead)
-        return self.to_read(lead)
 
     def promote(self, lead_id: UUID, responsavel_id: UUID) -> LeadProspectRead:
         lead = self._get_orm(lead_id)
