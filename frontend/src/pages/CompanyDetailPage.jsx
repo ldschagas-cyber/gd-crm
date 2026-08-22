@@ -191,7 +191,7 @@ export default function CompanyDetailPage() {
             </div>
             <div className="co-actions">
               <button
-                className="btn-ghost"
+                className="btn-primary"
                 disabled={sdrArgosMutation.isPending || !!sdrArgosQueuedAt}
                 onClick={() => sdrArgosMutation.mutate()}
               >
