@@ -91,6 +91,7 @@ export default function CompanyDossierPage() {
   const [pergunta, setPergunta] = useState('')
   const [conversa, setConversa] = useState([])
   const [showEnrollModal, setShowEnrollModal] = useState(false)
+  const [sdrArgosQueuedAt, setSdrArgosQueuedAt] = useState(null)
 
   const companyQuery = useQuery({ queryKey: ['companies', 'detail', id], queryFn: () => getCompany(id) })
   const icpQuery = useQuery({ queryKey: ['companies', 'icp', id], queryFn: () => getCompanyIcp(id) })
@@ -109,7 +110,16 @@ export default function CompanyDossierPage() {
   })
   const sdrArgosMutation = useMutation({
     mutationFn: () => runSdrArgos(id),
-    onSuccess: invalidateCompany,
+    onSuccess: () => {
+      // O endpoint só enfileira (202) — a resposta chega em milissegundos, bem antes do
+      // dossiê terminar de gerar (busca web + IA, ~10-30s). Sem isto o botão "resolve"
+      // sozinho e nada muda na tela até um refresh manual. Reconsulta algumas vezes nessa
+      // janela pra a seção atualizar sozinha assim que o SdrArgosService.gerar() terminar.
+      setSdrArgosQueuedAt(Date.now())
+      invalidateCompany()
+      ;[8000, 16000, 28000].forEach((ms) => setTimeout(invalidateCompany, ms))
+      setTimeout(() => setSdrArgosQueuedAt(null), 32000)
+    },
   })
   const askMutation = useMutation({
     mutationFn: (texto) => askCompanyAi(id, texto),
@@ -126,6 +136,10 @@ export default function CompanyDossierPage() {
   )
   const emails = (timelineQuery.data?.items ?? []).filter((e) => e.tipo === 'email').slice(0, 3)
   const reunioes = (timelineQuery.data?.items ?? []).filter((e) => e.tipo === 'reuniao').slice(0, 3)
+  // Combina "chamada HTTP em voo" (curtíssima, só enfileira) com "aguardando o background
+  // terminar" — os 3 botões abaixo usam o mesmo estado pra não parecer "pronto" enquanto
+  // o dossiê ainda está gerando (ver onSuccess de sdrArgosMutation).
+  const sdrArgosBusy = sdrArgosMutation.isPending || !!sdrArgosQueuedAt
   const contatoPrincipal = contactsQuery.data?.items?.[0]
   const intel = parseInteligenciaComercial(company.inteligencia_comercial)
   const cadenciaSugerida = parseCadenciaSugerida(company.cadencia_sugerida)
@@ -163,8 +177,8 @@ export default function CompanyDossierPage() {
                 </div>
               </div>
               <div className="co-actions">
-                <button className="btn-ghost" disabled={sdrArgosMutation.isPending} onClick={() => sdrArgosMutation.mutate()}>
-                  {sdrArgosMutation.isPending ? 'SDR Argos rodando…' : 'SDR Argos ↻'}
+                <button className="btn-ghost" disabled={sdrArgosBusy} onClick={() => sdrArgosMutation.mutate()}>
+                  {sdrArgosBusy ? 'SDR Argos rodando…' : 'SDR Argos ↻'}
                 </button>
               </div>
             </div>
@@ -244,6 +258,13 @@ export default function CompanyDossierPage() {
               <span className="ia-badge"><span className="pulse" /> Gerado por IA</span>
             </div>
 
+            {sdrArgosQueuedAt && (
+              <p className="resumo-text muted" style={{ marginBottom: 12 }}>
+                SDR Argos disparado — roda em background (pesquisa + IA, ~10 a 30s) e esta seção atualiza sozinha.
+                Se não atualizar em cerca de 1 minuto, tente de novo.
+              </p>
+            )}
+
             {intel ? (
               <>
                 <div className="intel-section">
@@ -320,8 +341,8 @@ export default function CompanyDossierPage() {
                       ? `Gerado no handoff da promoção · ${tempoDecorrido(company.sdr_argos_atualizado_em)}`
                       : `Gravado em ${formatDateTime(intel.gravado_em)}`}
                   </span>
-                  <button className="link-btn" disabled={sdrArgosMutation.isPending} onClick={() => sdrArgosMutation.mutate()}>
-                    {sdrArgosMutation.isPending ? 'Rodando…' : 'SDR Argos ↻'}
+                  <button className="link-btn" disabled={sdrArgosBusy} onClick={() => sdrArgosMutation.mutate()}>
+                    {sdrArgosBusy ? 'Rodando…' : 'SDR Argos ↻'}
                   </button>
                 </div>
               </>
@@ -333,8 +354,8 @@ export default function CompanyDossierPage() {
                 </p>
                 <div className="resumo-foot">
                   <span className="resumo-meta">Ainda não gerado</span>
-                  <button className="link-btn" disabled={sdrArgosMutation.isPending} onClick={() => sdrArgosMutation.mutate()}>
-                    {sdrArgosMutation.isPending ? 'Rodando…' : 'SDR Argos ↻'}
+                  <button className="link-btn" disabled={sdrArgosBusy} onClick={() => sdrArgosMutation.mutate()}>
+                    {sdrArgosBusy ? 'Rodando…' : 'SDR Argos ↻'}
                   </button>
                 </div>
               </>
