@@ -1,4 +1,12 @@
 """Serviço de negócios: criação, movimentação de etapa e fechamento."""
+# DealService define um método `list` (abaixo) que sombra o builtin `list` no namespace
+# da classe — sem isto, qualquer anotação `list[...]` num método declarado DEPOIS dele
+# quebra em Python <3.14 com `TypeError: 'function' object is not subscriptable` (mesmo
+# padrão documentado em AssinaturaService/DealService.list, ver app/services/subscription.py).
+# PEP 563 resolve pra sempre, tornando as anotações lazy — mesmo recurso já usado em
+# app/services/proposal.py.
+from __future__ import annotations
+
 from datetime import datetime, timezone
 from decimal import Decimal
 from uuid import UUID
