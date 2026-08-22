@@ -61,6 +61,11 @@
 /* Botão fantasma pequeno para ações inline em tabela */
 .btn-ghost.sm { padding: 3px 9px; font-size: 12px; margin-left: 4px; }
 
+/* Ação discreta (sem borda) para transições de baixo impacto, ex.: Liberar proposta */
+.btn-quiet { background: none; border: none; color: #6b7086; font-size: 12px; font-weight: 600; padding: 3px 6px; margin-left: 4px; cursor: pointer; }
+.btn-quiet:hover { color: var(--indigo); text-decoration: underline; }
+.btn-quiet:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+
 /* Cartão de prévia/totais */
 .preview-card { background: #f7f8fb; border: 1px solid #e4e7f0; border-radius: 8px; padding: 10px 14px; margin-top: 10px; }
 .preview-label { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: #6b7086; margin-bottom: 4px; }
