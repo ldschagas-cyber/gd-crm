@@ -2,15 +2,14 @@ import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../context/AuthContext.jsx'
 import {
-  createLeadProspect, deleteLeadProspect, enrichLeadProspect, gerarInteligenciaComercial,
-  getLeadProspectImportJob, gravarInteligenciaComercial, importLeadProspects, listLeadProspects,
+  createLeadProspect, deleteLeadProspect, enrichLeadProspect,
+  getLeadProspectImportJob, importLeadProspects, listLeadProspects,
   promoteLeadProspect, updateLeadProspect,
 } from '../api/leadProspects'
 import { getIcpScoringRules, updateIcpScoringRules } from '../api/tenant'
 import { listUsers } from '../api/users'
 import OrigemSelect from '../components/OrigemSelect.jsx'
 import '../styles/dataTable.css'
-import '../styles/commercialIntel.css'
 import './PesquisaLeadsPage.css'
 import DesempenhoPesquisaTab from './DesempenhoPesquisaPage.jsx'
 
@@ -55,17 +54,8 @@ function initials(nome) {
   const parts = nome.trim().split(/\s+/)
   return (parts[0][0] + (parts[1]?.[0] ?? '')).toUpperCase()
 }
-function formatDateTime(iso) {
-  const d = new Date(iso)
-  const p = (n) => String(n).padStart(2, '0')
-  return `${p(d.getDate())}/${p(d.getMonth() + 1)} às ${p(d.getHours())}:${p(d.getMinutes())}`
-}
 function isPromotable(lead) {
   return !lead.promoted_company_id && lead.status !== 'descartado'
-}
-function parseInteligenciaComercial(raw) {
-  if (!raw) return null
-  try { return JSON.parse(raw) } catch { return null }
 }
 function IconImport() {
   return (
@@ -96,7 +86,6 @@ function LeadsTab({ setTab }) {
   const [promotingLead, setPromotingLead] = useState(null)
   const [promoteResponsavelId, setPromoteResponsavelId] = useState('')
   const [enrichingLead, setEnrichingLead] = useState(null)
-  const [intelLead, setIntelLead] = useState(null)
   const [selected, setSelected] = useState({})
   const [bulkOwnerOpen, setBulkOwnerOpen] = useState(false)
   const [bulkOwnerId, setBulkOwnerId] = useState('')
@@ -124,11 +113,6 @@ function LeadsTab({ setTab }) {
     onSuccess: () => { setPromotingLead(null); setPromoteResponsavelId(''); invalidate() },
   })
   const enrichMutation = useMutation({ mutationFn: enrichLeadProspect })
-  const intelMutation = useMutation({ mutationFn: gerarInteligenciaComercial })
-  const saveIntelMutation = useMutation({
-    mutationFn: ({ id, data }) => gravarInteligenciaComercial(id, data),
-    onSuccess: (updated) => { setIntelLead(updated); invalidate() },
-  })
   const applyEnrichMutation = useMutation({
     mutationFn: ({ id, data }) => updateLeadProspect(id, data),
     onSuccess: () => { setEnrichingLead(null); enrichMutation.reset(); invalidate() },
@@ -151,11 +135,6 @@ function LeadsTab({ setTab }) {
   function handleEnrich(lead) {
     setEnrichingLead(lead)
     enrichMutation.mutate(lead.id)
-  }
-
-  function handleIntel(lead) {
-    setIntelLead(lead)
-    intelMutation.mutate(lead.id)
   }
 
   function toggleSelect(id) {
@@ -325,7 +304,6 @@ function LeadsTab({ setTab }) {
                       onEdit={() => setDrawerLead(lead)}
                       onPromote={() => setPromotingLead(lead)}
                       onEnrich={() => handleEnrich(lead)}
-                      onIntel={() => handleIntel(lead)}
                     />
                   ))}
                 </tbody>
@@ -495,18 +473,6 @@ function LeadsTab({ setTab }) {
         />
       )}
 
-      {intelLead && (
-        <CommercialIntelligenceModal
-          lead={intelLead}
-          result={intelMutation.data}
-          isPending={intelMutation.isPending}
-          error={intelMutation.error}
-          onRetry={() => intelMutation.mutate(intelLead.id)}
-          onClose={() => { setIntelLead(null); intelMutation.reset(); saveIntelMutation.reset() }}
-          onSave={(data) => saveIntelMutation.mutate({ id: intelLead.id, data })}
-          saving={saveIntelMutation.isPending}
-        />
-      )}
     </>
   )
 }
@@ -570,129 +536,11 @@ function EnrichModal({ lead, result, isPending, error, applying, onRetry, onClos
   )
 }
 
-function CommercialIntelligenceModal({ lead, result, isPending, error, onRetry, onClose, onSave, saving }) {
-  const [copied, setCopied] = useState(false)
-  const savedRecord = parseInteligenciaComercial(lead.inteligencia_comercial)
-
-  function copiarArgumento() {
-    navigator.clipboard?.writeText(result.argumento)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2500)
-  }
-
-  return (
-    <div className="scrim show" onClick={onClose}>
-      <div className="drawer show" onClick={(e) => e.stopPropagation()}>
-        <div className="drawer-head">
-          <div>
-            <h2>Inteligência Comercial</h2>
-            <p>{lead.empresa} — perfil pesquisado + Benchmark Logístico do Diagnóstico</p>
-          </div>
-          <button className="drawer-close" onClick={onClose}>✕</button>
-        </div>
-        <div className="drawer-body">
-          {savedRecord && (
-            <div className="intel-saved-banner">
-              💾 Gravado no lead
-              <span className="t">{formatDateTime(savedRecord.gravado_em)}</span>
-            </div>
-          )}
-
-          {isPending && <p className="state-msg">Pesquisando a empresa e consultando o Benchmark Logístico do Diagnóstico… isso pode levar de 5 a 15 segundos.</p>}
-
-          {error && (
-            <>
-              <p className="state-msg error">
-                {error.response?.data?.error?.message ?? 'Não foi possível gerar a inteligência comercial agora.'}
-              </p>
-              <button className="btn-ghost" onClick={onRetry}>Tentar de novo</button>
-            </>
-          )}
-
-          {result && (
-            <>
-              <div className="intel-section">
-                <div className="intel-section-head">
-                  <h3>Perfil da empresa</h3>
-                  <span className="source-tag pesquisa">🔍 Pesquisa web</span>
-                </div>
-                <div className="fact-list">
-                  {result.perfil.erp && <div className="fact-row">ERP identificado: <b>{result.perfil.erp}</b></div>}
-                  {result.perfil.porte_estimado && <div className="fact-row">Porte estimado: <b>{result.perfil.porte_estimado}</b></div>}
-                  {result.perfil.atuacao && <div className="fact-row">{result.perfil.atuacao}</div>}
-                  {result.perfil.operacao_transporte && <div className="fact-row">{result.perfil.operacao_transporte}</div>}
-                  {!result.perfil.erp && !result.perfil.porte_estimado && !result.perfil.atuacao && !result.perfil.operacao_transporte && (
-                    <div className="fact-row unk">A IA não encontrou dados públicos suficientes sobre esta empresa.</div>
-                  )}
-                </div>
-              </div>
-
-              <div className="intel-section">
-                <div className="intel-section-head">
-                  <h3>Benchmark Logístico</h3>
-                  <span className="source-tag benchmark">📊 Referência de mercado — Diagnóstico</span>
-                </div>
-                {result.benchmark.disponivel ? (
-                  <div className="bench-box">
-                    <div className="mapping-row">
-                      Setor pesquisado <b>{result.benchmark.segmento_pesquisado}</b> → classificado como{' '}
-                      <span className="seg-out">{result.benchmark.segmento_diagnostico}</span> no Diagnóstico
-                    </div>
-                    <div className="bench-compare">
-                      <span className="lbl">Custo médio de referência do segmento</span>
-                      <span className="val">{money(result.benchmark.frete_kg_medio)}/kg</span>
-                    </div>
-                    <div className="bench-note">
-                      Isso é a média do segmento apurada no Diagnóstico — <strong>não</strong> é o custo medido desta empresa.
-                      Ela ainda não é cliente, então não há CT-e dela no sistema para comparar de fato.
-                    </div>
-                  </div>
-                ) : (
-                  <div className="bench-box">
-                    <div className="bench-note">Sem referência de benchmark disponível agora ({result.benchmark.motivo_indisponivel}).</div>
-                  </div>
-                )}
-              </div>
-
-              <div className="intel-section">
-                <div className="intel-section-head">
-                  <h3>Argumento comercial sugerido</h3>
-                  <span className="source-tag arg">✦ Síntese da IA</span>
-                </div>
-                <div className="arg-box">
-                  <p>{result.argumento}</p>
-                </div>
-              </div>
-
-              <div className="rule-note">
-                Perfil da empresa: gerado por IA a partir de pesquisa pública — pode conter imprecisões, revise antes de usar.
-                Benchmark: dado real de referência do Diagnóstico por segmento — não é uma medição desta empresa específica.
-              </div>
-            </>
-          )}
-        </div>
-        <div className="drawer-foot">
-          <button className="btn-ghost" onClick={onClose}>Fechar</button>
-          {result && (
-            <>
-              <button className="btn-ghost" onClick={copiarArgumento}>{copied ? 'Copiado!' : 'Copiar argumento'}</button>
-              <button className="btn-primary" disabled={saving} onClick={() => onSave(result)}>
-                {saving ? 'Gravando…' : (savedRecord ? '↻ Atualizar gravação' : '💾 Gravar no lead')}
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function LeadRow({ lead, pesquisadorNome, selected, onToggleSelect, onEdit, onPromote, onEnrich, onIntel }) {
+function LeadRow({ lead, pesquisadorNome, selected, onToggleSelect, onEdit, onPromote, onEnrich }) {
   const bonusPillClass = lead.recebe_bonus ? 'yes' : (lead.gamificacao > 70 && lead.status !== 'descartado' ? 'pending' : 'no')
   const bonusPillText = lead.recebe_bonus ? `Bônus ${money(lead.bonus_valor)}` : (bonusPillClass === 'pending' ? 'Bônus pendente' : 'Sem bônus')
   const canPromote = isPromotable(lead)
   const canEnrich = !lead.promoted_company_id && lead.status !== 'descartado'
-  const canIntel = !lead.promoted_company_id && lead.status !== 'descartado'
 
   return (
     <tr className={selected ? 'row-selected' : ''}>
@@ -735,16 +583,6 @@ function LeadRow({ lead, pesquisadorNome, selected, onToggleSelect, onEdit, onPr
       <td>
         <div className="row-actions" style={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
           {canEnrich && <button className="icon-btn" title="Enriquecer com IA" onClick={onEnrich}>✨</button>}
-          {canIntel && (
-            <button
-              className="icon-btn intel-btn"
-              title={lead.inteligencia_comercial ? 'Inteligência Comercial (já gravada)' : 'Inteligência Comercial'}
-              onClick={onIntel}
-            >
-              🧭
-              {lead.inteligencia_comercial && <span className="saved-dot" />}
-            </button>
-          )}
           {canPromote && <button className="icon-btn" title="Promover para Empresa" onClick={onPromote}>↑</button>}
           <button className="icon-btn" title="Editar" onClick={onEdit}>✎</button>
         </div>

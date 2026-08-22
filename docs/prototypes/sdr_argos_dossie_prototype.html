@@ -1,0 +1,422 @@
+<title>SDR Argos — Dossiê da Empresa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --font-display: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Cascadia Code", "SFMono-Regular", "Consolas", ui-monospace, monospace;
+    --indigo: #2D3561; --indigo-600: #3B4478; --amber: #C9A84C; --azul: #0077A8; --marfim: #F5F1EB;
+    --paper: var(--marfim); --panel: var(--indigo); --panel-fg: #F1EEE6; --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241,238,230,.12); --panel-active-bg: rgba(201,168,76,.14);
+    --ink: #22243A; --ink-dim: #5B5E78; --ink-faint: #8B8EA6; --border: rgba(45,53,97,.14);
+    --card-bg: #FFFFFF; --link: var(--azul);
+    --shadow: 0 1px 2px rgba(34,36,58,.05), 0 10px 24px -14px rgba(34,36,58,.22);
+    --shadow-lg: 0 1px 2px rgba(34,36,58,.06), 0 24px 60px -24px rgba(34,36,58,.4);
+    --good: #0ca30c; --warning: #fab219; --serious: #ec835a; --critical: #d03b3b;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+    --panel-border: rgba(241,238,230,.10); --panel-active-bg: rgba(217,184,94,.14);
+    --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241,238,230,.12);
+    --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 16px 32px -16px rgba(0,0,0,.55);
+    --shadow-lg: 0 1px 2px rgba(0,0,0,.4), 0 30px 70px -28px rgba(0,0,0,.7); } }
+  :root[data-theme="dark"] {
+    --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+    --panel-border: rgba(241,238,230,.10); --panel-active-bg: rgba(217,184,94,.14);
+    --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241,238,230,.12);
+    --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 16px 32px -16px rgba(0,0,0,.55);
+    --shadow-lg: 0 1px 2px rgba(0,0,0,.4), 0 30px 70px -28px rgba(0,0,0,.7); }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; font-family: var(--font-display); color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; }
+  button { font-family: inherit; }
+  .mono { font-family: var(--font-mono); }
+  ::selection { background: rgba(201,168,76,.3); }
+  :focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; border-radius: 4px; }
+
+  .shell { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+  .sidebar { background: var(--panel); color: var(--panel-fg); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+  .sb-brand { display: flex; align-items: center; gap: 10px; padding: 20px 18px 16px; }
+  .monogram { width: 34px; height: 34px; border-radius: 9px; flex: none; background: var(--amber); color: var(--indigo); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+  .sb-brand strong { display: block; font-size: 14.5px; font-weight: 650; line-height: 1.2; }
+  .sb-brand span { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--panel-fg-dim); margin-top: 2px; }
+  .sb-nav { flex: 1; overflow-y: auto; padding: 10px 12px; }
+  .sb-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--panel-fg-dim); padding: 0 10px; margin: 14px 0 6px; }
+  .sb-item { display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: 8px; margin-bottom: 2px; font-size: 13.4px; font-weight: 500; color: var(--panel-fg-dim); text-decoration: none; cursor: pointer; border: 1px solid transparent; position: relative; }
+  .sb-item svg { width: 17px; height: 17px; flex: none; opacity: .9; }
+  .sb-item:hover { background: rgba(241,238,230,.06); color: var(--panel-fg); }
+  .sb-item.active { background: var(--panel-active-bg); color: var(--panel-fg); font-weight: 650; }
+  .sb-item.active::before { content: ""; position: absolute; left: -12px; top: 6px; bottom: 6px; width: 3px; background: var(--amber); border-radius: 2px; }
+  .sb-user { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-top: 1px solid var(--panel-border); }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; flex: none; background: rgba(201,168,76,.18); color: var(--amber); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; border: 1px solid rgba(201,168,76,.3); }
+  .sb-user-meta strong { display: block; font-size: 13px; font-weight: 600; }
+  .sb-user-meta span { display: block; font-size: 11px; color: var(--panel-fg-dim); }
+
+  .main-col { display: flex; flex-direction: column; min-width: 0; }
+  .content { padding: 20px 26px 60px; display: flex; flex-direction: column; gap: 16px; max-width: 1160px; }
+  .crumb { font-size: 12px; color: var(--ink-faint); font-family: var(--font-mono); }
+  .crumb b { color: var(--ink-dim); font-weight: 500; }
+
+  .co-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .co-title { display: flex; align-items: center; gap: 13px; }
+  .co-logo { width: 46px; height: 46px; border-radius: 11px; background: var(--indigo); color: #F1EEE6; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 17px; flex: none; }
+  .co-title h1 { margin: 0; font-size: 21px; font-weight: 680; letter-spacing: -.01em; }
+  .co-meta { margin-top: 4px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-dim); }
+  .dot-sep { color: var(--ink-faint); }
+
+  .btn { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 9px; border: 1px solid var(--border); background: var(--card-bg); color: var(--ink); cursor: pointer; box-shadow: var(--shadow); white-space: nowrap; }
+  .btn svg { width: 15px; height: 15px; }
+  .btn:hover { border-color: color-mix(in srgb, var(--azul) 40%, var(--border)); }
+  .btn-argos { background: var(--indigo); color: #F1EEE6; border-color: transparent; }
+  .btn-argos:hover { background: var(--indigo-600); }
+  .btn-amber { background: var(--amber); color: var(--indigo); border-color: transparent; font-weight: 700; }
+  .btn-amber:hover { filter: brightness(1.05); }
+  .btn-ghost { background: transparent; box-shadow: none; }
+  .btn-sm { padding: 6px 11px; font-size: 12.3px; }
+  .btn:disabled { opacity: .55; cursor: not-allowed; }
+
+  .status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 650; padding: 3px 10px; border-radius: 100px; }
+  .status-pill .d { width: 6px; height: 6px; border-radius: 50%; }
+  .status-pill.cliente-novo { background: rgba(201,168,76,.18); color: color-mix(in srgb,var(--amber) 62%,var(--ink-dim)); }
+  .status-pill.cliente-novo .d { background: var(--amber); }
+  .fit-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 7px; background: rgba(12,163,12,.13); color: #0a7d0a; }
+
+  .grid { display: grid; grid-template-columns: 1fr 340px; gap: 16px; align-items: start; }
+  @media (max-width: 940px) { .grid { grid-template-columns: 1fr; } }
+  .col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 13px; box-shadow: var(--shadow); overflow: hidden; }
+  .card.argos { border-color: rgba(45,53,97,.28); }
+  :root[data-theme="dark"] .card.argos, :root:not([data-theme="light"]) .card.argos { border-color: rgba(76,178,222,.32); }
+  .card-head { display: flex; align-items: center; gap: 10px; padding: 13px 18px; border-bottom: 1px solid var(--border); }
+  .card-head .ic { width: 30px; height: 30px; border-radius: 8px; background: var(--panel-active-bg); color: var(--amber); display: flex; align-items: center; justify-content: center; flex: none; }
+  .card-head .ic svg { width: 17px; height: 17px; }
+  .card-head h2 { margin: 0; font-size: 14.5px; font-weight: 680; flex: 1; }
+  .card-head .ts { font-size: 11px; color: var(--ink-faint); font-family: var(--font-mono); }
+  .card-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 16px; }
+
+  .sec { }
+  .sec-label { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 9px; display: flex; align-items: center; gap: 7px; }
+  .sec-label .src { background: rgba(0,119,168,.12); color: var(--azul); font-weight: 700; padding: 1px 6px; border-radius: 5px; letter-spacing: .02em; }
+
+  .kv { display: grid; grid-template-columns: 120px 1fr; gap: 8px 12px; font-size: 13px; }
+  .kv dt { color: var(--ink-faint); }
+  .kv dd { margin: 0; color: var(--ink); font-weight: 500; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .kv dd.null { color: var(--ink-faint); font-style: italic; font-weight: 400; }
+
+  .verif { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 100px; letter-spacing: .01em; }
+  .verif svg { width: 11px; height: 11px; }
+  .verif.ok { background: rgba(12,163,12,.14); color: #0a7d0a; }
+  .verif.maybe { background: rgba(250,178,25,.18); color: color-mix(in srgb,var(--warning) 55%,var(--ink-dim)); }
+  .verif.no { background: rgba(139,142,166,.16); color: var(--ink-faint); }
+
+  .argument { background: color-mix(in srgb, var(--paper) 50%, var(--card-bg)); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; font-size: 13.2px; line-height: 1.55; }
+  .argument .bench { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 11.5px; font-weight: 650; color: var(--azul); background: rgba(0,119,168,.1); padding: 4px 9px; border-radius: 7px; }
+
+  .cad-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 4px; flex-wrap: wrap; }
+  .cad-seq { font-size: 12.5px; color: var(--ink-dim); }
+  .cad-seq b { color: var(--ink); font-weight: 650; }
+  .cad { display: flex; gap: 11px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .cad:last-child { border-bottom: none; }
+  .cad .n { width: 24px; height: 24px; border-radius: 7px; background: rgba(45,53,97,.08); color: var(--indigo); display: flex; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 700; flex: none; font-family: var(--font-mono); }
+  :root[data-theme="dark"] .cad .n, :root:not([data-theme="light"]) .cad .n { background: rgba(241,238,230,.08); color: var(--panel-fg); }
+  .cad .body strong { font-size: 12.6px; font-weight: 650; }
+  .cad .body .when { font-size: 11px; color: var(--ink-faint); font-family: var(--font-mono); }
+  .cad .body p { margin: 5px 0 0; font-size: 12.2px; color: var(--ink-dim); line-height: 1.5; }
+  .suggest-note { font-size: 11.5px; color: var(--ink-faint); margin-top: 10px; display: flex; align-items: center; gap: 6px; }
+  .suggest-note svg { width: 13px; height: 13px; color: var(--amber); }
+
+  .roteiro { font-size: 12.8px; line-height: 1.6; color: var(--ink-dim); }
+  .roteiro li { margin-bottom: 5px; }
+  .roteiro b { color: var(--ink); }
+
+  /* right column widgets */
+  .mini { font-size: 13px; }
+  .resumo-txt { font-size: 13.2px; line-height: 1.6; color: var(--ink); }
+  .next-action { background: color-mix(in srgb, var(--azul) 8%, var(--card-bg)); border: 1px solid rgba(0,119,168,.25); border-radius: 10px; padding: 12px 14px; font-size: 12.8px; line-height: 1.5; display: flex; gap: 9px; }
+  .next-action svg { width: 16px; height: 16px; color: var(--azul); flex: none; margin-top: 1px; }
+  .tl { display: flex; flex-direction: column; }
+  .tl-item { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+  .tl-item:last-child { border-bottom: none; }
+  .tl-ic { width: 26px; height: 26px; border-radius: 7px; flex: none; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+  .tl-ic.sdr { background: var(--panel-active-bg); color: var(--amber); }
+  .tl-ic.pipe { background: rgba(12,163,12,.12); color: var(--good); }
+  .tl-ic.note { background: rgba(0,119,168,.1); color: var(--azul); }
+  .tl-body strong { font-size: 12.5px; font-weight: 600; display: block; }
+  .tl-body span { font-size: 11px; color: var(--ink-faint); }
+
+  /* run panel */
+  .run-live { border: 1px dashed rgba(0,119,168,.4); border-radius: 11px; padding: 6px 14px 12px; }
+  .rl-head { display: flex; align-items: center; gap: 9px; padding: 8px 0; }
+  .rl-head .spin { width: 14px; height: 14px; border: 2px solid rgba(0,119,168,.25); border-top-color: var(--azul); border-radius: 50%; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .rl-head strong { font-size: 12.5px; }
+  .rl-head .cost { margin-left: auto; font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-faint); }
+  .rl-line { display: flex; align-items: center; gap: 9px; padding: 4px 0; font-size: 12px; }
+  .rl-line .dot { width: 15px; height: 15px; border-radius: 50%; flex: none; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; }
+  .rl-line.done .dot { background: var(--good); border-color: var(--good); color: #fff; }
+  .rl-line.done .dot svg { width: 8px; height: 8px; }
+  .rl-line.active .dot { border-color: var(--azul); }
+  .rl-line.pending { opacity: .4; }
+  .rl-line .tool { font-family: var(--font-mono); font-size: 9.5px; background: rgba(0,119,168,.1); color: var(--azul); padding: 1px 5px; border-radius: 4px; margin-left: auto; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+  .note { display: flex; gap: 9px; align-items: flex-start; background: color-mix(in srgb, var(--amber) 12%, var(--card-bg)); border: 1px solid rgba(201,168,76,.35); border-radius: 10px; padding: 10px 13px; font-size: 12px; color: var(--ink); line-height: 1.5; }
+  .note svg { width: 15px; height: 15px; flex: none; color: var(--amber); margin-top: 1px; }
+
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 11px; color: var(--ink-faint); padding-top: 4px; }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+
+  /* modal */
+  .scrim { position: fixed; inset: 0; background: rgba(20,23,42,.44); backdrop-filter: blur(2px); opacity: 0; pointer-events: none; transition: opacity .18s; z-index: 50; }
+  .scrim.open { opacity: 1; pointer-events: auto; }
+  .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-46%); width: 460px; max-width: calc(100vw - 32px); background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow-lg); z-index: 51; opacity: 0; pointer-events: none; transition: all .18s; overflow: hidden; }
+  .modal.open { opacity: 1; pointer-events: auto; transform: translate(-50%,-50%); }
+  .modal-head { padding: 16px 20px 12px; border-bottom: 1px solid var(--border); }
+  .modal-head h3 { margin: 0; font-size: 16px; font-weight: 680; }
+  .modal-head p { margin: 4px 0 0; font-size: 12.3px; color: var(--ink-dim); }
+  .modal-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 11.5px; font-weight: 650; color: var(--ink-dim); }
+  .field select, .field .ro { border: 1px solid var(--border); border-radius: 8px; padding: 9px 11px; font-size: 13px; background: var(--paper); color: var(--ink); }
+  .field .ro { display: flex; align-items: center; gap: 8px; }
+  .modal-foot { padding: 13px 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; }
+
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%,12px); background: var(--indigo); color: #F1EEE6; font-size: 13px; font-weight: 600; padding: 11px 18px; border-radius: 10px; box-shadow: var(--shadow-lg); opacity: 0; pointer-events: none; transition: all .2s; z-index: 60; max-width: 90vw; }
+  .toast.open { opacity: 1; transform: translate(-50%,0); }
+
+  @media (max-width: 900px) { .shell { grid-template-columns: 1fr; } .sidebar { display: none; } }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-brand"><div class="monogram">A</div><div><strong>Argos</strong><span>GD Conecta</span></div></div>
+    <nav class="sb-nav">
+      <a class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+      <div class="sb-label">Inteligência Comercial</div>
+      <a class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>Pesquisa de Leads</a>
+      <a class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m7 14 3-4 3 3 4-6"/></svg>Central de Leads</a>
+      <a class="sb-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V7l9-4 9 4v14"/><path d="M9 21v-6h6v6"/></svg>Empresas</a>
+      <div class="sb-label">Automação</div>
+      <a class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>Cadências</a>
+    </nav>
+    <div class="sb-user"><div class="avatar">DC</div><div class="sb-user-meta"><strong>Daniel Chagas</strong><span>Gestor comercial</span></div></div>
+  </aside>
+
+  <div class="main-col">
+    <div class="content">
+      <div class="crumb"><b>Empresas</b> / Nutrifrios Alimentos Ltda</div>
+
+      <div class="co-head">
+        <div class="co-title">
+          <div class="co-logo">N</div>
+          <div>
+            <h1>Nutrifrios Alimentos Ltda</h1>
+            <div class="co-meta">
+              <span>Alimentos · Curitiba/PR</span><span class="dot-sep">·</span>
+              <span class="status-pill cliente-novo"><span class="d"></span>Cliente novo</span>
+              <span class="fit-badge">Fit ICP 82</span>
+              <span class="dot-sep">·</span><span>Promovida há 2 dias por você</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm">Editar</button>
+          <button class="btn btn-argos" id="btn-argos">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>
+            SDR Argos
+          </button>
+        </div>
+      </div>
+
+      <div class="note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <div>Protótipo — arquitetura final. O <strong>SDR Argos</strong> (prospector) rodou automaticamente na promoção e gravou o dossiê nesta empresa. Ele <strong>sugere</strong> a cadência, mas não inscreve — a inscrição é confirmada por você. Botão <strong>SDR Argos</strong> re-roda. Dados fictícios; nenhum e-mail é enviado.</div>
+      </div>
+
+      <div class="grid">
+        <!-- Left: SDR Argos output -->
+        <div class="col">
+          <div class="card argos">
+            <div class="card-head">
+              <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg></div>
+              <h2>SDR Argos — Dossiê comercial</h2>
+              <span class="ts" id="argos-ts">atualizado há 2 dias · ~R$ 2,40</span>
+            </div>
+            <div class="card-body" id="argos-body">
+              <div id="run-slot"></div>
+
+              <div class="sec">
+                <div class="sec-label">Contatos <span class="src">contato verificado</span></div>
+                <dl class="kv">
+                  <dt>Decisor</dt>
+                  <dd>Marcos Antônio Reali · Gerente de Logística
+                    <span class="verif ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>verificado</span></dd>
+                  <dt>E-mail</dt>
+                  <dd class="mono">marcos.reali@nutrifrios.com.br
+                    <span class="verif ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>verificado · Apollo</span></dd>
+                  <dt>2º contato</dt>
+                  <dd>Sônia Vasques · Compras
+                    <span class="verif maybe">provável · revisar</span></dd>
+                  <dt>Telefone</dt>
+                  <dd class="null">— não encontrado publicamente</dd>
+                </dl>
+                <div class="legend">
+                  <span><span class="verif ok" style="padding:1px 5px">verificado</span> pode ir para cadência</span>
+                  <span><span class="verif maybe" style="padding:1px 5px">provável</span> revisão humana</span>
+                  <span><span class="verif no" style="padding:1px 5px">não encontrado</span> nunca inventa</span>
+                </div>
+              </div>
+
+              <div class="sec">
+                <div class="sec-label">Perfil operacional <span class="src">enriquecimento</span></div>
+                <dl class="kv">
+                  <dt>Porte</dt><dd>201–500 func. · R$ 100–500 mi</dd>
+                  <dt>ERP</dt><dd>TOTVS Protheus</dd>
+                  <dt>TMS</dt><dd class="null">não identificado</dd>
+                  <dt>Operação</dt><dd>Carga refrigerada · frota terceirizada · Sul e Sudeste</dd>
+                </dl>
+              </div>
+
+              <div class="sec">
+                <div class="sec-label">Argumento comercial <span class="src">Inteligência Comercial</span></div>
+                <div class="argument">
+                  A Nutrifrios movimenta carga refrigerada com frota 100% terceirizada e não aparenta ter TMS — frete provavelmente rateado em planilha, sem cotação competitiva por rota. Empresas de alimentos do mesmo porte no Benchmark Logístico operam a R$ 0,42/kg; pôr 3+ transportadoras competindo por carga tende a recuperar 6–12% do custo de frete. Abordagem de entrada: oferecer um diagnóstico gratuito de 2 rotas atuais contra o benchmark.
+                  <div class="bench">📊 Benchmark Logístico — Alimentos: R$ 0,42/kg</div>
+                </div>
+              </div>
+
+              <div class="sec">
+                <div class="cad-head">
+                  <div class="sec-label" style="margin-bottom:0">Cadência sugerida <span class="src">sugestão</span></div>
+                  <button class="btn btn-amber btn-sm" id="btn-inscrever">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    Inscrever na cadência
+                  </button>
+                </div>
+                <div class="cad-seq" style="margin:2px 0 8px"><b>Cadência Outbound — Indústria</b> · 3 passos · para <b>Marcos Antônio Reali</b></div>
+                <div class="cad"><div class="n">E1</div><div class="body"><strong>E-mail — Diagnóstico de frete refrigerado</strong> <span class="when">· Dia 0</span><p>Abertura pela dor de rateio manual + oferta do diagnóstico gratuito de 2 rotas.</p></div></div>
+                <div class="cad"><div class="n">L1</div><div class="body"><strong>Ligação — Confirmar recebimento</strong> <span class="when">· Dia 2</span><p>Roteiro focado em TOTVS sem TMS (ver roteiro abaixo).</p></div></div>
+                <div class="cad"><div class="n">E2</div><div class="body"><strong>E-mail — Caso de sucesso setor alimentos</strong> <span class="when">· Dia 5</span><p>Follow-up com case anonimizado de recuperação de 9% em frete refrigerado.</p></div></div>
+                <div class="suggest-note">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                  Sugestão do SDR Argos — nenhum e-mail sai até você confirmar a inscrição.
+                </div>
+              </div>
+
+              <div class="sec">
+                <div class="sec-label">Roteiro de ligação <span class="src">prepara, não liga</span></div>
+                <ul class="roteiro">
+                  <li><b>Abertura:</b> "Marcos, vi que a Nutrifrios opera carga refrigerada com frota terceirizada — como vocês fecham o frete hoje, por transportadora fixa ou cotam por rota?"</li>
+                  <li><b>Dor:</b> confirmar rateio manual no TOTVS sem TMS.</li>
+                  <li><b>Ponte:</b> benchmark de alimentos (R$ 0,42/kg) e a ideia de leilão reverso por carga.</li>
+                  <li><b>Fechamento:</b> propor o diagnóstico gratuito de 2 rotas.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: existing CompanyAI widgets -->
+        <div class="col">
+          <div class="card">
+            <div class="card-head"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H5.2L4 17.2z"/></svg></div><h2>Resumo executivo</h2></div>
+            <div class="card-body">
+              <div class="resumo-txt">Indústria de alimentos refrigerados, fit ICP alto (82). Sem TMS e com frete terceirizado — forte hipótese de custo acima do benchmark do setor. Promovida há 2 dias; contato de logística já verificado. Ainda sem primeira interação registrada.</div>
+              <div class="next-action">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                <div><strong>Próxima ação:</strong> inscrever Marcos na Cadência Outbound — Indústria (sugerida pelo SDR Argos) para disparar o diagnóstico de frete.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><h2>Timeline</h2></div>
+            <div class="card-body">
+              <div class="tl" id="timeline">
+                <div class="tl-item"><div class="tl-ic sdr">◈</div><div class="tl-body"><strong>SDR Argos gerou o dossiê</strong><span>há 2 dias · argumento + cadência sugerida + contato verificado</span></div></div>
+                <div class="tl-item"><div class="tl-ic pipe">✓</div><div class="tl-body"><strong>Promovida de Lead para Empresa</strong><span>há 2 dias · por Daniel Chagas</span></div></div>
+                <div class="tl-item"><div class="tl-ic note">✎</div><div class="tl-body"><strong>Enriquecida com IA (Pesquisa de Leads)</strong><span>há 3 dias · dados básicos + Fit ICP 82</span></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="modal" id="modal">
+  <div class="modal-head"><h3>Inscrever na cadência</h3><p>Confirme a sequência sugerida pelo SDR Argos. Nenhum e-mail sai antes desta confirmação.</p></div>
+  <div class="modal-body">
+    <div class="field"><label>Sequência (sugerida)</label>
+      <select><option>Cadência Outbound — Indústria (3 passos)</option><option>Cadência Consultiva — Diretoria (3 passos)</option><option>Reativação — 60 dias</option></select></div>
+    <div class="field"><label>Contato</label>
+      <div class="ro"><span class="mono" style="font-size:12.5px">marcos.reali@nutrifrios.com.br</span><span class="verif ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>verificado</span></div></div>
+    <div class="field"><label>Início</label><div class="ro">Primeiro passo (E1) dispara hoje</div></div>
+  </div>
+  <div class="modal-foot">
+    <button class="btn btn-ghost btn-sm" id="modal-cancel">Cancelar</button>
+    <button class="btn btn-amber btn-sm" id="modal-confirm">Confirmar inscrição</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>';
+
+// Inscrever na cadência (modal)
+const scrim=document.getElementById('scrim'), modal=document.getElementById('modal');
+function openModal(){ scrim.classList.add('open'); modal.classList.add('open'); }
+function closeModal(){ scrim.classList.remove('open'); modal.classList.remove('open'); }
+document.getElementById('btn-inscrever').addEventListener('click', openModal);
+document.getElementById('modal-cancel').addEventListener('click', closeModal);
+scrim.addEventListener('click', closeModal);
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+document.getElementById('modal-confirm').addEventListener('click', ()=>{
+  closeModal();
+  document.getElementById('btn-inscrever').outerHTML =
+    '<span class="status-pill cliente-novo" style="background:rgba(12,163,12,.13);color:#0a7d0a"><span class="d" style="background:var(--good)"></span>Inscrito na cadência</span>';
+  const tl=document.getElementById('timeline');
+  tl.insertAdjacentHTML('afterbegin','<div class="tl-item"><div class="tl-ic pipe">✓</div><div class="tl-body"><strong>Inscrito na Cadência Outbound — Indústria</strong><span>agora · E1 disparado para marcos.reali@…</span></div></div>');
+  toast('Marcos inscrito · 1º e-mail (E1) enviado ✓');
+});
+
+// Re-rodar SDR Argos (streaming)
+const STEPS=[["Relendo dados da empresa…","atualizar_dossie"],["Pesquisando atualizações na web…","pesquisar_empresa"],["Buscando contato verificado…","buscar_contato_verificado"],["Cruzando com Benchmark Logístico…","consultar_benchmark"],["Revisando argumento comercial…","gerar_inteligencia"],["Revisando cadência sugerida…","propor_cadencia"],["Gerando roteiro de ligação…","gerar_roteiro_ligacao"]];
+let busy=false;
+document.getElementById('btn-argos').addEventListener('click', ()=>{
+  if(busy) return; busy=true;
+  const btn=document.getElementById('btn-argos'); btn.disabled=true;
+  const slot=document.getElementById('run-slot');
+  slot.innerHTML='<div class="run-live"><div class="rl-head"><div class="spin"></div><strong>SDR Argos re-processando…</strong><span class="cost" id="rl-cost">~R$ 0,00 · 0 buscas</span></div><div id="rl-lines"></div></div>';
+  const lines=document.getElementById('rl-lines');
+  lines.innerHTML=STEPS.map(s=>`<div class="rl-line pending"><span class="dot"></span><span>${s[0]}</span><span class="tool">${s[1]}</span></div>`).join('');
+  const nodes=[...lines.children]; let i=0,buscas=0,custo=0;
+  const tick=()=>{
+    if(i>0){ nodes[i-1].className='rl-line done'; nodes[i-1].querySelector('.dot').innerHTML=CHECK; }
+    if(i>=nodes.length){
+      busy=false; btn.disabled=false;
+      document.getElementById('run-slot').innerHTML='';
+      document.getElementById('argos-ts').textContent='atualizado agora · ~R$ '+custo.toFixed(2);
+      toast('SDR Argos atualizou o dossiê ✓');
+      return;
+    }
+    nodes[i].className='rl-line active';
+    if(['pesquisar_empresa','buscar_contato_verificado','consultar_benchmark'].includes(STEPS[i][1])) buscas++;
+    custo+=0.30+Math.random()*0.22;
+    const c=document.getElementById('rl-cost'); if(c) c.textContent=`~R$ ${custo.toFixed(2)} · ${buscas} busca${buscas!==1?'s':''}`;
+    i++; setTimeout(tick, 540+Math.random()*320);
+  };
+  tick();
+});
+
+let toastT;
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('open'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('open'),3400); }
+</script>

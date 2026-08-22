@@ -20,6 +20,10 @@ class TimelineType(str, enum.Enum):
     NOTA = "nota"
     # Customer Success — check-in de saúde do cliente (ver app/services/health_scoring.py).
     CS_CHECKIN = "cs_checkin"
+    # SDR Argos — o prospector gerou/atualizou o dossiê comercial da empresa (ver
+    # app/services/sdr_argos.py). Não entra em TIPOS_RELEVANTES de company_ai.py: não deve
+    # re-disparar o resumo executivo por si só.
+    SDR = "sdr"
 
 
 class TimelineEvent(Base, TenantMixin, TimestampMixin):

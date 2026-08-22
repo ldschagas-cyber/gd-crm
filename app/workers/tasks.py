@@ -749,3 +749,28 @@ def regenerate_company_summary(tenant_id: str, company_id: str):
         raise
     finally:
         db.close()
+
+
+@celery_app.task(name="app.workers.tasks.run_sdr_argos_task")
+def run_sdr_argos_task(tenant_id: str, company_id: str):
+    """Disparado por `app/services/sdr_argos.py.schedule_sdr_argos()` no handoff da
+    promoção (LeadProspectService.promote, só quando cria empresa nova) — o nível 2 do
+    agente comercial (SDR Argos) roda em background e grava o dossiê direto na empresa.
+
+    `tenant_id` vem explícito no payload (mesmo padrão de `regenerate_company_summary`) e
+    NÃO é lido da própria Company: o RLS do Postgres aplica `app.current_tenant` no
+    `after_begin` da sessão (ver app/core/database.py), que dispara na primeira query —
+    ler a empresa antes de `set_current_tenant` rodaria essa primeira query sem tenant
+    setado e devolveria zero linhas (falha silenciosa), não a empresa certa.
+    """
+    set_current_tenant(UUID(tenant_id))
+    db = SessionLocal()
+    try:
+        from app.services.sdr_argos import SdrArgosService
+        SdrArgosService(db).gerar(UUID(company_id))
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()

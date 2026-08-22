@@ -72,6 +72,12 @@ export function askCompanyAi(id, pergunta) {
   return api.post(`/companies/${id}/dossie/perguntar`, { pergunta }).then((res) => res.data)
 }
 
+// SDR Argos (nível 2 do agente comercial, ver docs/PLANO_SDR_AUTONOMO.md) — gatilho manual
+// ("botão SDR Argos"); a regra padrão é automática em background no handoff da promoção.
+export function runSdrArgos(id) {
+  return api.post(`/companies/${id}/sdr-argos`).then((res) => res.data)
+}
+
 // ---- Central de Leads --------------------------------------------------------
 
 export function listCentralLeads({

@@ -115,9 +115,16 @@ class CompanyRead(ORMModel):
     problemas_encontrados: str | None
     hipoteses: str | None
     contato_sugerido: str | None
-    # JSON bruto de CommercialIntelligenceRecord — só chega aqui por cópia automática na
-    # promoção do LeadProspect (ver LeadProspectService.promote()); sem endpoint próprio.
+    # SDR Argos (nível 2 do agente comercial, ver docs/PLANO_SDR_AUTONOMO.md) — gerado direto
+    # na empresa, automaticamente no handoff da promoção e sob demanda via POST .../sdr-argos.
+    # JSON bruto de CommercialIntelligenceRecord; o frontend faz o parse (mesmo padrão de
+    # LeadProspectRead.inteligencia_comercial).
     inteligencia_comercial: str | None
+    # JSON bruto {sequence_id, sequence_nome, contato_sugerido} — SUGESTÃO, nunca inscrição
+    # automática; None se nenhuma sequência ativa foi encontrada para sugerir.
+    cadencia_sugerida: str | None
+    roteiro_ligacao: str | None
+    sdr_argos_atualizado_em: datetime | None
     # Central de Leads — None enquanto a empresa nunca entrou no funil (ver FunilEstagio).
     funil_estagio: str | None
     funil_estagio_atualizado_em: datetime | None

@@ -2,11 +2,12 @@ import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
-  askCompanyAi, getCompany, getCompanyIcp, regenerateCompanyResumo, updateCompanyDossier,
+  askCompanyAi, getCompany, getCompanyIcp, regenerateCompanyResumo, runSdrArgos, updateCompanyDossier,
 } from '../api/companies'
 import { listContacts } from '../api/contacts'
 import { listTimeline } from '../api/timeline'
 import CompanyTabs from '../components/CompanyTabs.jsx'
+import EnrollModal from '../components/EnrollModal.jsx'
 import { useSoftphone } from '../context/SoftphoneContext.jsx'
 import '../styles/detailPage.css'
 import '../styles/commercialIntel.css'
@@ -40,6 +41,10 @@ function formatDateTime(iso) {
   return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} às ${p(d.getHours())}:${p(d.getMinutes())}`
 }
 function parseInteligenciaComercial(raw) {
+  if (!raw) return null
+  try { return JSON.parse(raw) } catch { return null }
+}
+function parseCadenciaSugerida(raw) {
   if (!raw) return null
   try { return JSON.parse(raw) } catch { return null }
 }
@@ -85,6 +90,7 @@ export default function CompanyDossierPage() {
   const [timelineFilter, setTimelineFilter] = useState('all')
   const [pergunta, setPergunta] = useState('')
   const [conversa, setConversa] = useState([])
+  const [showEnrollModal, setShowEnrollModal] = useState(false)
 
   const companyQuery = useQuery({ queryKey: ['companies', 'detail', id], queryFn: () => getCompany(id) })
   const icpQuery = useQuery({ queryKey: ['companies', 'icp', id], queryFn: () => getCompanyIcp(id) })
@@ -99,6 +105,10 @@ export default function CompanyDossierPage() {
   })
   const regenerateMutation = useMutation({
     mutationFn: () => regenerateCompanyResumo(id),
+    onSuccess: invalidateCompany,
+  })
+  const sdrArgosMutation = useMutation({
+    mutationFn: () => runSdrArgos(id),
     onSuccess: invalidateCompany,
   })
   const askMutation = useMutation({
@@ -118,6 +128,7 @@ export default function CompanyDossierPage() {
   const reunioes = (timelineQuery.data?.items ?? []).filter((e) => e.tipo === 'reuniao').slice(0, 3)
   const contatoPrincipal = contactsQuery.data?.items?.[0]
   const intel = parseInteligenciaComercial(company.inteligencia_comercial)
+  const cadenciaSugerida = parseCadenciaSugerida(company.cadencia_sugerida)
 
   const saveField = (field) => (value, done) => {
     dossierMutation.mutate({ [field]: value }, { onSuccess: done })
@@ -218,57 +229,126 @@ export default function CompanyDossierPage() {
             </dl>
           </section>
 
-          {/* Inteligência Comercial — só existe se veio da Pesquisa de Leads (copiada na promoção) */}
-          {intel && (
-            <section className="card card-pad">
-              <div className="card-head">
-                <div><h3>Inteligência Comercial</h3><p>Perfil pesquisado + argumento — trazido da Pesquisa de Leads</p></div>
-                <span className="source-tag arg">✦ Síntese da IA</span>
-              </div>
+          {/* SDR Argos — o prospector (nível 2 do agente comercial, ver docs/PLANO_SDR_AUTONOMO.md).
+              Roda sozinho no handoff da promoção; o botão abaixo só re-roda sob demanda.
+              Nunca dispara contato externo: a cadência é sempre SUGESTÃO (decisão travada nº 6) —
+              "Inscrever na cadência" abre o mesmo EnrollModal de sempre, pré-preenchido. */}
+          <section className="card card-pad">
+            <div className="card-head">
+              <div><h3>SDR Argos</h3><p>Dossiê comercial do prospector — pesquisa + Benchmark Logístico + argumento</p></div>
+              <span className="ia-badge"><span className="pulse" /> Gerado por IA</span>
+            </div>
 
-              <div className="intel-section">
-                <div className="intel-section-head"><h4>Perfil da empresa</h4><span className="source-tag pesquisa">🔍 Pesquisa web</span></div>
-                <div className="fact-list">
-                  {intel.perfil?.erp && <div className="fact-row">ERP identificado: <b>{intel.perfil.erp}</b></div>}
-                  {intel.perfil?.porte_estimado && <div className="fact-row">Porte estimado: <b>{intel.perfil.porte_estimado}</b></div>}
-                  {intel.perfil?.atuacao && <div className="fact-row">{intel.perfil.atuacao}</div>}
-                  {intel.perfil?.operacao_transporte && <div className="fact-row">{intel.perfil.operacao_transporte}</div>}
-                  {!intel.perfil?.erp && !intel.perfil?.porte_estimado && !intel.perfil?.atuacao && !intel.perfil?.operacao_transporte && (
-                    <div className="fact-row unk">A IA não encontrou dados públicos suficientes sobre esta empresa.</div>
+            {intel ? (
+              <>
+                <div className="intel-section">
+                  <div className="intel-section-head"><h4>Perfil da empresa</h4><span className="source-tag pesquisa">🔍 Pesquisa web</span></div>
+                  <div className="fact-list">
+                    {intel.perfil?.erp && <div className="fact-row">ERP identificado: <b>{intel.perfil.erp}</b></div>}
+                    {intel.perfil?.porte_estimado && <div className="fact-row">Porte estimado: <b>{intel.perfil.porte_estimado}</b></div>}
+                    {intel.perfil?.atuacao && <div className="fact-row">{intel.perfil.atuacao}</div>}
+                    {intel.perfil?.operacao_transporte && <div className="fact-row">{intel.perfil.operacao_transporte}</div>}
+                    {!intel.perfil?.erp && !intel.perfil?.porte_estimado && !intel.perfil?.atuacao && !intel.perfil?.operacao_transporte && (
+                      <div className="fact-row unk">A IA não encontrou dados públicos suficientes sobre esta empresa.</div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="intel-section">
+                  <div className="intel-section-head"><h4>Benchmark Logístico</h4><span className="source-tag benchmark">📊 Referência — Diagnóstico</span></div>
+                  {intel.benchmark?.disponivel ? (
+                    <div className="bench-box">
+                      <div className="mapping-row">
+                        Setor pesquisado <b>{intel.benchmark.segmento_pesquisado}</b> → classificado como{' '}
+                        <span className="seg-out">{intel.benchmark.segmento_diagnostico}</span> no Diagnóstico
+                      </div>
+                      <div className="bench-compare">
+                        <span className="lbl">Custo médio de referência do segmento</span>
+                        <span className="val">{formatFreteKg(intel.benchmark.frete_kg_medio)}/kg</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bench-box">
+                      <div className="bench-note">Sem referência de benchmark disponível ({intel.benchmark?.motivo_indisponivel ?? 'não informado'}).</div>
+                    </div>
                   )}
                 </div>
-              </div>
 
-              <div className="intel-section">
-                <div className="intel-section-head"><h4>Benchmark Logístico</h4><span className="source-tag benchmark">📊 Referência — Diagnóstico</span></div>
-                {intel.benchmark?.disponivel ? (
-                  <div className="bench-box">
-                    <div className="mapping-row">
-                      Setor pesquisado <b>{intel.benchmark.segmento_pesquisado}</b> → classificado como{' '}
-                      <span className="seg-out">{intel.benchmark.segmento_diagnostico}</span> no Diagnóstico
-                    </div>
-                    <div className="bench-compare">
-                      <span className="lbl">Custo médio de referência do segmento</span>
-                      <span className="val">{formatFreteKg(intel.benchmark.frete_kg_medio)}/kg</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="bench-box">
-                    <div className="bench-note">Sem referência de benchmark disponível ({intel.benchmark?.motivo_indisponivel ?? 'não informado'}).</div>
+                <div className="intel-section">
+                  <div className="intel-section-head"><h4>Argumento comercial sugerido</h4></div>
+                  <div className="arg-box"><p>{intel.argumento}</p></div>
+                </div>
+
+                {company.roteiro_ligacao && (
+                  <div className="intel-section">
+                    <div className="intel-section-head"><h4>Roteiro de ligação</h4><span className="source-tag pesquisa">☎ Prepara, não liga</span></div>
+                    <div className="fact-list"><div className="fact-row" style={{ whiteSpace: 'pre-line' }}>{company.roteiro_ligacao}</div></div>
                   </div>
                 )}
-              </div>
 
-              <div className="intel-section">
-                <div className="intel-section-head"><h4>Argumento comercial sugerido</h4></div>
-                <div className="arg-box"><p>{intel.argumento}</p></div>
-              </div>
+                <div className="intel-section">
+                  <div className="intel-section-head">
+                    <h4>Cadência sugerida</h4>
+                    <span className="source-tag pesquisa">✦ Sugestão — não inscreve sozinho</span>
+                  </div>
+                  {cadenciaSugerida ? (
+                    <div className="bench-box">
+                      <div className="mapping-row">
+                        <b>{cadenciaSugerida.sequence_nome}</b>
+                        {cadenciaSugerida.contato_sugerido ? <> para <b>{cadenciaSugerida.contato_sugerido}</b></> : null}
+                      </div>
+                      <div className="bench-compare" style={{ borderTop: 'none', paddingTop: 0 }}>
+                        <span className="lbl">Nenhum e-mail sai até você confirmar.</span>
+                        <button className="link-btn" onClick={() => setShowEnrollModal(true)}>Inscrever na cadência →</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bench-box">
+                      <div className="bench-note">Nenhuma sequência ativa encontrada para sugerir. Pode inscrever manualmente quando quiser.</div>
+                    </div>
+                  )}
+                </div>
 
-              <div className="intel-copied-meta">
-                ↳ Copiado automaticamente da Pesquisa de Leads ao promover, em <b>{formatDateTime(intel.gravado_em)}</b>.
-                Somente leitura aqui — para atualizar, gere e grave de novo na Pesquisa de Leads antes da próxima promoção.
-              </div>
-            </section>
+                <div className="resumo-foot">
+                  <span className="resumo-meta">
+                    {company.sdr_argos_atualizado_em
+                      ? `Gerado no handoff da promoção · ${tempoDecorrido(company.sdr_argos_atualizado_em)}`
+                      : `Gravado em ${formatDateTime(intel.gravado_em)}`}
+                  </span>
+                  <button className="link-btn" disabled={sdrArgosMutation.isPending} onClick={() => sdrArgosMutation.mutate()}>
+                    {sdrArgosMutation.isPending ? 'Rodando…' : 'SDR Argos ↻'}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="resumo-text muted">
+                  O SDR Argos roda automaticamente assim que a empresa é promovida da Pesquisa de Leads. Se esta
+                  empresa entrou por outro caminho, ou o dossiê ainda não terminou de gerar, rode manualmente.
+                </p>
+                <div className="resumo-foot">
+                  <span className="resumo-meta">Ainda não gerado</span>
+                  <button className="link-btn" disabled={sdrArgosMutation.isPending} onClick={() => sdrArgosMutation.mutate()}>
+                    {sdrArgosMutation.isPending ? 'Rodando…' : 'SDR Argos ↻'}
+                  </button>
+                </div>
+              </>
+            )}
+            {sdrArgosMutation.isError && (
+              <p className="state-msg error" style={{ marginTop: 10 }}>
+                {sdrArgosMutation.error?.response?.data?.error?.message ?? 'Não foi possível rodar o SDR Argos agora.'}
+              </p>
+            )}
+          </section>
+
+          {showEnrollModal && (
+            <EnrollModal
+              alvos={[{ company_id: id }]}
+              alvoLabel={company.razao_social}
+              defaultSequenceId={cadenciaSugerida?.sequence_id}
+              sugestaoLabel={cadenciaSugerida?.sequence_nome}
+              onClose={() => setShowEnrollModal(false)}
+            />
           )}
 
           {/* Stack operacional */}

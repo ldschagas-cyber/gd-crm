@@ -193,7 +193,10 @@ class LeadProspectService:
             contato_sugerido=lead.contato_sugerido,
             problemas_encontrados=lead.dor_sugerida,
             status=CompanyStatus.LEAD.value, origem=lead.origem or "Pesquisa de Leads",
-            inteligencia_comercial=lead.inteligencia_comercial,
+            # inteligencia_comercial NÃO é mais copiada do lead (decisão travada nº 3 do
+            # PLANO_SDR_AUTONOMO.md): a Inteligência Comercial passou a ser estritamente
+            # pós-promoção — o SDR Argos gera a dela própria logo abaixo, direto na empresa.
+            #
             # Central de Leads: toda promoção entra no funil como "novo" — ver
             # docs/PLANO_CENTRAL_DE_LEADS.md. Empresas criadas por outro caminho (cadastro
             # manual, importação) continuam de fora até serem atribuídas manualmente.
@@ -204,6 +207,12 @@ class LeadProspectService:
         lead.promoted_company_id = company.id
         lead.status = LeadStatus.PROMOVIDO.value
         lead = self.repo.save(lead)
+        # Handoff nível 1 -> nível 2 (decisão travada nº 4): o SDR Argos roda sozinho, em
+        # background, só quando a promoção CRIA uma empresa nova — reaproveitar uma empresa
+        # já existente (ramo `existente is not None` acima) não deve reprocessar o dossiê
+        # dela. Mesmo padrão after_commit de company_ai.schedule_resumo_regeneration.
+        from app.services.sdr_argos import schedule_sdr_argos
+        schedule_sdr_argos(self.db, company.id)
         return self.to_read(lead)
 
     # ---- relatório de desempenho (§9.7) — só consulta, agregado por pesquisador -----
