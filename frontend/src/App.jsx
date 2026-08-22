@@ -19,6 +19,10 @@ import DealDetailPage from './pages/DealDetailPage.jsx'
 import ClientesPage from './pages/ClientesPage.jsx'
 import PrevisaoComercialPage from './pages/PrevisaoComercialPage.jsx'
 import ReceitaRecorrentePage from './pages/ReceitaRecorrentePage.jsx'
+import FinanceiroVisaoGeralPage from './pages/FinanceiroVisaoGeralPage.jsx'
+import ProdutosPage from './pages/ProdutosPage.jsx'
+import PropostasPage from './pages/PropostasPage.jsx'
+import FaturamentoPage from './pages/FaturamentoPage.jsx'
 import TarefasPage from './pages/TarefasPage.jsx'
 import TaskQueuePage from './pages/TaskQueuePage.jsx'
 import SequenciasPage from './pages/SequenciasPage.jsx'
@@ -65,6 +69,10 @@ export default function App() {
         <Route path="/pipeline" element={<PipelinesPage />} />
         <Route path="/clientes" element={<ClientesPage />} />
         <Route path="/receita-recorrente" element={<ReceitaRecorrentePage />} />
+        <Route path="/financeiro" element={<FinanceiroVisaoGeralPage />} />
+        <Route path="/financeiro/produtos" element={<ProdutosPage />} />
+        <Route path="/financeiro/propostas" element={<PropostasPage />} />
+        <Route path="/financeiro/faturamento" element={<FaturamentoPage />} />
         <Route path="/tarefas" element={<TarefasPage />} />
         <Route path="/tarefas/executar" element={<TaskQueuePage />} />
         <Route path="/sequencias" element={<SequenciasPage />} />

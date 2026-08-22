@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Argos — Módulo Financeiro (Protótipo · Fase 1 revisada)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --indigo:#2D3561; --amber:#C9A84C; --blue:#0077A8; --ivory:#F5F1EB;
+    --ink:#22263a; --mut:#6b7086; --line:#e4dfd6; --ok:#2e7d5b; --warn:#b07a1f;
+    --bad:#b3403a; --card:#fff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'IBM Plex Sans',sans-serif;background:var(--ivory);color:var(--ink);font-size:14px}
+  .mono{font-family:'IBM Plex Mono',monospace}
+  .app{display:flex;min-height:100vh}
+  .side{width:232px;background:var(--indigo);color:#dfe3f2;flex-shrink:0;padding:18px 0}
+  .brand{padding:0 20px 16px;border-bottom:1px solid rgba(255,255,255,.12);margin-bottom:12px}
+  .brand h1{font-size:20px;letter-spacing:.5px;color:#fff}
+  .brand small{color:var(--amber);font-size:11px;letter-spacing:.8px}
+  .sec{padding:12px 20px 4px;font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:#8e96b8}
+  .nav a{display:block;padding:7px 20px;color:#cfd4e8;text-decoration:none;font-size:13px;border-left:3px solid transparent;cursor:pointer}
+  .nav a:hover{background:rgba(255,255,255,.06)}
+  .nav a.on{background:rgba(201,168,76,.14);border-left-color:var(--amber);color:#fff;font-weight:600}
+  .nav a.dim{color:#7d84a6}
+  .badge-new{background:var(--amber);color:var(--indigo);font-size:9px;font-weight:700;border-radius:3px;padding:1px 5px;margin-left:6px;letter-spacing:.5px}
+  .main{flex:1;padding:26px 30px;max-width:1180px}
+  .crumb{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--mut);margin-bottom:4px}
+  .title{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:20px}
+  .title h2{font-size:22px;color:var(--indigo)}
+  .btn{background:var(--indigo);color:#fff;border:none;border-radius:6px;padding:9px 16px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+  .btn.gold{background:var(--amber);color:var(--indigo)}
+  .btn.ghost{background:transparent;color:var(--indigo);border:1px solid var(--indigo);padding:4px 12px;font-size:12px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:22px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
+  .card .lb{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--mut);margin-bottom:6px}
+  .card .v{font-size:23px;font-weight:700;color:var(--indigo)}
+  .card .s{font-size:12px;color:var(--mut);margin-top:4px}
+  .v.ok{color:var(--ok)} .v.bad{color:var(--bad)} .v.warn{color:var(--warn)}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin-bottom:20px;overflow-x:auto}
+  .panel h3{font-size:15px;color:var(--indigo);margin-bottom:12px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--mut);text-align:left;padding:8px 10px;border-bottom:2px solid var(--line);white-space:nowrap}
+  td{padding:9px 10px;border-bottom:1px solid var(--line)}
+  tr:last-child td{border-bottom:none}
+  td.r,th.r{text-align:right}
+  .pill{display:inline-block;font-size:11px;font-weight:600;border-radius:20px;padding:2px 10px;white-space:nowrap}
+  .p-ok{background:#e2f2ea;color:var(--ok)} .p-warn{background:#f7ecd6;color:var(--warn)}
+  .p-bad{background:#f8e3e2;color:var(--bad)} .p-neu{background:#e8e9f2;color:var(--indigo)}
+  .p-blue{background:#e0eff6;color:var(--blue)} .p-gold{background:#f3e9cf;color:#8a6d1f}
+  .nf-ok{color:var(--ok);font-weight:600} .nf-no{color:var(--mut)}
+  .note{background:#f2ede2;border-left:3px solid var(--amber);border-radius:6px;padding:10px 14px;font-size:12.5px;color:#5a5340;margin-bottom:18px}
+  .scope{background:#eef0f7;border:1px dashed var(--indigo);border-radius:8px;padding:11px 15px;font-size:12.5px;color:var(--indigo);margin-bottom:20px}
+  .scope b{color:var(--indigo)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .view{display:none}.view.on{display:block}
+  .fase2{opacity:.7;font-style:italic}
+  @media(max-width:820px){
+    .app{flex-direction:column}
+    .side{width:100%;padding:12px 0 0}
+    .brand{padding:0 16px 10px;margin-bottom:0}
+    .sec{display:none}
+    .nav{display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:8px 10px 0;gap:4px}
+    .nav a{flex-shrink:0;white-space:nowrap;border-left:none;border-bottom:3px solid transparent;padding:9px 13px;border-radius:6px 6px 0 0}
+    .nav a.on{border-bottom-color:var(--amber)}
+    .nav a.dim{display:none}
+    .main{padding:18px 14px}
+    .grid2{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="side">
+    <div class="brand"><h1>Argos</h1><small>BY GD CONECTA</small></div>
+    <nav class="nav">
+      <div class="sec">Gestão</div>
+      <a class="dim"><span>Dashboard</span></a>
+      <a class="dim"><span>Metas do Funil</span></a>
+      <div class="sec">CRM</div>
+      <a class="dim"><span>Empresas</span></a>
+      <a class="dim"><span>Negócios</span></a>
+      <div class="sec">Financeiro <span class="badge-new">NOVO</span></div>
+      <a data-v="dash" class="on"><span>Visão Geral</span></a>
+      <a data-v="prod"><span>Produtos</span></a>
+      <a data-v="prop"><span>Propostas</span></a>
+      <a data-v="contr"><span>Contratos</span></a>
+      <a data-v="fat"><span>Faturamento</span></a>
+      <a data-v="receber"><span>Contas a Receber</span></a>
+      <a data-v="pagar"><span>Contas a Pagar</span></a>
+    </nav>
+  </aside>
+
+  <main class="main">
+
+    <!-- ===== VISÃO GERAL ===== -->
+    <section class="view on" id="v-dash">
+      <div class="crumb">Financeiro</div>
+      <div class="title"><h2>Visão Geral</h2><span class="mono" style="color:var(--mut);font-size:12px">agosto/2026</span></div>
+
+      <div class="scope">
+        <b>Escopo Fase 1 (revisada):</b> Produtos · Propostas (com <b>captura</b> de desconto, sem fila de alçada/aprovação) · Contratos · Faturamento · Contas a Receber · Contas a Pagar (leve) · Dashboard.
+        <b>Fase seguinte:</b> governança de desconto (alçadas/aprovação/piso), Comissões, Relatório do vendedor, Fluxo de Caixa projetado.
+      </div>
+
+      <div class="cards">
+        <div class="card"><div class="lb">MRR</div><div class="v">R$ 24.500</div><div class="s">5 contratos ativos</div></div>
+        <div class="card"><div class="lb">A receber no mês</div><div class="v ok">R$ 27.300</div><div class="s">7 cobranças abertas</div></div>
+        <div class="card"><div class="lb">Vencidos (receber)</div><div class="v bad">R$ 4.800</div><div class="s">1 cobrança — 12 dias</div></div>
+        <div class="card"><div class="lb">A pagar no mês</div><div class="v warn">R$ 3.890</div><div class="s">3 títulos abertos</div></div>
+        <div class="card"><div class="lb">Margem cedida</div><div class="v warn">8,4%</div><div class="s">desconto médio no trimestre</div></div>
+      </div>
+
+      <div class="panel">
+        <h3>Pendências</h3>
+        <table>
+          <tr><td><span class="pill p-bad">Vencida (receber)</span></td><td>Cobrança ago/26 — Metalúrgica Vale Aço — R$ 4.800</td><td class="r"><button class="btn ghost">Dar baixa</button></td></tr>
+          <tr><td><span class="pill p-bad">Vencida (pagar)</span></td><td>Freelancer design — R$ 800 — venceu 30/07</td><td class="r"><button class="btn ghost">Pagar</button></td></tr>
+          <tr><td><span class="pill p-warn">Reajuste</span></td><td>Contrato Nutrilog Alimentos — aniversário IPCA em set/26</td><td class="r"><button class="btn ghost">Revisar</button></td></tr>
+          <tr><td><span class="pill p-warn">Vigência</span></td><td>Contrato Farmadis Distribuidora vence em 42 dias</td><td class="r"><button class="btn ghost">Renovar</button></td></tr>
+        </table>
+      </div>
+
+      <div class="panel">
+        <h3>Margem cedida por vendedor (trimestre)</h3>
+        <table>
+          <tr><th>Vendedor</th><th class="r">Propostas</th><th class="r">Desc. médio</th><th class="r">Máx. concedido</th></tr>
+          <tr><td>Daniel (admin)</td><td class="r mono">6</td><td class="r mono">5,2%</td><td class="r mono">10%</td></tr>
+          <tr><td>Vendedora</td><td class="r mono">9</td><td class="r mono">11,8%</td><td class="r mono">28%</td></tr>
+        </table>
+      </div>
+      <div class="note">A <b>margem cedida</b> é alimentada pela <b>captura</b> do desconto por item (tabela × proposto). Nesta fase o desconto é registrado e visível — não há fila de aprovação por alçada. <span class="fase2">A governança (bloqueio por alçada, painel acumulado v1→vN, piso) entra na fase seguinte.</span></div>
+    </section>
+
+    <!-- ===== PRODUTOS ===== -->
+    <section class="view" id="v-prod">
+      <div class="crumb">Financeiro</div>
+      <div class="title"><h2>Produtos e Serviços</h2><button class="btn gold">+ Novo produto</button></div>
+      <div class="panel">
+        <table>
+          <tr><th>Produto</th><th>Tipo</th><th class="r">Preço tabela</th><th class="r">Piso</th><th>Status</th></tr>
+          <tr><td>Consultoria logística contínua</td><td><span class="pill p-blue">Recorrente</span></td><td class="r mono">R$ 5.500/mês</td><td class="r mono">R$ 4.400</td><td><span class="pill p-ok">Ativo</span></td></tr>
+          <tr><td>Gestão de fretes + diagnóstico</td><td><span class="pill p-blue">Recorrente</span></td><td class="r mono">R$ 4.800/mês</td><td class="r mono">R$ 3.800</td><td><span class="pill p-ok">Ativo</span></td></tr>
+          <tr><td>Mentoria Comercial + Argos</td><td><span class="pill p-blue">Recorrente</span></td><td class="r mono">R$ 4.200/mês</td><td class="r mono">R$ 3.400</td><td><span class="pill p-ok">Ativo</span></td></tr>
+          <tr><td>Torre de controle de transportes</td><td><span class="pill p-blue">Recorrente</span></td><td class="r mono">R$ 3.900/mês</td><td class="r mono">R$ 3.100</td><td><span class="pill p-ok">Ativo</span></td></tr>
+          <tr><td>Diagnóstico logístico (projeto)</td><td><span class="pill p-neu">Pontual</span></td><td class="r mono">R$ 18.000</td><td class="r mono">R$ 14.000</td><td><span class="pill p-ok">Ativo</span></td></tr>
+          <tr><td>BID de fretes (projeto)</td><td><span class="pill p-neu">Pontual</span></td><td class="r mono">R$ 12.000</td><td class="r mono">R$ 9.500</td><td><span class="pill p-ok">Ativo</span></td></tr>
+        </table>
+      </div>
+      <div class="note"><b>RN-F13:</b> alterar preço de tabela não muda propostas e contratos existentes — o preço é congelado (snapshot) no item na criação, com histórico de alterações por produto. O <b>piso</b> é cadastrado (visível como referência); <span class="fase2">o bloqueio automático abaixo do piso é da fase de governança.</span></div>
+    </section>
+
+    <!-- ===== PROPOSTAS ===== -->
+    <section class="view" id="v-prop">
+      <div class="crumb">Financeiro</div>
+      <div class="title"><h2>Propostas</h2><button class="btn gold">+ Nova proposta</button></div>
+
+      <div class="panel">
+        <table>
+          <tr><th>Proposta</th><th>Cliente</th><th>Vendedor</th><th>Versão</th><th class="r">Tabela</th><th class="r">Proposto</th><th class="r">Desc.</th><th>Status</th></tr>
+          <tr><td class="mono">PROP-2026-014</td><td>Cerâmica Itaboraí</td><td>Vendedora</td><td class="mono">v4</td><td class="r mono">R$ 5.500</td><td class="r mono">R$ 3.960</td><td class="r mono" style="color:var(--bad);font-weight:700">28%</td><td><span class="pill p-neu">Em negociação</span></td></tr>
+          <tr><td class="mono">PROP-2026-013</td><td>Distribuidora Sertão Norte</td><td>Daniel</td><td class="mono">v1</td><td class="r mono">R$ 18.000</td><td class="r mono">R$ 16.900</td><td class="r mono">6,1%</td><td><span class="pill p-neu">Enviada</span></td></tr>
+          <tr><td class="mono">PROP-2026-012</td><td>Nutrilog Alimentos</td><td>Daniel</td><td class="mono">v3</td><td class="r mono">R$ 5.500</td><td class="r mono">R$ 5.500</td><td class="r mono">0%</td><td><span class="pill p-ok">Aceita ✓ contrato</span></td></tr>
+          <tr><td class="mono">PROP-2026-011</td><td>TexBrasil Confecções</td><td>Vendedora</td><td class="mono">v1</td><td class="r mono">R$ 4.200</td><td class="r mono">R$ 3.900</td><td class="r mono">7,1%</td><td><span class="pill p-bad">Expirada</span></td></tr>
+        </table>
+      </div>
+      <div class="note"><b>RN-F09 (captura):</b> o desconto é sempre <b>calculado</b> (tabela − proposto), registrado por item com snapshot de preço (RN-F13) — é o dado que alimenta a margem cedida no dashboard. Fluxo de status: <span class="mono">rascunho → enviada → em negociação → aceita | recusada | expirada</span>. <span class="fase2">Fila de alçada/aprovação, painel de desconto acumulado v1→vN e bloqueio de piso entram na fase de governança — repare que a PROP-014 com 28% é apenas registrada, sem travar.</span></div>
+    </section>
+
+    <!-- ===== CONTRATOS ===== -->
+    <section class="view" id="v-contr">
+      <div class="crumb">Financeiro</div>
+      <div class="title"><h2>Contratos</h2><button class="btn gold">+ Novo contrato</button></div>
+      <div class="panel">
+        <table>
+          <tr><th>Cliente</th><th>Produto</th><th>Vendedor</th><th>Início</th><th>Vigência</th><th class="r">Valor mensal</th><th>Reajuste</th><th>Status</th></tr>
+          <tr><td>Nutrilog Alimentos</td><td>Consultoria contínua</td><td>Daniel</td><td>set/25</td><td>24 meses</td><td class="r mono">R$ 5.500</td><td>IPCA · set</td><td><span class="pill p-ok">Ativo</span></td></tr>
+          <tr><td>Metalúrgica Vale Aço</td><td>Gestão de fretes</td><td>Daniel</td><td>mar/26</td><td>12 meses</td><td class="r mono">R$ 4.800</td><td>IGP-M · mar</td><td><span class="pill p-ok">Ativo</span></td></tr>
+          <tr><td>Farmadis Distribuidora</td><td>Torre de controle</td><td>Daniel</td><td>out/25</td><td>12 meses</td><td class="r mono">R$ 3.900</td><td>Fixo 6% · out</td><td><span class="pill p-warn">Vence 42d</span></td></tr>
+          <tr><td>Cooperativa Agrovale</td><td>Consultoria contínua</td><td>Daniel</td><td>jan/26</td><td>Indeterminado</td><td class="r mono">R$ 6.100</td><td>IPCA · jan</td><td><span class="pill p-ok">Ativo</span></td></tr>
+          <tr><td>Sertão Log Transportes</td><td>Mentoria + Argos</td><td>Vendedora</td><td>jul/26</td><td>12 meses</td><td class="r mono">R$ 4.200</td><td>IPCA · jul</td><td><span class="pill p-ok">Ativo</span></td></tr>
+        </table>
+      </div>
+      <div class="note"><b>RF-CONTR-06/07:</b> o contrato herda os itens/preços da proposta aceita (rastreabilidade produto → proposta → contrato → cobrança) e registra o <b>vendedor responsável</b> (responsável comercial). <b>Ponte PA-01:</b> ao ativar, o valor consolidado do contrato é enviado à Assinatura <b>via evento</b> (mantém MRR/Health Score íntegros). <span class="fase2">O vendedor responsável será a base da comissão na fase seguinte.</span></div>
+    </section>
+
+    <!-- ===== FATURAMENTO ===== -->
+    <section class="view" id="v-fat">
+      <div class="crumb">Financeiro</div>
+      <div class="title"><h2>Faturamento — agosto/2026</h2><button class="btn">Gerar faturamento do mês</button></div>
+      <div class="cards">
+        <div class="card"><div class="lb">Prévia da competência</div><div class="v">R$ 24.500</div><div class="s">5 contratos ativos</div></div>
+        <div class="card"><div class="lb">Pontuais no mês</div><div class="v">R$ 2.800</div><div class="s">1 cobrança avulsa</div></div>
+        <div class="card"><div class="lb">Status do job</div><div class="v ok" style="font-size:15px;padding-top:6px">Executado 05/08 · idempotente</div><div class="s mono">chave: contrato + competência</div></div>
+      </div>
+      <div class="panel">
+        <h3>Cobranças da competência 08/2026</h3>
+        <table>
+          <tr><th>Cliente</th><th>Tipo</th><th>Venc.</th><th class="r">Valor</th><th>NF</th><th>Status</th></tr>
+          <tr><td>Nutrilog Alimentos</td><td>Recorrente</td><td>05/08</td><td class="r mono">R$ 5.500</td><td class="nf-ok">NF 1.042 ⎘</td><td><span class="pill p-ok">Paga</span></td></tr>
+          <tr><td>Sertão Log Transportes</td><td>Recorrente</td><td>05/08</td><td class="r mono">R$ 4.200</td><td class="nf-ok">NF 1.043 ⎘</td><td><span class="pill p-ok">Paga</span></td></tr>
+          <tr><td>Farmadis Distribuidora</td><td>Recorrente</td><td>05/08</td><td class="r mono">R$ 3.900</td><td class="nf-no">sem NF</td><td><span class="pill p-neu">Aberta</span></td></tr>
+          <tr><td>Metalúrgica Vale Aço</td><td>Recorrente</td><td>10/08</td><td class="r mono">R$ 4.800</td><td class="nf-no">sem NF</td><td><span class="pill p-bad">Vencida</span></td></tr>
+          <tr><td>Cooperativa Agrovale</td><td>Recorrente</td><td>15/08</td><td class="r mono">R$ 6.100</td><td class="nf-no">sem NF</td><td><span class="pill p-neu">Aberta</span></td></tr>
+          <tr><td>Distribuidora Sertão Norte</td><td>Pontual</td><td>20/08</td><td class="r mono">R$ 2.800</td><td class="nf-no">sem NF</td><td><span class="pill p-neu">Aberta</span></td></tr>
+        </table>
+      </div>
+      <div class="note">NF em Fase 1: registro manual + anexo XML/PDF vinculado à cobrança. <span class="fase2"><b>Fase 2:</b> importação do XML da NFS-e (condicionada ao formato do contador — D-01).</span></div>
+    </section>
+
+    <!-- ===== CONTAS A RECEBER ===== -->
+    <section class="view" id="v-receber">
+      <div class="crumb">Financeiro</div>
+      <div class="title"><h2>Contas a Receber</h2><span class="mono" style="color:var(--mut);font-size:12px">agosto/2026</span></div>
+      <div class="panel">
+        <h3>Cobranças abertas</h3>
+        <table>
+          <tr><th>Cliente</th><th>Competência</th><th>Venc.</th><th class="r">Valor</th><th>NF</th><th>Status</th><th></th></tr>
+          <tr><td>Metalúrgica Vale Aço</td><td>08/2026</td><td>10/08</td><td class="r mono">R$ 4.800</td><td class="nf-no">sem NF</td><td><span class="pill p-bad">Vencida</span></td><td class="r"><button class="btn ghost">Dar baixa</button></td></tr>
+          <tr><td>Farmadis Distribuidora</td><td>08/2026</td><td>05/08</td><td class="r mono">R$ 3.900</td><td class="nf-no">sem NF</td><td><span class="pill p-neu">Aberta</span></td><td class="r"><button class="btn ghost">Dar baixa</button></td></tr>
+          <tr><td>Cooperativa Agrovale</td><td>08/2026</td><td>15/08</td><td class="r mono">R$ 6.100</td><td class="nf-no">sem NF</td><td><span class="pill p-neu">Aberta</span></td><td class="r"><button class="btn ghost">Dar baixa</button></td></tr>
+          <tr><td>Distribuidora Sertão Norte</td><td>08/2026</td><td>20/08</td><td class="r mono">R$ 2.800</td><td class="nf-no">sem NF</td><td><span class="pill p-neu">Aberta</span></td><td class="r"><button class="btn ghost">Dar baixa</button></td></tr>
+        </table>
+      </div>
+      <div class="panel">
+        <h3>Recebidas no mês</h3>
+        <table>
+          <tr><th>Cliente</th><th>Baixa</th><th class="r">Recebido</th><th>NF</th><th>Status</th></tr>
+          <tr><td>Nutrilog Alimentos</td><td>05/08</td><td class="r mono">R$ 5.500</td><td class="nf-ok">NF 1.042 ⎘</td><td><span class="pill p-ok">Paga</span></td></tr>
+          <tr><td>Sertão Log Transportes</td><td>05/08</td><td class="r mono">R$ 4.200</td><td class="nf-ok">NF 1.043 ⎘</td><td><span class="pill p-ok">Paga</span></td></tr>
+        </table>
+      </div>
+      <div class="note"><b>Contas a Receber = faturamento:</b> a cobrança gerada pelo faturamento recorrente é o recebível. A baixa registra o recebimento com data e valor (permite <b>baixa parcial</b>). Plano de categorias de receita editável. <span class="fase2">Comissões e relatório do vendedor (fato gerador = recebimento) entram na fase seguinte.</span></div>
+    </section>
+
+    <!-- ===== CONTAS A PAGAR ===== -->
+    <section class="view" id="v-pagar">
+      <div class="crumb">Financeiro</div>
+      <div class="title"><h2>Contas a Pagar <span class="pill p-gold" style="vertical-align:middle">Leve</span></h2><button class="btn gold">+ Nova despesa</button></div>
+      <div class="cards">
+        <div class="card"><div class="lb">A pagar no mês</div><div class="v warn">R$ 3.890</div><div class="s">3 títulos abertos</div></div>
+        <div class="card"><div class="lb">Pagas no mês</div><div class="v ok">R$ 4.100</div><div class="s">2 títulos quitados</div></div>
+        <div class="card"><div class="lb">Vencidas</div><div class="v bad">R$ 800</div><div class="s">1 título — 22 dias</div></div>
+      </div>
+      <div class="panel">
+        <h3>Despesas — agosto/2026</h3>
+        <table>
+          <tr><th>Favorecido / Descrição</th><th>Categoria</th><th>Tipo</th><th>Venc.</th><th class="r">Valor</th><th>Status</th><th></th></tr>
+          <tr><td>Aluguel do escritório</td><td>Infraestrutura</td><td><span class="pill p-blue">Recorrente</span></td><td>10/08</td><td class="r mono">R$ 3.200</td><td><span class="pill p-ok">Paga</span></td><td class="r"></td></tr>
+          <tr><td>Honorários contábeis</td><td>Serviços</td><td><span class="pill p-blue">Recorrente</span></td><td>05/08</td><td class="r mono">R$ 900</td><td><span class="pill p-ok">Paga</span></td><td class="r"></td></tr>
+          <tr><td>Ferramentas SaaS (CRM/e-mail)</td><td>Software</td><td><span class="pill p-blue">Recorrente</span></td><td>20/08</td><td class="r mono">R$ 1.150</td><td><span class="pill p-neu">Aberta</span></td><td class="r"><button class="btn ghost">Pagar</button></td></tr>
+          <tr><td>Energia elétrica</td><td>Infraestrutura</td><td><span class="pill p-neu">Avulsa</span></td><td>15/08</td><td class="r mono">R$ 640</td><td><span class="pill p-neu">Aberta</span></td><td class="r"><button class="btn ghost">Pagar</button></td></tr>
+          <tr><td>DAS — Simples Nacional</td><td>Impostos</td><td><span class="pill p-neu">Avulsa</span></td><td>20/08</td><td class="r mono">R$ 2.100</td><td><span class="pill p-neu">Aberta</span></td><td class="r"><button class="btn ghost">Pagar</button></td></tr>
+          <tr><td>Freelancer design</td><td>Serviços</td><td><span class="pill p-neu">Avulsa</span></td><td>30/07</td><td class="r mono">R$ 800</td><td><span class="pill p-bad">Vencida</span></td><td class="r"><button class="btn ghost">Pagar</button></td></tr>
+        </table>
+      </div>
+      <div class="note"><b>Contas a Pagar (leve):</b> despesa <b>avulsa</b> e <b>recorrente</b>, com categoria e baixa de pagamento — para dar visibilidade de caixa. <b>Guardrail anti-ERP:</b> sem ordem de pagamento, aprovação multinível, centro de custo ou rateio. O <b>DAS/impostos</b> entra como lançamento manual (a NF não gera título de imposto automático). <span class="fase2">O título de comissão a pagar e o Fluxo de Caixa projetado entram nas fases seguintes.</span></div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  document.querySelectorAll('.nav a[data-v]').forEach(a=>{
+    a.addEventListener('click',()=>{
+      document.querySelectorAll('.nav a[data-v]').forEach(x=>x.classList.remove('on'));
+      a.classList.add('on');
+      document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+      document.getElementById('v-'+a.dataset.v).classList.add('on');
+      window.scrollTo(0,0);
+    });
+  });
+</script>
+</body>
+</html>
