@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { getCompany, setCompanyStatus, updateCompany } from '../api/companies'
+import { getCompany, runSdrArgos, setCompanyStatus, updateCompany } from '../api/companies'
 import { listContacts, createContact } from '../api/contacts'
 import { listDeals, createDeal } from '../api/deals'
 import { listPipelines } from '../api/pipelines'
@@ -56,6 +56,7 @@ export default function CompanyDetailPage() {
   const [showSubDrawer, setShowSubDrawer] = useState(false)
   const [timelineFilter, setTimelineFilter] = useState('all')
   const [emailsContactId, setEmailsContactId] = useState('')
+  const [sdrArgosQueuedAt, setSdrArgosQueuedAt] = useState(null)
 
   const companyQuery = useQuery({ queryKey: ['companies', 'detail', id], queryFn: () => getCompany(id) })
   const usersQuery = useQuery({ queryKey: ['users', 'for-assign'], queryFn: () => listUsers({ size: 100 }), retry: false })
@@ -87,6 +88,19 @@ export default function CompanyDetailPage() {
     onSuccess: () => {
       setShowEditModal(false)
       queryClient.invalidateQueries({ queryKey: ['companies', 'detail', id] })
+    },
+  })
+  const sdrArgosMutation = useMutation({
+    mutationFn: () => runSdrArgos(id),
+    onSuccess: () => {
+      // Endpoint só enfileira (202) — o dossiê some/aparece na aba "Dossiê Comercial", não
+      // aqui na Visão Geral, então isto é só feedback de "disparei" + reconsulta de bastidor
+      // pra badge/estado eventualmente refletido nesta página não ficar desatualizado.
+      const invalidate = () => queryClient.invalidateQueries({ queryKey: ['companies', 'detail', id] })
+      setSdrArgosQueuedAt(Date.now())
+      invalidate()
+      ;[8000, 16000, 28000].forEach((ms) => setTimeout(invalidate, ms))
+      setTimeout(() => setSdrArgosQueuedAt(null), 32000)
     },
   })
   const noteMutation = useMutation({
@@ -176,6 +190,13 @@ export default function CompanyDetailPage() {
               </div>
             </div>
             <div className="co-actions">
+              <button
+                className="btn-ghost"
+                disabled={sdrArgosMutation.isPending || !!sdrArgosQueuedAt}
+                onClick={() => sdrArgosMutation.mutate()}
+              >
+                {sdrArgosMutation.isPending || sdrArgosQueuedAt ? 'SDR Argos rodando…' : 'SDR Argos ↻'}
+              </button>
               <button className="btn-ghost" onClick={() => setShowEnrollModal(true)}>Inscrever</button>
               <button className="btn-ghost" onClick={() => setShowEditModal(true)}>Editar</button>
             </div>
@@ -205,6 +226,12 @@ export default function CompanyDetailPage() {
             <div className="fact"><dt>Faturamento estimado</dt><dd>{formatCurrency(company.faturamento_estimado)}</dd></div>
             <div className="fact resp"><dt>Responsável</dt><dd>{company.responsavel_id ? (usersById[company.responsavel_id] ?? '—') : '—'}</dd></div>
           </dl>
+          {sdrArgosQueuedAt && (
+            <p className="state-msg" style={{ padding: '0 0 14px' }}>
+              SDR Argos disparado — roda em background (~10 a 30s). Veja o resultado em{' '}
+              <Link to={`/empresas/${id}/dossie`}>Dossiê Comercial</Link>.
+            </p>
+          )}
         </section>
 
         <section className="grid-main">
