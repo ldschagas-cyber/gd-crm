@@ -10,7 +10,7 @@ export default function ProdutosPage() {
   const [drawer, setDrawer] = useState(undefined) // undefined=fechado, null=novo, obj=editar
   const [histProduto, setHistProduto] = useState(null)
 
-  const listQuery = useQuery({ queryKey: ['produtos', 'list'], queryFn: () => listProdutos({ size: 200 }) })
+  const listQuery = useQuery({ queryKey: ['produtos', 'list'], queryFn: () => listProdutos({ size: 100 }) })
   const items = listQuery.data?.items ?? []
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['produtos'] })
