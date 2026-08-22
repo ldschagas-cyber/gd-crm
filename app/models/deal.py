@@ -2,10 +2,11 @@
 import enum
 import uuid
 from datetime import date, datetime
+from decimal import Decimal
 
 from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, Numeric, String, func, select
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
-from sqlalchemy.orm import Mapped, column_property, mapped_column
+from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship
 
 from app.models.base import Base, TenantMixin, TimestampMixin, uuid_pk
 from app.models.timeline import TimelineEvent
@@ -59,6 +60,34 @@ class Deal(Base, TenantMixin, TimestampMixin):
     # existente e pra todo fluxo comum de Vendas — só vira "expansao" quando aberto
     # explicitamente a partir do drawer de um cliente no módulo de Clientes.
     tipo: Mapped[str] = mapped_column(String(20), nullable=False, default=DealTipo.NOVO_NEGOCIO.value)
+
+    itens: Mapped[list["DealItem"]] = relationship(
+        back_populates="deal", cascade="all, delete-orphan", lazy="selectin"
+    )
+
+
+class DealItem(Base, TenantMixin, TimestampMixin):
+    """Linha de produto do negócio (mesmo padrão de PropostaItem, ver
+    app/models/proposal.py) — cobre o fluxo de venda que fecha direto no Kanban, sem
+    passar por uma Proposta formal. `preco` é o preço mensal para produto RECORRENTE
+    (mesma convenção de PropostaItem.preco_proposto/ContratoItem.preco) e o valor
+    total para PONTUAL. `valor_previsto` do negócio passa a ser a soma destes itens
+    quando existem; sem itens, cai no fallback de `valor_previsto` digitado à mão
+    (ver AssinaturaService.registrar_negocio_ganho)."""
+    __tablename__ = "deal_itens"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    deal_id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("deals.id"), nullable=False, index=True
+    )
+    produto_id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("produtos.id"), nullable=False
+    )
+    descricao: Mapped[str] = mapped_column(String(200), nullable=False)
+    preco: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False)
+    quantidade: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+
+    deal: Mapped["Deal"] = relationship(back_populates="itens")
 
 
 # Data/hora da última interação registrada na timeline deste negócio — usada pra

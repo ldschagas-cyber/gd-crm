@@ -2,9 +2,10 @@
 
 Ponte PA-01 (decisão de 2026-08-21): NÃO substitui o gatilho existente Negócio ganho ->
 Assinatura; RECONCILIA. Ao ativar o contrato, ajusta a assinatura do cliente do valor
-ESTIMADO (deal.valor_previsto/12, gravado por AssinaturaService.registrar_negocio_ganho)
-para o valor REAL do contrato, via AssinaturaService (sempre com evento — nunca UPDATE
-direto, para o razão de MRR do RevenueService continuar batendo). Ver
+ESTIMADO (AssinaturaService.mrr_do_negocio — o mesmo cálculo que
+AssinaturaService.registrar_negocio_ganho usou pra lançar a assinatura) para o valor
+REAL do contrato, via AssinaturaService (sempre com evento — nunca UPDATE direto, para
+o razão de MRR do RevenueService continuar batendo). Ver
 [[financeiro-ponte-contrato-assinatura-reconciliacao]].
 """
 from datetime import date
@@ -22,10 +23,6 @@ from app.repositories.contract import ContratoRepository
 from app.repositories.deal import DealRepository
 from app.repositories.product import ProdutoRepository
 from app.schemas.contract import ContratoAtivar
-
-# Mesma convenção de AssinaturaService.registrar_negocio_ganho: o valor_previsto do
-# negócio é o total do contrato, normalizado para MRR dividindo por 12.
-MESES_CONTRATO_PADRAO = 12
 
 
 class ContratoService:
@@ -137,11 +134,12 @@ class ContratoService:
 
     def _mrr_estimado_do_negocio(self, contrato: Contrato) -> Decimal:
         """Contribuição estimada que o negócio-ganho lançou na assinatura
-        (deal.valor_previsto/12) — o que a reconciliação precisa subtrair."""
+        (AssinaturaService.mrr_do_negocio) — o que a reconciliação precisa subtrair."""
         deal_id = self._deal_id_da_proposta(contrato)
         if deal_id is None:
             return dec(0)
         deal = self.deals.get(deal_id)
-        if deal is None or deal.valor_previsto is None:
+        if deal is None:
             return dec(0)
-        return money(dec(deal.valor_previsto) / MESES_CONTRATO_PADRAO)
+        from app.services.subscription import AssinaturaService
+        return money(dec(AssinaturaService(self.db).mrr_do_negocio(deal)))

@@ -13,6 +13,8 @@ from sqlalchemy.orm import Session
 
 from app.core.context import get_current_user_id
 from app.core.exceptions import ConflictError, NotFoundError
+from app.core.money import dec, money
+from app.models.product import ProdutoTipo
 from app.models.subscription import (
     Assinatura, AssinaturaEvento, AssinaturaStatus, CicloCobranca, TipoEventoAssinatura,
 )
@@ -22,14 +24,10 @@ from app.schemas.subscription import (
     AssinaturaCancelar, AssinaturaCreate, AssinaturaReativar, AssinaturaRenovar, AssinaturaValorUpdate,
 )
 
-
-# Deal.valor_previsto é o valor TOTAL da oportunidade (forecast/pipeline somam como "valor
-# total" e ponderam por probabilidade — ver app/services/forecast.py), não um valor mensal.
-# Para virar MRR ao ganhar o negócio, tratamos esse total como valor ANUAL de contrato e
-# normalizamos dividindo por 12 — a mesma convenção que CicloCobranca.ANUAL já documenta
-# ("valor_mensal já vem normalizado = valor_anual / 12"). Ponto único de ajuste caso o
-# processo comercial passe a lançar valor_previsto com outra recorrência.
-MESES_CONTRATO_PADRAO = 12
+# Ciclo de renovação padrão quando um negócio ganho cria a assinatura — só a cadência de
+# renovação do Customer Success (ver AssinaturaService.create), não tem mais relação com
+# o cálculo de MRR (ver mrr_do_negocio abaixo).
+CICLO_RENOVACAO_PADRAO_MESES = 12
 
 
 def _add_months(d: date, months: int) -> date:
@@ -117,18 +115,18 @@ class AssinaturaService:
         idempotência é garantida por DealService._on_deal_closed, que só dispara na
         transição para ganho, não a cada re-save de um negócio já fechado).
 
-        `valor_previsto` do negócio é o valor total do contrato, convertido em MRR pela
-        regra de MESES_CONTRATO_PADRAO (ver constante acima). Sem assinatura ativa -> cria
-        a primeira; já havendo uma (segundo negócio ganho do mesmo cliente) -> soma o MRR
-        como evento de expansão, mantendo a regra de "uma assinatura ativa por empresa"
-        (§0.5 do plano) em vez de abrir uma segunda linha bloqueada. Ver
+        MRR = soma das linhas de produto RECORRENTE do negócio (`deal.itens`, mesma
+        convenção de preço mensal que ContratoService.criar_de_proposta usa pros itens
+        de Contrato — sem ambiguidade de periodicidade). Negócio sem nenhum item (venda
+        fechada direto no Kanban, sem passar por Proposta/produto) cai no fallback:
+        `valor_previsto` é usado como MRR diretamente, sem dividir por 12 — deixou de
+        ser tratado como "valor anual do contrato" (ver histórico de discrepância de MRR
+        na tela de Clientes/Receita Recorrente). Sem assinatura ativa -> cria a primeira;
+        já havendo uma (segundo negócio ganho do mesmo cliente) -> soma o MRR como evento
+        de expansão, mantendo a regra de "uma assinatura ativa por empresa" (§0.5 do
+        plano) em vez de abrir uma segunda linha bloqueada. Ver
         docs/PLANO_RECEITA_RECORRENTE.md."""
-        if deal.valor_previsto is None:
-            return None
-        valor_contrato = float(deal.valor_previsto)
-        if valor_contrato <= 0:
-            return None
-        mrr = round(valor_contrato / MESES_CONTRATO_PADRAO, 2)
+        mrr = self.mrr_do_negocio(deal)
         if mrr <= 0:
             return None
 
@@ -137,7 +135,7 @@ class AssinaturaService:
             return self.create(AssinaturaCreate(
                 company_id=deal.company_id, deal_id=deal.id, nome_plano=deal.nome[:120],
                 valor_mensal=mrr, ciclo_cobranca=CicloCobranca.ANUAL.value,
-                ciclo_renovacao_meses=MESES_CONTRATO_PADRAO, responsavel_id=deal.responsavel_id,
+                ciclo_renovacao_meses=CICLO_RENOVACAO_PADRAO_MESES, responsavel_id=deal.responsavel_id,
                 data_inicio=deal.data_fechamento.date() if deal.data_fechamento else date.today(),
             ))
         # Cliente já tem assinatura ativa -> negócio ganho é expansão do MRR existente.
@@ -235,6 +233,25 @@ class AssinaturaService:
         return assinatura
 
     # ---- interno ------------------------------------------------------------
+    def mrr_do_negocio(self, deal) -> float:
+        """MRR que um negócio ganho contribui pra Receita Recorrente — usado tanto por
+        `registrar_negocio_ganho` (aqui) quanto por
+        ContratoService._mrr_estimado_do_negocio (o que a reconciliação PA-01 precisa
+        subtrair ao ativar um Contrato pro mesmo negócio). Ver docstring de
+        registrar_negocio_ganho para a regra completa."""
+        itens_recorrentes = [it for it in (deal.itens or []) if self._is_recorrente(it.produto_id)]
+        if itens_recorrentes:
+            total = sum((dec(it.preco) * it.quantidade for it in itens_recorrentes), start=dec(0))
+            return float(money(total))
+        if deal.valor_previsto is None:
+            return 0.0
+        return round(float(deal.valor_previsto), 2)
+
+    def _is_recorrente(self, produto_id) -> bool:
+        from app.models.product import Produto
+        produto = self.db.get(Produto, produto_id)
+        return bool(produto and produto.tipo == ProdutoTipo.RECORRENTE.value)
+
     def _registrar_evento(self, assinatura: Assinatura, tipo: str, *, valor_anterior: float | None,
                           valor_novo: float | None, delta: float, data_evento: date,
                           observacao: str | None) -> AssinaturaEvento:
