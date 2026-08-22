@@ -58,6 +58,7 @@ def test_promote_reaproveita_empresa_existente(monkeypatch):
 
 def test_promote_cria_quando_nao_ha_duplicata(monkeypatch):
     adicionadas = []
+    agendadas = []
 
     class Repo:
         def __init__(self, _db):
@@ -70,6 +71,10 @@ def test_promote_cria_quando_nao_ha_duplicata(monkeypatch):
 
     monkeypatch.setattr(lp_mod, "CompanyRepository", Repo)
     monkeypatch.setattr(lp_mod, "find_duplicate_company", lambda *a, **k: None)
+    # schedule_sdr_argos é importado dentro do método (import local) — o alvo do
+    # monkeypatch é o módulo real, não lp_mod.
+    import app.services.sdr_argos as sdr_argos_mod
+    monkeypatch.setattr(sdr_argos_mod, "schedule_sdr_argos", lambda db, company_id: agendadas.append(company_id))
 
     lead = _lead()
     _service(lead).promote(uuid.uuid4(), uuid.uuid4())
@@ -78,3 +83,25 @@ def test_promote_cria_quando_nao_ha_duplicata(monkeypatch):
     assert len(adicionadas) == 1
     assert lead.promoted_company_id == adicionadas[0].id
     assert lead.status == LeadStatus.PROMOVIDO.value
+    # Handoff nível 1 -> nível 2: o SDR Argos é agendado pra rodar em background só quando
+    # uma empresa NOVA nasce da promoção (nunca inteligencia_comercial copiada do lead).
+    assert agendadas == [adicionadas[0].id]
+    assert adicionadas[0].inteligencia_comercial is None
+
+
+def test_promote_reaproveitando_empresa_nao_reagenda_sdr_argos(monkeypatch):
+    """Reaproveitar uma empresa já existente não deve reprocessar o dossiê dela —
+    schedule_sdr_argos só roda no ramo que cria empresa nova."""
+    existente = SimpleNamespace(id=uuid.uuid4())
+    agendadas = []
+
+    monkeypatch.setattr(lp_mod, "CompanyRepository", lambda _db: SimpleNamespace(add=lambda c: c))
+    monkeypatch.setattr(lp_mod, "find_duplicate_company", lambda *a, **k: existente)
+    import app.services.sdr_argos as sdr_argos_mod
+    monkeypatch.setattr(sdr_argos_mod, "schedule_sdr_argos", lambda db, company_id: agendadas.append(company_id))
+
+    lead = _lead()
+    _service(lead).promote(uuid.uuid4(), uuid.uuid4())
+
+    assert lead.promoted_company_id == existente.id
+    assert agendadas == []

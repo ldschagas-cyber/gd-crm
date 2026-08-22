@@ -50,12 +50,3 @@
 .rule-row input:focus { border-color: var(--azul); outline: none; background: var(--card-bg); }
 .rule-section-title { font-size: 12.5px; font-weight: 700; color: var(--ink); margin-top: 6px; }
 .rule-note { font-size: 11.5px; color: var(--ink-faint); background: color-mix(in srgb, var(--azul) 6%, var(--card-bg)); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
-
-/* ---------------- Inteligência Comercial: indicador "gravada" na linha da tabela ----------------
-   Estilos do conteúdo do drawer (intel-section, source-tag, fact-list, bench-box, arg-box, banner de
-   gravado) ficam em styles/commercialIntel.css — compartilhado com o card do Dossiê da Empresa. */
-.icon-btn.intel-btn { position: relative; }
-.icon-btn.intel-btn .saved-dot {
-  position: absolute; top: 2px; right: 2px; width: 7px; height: 7px; border-radius: 50%;
-  background: var(--success); border: 1.5px solid var(--card-bg);
-}

@@ -1,7 +1,7 @@
-/* Inteligência Comercial — usado no drawer da Pesquisa de Leads (geração) e no
-   card "Inteligência Comercial" do Dossiê Comercial da Empresa (só leitura,
-   copiado da Pesquisa de Leads na promoção). Mesma linguagem visual nos dois
-   lugares de propósito: é o mesmo dado, só muda o contexto onde é mostrado. */
+/* Inteligência Comercial — reaproveitado pelo card "SDR Argos" do Dossiê Comercial da
+   Empresa (ver docs/PLANO_SDR_AUTONOMO.md): mesma linguagem visual de perfil/benchmark/
+   argumento, agora gerada direto na empresa pelo SDR Argos (nível 2), não mais copiada
+   da Pesquisa de Leads (nível 1, que gera só enriquecimento + Fit ICP). */
 .intel-section { display: flex; flex-direction: column; gap: 9px; margin-bottom: 16px; }
 .intel-section:last-child { margin-bottom: 0; }
 .intel-section-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
@@ -33,8 +33,3 @@
   color: var(--success); background: color-mix(in srgb, var(--success) 10%, var(--card-bg));
   border: 1px solid color-mix(in srgb, var(--success) 30%, transparent); border-radius: 8px; padding: 9px 12px; }
 .intel-saved-banner .t { color: var(--ink-faint); font-weight: 500; margin-left: auto; font-size: 11px; white-space: nowrap; }
-
-/* nota de proveniência — card do Dossiê (Empresa) */
-.intel-copied-meta { display: flex; align-items: flex-start; gap: 7px; font-size: 11px; color: var(--ink-faint);
-  margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); line-height: 1.5; }
-.intel-copied-meta b { color: var(--ink-dim); font-weight: 650; }

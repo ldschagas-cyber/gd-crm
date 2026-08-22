@@ -1,0 +1,636 @@
+<title>SDR Autônomo — Argos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --font-display: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Cascadia Code", "SFMono-Regular", "Consolas", ui-monospace, monospace;
+
+    --indigo: #2D3561; --indigo-600: #3B4478; --amber: #C9A84C; --azul: #0077A8; --marfim: #F5F1EB;
+    --paper: var(--marfim); --panel: var(--indigo); --panel-fg: #F1EEE6; --panel-fg-dim: #B7BBD6;
+    --panel-border: rgba(241, 238, 230, 0.12); --panel-active-bg: rgba(201, 168, 76, 0.14);
+    --ink: #22243A; --ink-dim: #5B5E78; --ink-faint: #8B8EA6; --border: rgba(45, 53, 97, 0.14);
+    --card-bg: #FFFFFF; --link: var(--azul);
+    --shadow: 0 1px 2px rgba(34, 36, 58, 0.05), 0 10px 24px -14px rgba(34, 36, 58, 0.22);
+    --shadow-lg: 0 1px 2px rgba(34,36,58,.06), 0 24px 60px -24px rgba(34,36,58,.4);
+    --good: #0ca30c; --warning: #fab219; --serious: #ec835a; --critical: #d03b3b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+      --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+      --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+      --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 16px 32px -16px rgba(0,0,0,.55);
+      --shadow-lg: 0 1px 2px rgba(0,0,0,.4), 0 30px 70px -28px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14172A; --panel: #10121F; --panel-fg: #F1EEE6; --panel-fg-dim: #9AA0C0;
+    --panel-border: rgba(241, 238, 230, 0.10); --panel-active-bg: rgba(217, 184, 94, 0.14);
+    --ink: #EDEAE2; --ink-dim: #A6A9C2; --ink-faint: #767A98; --border: rgba(241, 238, 230, 0.12);
+    --card-bg: #1B1E33; --amber: #D9B85E; --azul: #4CB2DE; --link: #4CB2DE;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 16px 32px -16px rgba(0,0,0,.55);
+    --shadow-lg: 0 1px 2px rgba(0,0,0,.4), 0 30px 70px -28px rgba(0,0,0,.7);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; font-family: var(--font-display); color: var(--ink); background: var(--paper);
+    -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; }
+  button, input, select, textarea { font-family: inherit; }
+  a { color: inherit; }
+  ::selection { background: rgba(201,168,76,.3); }
+  :focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; border-radius: 4px; }
+
+  .shell { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar { background: var(--panel); color: var(--panel-fg); display: flex; flex-direction: column;
+    position: sticky; top: 0; height: 100vh; }
+  .sb-brand { display: flex; align-items: center; gap: 10px; padding: 20px 18px 16px; }
+  .monogram { width: 34px; height: 34px; border-radius: 9px; flex: none; background: var(--amber);
+    color: var(--indigo); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+  .sb-brand strong { display: block; font-size: 14.5px; font-weight: 650; line-height: 1.2; }
+  .sb-brand span { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em;
+    text-transform: uppercase; color: var(--panel-fg-dim); margin-top: 2px; }
+  .sb-nav { flex: 1; overflow-y: auto; padding: 10px 12px; }
+  .sb-group + .sb-group { margin-top: 18px; }
+  .sb-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--panel-fg-dim); padding: 0 10px; margin-bottom: 6px; }
+  .sb-item { display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: 8px;
+    margin-bottom: 2px; font-size: 13.6px; font-weight: 500; color: var(--panel-fg-dim); text-decoration: none;
+    cursor: pointer; border: 1px solid transparent; position: relative; }
+  .sb-item svg { width: 17px; height: 17px; flex: none; opacity: .9; }
+  .sb-item:hover { background: rgba(241,238,230,.06); color: var(--panel-fg); }
+  .sb-item.active { background: var(--panel-active-bg); color: var(--panel-fg); font-weight: 650; }
+  .sb-item.active::before { content: ""; position: absolute; left: -12px; top: 6px; bottom: 6px; width: 3px;
+    background: var(--amber); border-radius: 2px; }
+  .sb-item .chip { margin-left: auto; font-family: var(--font-mono); font-size: 10px;
+    background: rgba(241,238,230,.12); color: var(--panel-fg-dim); padding: 1px 6px; border-radius: 100px; }
+  .sb-item.active .chip { background: rgba(201,168,76,.22); color: var(--amber); }
+  .sb-user { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-top: 1px solid var(--panel-border); }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; flex: none; background: rgba(201,168,76,.18);
+    color: var(--amber); display: flex; align-items: center; justify-content: center; font-size: 12px;
+    font-weight: 700; border: 1px solid rgba(201,168,76,.3); }
+  .sb-user-meta { min-width: 0; flex: 1; }
+  .sb-user-meta strong { display: block; font-size: 13px; font-weight: 600; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; }
+  .sb-user-meta span { display: block; font-size: 11px; color: var(--panel-fg-dim); }
+
+  /* Main */
+  .main-col { display: flex; flex-direction: column; min-width: 0; }
+  .content { padding: 22px 28px 60px; display: flex; flex-direction: column; gap: 18px; max-width: 1180px; }
+  .proto-banner { display: flex; align-items: center; gap: 8px; background: rgba(201,168,76,.14);
+    border: 1px solid rgba(201,168,76,.35); color: var(--ink); font-size: 12.5px; font-weight: 600;
+    padding: 9px 14px; border-radius: 9px; }
+  .proto-banner svg { width: 15px; height: 15px; flex: none; color: var(--amber); }
+  .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .page-head h1 { margin: 0; font-size: 21px; font-weight: 650; letter-spacing: -.01em; }
+  .page-head p { margin: 4px 0 0; font-size: 12.8px; color: var(--ink-dim); max-width: 62ch; }
+
+  .btn { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600;
+    padding: 9px 15px; border-radius: 9px; border: 1px solid var(--border); background: var(--card-bg);
+    color: var(--ink); cursor: pointer; box-shadow: var(--shadow); }
+  .btn svg { width: 15px; height: 15px; }
+  .btn:hover { border-color: color-mix(in srgb, var(--azul) 40%, var(--border)); }
+  .btn-primary { background: var(--indigo); color: #F1EEE6; border-color: transparent; }
+  :root[data-theme="dark"] .btn-primary, :root:not([data-theme="light"]) .btn-primary { }
+  .btn-primary:hover { background: var(--indigo-600); border-color: transparent; }
+  .btn-amber { background: var(--amber); color: var(--indigo); border-color: transparent; font-weight: 700; }
+  .btn-amber:hover { filter: brightness(1.05); }
+  .btn-ghost { background: transparent; box-shadow: none; }
+  .btn-danger { color: var(--critical); }
+  .btn-good { color: #0a7d0a; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* Stat strip */
+  .stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .stat { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 15px 16px;
+    box-shadow: var(--shadow); }
+  .stat .k { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--ink-faint); }
+  .stat .v { font-size: 26px; font-weight: 700; margin-top: 6px; letter-spacing: -.02em; }
+  .stat .sub { font-size: 11.5px; color: var(--ink-dim); margin-top: 2px; }
+  .stat .v.amber { color: color-mix(in srgb, var(--amber) 70%, var(--ink)); }
+  .stat .v.azul { color: var(--azul); }
+
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
+    box-shadow: var(--shadow); overflow: hidden; }
+  .card-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px;
+    border-bottom: 1px solid var(--border); }
+  .card-head h2 { margin: 0; font-size: 14px; font-weight: 650; }
+  .card-head .hint { font-size: 11.5px; color: var(--ink-faint); }
+
+  .table-scroll { overflow-x: auto; }
+  table.data { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 760px; }
+  table.data th { text-align: left; font-size: 11px; letter-spacing: .04em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 600; padding: 10px 18px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  table.data td { padding: 12px 18px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  table.data tbody tr:last-child td { border-bottom: none; }
+  table.data tbody tr { cursor: pointer; }
+  table.data tbody tr:hover { background: color-mix(in srgb, var(--paper) 55%, transparent); }
+  .row-title { font-weight: 600; color: var(--ink); }
+  .row-sub { font-size: 11.5px; color: var(--ink-faint); margin-top: 1px; }
+
+  .status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 650;
+    padding: 3px 10px; border-radius: 100px; white-space: nowrap; }
+  .status-pill .d { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+  .status-pill[data-s="executando"] { background: rgba(0,119,168,.12); color: var(--azul); }
+  .status-pill[data-s="executando"] .d { background: var(--azul); animation: pulse 1.1s ease-in-out infinite; }
+  .status-pill[data-s="proposto"] { background: rgba(201,168,76,.18); color: color-mix(in srgb,var(--amber) 60%,var(--ink-dim)); }
+  .status-pill[data-s="proposto"] .d { background: var(--amber); }
+  .status-pill[data-s="aprovado"] { background: rgba(12,163,12,.13); color: #0a7d0a; }
+  .status-pill[data-s="aprovado"] .d { background: var(--good); }
+  .status-pill[data-s="descartado"] { background: rgba(139,142,166,.16); color: var(--ink-faint); }
+  .status-pill[data-s="descartado"] .d { background: var(--ink-faint); }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+  .fit-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700;
+    padding: 3px 9px; border-radius: 7px; }
+  .fit-badge[data-fit="alto"] { background: rgba(12,163,12,.13); color: #0a7d0a; }
+  .fit-badge[data-fit="medio"] { background: rgba(250,178,25,.18); color: color-mix(in srgb,var(--warning) 55%,var(--ink-dim)); }
+  .fit-badge[data-fit="baixo"] { background: rgba(208,59,59,.13); color: var(--critical); }
+
+  .conf { display: inline-flex; gap: 2px; align-items: center; }
+  .conf .bar { width: 5px; height: 12px; border-radius: 1px; background: color-mix(in srgb, var(--ink-faint) 30%, transparent); }
+  .conf .bar.on { background: var(--azul); }
+
+  /* Drawer */
+  .scrim { position: fixed; inset: 0; background: rgba(20,23,42,.42); backdrop-filter: blur(2px);
+    opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 40; }
+  .scrim.open { opacity: 1; pointer-events: auto; }
+  .drawer { position: fixed; top: 0; right: 0; height: 100vh; width: min(560px, 94vw); background: var(--paper);
+    border-left: 1px solid var(--border); box-shadow: var(--shadow-lg); transform: translateX(100%);
+    transition: transform .26s cubic-bezier(.4,0,.2,1); z-index: 41; display: flex; flex-direction: column; }
+  .drawer.open { transform: translateX(0); }
+  .dr-head { padding: 18px 22px 14px; border-bottom: 1px solid var(--border); display: flex;
+    align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .dr-head h3 { margin: 0; font-size: 17px; font-weight: 680; letter-spacing: -.01em; }
+  .dr-head .sub { font-size: 12px; color: var(--ink-dim); margin-top: 3px; font-family: var(--font-mono); }
+  .dr-close { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg);
+    color: var(--ink-dim); cursor: pointer; flex: none; font-size: 16px; line-height: 1; }
+  .dr-body { flex: 1; overflow-y: auto; padding: 18px 22px 24px; display: flex; flex-direction: column; gap: 18px; }
+  .dr-foot { padding: 14px 22px; border-top: 1px solid var(--border); display: flex; gap: 10px;
+    background: var(--card-bg); }
+  .dr-foot .btn { flex: 1; justify-content: center; }
+
+  .sec-label { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--ink-faint); margin-bottom: 9px; display: flex; align-items: center; gap: 7px; }
+  .sec-label .ai { background: rgba(0,119,168,.12); color: var(--azul); font-weight: 700; padding: 1px 6px;
+    border-radius: 5px; letter-spacing: .02em; }
+
+  .kv { display: grid; grid-template-columns: 130px 1fr; gap: 7px 12px; font-size: 13px; }
+  .kv dt { color: var(--ink-faint); }
+  .kv dd { margin: 0; color: var(--ink); font-weight: 500; }
+  .kv dd.null { color: var(--ink-faint); font-style: italic; font-weight: 400; }
+
+  .argument { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px;
+    font-size: 13.4px; line-height: 1.55; color: var(--ink); }
+  .argument .bench { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 11.5px;
+    font-weight: 650; color: var(--azul); background: rgba(0,119,168,.1); padding: 4px 9px; border-radius: 7px; }
+
+  .cadence-step { display: flex; gap: 11px; align-items: flex-start; padding: 11px 0; border-bottom: 1px solid var(--border); }
+  .cadence-step:last-child { border-bottom: none; }
+  .cadence-step .n { width: 24px; height: 24px; border-radius: 7px; background: rgba(45,53,97,.08); color: var(--indigo);
+    display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex: none;
+    font-family: var(--font-mono); }
+  :root[data-theme="dark"] .cadence-step .n, :root:not([data-theme="light"]) .cadence-step .n { background: rgba(241,238,230,.08); color: var(--panel-fg); }
+  .cadence-step .body { flex: 1; min-width: 0; }
+  .cadence-step .body strong { font-size: 12.8px; font-weight: 650; }
+  .cadence-step .body .when { font-size: 11px; color: var(--ink-faint); font-family: var(--font-mono); }
+  .cadence-step .body p { margin: 5px 0 0; font-size: 12.3px; color: var(--ink-dim); line-height: 1.5; }
+
+  /* Steps trail (live) */
+  .trail { display: flex; flex-direction: column; gap: 0; }
+  .trail-step { display: flex; gap: 12px; position: relative; padding-bottom: 15px; }
+  .trail-step:not(:last-child)::before { content: ""; position: absolute; left: 10px; top: 22px; bottom: 0;
+    width: 2px; background: var(--border); }
+  .trail-step .dot { width: 22px; height: 22px; border-radius: 50%; flex: none; display: flex; align-items: center;
+    justify-content: center; background: var(--card-bg); border: 2px solid var(--border); z-index: 1; }
+  .trail-step .dot svg { width: 12px; height: 12px; }
+  .trail-step.done .dot { background: var(--good); border-color: var(--good); color: #fff; }
+  .trail-step.active .dot { border-color: var(--azul); }
+  .trail-step.active .dot::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--azul);
+    animation: pulse 1s ease-in-out infinite; }
+  .trail-step.pending { opacity: .45; }
+  .trail-step .txt { flex: 1; min-width: 0; padding-top: 1px; }
+  .trail-step .txt strong { font-size: 12.8px; font-weight: 600; display: block; }
+  .trail-step .txt span { font-size: 11.5px; color: var(--ink-faint); }
+  .trail-step .txt .tool { font-family: var(--font-mono); font-size: 10.5px; background: rgba(0,119,168,.1);
+    color: var(--azul); padding: 1px 6px; border-radius: 5px; margin-left: 6px; }
+
+  .empty { text-align: center; padding: 40px 20px; color: var(--ink-faint); font-size: 13px; }
+
+  /* Run modal */
+  .run-live { background: var(--card-bg); border: 1px solid rgba(0,119,168,.3); border-radius: 12px;
+    box-shadow: var(--shadow); overflow: hidden; }
+  .run-live .rl-head { padding: 13px 18px; background: rgba(0,119,168,.07); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px; }
+  .run-live .rl-head .spin { width: 15px; height: 15px; border: 2px solid rgba(0,119,168,.25); border-top-color: var(--azul);
+    border-radius: 50%; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .run-live .rl-head strong { font-size: 13.5px; font-weight: 650; }
+  .run-live .rl-head .cost { margin-left: auto; font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); }
+  .run-live .rl-body { padding: 16px 18px; }
+
+  .foot-note { font-size: 11.5px; color: var(--ink-faint); line-height: 1.5; }
+  .foot-note code { font-family: var(--font-mono); font-size: 11px; background: color-mix(in srgb,var(--paper) 60%,transparent);
+    padding: 1px 5px; border-radius: 4px; }
+
+  @media (max-width: 860px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .stat-strip { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="monogram">A</div>
+      <div><strong>Argos</strong><span>GD Conecta</span></div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-group">
+        <div class="sb-label">Operação</div>
+        <a class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+        <a class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18M3 12h18M3 17h18"/></svg>Pipeline</a>
+        <a class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Empresas</a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Inteligência Comercial</div>
+        <a class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>Pesquisa de Leads</a>
+        <a class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m7 14 3-4 3 3 4-6"/></svg>Central de Leads</a>
+        <a class="sb-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>SDR Autônomo<span class="chip" id="chip-fila">3</span></a>
+        <a class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H5.2L4 17.2z"/></svg>Inteligência Comercial</a>
+      </div>
+      <div class="sb-group">
+        <div class="sb-label">Automação</div>
+        <a class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>Cadências</a>
+        <a class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Workflows</a>
+      </div>
+    </nav>
+    <div class="sb-user">
+      <div class="avatar">DC</div>
+      <div class="sb-user-meta"><strong>Daniel Chagas</strong><span>Gestor comercial</span></div>
+    </div>
+  </aside>
+
+  <div class="main-col">
+    <div class="content">
+      <div class="proto-banner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+        Protótipo funcional — dados fictícios. Nenhum e-mail é enviado; as ações simulam o fluxo proposto no plano <strong style="margin-left:2px">PLANO_SDR_AUTONOMO.md</strong>.
+      </div>
+
+      <div class="page-head">
+        <div>
+          <h1>SDR Autônomo</h1>
+          <p>O agente pesquisa a empresa, cruza com o Benchmark Logístico, monta o argumento e rascunha a cadência — e devolve tudo aqui como <strong>proposta para você aprovar</strong>. Nada sai sem o seu aval.</p>
+        </div>
+        <button class="btn btn-amber" id="btn-run">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9V3z"/></svg>
+          Rodar SDR num lead
+        </button>
+      </div>
+
+      <div class="stat-strip">
+        <div class="stat"><div class="k">Na fila</div><div class="v amber" id="s-fila">3</div><div class="sub">aguardando sua decisão</div></div>
+        <div class="stat"><div class="k">Aprovadas (7d)</div><div class="v" id="s-aprov">18</div><div class="sub">taxa de aprovação 78%</div></div>
+        <div class="stat"><div class="k">Taxa de correção</div><div class="v azul">22%</div><div class="sub">aprovadas com edição</div></div>
+        <div class="stat"><div class="k">Custo médio / lead</div><div class="v">R$ 2,10</div><div class="sub">tokens + busca web</div></div>
+      </div>
+
+      <div id="run-slot"></div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Fila de propostas</h2>
+          <span class="hint">Clique numa linha para revisar a proposta completa</span>
+        </div>
+        <div class="table-scroll">
+          <table class="data">
+            <thead>
+              <tr><th>Empresa</th><th>Setor · UF</th><th>Fit ICP</th><th>Recomendação</th><th>Confiança</th><th>Status</th></tr>
+            </thead>
+            <tbody id="fila-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <p class="foot-note">
+        Reaproveitamento: a pesquisa usa <code>LeadEnrichmentService</code>, o argumento usa <code>CommercialIntelligenceService</code>,
+        a cadência usa <code>SequenceService</code> e a gravação usa <code>TimelineService</code> — os mesmos serviços já em produção.
+        O agente apenas <em>orquestra</em>. Ver arquitetura (Managed Agents × Tool Runner) na §3 do plano.
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true"></aside>
+
+<script>
+// ---- Dados fictícios (realistas p/ GD Conecta — governança e cotação de frete) ----
+const PROPOSTAS = [
+  {
+    id: "SDR-2041", empresa: "Nutrifrios Alimentos Ltda", setor: "Alimentos", uf: "PR",
+    cidade: "Curitiba", porte: "201–500 func.", faturamento: "R$ 100–500 milhões",
+    fit: "alto", score: 82, rec: "qualificar", conf: 4, status: "proposto",
+    decisor: "Marcos Antônio Reali", cargo: "Gerente de Logística", email: "logistica@nutrifrios.com.br",
+    erp: "TOTVS Protheus", tms: "não identificado", site: "nutrifrios.com.br",
+    dor: "Opera frota terceirizada com carga refrigerada para todo o Sul e Sudeste; sem TMS dedicado, o rateio de frete por pedido é manual — indício clássico de custo de frete acima do benchmark do setor.",
+    bench: "Alimentos — R$ 0,42/kg (Benchmark Logístico)",
+    argumento: "A Nutrifrios movimenta carga refrigerada com frota 100% terceirizada e não aparenta ter TMS, o que costuma significar frete rateado na planilha e sem cotação competitiva por rota. Empresas de alimentos do mesmo porte no Benchmark Logístico da GD Conecta operam a R$ 0,42/kg; uma governança de cotação que ponha 3+ transportadoras competindo por carga tende a recuperar de 6% a 12% do custo de frete — em uma operação do porte da Nutrifrios, isso é caixa relevante por mês. A abordagem certa é oferecer um diagnóstico gratuito de 2 rotas atuais contra o benchmark.",
+    cadencia: [
+      { n: "E1", tit: "E-mail — Diagnóstico de frete refrigerado", when: "Dia 0", txt: "Assunto: Nutrifrios — 2 rotas contra o benchmark de alimentos. Abertura pela dor de rateio manual + oferta do diagnóstico gratuito." },
+      { n: "L1", tit: "Ligação — Confirmar recebimento", when: "Dia 2", txt: "Tarefa de ligação para Marcos (Logística), roteiro focado em ERP TOTVS sem TMS." },
+      { n: "E2", tit: "E-mail — Caso de sucesso setor alimentos", when: "Dia 5", txt: "Follow-up com case anonimizado de recuperação de 9% em frete refrigerado." }
+    ],
+    seq: "Cadência Outbound — Indústria (3 passos)",
+    trail: [
+      { t: "Pesquisou a empresa na web", tool: "pesquisar_empresa", ok: true },
+      { t: "Identificou ERP (TOTVS) e ausência de TMS", tool: "pesquisar_empresa", ok: true },
+      { t: "Cruzou setor com Benchmark Logístico", tool: "consultar_benchmark", ok: true },
+      { t: "Calculou Fit ICP: 82/100 (alto)", tool: "calcular_fit", ok: true },
+      { t: "Montou argumento comercial", tool: "gerar_inteligencia", ok: true },
+      { t: "Rascunhou cadência de 3 passos", tool: "propor_cadencia", ok: true },
+      { t: "Registrou a proposta para aprovação", tool: "registrar_proposta", ok: true }
+    ]
+  },
+  {
+    id: "SDR-2039", empresa: "Politec Plásticos S.A.", setor: "Plástico", uf: "SP",
+    cidade: "Sumaré", porte: "501–1.000 func.", faturamento: "R$ 500 mi – R$ 1 bi",
+    fit: "alto", score: 88, rec: "qualificar", conf: 5, status: "proposto",
+    decisor: "Juliana Prado", cargo: "Diretora de Supply Chain", email: "juliana.prado@politec.ind.br",
+    erp: "SAP S/4HANA", tms: "SAP TM (parcial)", site: "politec.ind.br",
+    dor: "Alto volume de carga paletizada para distribuidores em todo o país; já tem SAP TM parcial, então a dor é menos de visibilidade e mais de poder de barganha na cotação spot.",
+    bench: "Plástico — R$ 0,38/kg (Benchmark Logístico)",
+    argumento: "A Politec tem estrutura de supply chain madura (SAP TM parcial), então o discurso de 'visibilidade' não abre porta — o gancho é poder de barganha na cotação spot, onde mesmo empresas com TMS deixam dinheiro na mesa por não colocar transportadoras competindo carga a carga. Contra o benchmark de plástico (R$ 0,38/kg), a governança de cotação da GD Conecta se posiciona como camada de leilão reverso sobre o TMS que já existe. Decisor de nível diretoria pede abordagem consultiva, não oferta de desconto.",
+    cadencia: [
+      { n: "E1", tit: "E-mail executivo — Leilão reverso sobre o SAP TM", when: "Dia 0", txt: "Tom consultivo, dirigido à diretoria; posiciona a GD como camada de cotação competitiva, não substituição do TMS." },
+      { n: "L1", tit: "Ligação — Agendar conversa de 20 min", when: "Dia 3", txt: "Roteiro de qualificação: volume mensal, % de carga spot vs. contrato." },
+      { n: "E2", tit: "E-mail — Benchmark do setor plástico", when: "Dia 6", txt: "Envia comparativo de R$/kg do setor como isca de reunião." }
+    ],
+    seq: "Cadência Outbound — Indústria (3 passos)",
+    trail: [
+      { t: "Pesquisou a empresa na web", tool: "pesquisar_empresa", ok: true },
+      { t: "Identificou SAP TM parcial", tool: "pesquisar_empresa", ok: true },
+      { t: "Cruzou setor com Benchmark Logístico", tool: "consultar_benchmark", ok: true },
+      { t: "Calculou Fit ICP: 88/100 (alto)", tool: "calcular_fit", ok: true },
+      { t: "Ajustou argumento p/ decisor de diretoria", tool: "gerar_inteligencia", ok: true },
+      { t: "Rascunhou cadência consultiva", tool: "propor_cadencia", ok: true },
+      { t: "Registrou a proposta para aprovação", tool: "registrar_proposta", ok: true }
+    ]
+  },
+  {
+    id: "SDR-2044", empresa: "Célere Transportes Regionais", setor: "Serviços", uf: "MG",
+    cidade: "Contagem", porte: "51–200 func.", faturamento: "R$ 25–100 milhões",
+    fit: "baixo", score: 34, rec: "descartar", conf: 4, status: "proposto",
+    decisor: null, cargo: null, email: null,
+    erp: "não identificado", tms: "próprio (é transportadora)", site: "celeretransportes.com.br",
+    dor: "É uma transportadora, não um embarcador — está do outro lado da mesa. Perfil não bate com o ICP de embarcador industrial da GD Conecta.",
+    bench: "Sem benchmark de embarcador aplicável (é transportadora)",
+    argumento: "O agente recomenda DESCARTAR: a Célere é uma transportadora regional, não um embarcador industrial. Ela é potencial fornecedora dentro da rede de cotação da GD Conecta, não cliente do produto de governança de frete. Fit ICP 34/100. Não foi encontrado decisor de compras/logística de carga própria porque o modelo de negócio não gera essa demanda. Sugestão: mover para a lista de transportadoras parceiras, não para cadência de vendas.",
+    cadencia: null,
+    seq: null,
+    trail: [
+      { t: "Pesquisou a empresa na web", tool: "pesquisar_empresa", ok: true },
+      { t: "Detectou modelo de negócio: transportadora", tool: "pesquisar_empresa", ok: true },
+      { t: "Cruzou com ICP de embarcador", tool: "calcular_fit", ok: true },
+      { t: "Fit ICP: 34/100 (baixo) — fora do perfil", tool: "calcular_fit", ok: true },
+      { t: "Recomendou descarte com justificativa", tool: "gerar_inteligencia", ok: true },
+      { t: "Registrou proposta de descarte", tool: "registrar_proposta", ok: true }
+    ]
+  }
+];
+
+const ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>';
+
+function confBars(n){
+  let h = '<span class="conf" title="Confiança do agente: '+n+'/5">';
+  for(let i=1;i<=5;i++) h += '<span class="bar'+(i<=n?' on':'')+'"></span>';
+  return h+'</span>';
+}
+const REC_LABEL = { qualificar:"Qualificar", descartar:"Descartar", segurar:"Segurar" };
+
+function renderFila(){
+  const body = document.getElementById('fila-body');
+  const visiveis = PROPOSTAS.filter(p => p.status==='proposto' || p.status==='executando');
+  if(!visiveis.length){ body.innerHTML = '<tr><td colspan="6"><div class="empty">Fila vazia — nenhuma proposta aguardando decisão.</div></td></tr>'; }
+  else body.innerHTML = visiveis.map(p => `
+    <tr data-id="${p.id}">
+      <td><div class="row-title">${p.empresa}</div><div class="row-sub">${p.id} · ${p.cidade}/${p.uf}</div></td>
+      <td>${p.setor} · ${p.uf}</td>
+      <td><span class="fit-badge" data-fit="${p.fit}">ICP ${p.score}</span></td>
+      <td>${REC_LABEL[p.rec]}</td>
+      <td>${confBars(p.conf)}</td>
+      <td><span class="status-pill" data-s="${p.status}"><span class="d"></span>${p.status==='executando'?'SDR trabalhando':'Proposto'}</span></td>
+    </tr>`).join('');
+  body.querySelectorAll('tr[data-id]').forEach(tr => tr.addEventListener('click', () => openDrawer(tr.dataset.id)));
+  const nFila = PROPOSTAS.filter(p=>p.status==='proposto').length;
+  document.getElementById('s-fila').textContent = nFila;
+  document.getElementById('chip-fila').textContent = nFila;
+}
+
+function drawerHTML(p){
+  const decisorHTML = p.decisor
+    ? `<dd>${p.decisor}</dd>` : `<dd class="null">não encontrado publicamente — vendedor resolve</dd>`;
+  const emailHTML = p.email ? `<dd>${p.email}</dd>` : `<dd class="null">— sem e-mail confirmado</dd>`;
+  const cadenciaSec = p.cadencia ? `
+    <div>
+      <div class="sec-label">Cadência proposta <span class="ai">rascunho da IA</span></div>
+      <div style="font-size:12.5px;color:var(--ink-dim);margin-bottom:6px">${p.seq}</div>
+      ${p.cadencia.map(s=>`
+        <div class="cadence-step">
+          <div class="n">${s.n}</div>
+          <div class="body"><strong>${s.tit}</strong> <span class="when">· ${s.when}</span><p>${s.txt}</p></div>
+        </div>`).join('')}
+    </div>` : `
+    <div>
+      <div class="sec-label">Cadência proposta</div>
+      <div class="argument" style="border-color:rgba(208,59,59,.3)">Nenhuma cadência — o agente recomenda <strong>descartar</strong> este lead (fora do perfil ICP). Nenhum contato externo seria disparado.</div>
+    </div>`;
+
+  const foot = p.rec==='descartar' ? `
+      <button class="btn btn-primary" data-act="descartar">Confirmar descarte</button>
+      <button class="btn btn-ghost" data-act="editar">Reclassificar</button>` : `
+      <button class="btn btn-amber btn-good" data-act="aprovar">Aprovar e iniciar cadência</button>
+      <button class="btn btn-ghost" data-act="editar">Editar</button>
+      <button class="btn btn-ghost btn-danger" data-act="descartar">Descartar</button>`;
+
+  return `
+    <div class="dr-head">
+      <div>
+        <h3>${p.empresa}</h3>
+        <div class="sub">${p.id} · ${p.cidade}/${p.uf} · Fit ICP ${p.score}/100</div>
+      </div>
+      <button class="dr-close" id="dr-close" aria-label="Fechar">✕</button>
+    </div>
+    <div class="dr-body">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <span class="fit-badge" data-fit="${p.fit}">Fit ${p.fit}</span>
+        <span class="status-pill" data-s="proposto"><span class="d"></span>Recomenda: ${REC_LABEL[p.rec]}</span>
+        ${confBars(p.conf)} <span style="font-size:11.5px;color:var(--ink-faint)">confiança ${p.conf}/5</span>
+      </div>
+
+      <div>
+        <div class="sec-label">Dossiê pesquisado <span class="ai">IA + busca web</span></div>
+        <dl class="kv">
+          <dt>Decisor</dt>${decisorHTML}
+          <dt>Cargo</dt>${p.cargo?`<dd>${p.cargo}</dd>`:`<dd class="null">—</dd>`}
+          <dt>E-mail</dt>${emailHTML}
+          <dt>Porte</dt><dd>${p.porte}</dd>
+          <dt>Faturamento</dt><dd>${p.faturamento}</dd>
+          <dt>ERP</dt><dd>${p.erp}</dd>
+          <dt>TMS</dt><dd>${p.tms}</dd>
+          <dt>Site</dt><dd><a href="#" onclick="return false" style="color:var(--link)">${p.site}</a></dd>
+        </dl>
+      </div>
+
+      <div>
+        <div class="sec-label">Dor identificada <span class="ai">hipótese</span></div>
+        <div class="argument">${p.dor}</div>
+      </div>
+
+      <div>
+        <div class="sec-label">Argumento comercial <span class="ai">IA</span></div>
+        <div class="argument">${p.argumento}<div class="bench">📊 ${p.bench}</div></div>
+      </div>
+
+      ${cadenciaSec}
+
+      <div>
+        <div class="sec-label">Trilha do agente <span class="ai">auditável</span></div>
+        <div class="trail">
+          ${p.trail.map(s=>`
+            <div class="trail-step done">
+              <div class="dot">${ICON_CHECK}</div>
+              <div class="txt"><strong>${s.t}</strong><span class="tool">${s.tool}</span></div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="dr-foot">${foot}</div>`;
+}
+
+let currentId = null;
+function openDrawer(id){
+  const p = PROPOSTAS.find(x=>x.id===id); if(!p) return;
+  currentId = id;
+  const dr = document.getElementById('drawer');
+  dr.innerHTML = drawerHTML(p);
+  dr.classList.add('open'); dr.setAttribute('aria-hidden','false');
+  document.getElementById('scrim').classList.add('open');
+  document.getElementById('dr-close').addEventListener('click', closeDrawer);
+  dr.querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => act(b.dataset.act)));
+}
+function closeDrawer(){
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawer').setAttribute('aria-hidden','true');
+  document.getElementById('scrim').classList.remove('open');
+  currentId = null;
+}
+document.getElementById('scrim').addEventListener('click', closeDrawer);
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeDrawer(); });
+
+function act(kind){
+  const p = PROPOSTAS.find(x=>x.id===currentId); if(!p) return;
+  if(kind==='aprovar') p.status='aprovado';
+  else if(kind==='descartar') p.status='descartado';
+  else if(kind==='editar'){ // simula abrir edição — só um aviso no protótipo
+    const foot = document.querySelector('.dr-foot');
+    foot.insertAdjacentHTML('beforebegin','<div style="padding:0 22px 10px"><div class="argument" style="border-color:rgba(0,119,168,.3);font-size:12.5px">✎ No produto real, aqui abriria a edição inline do argumento, do contato e dos passos da cadência antes de aprovar. Aprovações com edição contam para a <strong>taxa de correção</strong> (métrica que autoriza a autonomia da Fase 2).</div></div>');
+    return;
+  }
+  closeDrawer();
+  renderFila();
+  bumpAprovadas(kind==='aprovar');
+  toast(kind==='aprovar' ? `${p.empresa}: promovida e inscrita na cadência ✓` :
+        kind==='descartar' ? `${p.empresa}: descartada — vira aprendizado do agente` : '');
+}
+let aprov = 18;
+function bumpAprovadas(inc){ if(inc){ aprov++; document.getElementById('s-aprov').textContent = aprov; } }
+
+function toast(msg){
+  if(!msg) return;
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--indigo);color:#F1EEE6;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:var(--shadow-lg);z-index:60;max-width:90vw';
+  document.body.appendChild(t);
+  setTimeout(()=>{ t.style.transition='opacity .4s'; t.style.opacity='0'; setTimeout(()=>t.remove(),400); }, 3200);
+}
+
+// ---- Simulação "Rodar SDR" (streaming dos passos) ----
+const RUN_STEPS = [
+  { t: "Recebeu o lead: Bralux Cosméticos Ltda", tool: "run_sdr_agent" },
+  { t: "Pesquisando a empresa na web…", tool: "pesquisar_empresa" },
+  { t: "Encontrou: cosmético, RS, ~180 func., ERP Sankhya", tool: "pesquisar_empresa" },
+  { t: "Cruzando com Benchmark Logístico (setor Cosmético)…", tool: "consultar_benchmark" },
+  { t: "Calculando Fit ICP…", tool: "calcular_fit" },
+  { t: "Fit ICP: 71/100 (alto) — segue para argumento", tool: "calcular_fit" },
+  { t: "Montando argumento comercial cruzado…", tool: "gerar_inteligencia" },
+  { t: "Rascunhando cadência de 3 passos…", tool: "propor_cadencia" },
+  { t: "Proposta pronta e registrada para aprovação", tool: "registrar_proposta" }
+];
+let running = false;
+document.getElementById('btn-run').addEventListener('click', () => {
+  if(running) return; running = true;
+  const btn = document.getElementById('btn-run'); btn.disabled = true;
+  const slot = document.getElementById('run-slot');
+  slot.innerHTML = `
+    <div class="run-live">
+      <div class="rl-head"><div class="spin"></div><strong>SDR trabalhando — Bralux Cosméticos Ltda</strong><span class="cost" id="run-cost">~R$ 0,00 · 0 buscas</span></div>
+      <div class="rl-body"><div class="trail" id="run-trail"></div></div>
+    </div>`;
+  const trail = document.getElementById('run-trail');
+  RUN_STEPS.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'trail-step pending';
+    el.innerHTML = `<div class="dot"></div><div class="txt"><strong>${s.t}</strong><span class="tool">${s.tool}</span></div>`;
+    trail.appendChild(el);
+  });
+  const nodes = [...trail.children];
+  let i = 0, buscas = 0, custo = 0;
+  const tick = () => {
+    if(i>0){ nodes[i-1].className = 'trail-step done'; nodes[i-1].querySelector('.dot').innerHTML = ICON_CHECK; }
+    if(i>=nodes.length){
+      running = false; btn.disabled = false;
+      const p = PROPOSTAS.find(x=>x.id==='SDR-2045');
+      if(!p){
+        PROPOSTAS.unshift({
+          id:"SDR-2045", empresa:"Bralux Cosméticos Ltda", setor:"Cosmético", uf:"RS", cidade:"Novo Hamburgo",
+          porte:"51–200 func.", faturamento:"R$ 25–100 milhões", fit:"alto", score:71, rec:"qualificar", conf:4, status:"proposto",
+          decisor:"Renata Salvi", cargo:"Coordenadora de Logística", email:"logistica@bralux.com.br",
+          erp:"Sankhya", tms:"não identificado", site:"bralux.com.br",
+          dor:"Distribuição capilar de cosméticos para varejo em todo o Sul; sem TMS, cotação de frete provavelmente por transportadora fixa, sem competição por rota.",
+          bench:"Cosmético — R$ 0,45/kg (Benchmark Logístico)",
+          argumento:"A Bralux distribui cosméticos de forma capilar no Sul e não aparenta ter TMS, o que costuma indicar transportadora fixa sem competição de preço por rota. No benchmark de cosmético (R$ 0,45/kg), uma governança de cotação com leilão reverso tende a recuperar frete de forma consistente. Oferta de entrada: diagnóstico gratuito de 2 rotas.",
+          cadencia:[
+            {n:"E1",tit:"E-mail — Diagnóstico de frete cosmético",when:"Dia 0",txt:"Abertura pela dor de transportadora fixa + oferta de diagnóstico gratuito."},
+            {n:"L1",tit:"Ligação — Confirmar recebimento",when:"Dia 2",txt:"Ligação para Renata (Logística)."},
+            {n:"E2",tit:"E-mail — Benchmark do setor",when:"Dia 5",txt:"Comparativo de R$/kg como isca de reunião."}
+          ],
+          seq:"Cadência Outbound — Indústria (3 passos)",
+          trail: RUN_STEPS.map(s=>({t:s.t.replace('…',''),tool:s.tool,ok:true}))
+        });
+      }
+      renderFila();
+      toast("Nova proposta na fila: Bralux Cosméticos ✓");
+      return;
+    }
+    nodes[i].className = 'trail-step active';
+    if(RUN_STEPS[i].tool==='pesquisar_empresa' || RUN_STEPS[i].tool==='consultar_benchmark'){ buscas++; }
+    custo += 0.28 + Math.random()*0.25;
+    document.getElementById('run-cost').textContent = `~R$ ${custo.toFixed(2)} · ${buscas} busca${buscas!==1?'s':''}`;
+    i++;
+    setTimeout(tick, 620 + Math.random()*380);
+  };
+  tick();
+});
+
+renderFila();
+</script>

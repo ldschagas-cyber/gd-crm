@@ -50,13 +50,10 @@ export function enrichLeadProspect(id) {
   return api.post(`/lead-prospects/${id}/enrich`).then((res) => res.data)
 }
 
-export function gerarInteligenciaComercial(id) {
-  return api.post(`/lead-prospects/${id}/inteligencia-comercial`).then((res) => res.data)
-}
-
-export function gravarInteligenciaComercial(id, data) {
-  return api.patch(`/lead-prospects/${id}/inteligencia-comercial`, data).then((res) => res.data)
-}
+// Inteligência Comercial saiu da Pesquisa de Leads (decisão travada nº 3, ver
+// docs/PLANO_SDR_AUTONOMO.md): agora é o SDR Argos, estritamente pós-promoção, na tela de
+// Empresas (ver api/companies.js:runSdrArgos). O endpoint POST/PATCH .../inteligencia-comercial
+// do lead continua existindo no backend por ora (não removido), mas nada aqui o chama mais.
 
 export function getPerformanceReport(mes) {
   return api.get('/lead-prospects/performance-report', { params: { mes } }).then((res) => res.data)

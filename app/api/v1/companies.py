@@ -24,6 +24,7 @@ from app.services.company import CompanyService
 from app.services.company_ai import CompanyAiService
 from app.services.import_job import ImportJobService
 from app.services.onboarding import OnboardingService
+from app.services.sdr_argos import SdrArgosService
 from app.services.timeline import TimelineService
 from app.repositories.timeline import TimelineRepository
 
@@ -242,6 +243,16 @@ def regenerate_company_resumo(company_id: UUID, _: User = Depends(get_current_us
 def ask_company_ai(company_id: UUID, data: CompanyAskRequest, _: User = Depends(get_current_user),
                    db: Session = Depends(get_db)):
     return CompanyAiService(db).perguntar(company_id, data.pergunta)
+
+
+@router.post("/{company_id}/sdr-argos", response_model=CompanyRead, status_code=status.HTTP_200_OK)
+def run_sdr_argos(company_id: UUID, _: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Gatilho manual ("botão SDR Argos") — a regra padrão é automática em background no
+    handoff da promoção (LeadProspectService.promote), isso aqui é pra re-rodar sob demanda
+    (ex.: depois de editar o setor da empresa). Nunca dispara contato externo — só gera
+    dossiê/argumento/roteiro e sugere a cadência (ver app/services/sdr_argos.py)."""
+    SdrArgosService(db).gerar(company_id)
+    return CompanyService(db).get(company_id)
 
 
 # ---- Customer Success ---------------------------------------------------------

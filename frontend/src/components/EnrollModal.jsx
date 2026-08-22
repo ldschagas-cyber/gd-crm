@@ -6,12 +6,16 @@ import { createSequenceEnrollment, listSequences } from '../api/sequences'
 // em uma Sequência já cadastrada (ver SequenciasPage).
 // `alvos` é uma lista de { company_id } | { contact_id } | { deal_id } — um item pro caso
 // de uma tela de detalhe, vários pro caso de seleção em lote numa lista.
-export default function EnrollModal({ alvos, alvoLabel, onClose, onEnrolled }) {
-  const [selectedId, setSelectedId] = useState('')
+// `defaultSequenceId` pré-seleciona uma sequência (ex.: sugestão do SDR Argos) — é só um
+// preenchimento inicial editável, NUNCA uma inscrição automática: o clique em "Inscrever"
+// continua sendo sempre do vendedor (decisão travada nº 6, ver docs/PLANO_SDR_AUTONOMO.md).
+export default function EnrollModal({ alvos, alvoLabel, defaultSequenceId, sugestaoLabel, onClose, onEnrolled }) {
+  const [selectedId, setSelectedId] = useState(defaultSequenceId ?? '')
   const [touched, setTouched] = useState(false)
 
   const sequencesQuery = useQuery({ queryKey: ['sequences', 'for-enroll'], queryFn: () => listSequences({ size: 100 }) })
   const sequences = (sequencesQuery.data?.items ?? []).filter((s) => s.ativo)
+  const sugestaoAindaValida = defaultSequenceId && sequences.some((s) => s.id === defaultSequenceId)
 
   const enrollMutation = useMutation({
     mutationFn: () => Promise.all(alvos.map((alvo) => createSequenceEnrollment(selectedId, alvo))),
@@ -29,6 +33,12 @@ export default function EnrollModal({ alvos, alvoLabel, onClose, onEnrolled }) {
       <div className="modal-box" onClick={(e) => e.stopPropagation()}>
         <h3>Inscrever em automação</h3>
         <p className="sub">Inscrever <strong>{alvoLabel}</strong> em uma sequência de tarefas.</p>
+
+        {sugestaoAindaValida && (
+          <p className="sub" style={{ marginTop: -8 }}>
+            ✦ Sequência pré-selecionada pela sugestão do SDR Argos{sugestaoLabel ? ` — ${sugestaoLabel}` : ''}. Pode trocar antes de confirmar.
+          </p>
+        )}
 
         <div className="f-group">
           <label className="f-label">Sequência</label>

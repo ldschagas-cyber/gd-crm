@@ -143,10 +143,23 @@ class Company(Base, TenantMixin, TimestampMixin, SoftDeleteMixin):
     # cópia automática em LeadProspectService.promote(); também editável na empresa.
     contato_sugerido: Mapped[str | None] = mapped_column(String(255))
 
-    # Dossiê Comercial — Inteligência Comercial (mesmo JSON de LeadProspect.inteligencia_comercial).
-    # Só chega aqui por cópia automática em LeadProspectService.promote(); não há endpoint de
-    # geração/gravação própria da Company — a geração acontece sempre no lead, antes de promover.
+    # SDR Argos — dossiê comercial do prospector, gerado direto na empresa (JSON de
+    # CommercialIntelligenceRecord: perfil + benchmark + argumento + gravado_em). Roda
+    # automaticamente no handoff da promoção (LeadProspectService.promote) e sob demanda
+    # via botão "SDR Argos" (SdrArgosService) — ver docs/PLANO_SDR_AUTONOMO.md §0.5.
+    # Não é mais copiado de LeadProspect.inteligencia_comercial (decisão travada nº 3: a
+    # Inteligência Comercial passou a ser estritamente pós-promoção).
     inteligencia_comercial: Mapped[str | None] = mapped_column(Text)
+    # Cadência sugerida pelo SDR Argos — JSON com sequence_id/sequence_nome/contato/passos.
+    # É SUGESTÃO, nunca inscrição automática (decisão travada nº 6): a inscrição de verdade
+    # continua sendo um SequenceEnrollment criado deliberadamente pelo vendedor, com esta
+    # sugestão pré-preenchida no formulário.
+    cadencia_sugerida: Mapped[str | None] = mapped_column(Text)
+    # Roteiro de ligação gerado pelo SDR Argos a partir do dossiê — só texto de apoio para o
+    # vendedor humano ligar; o agente nunca fala com o prospect (decisão travada nº 8).
+    roteiro_ligacao: Mapped[str | None] = mapped_column(Text)
+    # Quando o SDR Argos rodou pela última vez nesta empresa (auto na promoção, ou manual).
+    sdr_argos_atualizado_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 # Data/hora da última interação registrada na timeline desta empresa — mesmo padrão de
