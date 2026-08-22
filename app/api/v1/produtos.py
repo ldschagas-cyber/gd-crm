@@ -40,3 +40,8 @@ def update_produto(produto_id: UUID, data: ProdutoUpdate, _: User = Depends(get_
 @router.get("/{produto_id}/historico-preco", response_model=list[ProdutoPrecoHistRead])
 def historico_preco(produto_id: UUID, _: User = Depends(get_current_user), db: Session = Depends(get_db)):
     return ProdutoService(db).historico_preco(produto_id)
+
+
+@router.delete("/{produto_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_produto(produto_id: UUID, _: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    ProdutoService(db).delete(produto_id)

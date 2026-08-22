@@ -3,12 +3,15 @@ from __future__ import annotations
 
 from uuid import UUID
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.core.context import get_current_user_id
-from app.core.exceptions import NotFoundError
+from app.core.context import get_current_tenant, get_current_user_id
+from app.core.exceptions import ConflictError, NotFoundError
 from app.core.money import dec, money
+from app.models.contract import ContratoItem
 from app.models.product import Produto, ProdutoPrecoHist
+from app.models.proposal import PropostaItem
 from app.repositories.product import ProdutoPrecoHistRepository, ProdutoRepository
 from app.schemas.common import PageParams
 from app.schemas.product import ProdutoCreate, ProdutoUpdate
@@ -67,3 +70,24 @@ class ProdutoService:
     def historico_preco(self, produto_id: UUID) -> list[ProdutoPrecoHist]:
         self.get(produto_id)  # valida existência/tenant
         return self.hist.list_by_produto(produto_id)
+
+    def delete(self, produto_id: UUID) -> None:
+        produto = self.get(produto_id)
+        tenant_id = get_current_tenant()
+        em_proposta = self.db.execute(
+            select(PropostaItem.id).where(
+                PropostaItem.tenant_id == tenant_id, PropostaItem.produto_id == produto_id
+            ).limit(1)
+        ).scalar_one_or_none()
+        em_contrato = self.db.execute(
+            select(ContratoItem.id).where(
+                ContratoItem.tenant_id == tenant_id, ContratoItem.produto_id == produto_id
+            ).limit(1)
+        ).scalar_one_or_none()
+        if em_proposta is not None or em_contrato is not None:
+            raise ConflictError(
+                "Produto já usado em proposta ou contrato — desative em vez de excluir."
+            )
+        for h in self.hist.list_by_produto(produto_id):
+            self.hist.delete(h)
+        self.repo.delete(produto)

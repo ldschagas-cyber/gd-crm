@@ -15,3 +15,7 @@ export function updateProduto(id, data) {
 export function getHistoricoPreco(id) {
   return api.get(`/produtos/${id}/historico-preco`).then((res) => res.data)
 }
+
+export function deleteProduto(id) {
+  return api.delete(`/produtos/${id}`).then((res) => res.data)
+}

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { createProduto, getHistoricoPreco, listProdutos, updateProduto } from '../api/produtos'
+import { createProduto, deleteProduto, getHistoricoPreco, listProdutos, updateProduto } from '../api/produtos'
 import { formatCurrency, formatDate } from '../utils/format'
 import '../styles/dataTable.css'
 import '../styles/financeiro.css'
@@ -16,6 +16,12 @@ export default function ProdutosPage() {
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['produtos'] })
   const createMutation = useMutation({ mutationFn: createProduto, onSuccess: () => { setDrawer(undefined); invalidate() } })
   const updateMutation = useMutation({ mutationFn: ({ id, data }) => updateProduto(id, data), onSuccess: () => { setDrawer(undefined); invalidate() } })
+  const toggleAtivoMutation = useMutation({ mutationFn: ({ id, ativo }) => updateProduto(id, { ativo }), onSuccess: invalidate })
+  const deleteMutation = useMutation({
+    mutationFn: deleteProduto,
+    onSuccess: invalidate,
+    onError: (err) => alert(err.response?.data?.error?.message ?? 'Não foi possível excluir o produto.'),
+  })
 
   return (
     <>
@@ -51,10 +57,25 @@ export default function ProdutosPage() {
                       <td><span className={`fin-pill ${p.tipo === 'recorrente' ? 'p-blue' : 'p-neu'}`}>{p.tipo === 'recorrente' ? 'Recorrente' : 'Pontual'}</span></td>
                       <td className="num">{formatCurrency(p.preco_tabela, { cents: true })}{p.tipo === 'recorrente' ? '/mês' : ''}</td>
                       <td className="num">{formatCurrency(p.preco_minimo, { cents: true })}</td>
-                      <td><span className={`fin-pill ${p.ativo ? 'p-ok' : 'p-off'}`}>{p.ativo ? 'Ativo' : 'Inativo'}</span></td>
+                      <td>
+                        <button
+                          className={`fin-pill fin-pill-toggle ${p.ativo ? 'p-ok' : 'p-off'}`}
+                          title={p.ativo ? 'Clique para desativar' : 'Clique para ativar'}
+                          disabled={toggleAtivoMutation.isPending}
+                          onClick={() => toggleAtivoMutation.mutate({ id: p.id, ativo: !p.ativo })}
+                        >
+                          {p.ativo ? 'Ativo' : 'Inativo'}
+                        </button>
+                      </td>
                       <td className="actions-col">
                         <button className="icon-btn" title="Editar" onClick={() => setDrawer(p)}>✎</button>
                         <button className="icon-btn" title="Histórico de preço" onClick={() => setHistProduto(p)}>↺</button>
+                        <button
+                          className="icon-btn"
+                          title="Excluir"
+                          disabled={deleteMutation.isPending}
+                          onClick={() => { if (confirm(`Excluir "${p.nome}"? Só é possível se não estiver em uso em proposta ou contrato.`)) deleteMutation.mutate(p.id) }}
+                        >🗑</button>
                       </td>
                     </tr>
                   ))}
