@@ -88,7 +88,7 @@ export default function PropostasPage() {
                         {(ACOES[p.status] ?? []).map(([st, label]) => (
                           <button
                             key={st}
-                            className="btn-ghost sm"
+                            className={st === 'enviada' ? 'btn-quiet' : 'btn-ghost sm'}
                             disabled={statusMutation.isPending}
                             onClick={() => {
                               if (st === 'aceita' && !confirm('Aceitar a proposta gera um contrato. Continuar?')) return
