@@ -11,10 +11,9 @@ from app.models.user import User, UserRole
 from app.schemas.common import Page
 from app.schemas.import_job import ImportJobRead
 from app.schemas.lead_prospect import (
-    CommercialIntelligenceResponse, LeadEnrichmentSuggestion, LeadPromoteRequest, LeadProspectCreate,
+    LeadEnrichmentSuggestion, LeadPromoteRequest, LeadProspectCreate,
     LeadProspectPageParams, LeadProspectRead, LeadProspectUpdate, MetaProgressResponse, PerformanceReportResponse,
 )
-from app.services.commercial_intelligence import CommercialIntelligenceService
 from app.services.import_job import ImportJobService
 from app.services.lead_enrichment import LeadEnrichmentService
 from app.services.lead_prospect import LeadProspectService
@@ -116,21 +115,7 @@ def enrich_lead(lead_id: UUID, _: User = Depends(get_current_user), db: Session 
     lead = LeadProspectService(db).get_orm(lead_id)
     return LeadEnrichmentService().enrich(lead)
 
-
-@router.post("/{lead_id}/inteligencia-comercial", response_model=CommercialIntelligenceResponse)
-def gerar_inteligencia_comercial(lead_id: UUID, _: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Cruza o perfil pesquisado do lead com o Benchmark Logístico do Diagnóstico
-    para montar um argumento comercial. Só sugere — nada é gravado."""
-    lead = LeadProspectService(db).get_orm(lead_id)
-    return CommercialIntelligenceService().gerar(lead)
-
-
-@router.patch("/{lead_id}/inteligencia-comercial", response_model=LeadProspectRead)
-def gravar_inteligencia_comercial(
-    lead_id: UUID, data: CommercialIntelligenceResponse,
-    _: User = Depends(get_current_user), db: Session = Depends(get_db),
-):
-    """Grava no lead um resultado já obtido via POST .../inteligencia-comercial (o
-    usuário decide se vale gravar depois de revisar). É copiado para a Company
-    correspondente quando (e se) o lead for promovido — ver LeadProspectService.promote()."""
-    return LeadProspectService(db).save_inteligencia_comercial(lead_id, data)
+# Inteligência Comercial saiu da Pesquisa de Leads (decisão travada nº 3, ver
+# docs/PLANO_SDR_AUTONOMO.md): agora é o SDR Argos, estritamente pós-promoção, na tela de
+# Empresas — ver POST /companies/{id}/sdr-argos em app/api/v1/companies.py. Os antigos
+# POST/PATCH /{lead_id}/inteligencia-comercial foram removidos (nada os chamava mais).

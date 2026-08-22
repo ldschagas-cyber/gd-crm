@@ -8,10 +8,10 @@ expansão (decisão travada nº 5).
 Nível 1 (o aprendiz, dados básicos + Fit ICP) continua em `lead_enrichment.py`,
 na Pesquisa de Leads — nunca gera argumento nem cadência.
 
-Contrato herdado de `commercial_intelligence.py`: a IA nunca afirma um custo/kg
-medido para o prospect, só a média do segmento (o Benchmark Logístico é
-resolvido de forma determinística em Python e injetado no prompt como fato já
-conhecido). Nunca inventa contato — nome/e-mail sem fonte confiável ficam como
+Contrato: a IA nunca afirma um custo/kg medido para o prospect, só a média do
+segmento (o Benchmark Logístico é resolvido de forma determinística em Python
+e injetado no prompt como fato já conhecido). Nunca inventa contato — nome/
+e-mail sem fonte confiável ficam como
 já estavam no dossiê (ver LeadEnrichmentService), este serviço não lida com
 descoberta de contato (ver PLANO_SDR_AUTONOMO.md §6 — provedor de dados B2B,
 ainda não implementado).
@@ -35,9 +35,25 @@ from app.schemas.lead_prospect import (
     CommercialIntelligenceBenchmark, CommercialIntelligencePerfil, CommercialIntelligenceRecord,
 )
 from app.services._ai_json import extract_json
-from app.services.commercial_intelligence import SETOR_PARA_SEGMENTO
 from app.services.benchmark_client import BenchmarkClient
 from app.services.timeline import TimelineService
+
+# Setor (taxonomia da Pesquisa de Leads, no CRM) → Segmento (taxonomia do Benchmark
+# Setorial, no Diagnóstico). As duas telas usam vocabulários diferentes hoje — não é um
+# match automático. Setores sem entrada aqui (ou com valor None) simplesmente não têm
+# benchmark disponível; a lista deve crescer conforme mais setores forem usados.
+# Movido de app/services/commercial_intelligence.py (removido — ver decisão travada nº 3).
+SETOR_PARA_SEGMENTO: dict[str, str] = {
+    "Farma": "DISTRIBUIDOR",
+    "Alimentos": "DISTRIBUIDOR",
+    "Autopeças": "DISTRIBUIDOR",
+    "Química": "DISTRIBUIDOR",
+    "Etiquetas": "INDUSTRIA",
+    "Plástico": "INDUSTRIA",
+    "Máquinas e Equipamentos": "INDUSTRIA",
+    "Cosmético": "INDUSTRIA",
+    "Varejo": "VAREJO",
+}
 
 SYSTEM_PROMPT = """Você é o SDR Argos, o prospector de uma empresa de governança e cotação de frete rodoviário
 (GD Conecta). A empresa informada já foi qualificada e promovida a cliente-alvo — seu trabalho é montar o dossiê
@@ -76,9 +92,8 @@ class SdrArgosService:
         return company
 
     def _resolver_benchmark(self, setor: str | None) -> CommercialIntelligenceBenchmark:
-        # Mesma resolução determinística de CommercialIntelligenceService — duplicada aqui
-        # (não importada) porque aquele serviço opera sobre LeadProspect e este sobre
-        # Company; a tabela SETOR_PARA_SEGMENTO é o único pedaço realmente compartilhável.
+        # Resolução determinística — só varia de commercial_intelligence.py (removido) por
+        # aceitar `setor` direto (Company já tem a coluna) em vez de um LeadProspect inteiro.
         if not setor:
             return CommercialIntelligenceBenchmark(
                 disponivel=False, segmento_pesquisado=setor,
